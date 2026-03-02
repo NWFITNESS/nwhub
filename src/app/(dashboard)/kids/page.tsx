@@ -1,0 +1,25 @@
+import { createClient } from '@/lib/supabase/server'
+import { TopBar } from '@/components/layout/TopBar'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { KidsTable } from '@/components/kids/KidsTable'
+
+export default async function KidsPage() {
+  const supabase = await createClient()
+  const { data: registrations } = await supabase
+    .from('kids_registrations')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  return (
+    <>
+      <TopBar title="Kids & Teens Registrations" />
+      <main className="p-6">
+        <PageHeader
+          title="Kids & Teens Registrations"
+          description={`${registrations?.length ?? 0} registrations`}
+        />
+        <KidsTable initialRegistrations={registrations ?? []} />
+      </main>
+    </>
+  )
+}
