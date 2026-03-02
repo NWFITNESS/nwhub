@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { resend, FROM_EMAIL, REPLY_TO } from '@/lib/resend'
+import { getResend, FROM_EMAIL, REPLY_TO } from '@/lib/resend'
 
 export async function POST(request: Request) {
   try {
@@ -39,6 +39,7 @@ export async function POST(request: Request) {
     let sentCount = 0
     const fromField = `${from_name ?? 'Northern Warrior'} <${from_email ?? 'noreply@northernwarrior.co.uk'}>`
 
+    const resend = getResend()
     for (let i = 0; i < subscribers.length; i += BATCH) {
       const batch = subscribers.slice(i, i + BATCH)
       await Promise.allSettled(
