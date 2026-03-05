@@ -1,148 +1,403 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input, Textarea, Field, Select } from '@/components/ui/Input'
 import { RichTextEditor } from './RichTextEditor'
-import { Save, Trash2 } from 'lucide-react'
+import {
+  Save, Trash2, Globe, ImagePlus, X, Loader2, ChevronDown, ChevronUp,
+} from 'lucide-react'
 import { ConfirmModal } from '@/components/ui/Modal'
-import type { BlogPost } from '@/lib/types'
+import type { BlogPost, BlogCategory } from '@/lib/types'
 
 function slugify(title: string) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 }
 
 interface Props {
-  initialPost?: BlogPost & { category?: { id: string; name: string; slug: string } | null }
+  initialPost?: BlogPost & { category?: BlogCategory | null }
+  categories: BlogCategory[]
 }
 
-export function BlogPostEditor({ initialPost }: Props) {
+export function BlogPostEditor({ initialPost, categories }: Props) {
   const router = useRouter()
-  const supabase = createClient()
 
+  // Core fields
   const [title, setTitle] = useState(initialPost?.title ?? '')
   const [slug, setSlug] = useState(initialPost?.slug ?? '')
   const [excerpt, setExcerpt] = useState(initialPost?.excerpt ?? '')
   const [content, setContent] = useState(initialPost?.content ?? '')
-  const [status, setStatus] = useState<'draft' | 'published'>(initialPost?.status ?? 'draft')
-  const [featuredImageUrl, setFeaturedImageUrl] = useState(initialPost?.featured_image_url ?? '')
+  const [categoryId, setCategoryId] = useState(initialPost?.category_id ?? '')
   const [tags, setTags] = useState((initialPost?.tags ?? []).join(', '))
-  const [saving, setSaving] = useState(false)
+
+  // Featured image
+  const [featuredImageUrl, setFeaturedImageUrl] = useState(initialPost?.featured_image_url ?? '')
+  const [imageUploading, setImageUploading] = useState(false)
+  const featuredImageRef = useRef<HTMLInputElement>(null)
+
+  // SEO
+  const [seoOpen, setSeoOpen] = useState(false)
+  const [seoTitle, setSeoTitle] = useState(initialPost?.seo_title ?? '')
+  const [seoDescription, setSeoDescription] = useState(initialPost?.seo_description ?? '')
+
+  // UI state
+  const [saving, setSaving] = useState<'draft' | 'published' | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState('')
 
   function handleTitleChange(value: string) {
     setTitle(value)
+    // Auto-slug only on new posts before user edits slug
     if (!initialPost) setSlug(slugify(value))
   }
 
-  async function handleSave() {
-    if (!title.trim()) { setError('Title is required'); return }
-    setSaving(true)
-    setError('')
-
-    const payload = {
+  function buildPayload(status: 'draft' | 'published') {
+    return {
       title: title.trim(),
-      slug: slug || slugify(title),
+      slug: slug.trim() || slugify(title),
       excerpt: excerpt.trim() || null,
       content,
       featured_image_url: featuredImageUrl.trim() || null,
+      category_id: categoryId || null,
       tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
       status,
-      published_at: status === 'published' ? (initialPost?.published_at ?? new Date().toISOString()) : null,
-      updated_at: new Date().toISOString(),
+      seo_title: seoTitle.trim() || null,
+      seo_description: seoDescription.trim() || null,
+      published_at: initialPost?.published_at ?? null,
     }
+  }
 
-    let queryError
+  async function handleSave(targetStatus: 'draft' | 'published') {
+    if (!title.trim()) { setError('Title is required'); return }
+    setSaving(targetStatus)
+    setError('')
+
+    const payload = buildPayload(targetStatus)
+
+    let res: Response
     if (initialPost) {
-      const { error: e } = await supabase.from('blog_posts').update(payload).eq('id', initialPost.id)
-      queryError = e
+      res = await fetch(`/api/blog/${initialPost.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
     } else {
-      const { error: e } = await supabase.from('blog_posts').insert(payload)
-      queryError = e
+      res = await fetch('/api/blog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
     }
 
-    setSaving(false)
-    if (queryError) {
-      setError(queryError.message)
-    } else {
-      router.push('/blog')
-      router.refresh()
+    setSaving(null)
+
+    if (!res.ok) {
+      const data = await res.json()
+      setError(data.error ?? 'Something went wrong')
+      return
     }
+
+    router.push('/blog')
+    router.refresh()
   }
 
   async function handleDelete() {
     setDeleting(true)
-    await supabase.from('blog_posts').delete().eq('id', initialPost!.id)
+    await fetch(`/api/blog/${initialPost!.id}`, { method: 'DELETE' })
     setDeleting(false)
     setDeleteOpen(false)
     router.push('/blog')
     router.refresh()
   }
 
+  async function handleFeaturedImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+
+    setImageUploading(true)
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      const res = await fetch('/api/media', { method: 'POST', body: form })
+      const data = await res.json()
+      if (data.public_url) setFeaturedImageUrl(data.public_url)
+    } finally {
+      setImageUploading(false)
+    }
+  }
+
+  const currentStatus = initialPost?.status ?? 'draft'
+  const isPublished = currentStatus === 'published'
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">{initialPost ? 'Edit Post' : 'New Post'}</h2>
+    <div className="max-w-5xl mx-auto pb-16">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-xl font-semibold text-white">
+            {initialPost ? 'Edit Post' : 'New Post'}
+          </h2>
+          {initialPost && (
+            <p className="text-sm text-white/30 mt-0.5">
+              {isPublished ? 'Published' : 'Draft'} · Last saved {new Date(initialPost.updated_at).toLocaleDateString()}
+            </p>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           {initialPost && (
             <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
               <Trash2 size={14} /> Delete
             </Button>
           )}
-          <Button variant="primary" size="sm" onClick={handleSave} loading={saving}>
-            <Save size={14} /> {status === 'published' ? 'Publish' : 'Save Draft'}
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => handleSave('draft')}
+            loading={saving === 'draft'}
+            disabled={saving !== null}
+          >
+            <Save size={14} /> Save Draft
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => handleSave('published')}
+            loading={saving === 'published'}
+            disabled={saving !== null}
+          >
+            <Globe size={14} /> {isPublished ? 'Update' : 'Publish'}
           </Button>
         </div>
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400">
-          {error}
+        <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400 flex items-center gap-2">
+          <X size={14} className="shrink-0" /> {error}
         </div>
       )}
 
       <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2 space-y-4">
+        {/* Main content column */}
+        <div className="col-span-2 space-y-5">
           <Field label="Title">
             <Input
               value={title}
               onChange={(e) => handleTitleChange(e.target.value)}
               placeholder="Post title"
-              className="text-lg"
+              className="text-lg font-medium"
             />
           </Field>
+
           <Field label="Slug">
-            <Input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="post-slug" />
+            <div className="flex items-center gap-2">
+              <span className="text-white/30 text-sm shrink-0">/blog/</span>
+              <Input
+                value={slug}
+                onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
+                placeholder="post-slug"
+                className="font-mono text-sm"
+              />
+            </div>
           </Field>
+
           <Field label="Excerpt">
-            <Textarea value={excerpt} onChange={(e) => setExcerpt(e.target.value)} placeholder="Short description..." />
+            <Textarea
+              value={excerpt}
+              onChange={(e) => setExcerpt(e.target.value)}
+              placeholder="A short summary shown in listings and previews…"
+              className="min-h-[80px]"
+            />
           </Field>
+
           <div>
-            <label className="block text-xs font-medium text-white/60 mb-1.5">Content</label>
-            <RichTextEditor content={content} onChange={setContent} placeholder="Write your post..." />
+            <label className="block text-sm font-medium text-white/60 mb-1.5">Body</label>
+            <RichTextEditor
+              content={content}
+              onChange={setContent}
+              placeholder="Write your post…"
+              minHeight={400}
+            />
+          </div>
+
+          {/* SEO accordion */}
+          <div className="border border-white/[0.08] rounded-lg overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setSeoOpen((o) => !o)}
+              className="w-full flex items-center justify-between px-4 py-3 bg-[#161616] text-sm font-medium text-white/60 hover:text-white/80 transition-colors"
+            >
+              <span>SEO Meta</span>
+              {seoOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </button>
+            {seoOpen && (
+              <div className="px-4 py-4 space-y-4 bg-[#111111]">
+                <Field label="SEO Title">
+                  <Input
+                    value={seoTitle}
+                    onChange={(e) => setSeoTitle(e.target.value)}
+                    placeholder={title || 'Page title for search engines'}
+                    maxLength={60}
+                  />
+                  <p className="text-xs text-white/25 mt-1">{seoTitle.length}/60 chars</p>
+                </Field>
+                <Field label="Meta Description">
+                  <Textarea
+                    value={seoDescription}
+                    onChange={(e) => setSeoDescription(e.target.value)}
+                    placeholder={excerpt || 'Description shown in search results…'}
+                    maxLength={160}
+                    className="min-h-[70px]"
+                  />
+                  <p className="text-xs text-white/25 mt-1">{seoDescription.length}/160 chars</p>
+                </Field>
+                {/* Live SERP preview */}
+                {(seoTitle || title) && (
+                  <div className="rounded-lg border border-white/[0.06] p-3 bg-white/[0.02]">
+                    <p className="text-xs text-white/25 mb-2 uppercase tracking-widest">Search preview</p>
+                    <p className="text-[#8ab4f8] text-sm font-medium leading-tight truncate">
+                      {seoTitle || title}
+                    </p>
+                    <p className="text-[#34a853] text-xs mt-0.5">nwhub.com/blog/{slug || 'your-post-slug'}</p>
+                    <p className="text-white/40 text-xs mt-1 line-clamp-2">
+                      {seoDescription || excerpt || 'Add a meta description to preview it here.'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="space-y-4">
-          <Field label="Status">
-            <Select value={status} onChange={(e) => setStatus(e.target.value as 'draft' | 'published')}>
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-            </Select>
-          </Field>
-          <Field label="Featured Image URL">
-            <Input value={featuredImageUrl} onChange={(e) => setFeaturedImageUrl(e.target.value)} placeholder="https://..." />
-            {featuredImageUrl && (
-              <img src={featuredImageUrl} alt="Preview" className="mt-2 rounded-lg w-full aspect-video object-cover" />
+        {/* Sidebar */}
+        <div className="space-y-5">
+          {/* Status */}
+          <div className="rounded-xl border border-white/[0.08] bg-[#111111] p-4 space-y-4">
+            <p className="text-xs font-semibold text-white/30 uppercase tracking-widest">Details</p>
+
+            <Field label="Status">
+              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium ${
+                isPublished
+                  ? 'border-green-500/30 bg-green-500/10 text-green-400'
+                  : 'border-yellow-500/30 bg-yellow-500/10 text-yellow-400'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${isPublished ? 'bg-green-400' : 'bg-yellow-400'}`} />
+                {isPublished ? 'Published' : 'Draft'}
+              </div>
+            </Field>
+
+            <Field label="Category">
+              <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+                <option value="">No category</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </Select>
+            </Field>
+
+            <Field label="Tags">
+              <Input
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="fitness, hyrox, training"
+              />
+              <p className="text-xs text-white/25 mt-1">Comma separated</p>
+            </Field>
+          </div>
+
+          {/* Featured image */}
+          <div className="rounded-xl border border-white/[0.08] bg-[#111111] p-4 space-y-3">
+            <p className="text-xs font-semibold text-white/30 uppercase tracking-widest">Featured Image</p>
+
+            {featuredImageUrl ? (
+              <div className="relative group">
+                <img
+                  src={featuredImageUrl}
+                  alt="Featured"
+                  className="w-full aspect-video object-cover rounded-lg border border-white/10"
+                />
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => featuredImageRef.current?.click()}
+                    className="px-2.5 py-1.5 bg-[#967705] text-black text-xs font-semibold rounded-md hover:bg-[#b08e06] transition-colors"
+                  >
+                    Replace
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFeaturedImageUrl('')}
+                    className="px-2.5 py-1.5 bg-red-600/80 text-white text-xs font-semibold rounded-md hover:bg-red-600 transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => featuredImageRef.current?.click()}
+                disabled={imageUploading}
+                className="w-full aspect-video border-2 border-dashed border-white/[0.1] rounded-lg flex flex-col items-center justify-center gap-2 text-white/30 hover:text-white/50 hover:border-white/20 transition-colors"
+              >
+                {imageUploading
+                  ? <Loader2 size={20} className="animate-spin" />
+                  : <ImagePlus size={20} />
+                }
+                <span className="text-xs">{imageUploading ? 'Uploading…' : 'Upload image'}</span>
+              </button>
             )}
-          </Field>
-          <Field label="Tags (comma separated)">
-            <Input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="fitness, training, hyrox" />
-          </Field>
+
+            {imageUploading && (
+              <div className="flex items-center gap-2 text-xs text-white/30">
+                <Loader2 size={12} className="animate-spin" /> Uploading to storage…
+              </div>
+            )}
+
+            {/* Manual URL fallback */}
+            <Field label="Or paste URL">
+              <Input
+                value={featuredImageUrl}
+                onChange={(e) => setFeaturedImageUrl(e.target.value)}
+                placeholder="https://…"
+                className="text-xs"
+              />
+            </Field>
+
+            <input
+              ref={featuredImageRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFeaturedImageUpload}
+            />
+          </div>
+
+          {/* Publish actions (repeated at bottom of sidebar for convenience) */}
+          <div className="flex flex-col gap-2">
+            <Button
+              variant="primary"
+              size="md"
+              className="w-full"
+              onClick={() => handleSave('published')}
+              loading={saving === 'published'}
+              disabled={saving !== null}
+            >
+              <Globe size={15} /> {isPublished ? 'Update Published Post' : 'Publish Now'}
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="w-full"
+              onClick={() => handleSave('draft')}
+              loading={saving === 'draft'}
+              disabled={saving !== null}
+            >
+              <Save size={14} /> Save as Draft
+            </Button>
+          </div>
         </div>
       </div>
 
