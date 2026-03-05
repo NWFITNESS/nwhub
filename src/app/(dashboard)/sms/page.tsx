@@ -14,12 +14,12 @@ export default async function SmsPage() {
 
   return (
     <>
-      <TopBar title="SMS" actions={<Link href="/sms/campaigns"><Button variant="secondary" size="sm">Campaigns</Button></Link>} />
+      <TopBar title="WhatsApp" actions={<Link href="/sms/campaigns"><Button variant="secondary" size="sm">Campaigns</Button></Link>} />
       <main className="p-6">
         <PageHeader
-          title="SMS Subscribers"
+          title="WhatsApp Subscribers"
           description={`${total ?? 0} active subscribers`}
-          actions={<Link href="/sms/campaigns/new"><Button variant="primary" size="sm">New SMS Campaign</Button></Link>}
+          actions={<Link href="/sms/campaigns/new"><Button variant="primary" size="sm">New WhatsApp Campaign</Button></Link>}
         />
         <SmsSubscribersTable initialSubscribers={subscribers ?? []} />
       </main>

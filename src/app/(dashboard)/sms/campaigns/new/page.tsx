@@ -4,7 +4,7 @@ import { SmsCampaignComposer } from '@/components/sms/SmsCampaignComposer'
 export default function NewSmsCampaignPage() {
   return (
     <>
-      <TopBar title="New SMS Campaign" />
+      <TopBar title="New WhatsApp Campaign" />
       <main className="p-6">
         <SmsCampaignComposer />
       </main>

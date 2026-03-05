@@ -30,9 +30,7 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? 'Close sidebar' : 'Open sidebar'}
-        className="fixed z-50 top-20 h-14 w-5 flex items-center justify-center
-          bg-[#1a1a1a] border border-white/[0.1] rounded-r-lg
-          hover:bg-[#222] hover:border-[#967705]/40 transition-all duration-300 ease-in-out"
+        className="fixed z-50 top-20 h-14 w-5 flex items-center justify-center bg-[#1a1a1a] border border-white/[0.1] rounded-r-lg hover:bg-[#222] hover:border-[#967705]/40 transition-all duration-300 ease-in-out"
         style={{ left: open ? 'var(--sidebar-w)' : '0' }}
       >
         <ChevronLeft

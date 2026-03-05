@@ -81,7 +81,7 @@ export default async function DashboardPage() {
     { label: 'First subscriber', done: (subscribersTotal ?? 0) > 0 },
     { label: 'First blog post', done: (postsTotal ?? 0) > 0 },
     { label: 'Resend domain verified', done: false, manual: true },
-    { label: 'Twilio number purchased', done: false, manual: true },
+    { label: 'WhatsApp number registered in Twilio', done: false, manual: true },
   ]
   const doneCount = checklist.filter((i) => i.done).length
 

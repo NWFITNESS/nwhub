@@ -5,6 +5,14 @@ import { createClient } from '@/lib/supabase/client'
 import { Upload, X, Check, Image as ImageIcon } from 'lucide-react'
 import type { Media } from '@/lib/types'
 
+async function uploadFile(file: File): Promise<Media | null> {
+  const form = new FormData()
+  form.append('file', file)
+  const res = await fetch('/api/media', { method: 'POST', body: form })
+  if (!res.ok) { console.error(await res.text()); return null }
+  return res.json()
+}
+
 // ─── Modal ────────────────────────────────────────────────────────────────────
 
 interface MediaPickerModalProps {
@@ -34,25 +42,11 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
   async function handleUpload(files: FileList | null) {
     if (!files || files.length === 0) return
     setUploading(true)
-
     for (const file of Array.from(files)) {
-      const path = `media/${Date.now()}-${file.name.replace(/[^a-z0-9.-]/gi, '_')}`
-      const { error } = await supabase.storage.from('media').upload(path, file)
-      if (error) { console.error(error); continue }
-
-      const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path)
-      const { data: row } = await supabase.from('media').insert({
-        filename: file.name,
-        storage_path: path,
-        public_url: publicUrl,
-        file_size: file.size,
-        mime_type: file.type,
-      }).select().single()
-
+      const row = await uploadFile(file)
       if (row) {
-        setMedia((prev) => [row as Media, ...prev])
-        // Auto-select the newly uploaded image
-        onSelect(publicUrl)
+        setMedia((prev) => [row, ...prev])
+        onSelect(row.public_url)
         onClose()
         setUploading(false)
         return

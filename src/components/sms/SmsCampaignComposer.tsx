@@ -6,8 +6,6 @@ import { Button } from '@/components/ui/Button'
 import { Input, Textarea, Field } from '@/components/ui/Input'
 import { Send } from 'lucide-react'
 
-const SMS_LIMIT = 160
-
 export function SmsCampaignComposer() {
   const router = useRouter()
   const [name, setName] = useState('')
@@ -17,8 +15,6 @@ export function SmsCampaignComposer() {
   const [error, setError] = useState('')
 
   const charCount = message.length
-  const smsCount = Math.ceil(charCount / SMS_LIMIT) || 1
-  const isMultiSms = charCount > SMS_LIMIT
 
   async function handleSend() {
     if (!name || !message) { setError('Name and message are required'); return }
@@ -41,7 +37,7 @@ export function SmsCampaignComposer() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">New SMS Campaign</h2>
+        <h2 className="text-xl font-semibold">New WhatsApp Campaign</h2>
         <Button variant="primary" size="sm" onClick={handleSend} loading={sending}>
           <Send size={14} /> Send Now
         </Button>
@@ -53,7 +49,7 @@ export function SmsCampaignComposer() {
 
       <div className="space-y-4">
         <Field label="Campaign Name (internal)">
-          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Summer Promo SMS" />
+          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Summer Promo" />
         </Field>
         <Field label="Segment Tags">
           <Input value={segmentTags} onChange={(e) => setSegmentTags(e.target.value)} placeholder="Leave empty to send to all" />
@@ -61,27 +57,20 @@ export function SmsCampaignComposer() {
         <div>
           <label className="block text-xs font-medium text-white/60 mb-1.5">
             Message
-            <span className={`ml-2 ${isMultiSms ? 'text-yellow-400' : 'text-white/30'}`}>
-              {charCount}/{SMS_LIMIT} chars
-              {isMultiSms && ` (${smsCount} SMS)`}
-            </span>
+            <span className="ml-2 text-white/30">{charCount} chars</span>
           </label>
           <Textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Your SMS message... Include your name and a way to opt out."
+            placeholder="Your WhatsApp message... Include your name and a way to opt out."
             className="min-h-[120px]"
           />
-          {isMultiSms && (
-            <p className="text-xs text-yellow-400 mt-1">
-              ⚠️ Message exceeds 160 characters — will be sent as {smsCount} SMS messages, increasing cost.
-            </p>
-          )}
         </div>
         <div className="bg-[#161616] border border-white/[0.08] rounded-lg p-3 text-xs text-white/40 space-y-1">
-          <p>• Twilio UK number must be purchased before sending</p>
-          <p>• Trial accounts can only send to verified numbers</p>
+          <p>• WhatsApp Business number must be registered and approved in Twilio Console</p>
+          <p>• Trial accounts can only message verified numbers</p>
           <p>• Always include opt-out instructions (e.g., "Reply STOP to unsubscribe")</p>
+          <p>• Supports up to 4096 characters per message</p>
         </div>
       </div>
     </div>

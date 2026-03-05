@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Upload, Clipboard, Trash2 } from 'lucide-react'
 import type { Media } from '@/lib/types'
@@ -15,36 +14,27 @@ export function MediaGrid({ initialMedia }: Props) {
   const [uploading, setUploading] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
-  const supabase = createClient()
 
   async function handleUpload(files: FileList | null) {
     if (!files || files.length === 0) return
     setUploading(true)
-
     for (const file of Array.from(files)) {
-      const ext = file.name.split('.').pop()
-      const path = `media/${Date.now()}-${file.name.replace(/[^a-z0-9.-]/gi, '_')}`
-      const { error: uploadError } = await supabase.storage.from('media').upload(path, file)
-      if (uploadError) { console.error(uploadError); continue }
-
-      const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path)
-
-      const { data: row } = await supabase.from('media').insert({
-        filename: file.name,
-        storage_path: path,
-        public_url: publicUrl,
-        file_size: file.size,
-        mime_type: file.type,
-      }).select().single()
-
-      if (row) setMedia((prev) => [row as Media, ...prev])
+      const form = new FormData()
+      form.append('file', file)
+      const res = await fetch('/api/media', { method: 'POST', body: form })
+      if (!res.ok) { console.error(await res.text()); continue }
+      const row: Media = await res.json()
+      setMedia((prev) => [row, ...prev])
     }
     setUploading(false)
   }
 
   async function handleDelete(item: Media) {
-    await supabase.storage.from('media').remove([item.storage_path])
-    await supabase.from('media').delete().eq('id', item.id)
+    await fetch('/api/media', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: item.id, storage_path: item.storage_path }),
+    })
     setMedia((prev) => prev.filter((m) => m.id !== item.id))
   }
 

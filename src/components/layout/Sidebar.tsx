@@ -4,18 +4,19 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
-  LayoutDashboard,
-  FileText,
-  PenSquare,
-  Image,
-  Mail,
-  MessageSquare,
-  Users,
-  Baby,
-  Settings,
-  LogOut,
-  PanelLeftClose,
-} from 'lucide-react'
+  DashboardNavIcon,
+  FileNavIcon,
+  PenNavIcon,
+  ImageNavIcon,
+  MailNavIcon,
+  ChatNavIcon,
+  UsersNavIcon,
+  BabyNavIcon,
+  StarNavIcon,
+  SettingsNavIcon,
+  LogOutNavIcon,
+  PanelCloseNavIcon,
+} from '@/components/ui/animated-nav-icons'
 
 interface NavItem {
   label: string
@@ -32,28 +33,30 @@ interface NavGroup {
 const navGroups: NavGroup[] = [
   {
     label: null,
-    items: [{ label: 'Overview', href: '/', icon: LayoutDashboard }],
+    items: [{ label: 'Overview', href: '/', icon: DashboardNavIcon }],
   },
   {
     label: 'CONTENT',
     items: [
-      { label: 'Content', href: '/content', icon: FileText },
-      { label: 'Blog', href: '/blog', icon: PenSquare },
-      { label: 'Media', href: '/media', icon: Image },
+      { label: 'Content', href: '/content', icon: FileNavIcon },
+      { label: 'Blog', href: '/blog', icon: PenNavIcon },
+      { label: 'Media', href: '/media', icon: ImageNavIcon },
     ],
   },
   {
     label: 'ENGAGEMENT',
     items: [
-      { label: 'Contacts', href: '/contacts', icon: Mail, badge: 'contacts' as const },
-      { label: 'Kids & Teens', href: '/kids', icon: Baby },
-      { label: 'Email', href: '/email', icon: Users },
-      { label: 'SMS', href: '/sms', icon: MessageSquare },
+      { label: 'Contacts', href: '/contacts', icon: UsersNavIcon },
+      { label: 'Enquiries', href: '/enquiries', icon: MailNavIcon, badge: 'contacts' as const },
+      { label: 'Kids & Teens', href: '/kids', icon: BabyNavIcon },
+      { label: 'Email', href: '/email', icon: UsersNavIcon },
+      { label: 'WhatsApp', href: '/sms', icon: ChatNavIcon },
+      { label: 'Reviews', href: '/reviews', icon: StarNavIcon },
     ],
   },
   {
     label: 'SYSTEM',
-    items: [{ label: 'Settings', href: '/settings', icon: Settings }],
+    items: [{ label: 'Settings', href: '/settings', icon: SettingsNavIcon }],
   },
 ]
 
@@ -92,7 +95,7 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail }: S
             aria-label="Close sidebar"
             className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-md text-white/25 hover:text-white/60 hover:bg-white/[0.06] transition-colors"
           >
-            <PanelLeftClose size={15} />
+            <PanelCloseNavIcon size={15} />
           </button>
         )}
         <div className="relative">
@@ -163,7 +166,7 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail }: S
           onClick={handleSignOut}
           className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-white/40 hover:text-white/75 hover:bg-white/[0.05] transition-colors"
         >
-          <LogOut size={15} className="flex-shrink-0" />
+          <LogOutNavIcon size={15} className="flex-shrink-0" />
           Sign out
         </button>
       </div>

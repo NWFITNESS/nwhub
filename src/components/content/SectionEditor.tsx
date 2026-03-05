@@ -245,6 +245,75 @@ function GenericArrayEditor({ content, onChange, fields }: {
   )
 }
 
+// Social Carousel section editor
+function SocialCarouselEditor({ content, onChange }: { content: Record<string, unknown>; onChange: (v: Record<string, unknown>) => void }) {
+  const s = content as { heading?: string; subtext?: string; ig_url?: string; speed?: number }
+  const items = (content.items as Array<{ image_url: string; permalink: string }>) ?? []
+
+  function updateItem(i: number, field: string, value: string) {
+    const next = items.map((item, idx) => (idx === i ? { ...item, [field]: value } : item))
+    onChange({ ...content, items: next })
+  }
+  function addItem() {
+    onChange({ ...content, items: [...items, { image_url: '', permalink: '' }] })
+  }
+  function removeItem(i: number) {
+    onChange({ ...content, items: items.filter((_, idx) => idx !== i) })
+  }
+
+  return (
+    <div className="space-y-4">
+      <Field label="Section Heading">
+        <Input value={s.heading ?? ''} onChange={(e) => onChange({ ...content, heading: e.target.value })} />
+      </Field>
+      <Field label="Subtext">
+        <Textarea value={s.subtext ?? ''} onChange={(e) => onChange({ ...content, subtext: e.target.value })} />
+      </Field>
+      <Field label="Instagram Profile URL">
+        <Input
+          value={s.ig_url ?? ''}
+          onChange={(e) => onChange({ ...content, ig_url: e.target.value })}
+          placeholder="https://www.instagram.com/yourhandle/"
+        />
+      </Field>
+      <Field label="Scroll Speed">
+        <div className="flex items-center gap-3 mt-1">
+          <span className="text-[10px] text-white/30 w-8">Fast</span>
+          <input
+            type="range"
+            min={20}
+            max={120}
+            step={5}
+            value={s.speed ?? 55}
+            onChange={(e) => onChange({ ...content, speed: Number(e.target.value) })}
+            className="flex-1 accent-[#967705]"
+          />
+          <span className="text-[10px] text-white/30 w-8 text-right">Slow</span>
+        </div>
+      </Field>
+      <div className="space-y-3">
+        {items.map((item, i) => (
+          <ArrayItemWrapper key={i} index={i} onRemove={() => removeItem(i)}>
+            <Field label="Image">
+              <ImageField value={item.image_url} onChange={(url) => updateItem(i, 'image_url', url)} />
+            </Field>
+            <Field label="Post URL" className="mt-3">
+              <Input
+                value={item.permalink}
+                onChange={(e) => updateItem(i, 'permalink', e.target.value)}
+                placeholder="https://www.instagram.com/p/..."
+              />
+            </Field>
+          </ArrayItemWrapper>
+        ))}
+        <Button variant="ghost" size="sm" onClick={addItem} type="button">
+          <Plus size={14} /> Add Photo
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>; onChange: (v: Record<string, unknown>) => void }) => React.ReactNode> = {
   hero: (p) => <HeroEditor {...p} />,
   faq: (p) => <FaqEditor {...p} />,
@@ -278,6 +347,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'image_url', label: 'Image URL' },
     ]} />
   ),
+  social_carousel: (p) => <SocialCarouselEditor {...p} />,
 }
 
 export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave, onContentChange, saveLabel = 'Save Section' }: SectionEditorProps) {

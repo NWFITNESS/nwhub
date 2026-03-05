@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { twilioClient, TWILIO_FROM } from '@/lib/twilio'
+import { twilioClient, WHATSAPP_FROM } from '@/lib/twilio'
 
 export async function POST(request: Request) {
   try {
@@ -35,8 +35,8 @@ export async function POST(request: Request) {
     const results = await Promise.allSettled(
       subscribers.map((sub) =>
         twilioClient.messages.create({
-          from: TWILIO_FROM,
-          to: sub.phone,
+          from: WHATSAPP_FROM,
+          to: `whatsapp:${sub.phone}`,
           body: message,
         })
       )

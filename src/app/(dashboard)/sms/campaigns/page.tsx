@@ -16,10 +16,10 @@ export default async function SmsCampaignsPage() {
 
   return (
     <>
-      <TopBar title="SMS Campaigns" />
+      <TopBar title="WhatsApp Campaigns" />
       <main className="p-6">
         <PageHeader
-          title="SMS Campaigns"
+          title="WhatsApp Campaigns"
           actions={<Link href="/sms/campaigns/new"><Button variant="primary" size="sm"><Plus size={14} /> New Campaign</Button></Link>}
         />
         <div className="overflow-x-auto rounded-xl border border-white/[0.08]">

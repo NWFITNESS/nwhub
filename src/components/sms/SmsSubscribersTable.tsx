@@ -8,10 +8,10 @@ import { Modal } from '@/components/ui/Modal'
 import { Input, Field } from '@/components/ui/Input'
 import { format } from 'date-fns'
 import { Plus } from 'lucide-react'
-import type { SmsSubscriber } from '@/lib/types'
+import type { WhatsAppSubscriber } from '@/lib/types'
 
 interface Props {
-  initialSubscribers: SmsSubscriber[]
+  initialSubscribers: WhatsAppSubscriber[]
 }
 
 export function SmsSubscribersTable({ initialSubscribers }: Props) {
@@ -33,7 +33,7 @@ export function SmsSubscribersTable({ initialSubscribers }: Props) {
     }).select().single()
     setAdding(false)
     if (error) { setAddError(error.message); return }
-    setSubscribers((prev) => [data as SmsSubscriber, ...prev])
+    setSubscribers((prev) => [data as WhatsAppSubscriber, ...prev])
     setAddOpen(false)
     setNewPhone('')
     setNewName('')
@@ -61,7 +61,7 @@ export function SmsSubscribersTable({ initialSubscribers }: Props) {
           </thead>
           <tbody>
             {subscribers.length === 0 ? (
-              <tr><td colSpan={5} className="px-4 py-12 text-center text-white/30">No SMS subscribers yet</td></tr>
+              <tr><td colSpan={5} className="px-4 py-12 text-center text-white/30">No WhatsApp subscribers yet</td></tr>
             ) : (
               subscribers.map((s) => (
                 <tr key={s.id} className="border-b border-white/[0.04] last:border-0">
@@ -81,7 +81,7 @@ export function SmsSubscribersTable({ initialSubscribers }: Props) {
         </table>
       </div>
 
-      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add SMS Subscriber" width="sm">
+      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add WhatsApp Subscriber" width="sm">
         <div className="space-y-4">
           <Field label="Phone Number * (E.164 format)">
             <Input value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="+447700000000" />

@@ -59,6 +59,19 @@ export interface ContactEnquiry {
   created_at: string
 }
 
+export interface Contact {
+  id: string
+  first_name: string
+  last_name: string
+  email: string | null
+  phone: string | null         // UK E.164
+  groups: string[]
+  source: 'manual' | 'import' | 'squarespace' | 'wodboard'
+  notes: string | null
+  status: 'active' | 'inactive'
+  created_at: string
+}
+
 export interface KidsRegistration {
   id: string
   parent: {
@@ -115,7 +128,7 @@ export interface EmailCampaign {
   created_at: string
 }
 
-export interface SmsSubscriber {
+export interface WhatsAppSubscriber {
   id: string
   phone: string
   first_name: string
@@ -124,7 +137,31 @@ export interface SmsSubscriber {
   subscribed_at: string
 }
 
-export interface SmsCampaign {
+export interface ReviewSettings {
+  enabled: boolean
+  google_place_id: string
+  review_link: string
+  first_content_sid: string
+  reminder_content_sid: string
+  days_after_joining: number
+  reminder_interval_days: number
+  max_messages: number
+  last_known_review_count: number
+}
+
+export interface ReviewRequest {
+  id: string
+  contact_id: string
+  contact?: { first_name: string; last_name: string; phone: string | null }
+  phone_number: string
+  messages_sent: number
+  last_sent_at: string | null
+  review_detected: boolean
+  opted_out: boolean
+  created_at: string
+}
+
+export interface WhatsAppCampaign {
   id: string
   name: string
   message: string
