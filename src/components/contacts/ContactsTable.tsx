@@ -5,10 +5,20 @@ import { createClient } from '@/lib/supabase/client'
 import { Badge, statusToBadge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
+import { ColumnToggle } from '@/components/ui/ColumnToggle'
+import { useColumnVisibility } from '@/lib/use-column-visibility'
 import { format } from 'date-fns'
 import type { ContactEnquiry } from '@/lib/types'
 
 const STATUS_FILTERS = ['all', 'new', 'read', 'replied'] as const
+
+const COLUMNS = [
+  { key: 'name', label: 'Name' },
+  { key: 'email', label: 'Email' },
+  { key: 'type', label: 'Type' },
+  { key: 'status', label: 'Status' },
+  { key: 'date', label: 'Date' },
+]
 
 interface Props {
   initialEnquiries: ContactEnquiry[]
@@ -20,8 +30,11 @@ export function ContactsTable({ initialEnquiries }: Props) {
   const [filter, setFilter] = useState<typeof STATUS_FILTERS[number]>('all')
   const [selected, setSelected] = useState<ContactEnquiry | null>(null)
   const [updating, setUpdating] = useState<string | null>(null)
+  const { visible, toggle } = useColumnVisibility('contacts', COLUMNS.map((c) => c.key))
 
   const filtered = filter === 'all' ? enquiries : enquiries.filter((e) => e.status === filter)
+  const visibleCols = COLUMNS.filter((c) => visible.has(c.key))
+  const colSpan = visibleCols.length + 1 // +1 for actions
 
   async function updateStatus(id: string, status: ContactEnquiry['status']) {
     setUpdating(id)
@@ -33,39 +46,43 @@ export function ContactsTable({ initialEnquiries }: Props) {
 
   return (
     <div>
-      {/* Status filter tabs */}
-      <div className="flex items-center gap-1 mb-4">
-        {STATUS_FILTERS.map((s) => {
-          const count = s === 'all' ? enquiries.length : enquiries.filter((e) => e.status === s).length
-          return (
-            <button
-              key={s}
-              onClick={() => setFilter(s)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${
-                filter === s
-                  ? 'bg-[#967705]/20 text-[#c9a70a]'
-                  : 'text-white/40 hover:text-white hover:bg-white/[0.05]'
-              }`}
-            >
-              {s} <span className="ml-1 opacity-60">({count})</span>
-            </button>
-          )
-        })}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-1">
+          {STATUS_FILTERS.map((s) => {
+            const count = s === 'all' ? enquiries.length : enquiries.filter((e) => e.status === s).length
+            return (
+              <button
+                key={s}
+                onClick={() => setFilter(s)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${
+                  filter === s
+                    ? 'bg-[#967705]/20 text-[#c9a70a]'
+                    : 'text-white/40 hover:text-white hover:bg-white/[0.05]'
+                }`}
+              >
+                {s} <span className="ml-1 opacity-60">({count})</span>
+              </button>
+            )
+          })}
+        </div>
+        <ColumnToggle columns={COLUMNS} visible={visible} onToggle={toggle} />
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto rounded-xl border border-white/[0.08]">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-white/[0.08]">
-              {['Name', 'Email', 'Type', 'Status', 'Date', ''].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">{h}</th>
+              {visibleCols.map((col) => (
+                <th key={col.key} className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">
+                  {col.label}
+                </th>
               ))}
+              <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider" />
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={6} className="px-4 py-12 text-center text-white/30">No enquiries</td></tr>
+              <tr><td colSpan={colSpan} className="px-4 py-12 text-center text-white/30">No enquiries</td></tr>
             ) : (
               filtered.map((e) => (
                 <tr
@@ -73,11 +90,11 @@ export function ContactsTable({ initialEnquiries }: Props) {
                   className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors cursor-pointer"
                   onClick={() => setSelected(e)}
                 >
-                  <td className="px-4 py-3 font-medium text-white">{e.name}</td>
-                  <td className="px-4 py-3 text-white/60">{e.email}</td>
-                  <td className="px-4 py-3 text-white/50">{e.enquiry_type}</td>
-                  <td className="px-4 py-3"><Badge variant={statusToBadge(e.status)}>{e.status}</Badge></td>
-                  <td className="px-4 py-3 text-white/40 text-xs">{format(new Date(e.created_at), 'dd MMM yyyy')}</td>
+                  {visible.has('name') && <td className="px-4 py-3 font-medium text-white">{e.name}</td>}
+                  {visible.has('email') && <td className="px-4 py-3 text-white/60">{e.email}</td>}
+                  {visible.has('type') && <td className="px-4 py-3 text-white/50">{e.enquiry_type}</td>}
+                  {visible.has('status') && <td className="px-4 py-3"><Badge variant={statusToBadge(e.status)}>{e.status}</Badge></td>}
+                  {visible.has('date') && <td className="px-4 py-3 text-white/40 text-xs">{format(new Date(e.created_at), 'dd MMM yyyy')}</td>}
                   <td className="px-4 py-3 text-right">
                     <Button variant="ghost" size="sm" onClick={(ev) => { ev.stopPropagation(); setSelected(e) }}>
                       View
@@ -90,7 +107,6 @@ export function ContactsTable({ initialEnquiries }: Props) {
         </table>
       </div>
 
-      {/* Detail modal */}
       {selected && (
         <Modal open={!!selected} onClose={() => setSelected(null)} title={`Enquiry — ${selected.name}`} width="lg">
           <div className="space-y-4">

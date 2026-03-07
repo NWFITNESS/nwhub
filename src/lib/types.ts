@@ -165,6 +165,7 @@ export interface ChatSession {
 
 export interface ReviewSettings {
   enabled: boolean
+  channel: 'whatsapp' | 'sms'
   google_place_id: string
   review_link: string
   first_content_sid: string

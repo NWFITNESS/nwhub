@@ -4,8 +4,18 @@ import { useState } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { ColumnToggle } from '@/components/ui/ColumnToggle'
+import { useColumnVisibility } from '@/lib/use-column-visibility'
 import { format } from 'date-fns'
 import type { KidsRegistration } from '@/lib/types'
+
+const COLUMNS = [
+  { key: 'parent', label: 'Parent' },
+  { key: 'email', label: 'Email' },
+  { key: 'children', label: 'Children' },
+  { key: 'status', label: 'Status' },
+  { key: 'date', label: 'Date' },
+]
 
 interface Props {
   initialRegistrations: KidsRegistration[]
@@ -13,21 +23,32 @@ interface Props {
 
 export function KidsTable({ initialRegistrations }: Props) {
   const [selected, setSelected] = useState<KidsRegistration | null>(null)
+  const { visible, toggle } = useColumnVisibility('kids', COLUMNS.map((c) => c.key))
+
+  const visibleCols = COLUMNS.filter((c) => visible.has(c.key))
+  const colSpan = visibleCols.length + 1
 
   return (
     <div>
+      <div className="flex justify-end mb-4">
+        <ColumnToggle columns={COLUMNS} visible={visible} onToggle={toggle} />
+      </div>
+
       <div className="overflow-x-auto rounded-xl border border-white/[0.08]">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-white/[0.08]">
-              {['Parent', 'Email', 'Children', 'Status', 'Date', ''].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">{h}</th>
+              {visibleCols.map((col) => (
+                <th key={col.key} className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">
+                  {col.label}
+                </th>
               ))}
+              <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider" />
             </tr>
           </thead>
           <tbody>
             {initialRegistrations.length === 0 ? (
-              <tr><td colSpan={6} className="px-4 py-12 text-center text-white/30">No registrations yet</td></tr>
+              <tr><td colSpan={colSpan} className="px-4 py-12 text-center text-white/30">No registrations yet</td></tr>
             ) : (
               initialRegistrations.map((reg) => (
                 <tr
@@ -35,13 +56,15 @@ export function KidsTable({ initialRegistrations }: Props) {
                   className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors cursor-pointer"
                   onClick={() => setSelected(reg)}
                 >
-                  <td className="px-4 py-3 font-medium text-white">{reg.parent.name}</td>
-                  <td className="px-4 py-3 text-white/60">{reg.parent.email}</td>
-                  <td className="px-4 py-3 text-white/60">
-                    {Array.isArray(reg.children) ? reg.children.length : 0} child{Array.isArray(reg.children) && reg.children.length !== 1 ? 'ren' : ''}
-                  </td>
-                  <td className="px-4 py-3"><Badge variant="active">{reg.status}</Badge></td>
-                  <td className="px-4 py-3 text-white/40 text-xs">{format(new Date(reg.created_at), 'dd MMM yyyy')}</td>
+                  {visible.has('parent') && <td className="px-4 py-3 font-medium text-white">{reg.parent.name}</td>}
+                  {visible.has('email') && <td className="px-4 py-3 text-white/60">{reg.parent.email}</td>}
+                  {visible.has('children') && (
+                    <td className="px-4 py-3 text-white/60">
+                      {Array.isArray(reg.children) ? reg.children.length : 0} child{Array.isArray(reg.children) && reg.children.length !== 1 ? 'ren' : ''}
+                    </td>
+                  )}
+                  {visible.has('status') && <td className="px-4 py-3"><Badge variant="active">{reg.status}</Badge></td>}
+                  {visible.has('date') && <td className="px-4 py-3 text-white/40 text-xs">{format(new Date(reg.created_at), 'dd MMM yyyy')}</td>}
                   <td className="px-4 py-3 text-right">
                     <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setSelected(reg) }}>View</Button>
                   </td>

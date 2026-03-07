@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { ColumnToggle } from '@/components/ui/ColumnToggle'
+import { useColumnVisibility } from '@/lib/use-column-visibility'
 import { format } from 'date-fns'
 import {
   ArrowUpDown, ArrowUp, ArrowDown, Search, Plus, Globe, PenLine, Eye,
@@ -13,6 +15,12 @@ import type { BlogPost, BlogCategory } from '@/lib/types'
 
 type SortKey = 'title' | 'status' | 'category' | 'published_at' | 'created_at'
 type SortDir = 'asc' | 'desc'
+
+const COLUMNS = [
+  { key: 'status', label: 'Status' },
+  { key: 'category', label: 'Category' },
+  { key: 'published', label: 'Published' },
+]
 
 interface BlogListManagerProps {
   initialPosts: (BlogPost & { category?: BlogCategory | null })[]
@@ -30,6 +38,16 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
   const [sortKey, setSortKey] = useState<SortKey>('created_at')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [toggling, setToggling] = useState<string | null>(null)
+  const { visible, toggle } = useColumnVisibility('blog', COLUMNS.map((c) => c.key))
+
+  // Build grid template: Title (1fr) + visible optional cols (auto each) + Actions (auto)
+  const gridTemplate = [
+    '1fr',
+    visible.has('status') ? 'auto' : null,
+    visible.has('category') ? 'auto' : null,
+    visible.has('published') ? 'auto' : null,
+    'auto',
+  ].filter(Boolean).join(' ')
 
   function handleSort(key: SortKey) {
     if (sortKey === key) {
@@ -44,7 +62,6 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
     const newStatus = post.status === 'published' ? 'draft' : 'published'
     setToggling(post.id)
 
-    // Optimistic update
     setPosts((prev) =>
       prev.map((p) =>
         p.id === post.id
@@ -61,7 +78,6 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
       })
 
       if (!res.ok) {
-        // Revert on error
         setPosts((prev) =>
           prev.map((p) => (p.id === post.id ? post : p))
         )
@@ -184,7 +200,9 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
           </select>
         )}
 
-        <Link href="/blog/manage/new" className="ml-auto">
+        <ColumnToggle columns={COLUMNS} visible={visible} onToggle={toggle} />
+
+        <Link href="/blog/manage/new">
           <Button variant="primary" size="sm">
             <Plus size={14} /> New Post
           </Button>
@@ -194,31 +212,40 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
       {/* Table */}
       <div className="rounded-xl border border-white/[0.08] overflow-hidden">
         {/* Header */}
-        <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-5 py-3 bg-[#161616] border-b border-white/[0.06]">
+        <div
+          className="grid gap-4 px-5 py-3 bg-[#161616] border-b border-white/[0.06]"
+          style={{ gridTemplateColumns: gridTemplate }}
+        >
           <button
             onClick={() => handleSort('title')}
             className="flex items-center gap-1.5 text-xs font-semibold text-white/40 uppercase tracking-widest hover:text-white/70 transition-colors text-left"
           >
             Title <SortIcon col="title" />
           </button>
-          <button
-            onClick={() => handleSort('status')}
-            className="flex items-center gap-1.5 text-xs font-semibold text-white/40 uppercase tracking-widest hover:text-white/70 transition-colors"
-          >
-            Status <SortIcon col="status" />
-          </button>
-          <button
-            onClick={() => handleSort('category')}
-            className="flex items-center gap-1.5 text-xs font-semibold text-white/40 uppercase tracking-widest hover:text-white/70 transition-colors"
-          >
-            Category <SortIcon col="category" />
-          </button>
-          <button
-            onClick={() => handleSort('published_at')}
-            className="flex items-center gap-1.5 text-xs font-semibold text-white/40 uppercase tracking-widest hover:text-white/70 transition-colors"
-          >
-            Published <SortIcon col="published_at" />
-          </button>
+          {visible.has('status') && (
+            <button
+              onClick={() => handleSort('status')}
+              className="flex items-center gap-1.5 text-xs font-semibold text-white/40 uppercase tracking-widest hover:text-white/70 transition-colors"
+            >
+              Status <SortIcon col="status" />
+            </button>
+          )}
+          {visible.has('category') && (
+            <button
+              onClick={() => handleSort('category')}
+              className="flex items-center gap-1.5 text-xs font-semibold text-white/40 uppercase tracking-widest hover:text-white/70 transition-colors"
+            >
+              Category <SortIcon col="category" />
+            </button>
+          )}
+          {visible.has('published') && (
+            <button
+              onClick={() => handleSort('published_at')}
+              className="flex items-center gap-1.5 text-xs font-semibold text-white/40 uppercase tracking-widest hover:text-white/70 transition-colors"
+            >
+              Published <SortIcon col="published_at" />
+            </button>
+          )}
           <span className="text-xs font-semibold text-white/40 uppercase tracking-widest">Actions</span>
         </div>
 
@@ -233,9 +260,10 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
           filtered.map((post, i) => (
             <div
               key={post.id}
-              className={`grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 items-center px-5 py-4 transition-colors hover:bg-white/[0.02] ${
+              className={`grid gap-4 items-center px-5 py-4 transition-colors hover:bg-white/[0.02] ${
                 i < filtered.length - 1 ? 'border-b border-white/[0.04]' : ''
               }`}
+              style={{ gridTemplateColumns: gridTemplate }}
             >
               {/* Title + slug */}
               <div className="min-w-0">
@@ -251,38 +279,44 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
               </div>
 
               {/* Status + quick toggle */}
-              <div className="flex items-center gap-2">
-                <Badge variant={post.status}>{post.status}</Badge>
-                <button
-                  onClick={() => handleToggleStatus(post)}
-                  disabled={toggling === post.id}
-                  title={post.status === 'published' ? 'Unpublish' : 'Publish'}
-                  className={`w-8 h-5 rounded-full relative transition-colors ${
-                    post.status === 'published'
-                      ? 'bg-green-500/70 hover:bg-red-500/50'
-                      : 'bg-white/10 hover:bg-green-500/40'
-                  } ${toggling === post.id ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
-                >
-                  <span
-                    className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                      post.status === 'published' ? 'translate-x-3' : 'translate-x-0.5'
-                    }`}
-                  />
-                </button>
-              </div>
+              {visible.has('status') && (
+                <div className="flex items-center gap-2">
+                  <Badge variant={post.status}>{post.status}</Badge>
+                  <button
+                    onClick={() => handleToggleStatus(post)}
+                    disabled={toggling === post.id}
+                    title={post.status === 'published' ? 'Unpublish' : 'Publish'}
+                    className={`w-8 h-5 rounded-full relative transition-colors ${
+                      post.status === 'published'
+                        ? 'bg-green-500/70 hover:bg-red-500/50'
+                        : 'bg-white/10 hover:bg-green-500/40'
+                    } ${toggling === post.id ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
+                  >
+                    <span
+                      className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
+                        post.status === 'published' ? 'translate-x-3' : 'translate-x-0.5'
+                      }`}
+                    />
+                  </button>
+                </div>
+              )}
 
               {/* Category */}
-              <span className="text-sm text-white/40">
-                {post.category?.name ?? <span className="text-white/20">—</span>}
-              </span>
+              {visible.has('category') && (
+                <span className="text-sm text-white/40">
+                  {post.category?.name ?? <span className="text-white/20">—</span>}
+                </span>
+              )}
 
               {/* Date */}
-              <span className="text-xs text-white/30 whitespace-nowrap">
-                {post.published_at
-                  ? format(new Date(post.published_at), 'dd MMM yyyy')
-                  : <span className="text-white/20">—</span>
-                }
-              </span>
+              {visible.has('published') && (
+                <span className="text-xs text-white/30 whitespace-nowrap">
+                  {post.published_at
+                    ? format(new Date(post.published_at), 'dd MMM yyyy')
+                    : <span className="text-white/20">—</span>
+                  }
+                </span>
+              )}
 
               {/* Actions */}
               <div className="flex items-center gap-1">
