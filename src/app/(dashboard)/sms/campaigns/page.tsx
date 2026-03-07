@@ -17,7 +17,7 @@ export default async function SmsCampaignsPage() {
   return (
     <>
       <TopBar title="WhatsApp Campaigns" />
-      <main className="p-6">
+      <main className="p-10">
         <PageHeader
           title="WhatsApp Campaigns"
           actions={<Link href="/sms/campaigns/new"><Button variant="primary" size="sm"><Plus size={14} /> New Campaign</Button></Link>}

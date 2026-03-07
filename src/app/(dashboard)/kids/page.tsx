@@ -13,7 +13,7 @@ export default async function KidsPage() {
   return (
     <>
       <TopBar title="Kids & Teens Registrations" />
-      <main className="p-6">
+      <main className="p-10">
         <PageHeader
           title="Kids & Teens Registrations"
           description={`${registrations?.length ?? 0} registrations`}

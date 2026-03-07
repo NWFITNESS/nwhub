@@ -5,7 +5,7 @@ export default function NewEmailCampaignPage() {
   return (
     <>
       <TopBar title="New Email Campaign" />
-      <main className="p-6">
+      <main className="p-10">
         <CampaignBuilder />
       </main>
     </>

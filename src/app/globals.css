@@ -1,4 +1,20 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@theme inline {
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
 
 :root {
   --bg-base: #0a0a0a;
@@ -16,7 +32,7 @@
   --info: #3b82f6;
   --gold-glow: 0 0 24px rgba(150, 119, 5, 0.35);
   --card-inset: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  --sidebar-w: 18rem;
+  --sidebar-w: 20rem;
 }
 
 * {
@@ -25,9 +41,12 @@
   padding: 0;
 }
 
-html,
-body {
+html {
   background-color: var(--bg-base);
+}
+
+body {
+  background-color: transparent;
   color: var(--text);
   font-family: var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -61,18 +80,19 @@ body {
 
 /* Tiptap editor */
 .tiptap-editor .ProseMirror {
-  min-height: var(--min-height, 300px);
+  min-height: var(--min-height, 500px);
   padding: 1rem 1.25rem;
   background: var(--bg-surface);
   border-radius: 0 0 0.5rem 0.5rem;
   outline: none;
   color: var(--text);
-  line-height: 1.75;
-  font-size: 0.9375rem;
+  line-height: 1.85;
+  font-size: 1.0625rem;
+  font-family: var(--font-league-spartan), 'League Spartan', sans-serif;
 }
-.tiptap-editor .ProseMirror h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.75rem; }
-.tiptap-editor .ProseMirror h2 { font-size: 1.375rem; font-weight: 600; margin-bottom: 0.625rem; }
-.tiptap-editor .ProseMirror h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
+.tiptap-editor .ProseMirror h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.75rem; }
+.tiptap-editor .ProseMirror h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.625rem; }
+.tiptap-editor .ProseMirror h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
 .tiptap-editor .ProseMirror p { margin-bottom: 0.75rem; }
 .tiptap-editor .ProseMirror ul,
 .tiptap-editor .ProseMirror ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
@@ -119,4 +139,108 @@ body {
 .tiptap-editor .ProseMirror pre code {
   background: none;
   padding: 0;
+}
+
+/* ─── Public post body ─────────────────────────────────────── */
+.post-content {
+  color: var(--text);
+  line-height: 1.85;
+  font-size: 1.0625rem;
+  font-family: var(--font-league-spartan), 'League Spartan', sans-serif;
+}
+.post-content h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.75rem; }
+.post-content h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.625rem; margin-top: 1.5rem; }
+.post-content h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; margin-top: 1.25rem; }
+.post-content p { margin-bottom: 0.75rem; }
+.post-content ul,
+.post-content ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+.post-content li { margin-bottom: 0.25rem; }
+.post-content strong { font-weight: 700; }
+.post-content em { font-style: italic; }
+.post-content a { color: var(--gold-bright); text-decoration: underline; }
+.post-content blockquote {
+  border-left: 3px solid var(--gold);
+  padding-left: 1rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+.post-content code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-family: monospace;
+  font-size: 0.875em;
+}
+.post-content img { max-width: 100%; border-radius: 0.375rem; margin: 0.5rem 0; }
+.post-content hr {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  margin: 1.5rem 0;
+}
+.post-content pre {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 0.375rem;
+  padding: 0.75rem 1rem;
+  font-family: monospace;
+  font-size: 0.875em;
+  overflow-x: auto;
+  margin-bottom: 0.75rem;
+}
+.post-content pre code { background: none; padding: 0; }
+
+/* ─── Two-column layout block ──────────────────────────────── */
+.post-content .layout-col,
+.tiptap-editor .ProseMirror .layout-col {
+  display: grid;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  align-items: center;
+}
+.post-content .layout-col[data-layout="50/50"],
+.tiptap-editor .ProseMirror .layout-col[data-layout="50/50"] { grid-template-columns: 1fr 1fr; }
+.post-content .layout-col[data-layout="60/40"],
+.tiptap-editor .ProseMirror .layout-col[data-layout="60/40"] { grid-template-columns: 3fr 2fr; }
+.post-content .layout-col[data-layout="40/60"],
+.tiptap-editor .ProseMirror .layout-col[data-layout="40/60"] { grid-template-columns: 2fr 3fr; }
+.post-content .layout-col[data-img-pos="left"] .layout-col__text,
+.tiptap-editor .ProseMirror .layout-col[data-img-pos="left"] .layout-col__text { order: 2; }
+.post-content .layout-col[data-img-pos="left"] .layout-col__image,
+.tiptap-editor .ProseMirror .layout-col[data-img-pos="left"] .layout-col__image { order: 1; }
+.post-content .layout-col__image img,
+.tiptap-editor .ProseMirror .layout-col__image img { width: 100%; border-radius: 0.5rem; object-fit: cover; }
+
+/* ─── Image overlay block ──────────────────────────────────── */
+.post-content .layout-overlay,
+.tiptap-editor .ProseMirror .layout-overlay {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+.post-content .layout-overlay[data-opacity="light"] .layout-overlay__content,
+.tiptap-editor .ProseMirror .layout-overlay[data-opacity="light"] .layout-overlay__content {
+  background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.5));
+}
+.post-content .layout-overlay[data-opacity="medium"] .layout-overlay__content,
+.tiptap-editor .ProseMirror .layout-overlay[data-opacity="medium"] .layout-overlay__content {
+  background: linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.7));
+}
+.post-content .layout-overlay[data-opacity="dark"] .layout-overlay__content,
+.tiptap-editor .ProseMirror .layout-overlay[data-opacity="dark"] .layout-overlay__content {
+  background: linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(0,0,0,0.85));
+}
+.post-content .layout-overlay__content,
+.tiptap-editor .ProseMirror .layout-overlay__content {
+  padding: 3rem 2.5rem;
+  position: relative;
+  color: #fff;
+}
+
+/* ─── Responsive ───────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .post-content .layout-col,
+  .tiptap-editor .ProseMirror .layout-col { grid-template-columns: 1fr !important; }
 }

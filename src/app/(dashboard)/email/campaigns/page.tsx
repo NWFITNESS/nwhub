@@ -17,7 +17,7 @@ export default async function EmailCampaignsPage() {
   return (
     <>
       <TopBar title="Email Campaigns" />
-      <main className="p-6">
+      <main className="p-10">
         <PageHeader
           title="Email Campaigns"
           actions={

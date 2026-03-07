@@ -13,7 +13,7 @@ export default async function EnquiriesPage() {
   return (
     <>
       <TopBar title="Enquiries" />
-      <main className="p-6">
+      <main className="p-10">
         <PageHeader title="Contact Enquiries" description={`${enquiries?.length ?? 0} enquiries`} />
         <ContactsTable initialEnquiries={enquiries ?? []} />
       </main>

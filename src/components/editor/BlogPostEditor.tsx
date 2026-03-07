@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input, Textarea, Field, Select } from '@/components/ui/Input'
 import { RichTextEditor } from './RichTextEditor'
 import {
-  Save, Trash2, Globe, ImagePlus, X, Loader2, ChevronDown, ChevronUp,
+  Save, Trash2, Globe, ImagePlus, X, Loader2, ChevronDown, ChevronUp, Eye,
 } from 'lucide-react'
 import { ConfirmModal } from '@/components/ui/Modal'
 import type { BlogPost, BlogCategory } from '@/lib/types'
@@ -20,6 +20,258 @@ interface Props {
   categories: BlogCategory[]
 }
 
+interface PreviewModalProps {
+  open: boolean
+  onClose: () => void
+  title: string
+  content: string
+  featuredImageUrl: string
+  categoryName?: string
+  excerpt: string
+  author: string
+}
+
+function estimateReadTime(html: string): number {
+  const text = html.replace(/<[^>]+>/g, ' ')
+  const words = text.trim().split(/\s+/).filter(Boolean).length
+  return Math.max(1, Math.round(words / 200))
+}
+
+// ─── Phone frame component ─────────────────────────────────────────────────
+function PhoneFrame({ children }: { children: React.ReactNode }) {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setVisible(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
+
+  return (
+    <div
+      style={{
+        transition: 'opacity 500ms ease, transform 500ms ease',
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(16px)',
+      }}
+    >
+      {/* Phone shell */}
+      <div
+        style={{
+          width: 393,
+          border: '11px solid #1c1c1e',
+          borderRadius: 54,
+          boxShadow:
+            '0 0 0 1px rgba(255,255,255,0.08), inset 0 0 0 1px rgba(255,255,255,0.05), 0 32px 80px rgba(0,0,0,0.8)',
+          background: '#0a0a0a',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Volume buttons (left) */}
+        <div style={{
+          position: 'absolute', left: -14, top: 120,
+          width: 4, height: 32, background: '#2a2a2c', borderRadius: '2px 0 0 2px',
+        }} />
+        <div style={{
+          position: 'absolute', left: -14, top: 164,
+          width: 4, height: 32, background: '#2a2a2c', borderRadius: '2px 0 0 2px',
+        }} />
+        {/* Power button (right) */}
+        <div style={{
+          position: 'absolute', right: -14, top: 140,
+          width: 4, height: 64, background: '#2a2a2c', borderRadius: '0 2px 2px 0',
+        }} />
+
+        {/* Screen */}
+        <div
+          style={{
+            height: 844,
+            overflow: 'hidden',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            borderRadius: 44,
+            background: '#0a0a0a',
+          }}
+        >
+          {/* Status bar + Dynamic Island */}
+          <div style={{ flexShrink: 0, paddingTop: 16, paddingBottom: 8, position: 'relative', zIndex: 10 }}>
+            {/* Dynamic Island */}
+            <div style={{
+              margin: '0 auto',
+              width: 126, height: 37,
+              background: '#000',
+              borderRadius: 999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }} />
+          </div>
+
+          {/* Scrollable content */}
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            {children}
+          </div>
+
+          {/* Home indicator */}
+          <div style={{
+            flexShrink: 0,
+            height: 34,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingBottom: 8,
+          }}>
+            <div style={{
+              width: 134, height: 5,
+              background: 'rgba(255,255,255,0.3)',
+              borderRadius: 999,
+            }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Post content (shared between desktop + mobile) ────────────────────────
+function PostContent({
+  title,
+  content,
+  featuredImageUrl,
+  categoryName,
+  excerpt,
+  author,
+  mobile,
+}: {
+  title: string
+  content: string
+  featuredImageUrl: string
+  categoryName?: string
+  excerpt: string
+  author: string
+  mobile?: boolean
+}) {
+  const readTime = estimateReadTime(content)
+  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+
+  return (
+    <div className="bg-[#0a0a0a] text-white min-h-full">
+      {/* Hero */}
+      <div className="relative w-full" style={{ aspectRatio: mobile ? '9/10' : '21/9' }}>
+        {featuredImageUrl ? (
+          <img src={featuredImageUrl} alt={title} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-[#967705]/20 to-[#0a0a0a]" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 px-6 pb-8">
+          <h1 className={`font-bold text-white leading-tight drop-shadow-lg ${mobile ? 'text-2xl' : 'text-4xl md:text-5xl'}`}>
+            {title || 'Untitled Post'}
+          </h1>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className={`mx-auto px-6 py-10 ${mobile ? '' : 'max-w-3xl'}`}>
+        {/* Meta row */}
+        <div className="flex flex-wrap items-center gap-3 mb-6">
+          {categoryName && (
+            <span className="text-xs font-semibold uppercase tracking-widest text-[#c9a70a] border border-[#967705]/40 px-2.5 py-1 rounded-full">
+              {categoryName}
+            </span>
+          )}
+          {author && (
+            <>
+              <span className="text-sm text-white/40">By {author}</span>
+              <span className="text-white/20">·</span>
+            </>
+          )}
+          <span className="text-sm text-white/40">{today}</span>
+          <span className="text-white/20">·</span>
+          <span className="text-sm text-white/40">{readTime} min read</span>
+        </div>
+
+        {/* Excerpt */}
+        {excerpt && (
+          <blockquote className="border-l-2 border-[#967705] pl-5 mb-8">
+            <p className="text-lg text-white/60 leading-relaxed italic">{excerpt}</p>
+          </blockquote>
+        )}
+
+        {/* Body HTML */}
+        <div className="post-content" dangerouslySetInnerHTML={{ __html: content }} />
+      </div>
+    </div>
+  )
+}
+
+// ─── Preview modal ─────────────────────────────────────────────────────────
+function PreviewModal({ open, onClose, title, content, featuredImageUrl, categoryName, excerpt, author }: PreviewModalProps) {
+  const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop')
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [open, onClose])
+
+  if (!open) return null
+
+  const postProps = { title, content, featuredImageUrl, categoryName, excerpt, author }
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col bg-[#050505]">
+      {/* Top bar */}
+      <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-3 bg-[#0a0a0a]/95 backdrop-blur border-b border-white/10 shrink-0">
+        <div className="flex items-center gap-4">
+          <span className="text-[10px] font-semibold text-[#c9a70a] uppercase tracking-widest">
+            PREVIEW — this is how your post looks on the site
+          </span>
+          <div className="flex items-center rounded-md border border-white/10 overflow-hidden">
+            {(['desktop', 'mobile'] as const).map((d) => (
+              <button
+                key={d}
+                type="button"
+                onClick={() => setDevice(d)}
+                className={`px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
+                  device === d
+                    ? 'bg-[#967705]/20 text-[#c9a70a]'
+                    : 'text-white/40 hover:text-white hover:bg-white/[0.04]'
+                }`}
+              >
+                {d}
+              </button>
+            ))}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex items-center gap-1.5 text-sm text-white/50 hover:text-white transition-colors"
+        >
+          <X size={15} /> Close
+        </button>
+      </div>
+
+      {/* Preview area */}
+      {device === 'desktop' ? (
+        <div className="flex-1 overflow-y-auto">
+          <PostContent {...postProps} mobile={false} />
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto flex items-start justify-center py-8 px-4">
+          <PhoneFrame>
+            <PostContent {...postProps} mobile={true} />
+          </PhoneFrame>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Main editor ───────────────────────────────────────────────────────────
 export function BlogPostEditor({ initialPost, categories }: Props) {
   const router = useRouter()
 
@@ -30,6 +282,7 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
   const [content, setContent] = useState(initialPost?.content ?? '')
   const [categoryId, setCategoryId] = useState(initialPost?.category_id ?? '')
   const [tags, setTags] = useState((initialPost?.tags ?? []).join(', '))
+  const [author, setAuthor] = useState(initialPost?.author ?? '')
 
   // Featured image
   const [featuredImageUrl, setFeaturedImageUrl] = useState(initialPost?.featured_image_url ?? '')
@@ -46,10 +299,10 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState('')
+  const [previewOpen, setPreviewOpen] = useState(false)
 
   function handleTitleChange(value: string) {
     setTitle(value)
-    // Auto-slug only on new posts before user edits slug
     if (!initialPost) setSlug(slugify(value))
   }
 
@@ -62,6 +315,7 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
       featured_image_url: featuredImageUrl.trim() || null,
       category_id: categoryId || null,
       tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
+      author: author.trim() || null,
       status,
       seo_title: seoTitle.trim() || null,
       seo_description: seoDescription.trim() || null,
@@ -99,7 +353,7 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
       return
     }
 
-    router.push('/blog')
+    router.push('/blog/manage')
     router.refresh()
   }
 
@@ -108,7 +362,7 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
     await fetch(`/api/blog/${initialPost!.id}`, { method: 'DELETE' })
     setDeleting(false)
     setDeleteOpen(false)
-    router.push('/blog')
+    router.push('/blog/manage')
     router.refresh()
   }
 
@@ -131,27 +385,40 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
 
   const currentStatus = initialPost?.status ?? 'draft'
   const isPublished = currentStatus === 'published'
+  const categoryName = categories.find((c) => c.id === categoryId)?.name
 
   return (
-    <div className="max-w-5xl mx-auto pb-16">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h2 className="text-xl font-semibold text-white">
-            {initialPost ? 'Edit Post' : 'New Post'}
-          </h2>
+    <div className="max-w-none pb-16">
+      {/* Sticky top action bar */}
+      <div className="sticky top-0 z-20 bg-[#0a0a0a]/95 backdrop-blur border-b border-white/[0.07] -mx-6 px-6 py-3 mb-6 flex items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => handleTitleChange(e.target.value)}
+            placeholder="Post title…"
+            className="w-full bg-transparent text-lg font-semibold text-white placeholder-white/20 outline-none border-none"
+          />
           {initialPost && (
-            <p className="text-sm text-white/30 mt-0.5">
+            <p className="text-xs text-white/25 mt-0.5">
               {isPublished ? 'Published' : 'Draft'} · Last saved {new Date(initialPost.updated_at).toLocaleDateString()}
             </p>
           )}
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-2 shrink-0">
           {initialPost && (
             <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
               <Trash2 size={14} /> Delete
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setPreviewOpen(true)}
+          >
+            <Eye size={14} /> Preview
+          </Button>
           <Button
             variant="secondary"
             size="sm"
@@ -179,18 +446,9 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-6">
-        {/* Main content column */}
-        <div className="col-span-2 space-y-5">
-          <Field label="Title">
-            <Input
-              value={title}
-              onChange={(e) => handleTitleChange(e.target.value)}
-              placeholder="Post title"
-              className="text-lg font-medium"
-            />
-          </Field>
-
+      <div className="flex gap-6 items-start">
+        {/* Main editor column */}
+        <div className="flex-1 min-w-0 space-y-5">
           <Field label="Slug">
             <div className="flex items-center gap-2">
               <span className="text-white/30 text-sm shrink-0">/blog/</span>
@@ -218,7 +476,7 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
               content={content}
               onChange={setContent}
               placeholder="Write your post…"
-              minHeight={400}
+              minHeight={500}
             />
           </div>
 
@@ -260,7 +518,7 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
                     <p className="text-[#8ab4f8] text-sm font-medium leading-tight truncate">
                       {seoTitle || title}
                     </p>
-                    <p className="text-[#34a853] text-xs mt-0.5">nwhub.com/blog/{slug || 'your-post-slug'}</p>
+                    <p className="text-[#34a853] text-xs mt-0.5">northernwarrior.co.uk/blog/{slug || 'your-post-slug'}</p>
                     <p className="text-white/40 text-xs mt-1 line-clamp-2">
                       {seoDescription || excerpt || 'Add a meta description to preview it here.'}
                     </p>
@@ -272,8 +530,8 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-5">
-          {/* Status */}
+        <div className="w-80 shrink-0 space-y-5">
+          {/* Status + details */}
           <div className="rounded-xl border border-white/[0.08] bg-[#111111] p-4 space-y-4">
             <p className="text-xs font-semibold text-white/30 uppercase tracking-widest">Details</p>
 
@@ -304,6 +562,14 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
                 placeholder="fitness, hyrox, training"
               />
               <p className="text-xs text-white/25 mt-1">Comma separated</p>
+            </Field>
+
+            <Field label="Published by">
+              <Input
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+                placeholder="e.g. Northern Warrior"
+              />
             </Field>
           </div>
 
@@ -356,7 +622,6 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
               </div>
             )}
 
-            {/* Manual URL fallback */}
             <Field label="Or paste URL">
               <Input
                 value={featuredImageUrl}
@@ -374,30 +639,6 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
               onChange={handleFeaturedImageUpload}
             />
           </div>
-
-          {/* Publish actions (repeated at bottom of sidebar for convenience) */}
-          <div className="flex flex-col gap-2">
-            <Button
-              variant="primary"
-              size="md"
-              className="w-full"
-              onClick={() => handleSave('published')}
-              loading={saving === 'published'}
-              disabled={saving !== null}
-            >
-              <Globe size={15} /> {isPublished ? 'Update Published Post' : 'Publish Now'}
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="w-full"
-              onClick={() => handleSave('draft')}
-              loading={saving === 'draft'}
-              disabled={saving !== null}
-            >
-              <Save size={14} /> Save as Draft
-            </Button>
-          </div>
         </div>
       </div>
 
@@ -409,6 +650,17 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
         message={`Are you sure you want to delete "${title}"? This cannot be undone.`}
         confirmLabel="Delete Post"
         loading={deleting}
+      />
+
+      <PreviewModal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        title={title}
+        content={content}
+        featuredImageUrl={featuredImageUrl}
+        categoryName={categoryName}
+        excerpt={excerpt}
+        author={author}
       />
     </div>
   )

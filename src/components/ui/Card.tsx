@@ -1,15 +1,21 @@
+'use client'
+
+import { Ripple } from '@/components/ui/material-design-3-ripple'
+
 interface CardProps {
   children: React.ReactNode
   className?: string
   padding?: boolean
+  ripple?: boolean
 }
 
-export function Card({ children, className = '', padding = true }: CardProps) {
+export function Card({ children, className = '', padding = true, ripple = false }: CardProps) {
   return (
     <div
-      className={`bg-[#161616] border border-white/[0.08] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] ${padding ? 'p-7' : ''} ${className}`}
+      className={`relative bg-[#161616] border border-white/[0.08] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] overflow-hidden ${padding ? 'p-7' : ''} ${className}`}
     >
       {children}
+      {ripple && <Ripple color="text-white" opacity={0.08} />}
     </div>
   )
 }
@@ -62,7 +68,7 @@ export function StatCard({
   }[accent ?? 'gold']
 
   return (
-    <Card className="relative overflow-hidden">
+    <div className="relative bg-[#161616] border border-white/[0.08] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] overflow-hidden p-7 cursor-pointer">
       {/* Ambient corner glow */}
       <div
         className="absolute -right-10 -top-10 w-40 h-40 rounded-full opacity-40 pointer-events-none"
@@ -82,6 +88,8 @@ export function StatCard({
           </div>
         )}
       </div>
-    </Card>
+      {/* Ripple overlay — sits above glow, below content */}
+      <Ripple color="text-white" opacity={0.1} />
+    </div>
   )
 }

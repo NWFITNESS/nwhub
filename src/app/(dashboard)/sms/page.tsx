@@ -15,7 +15,7 @@ export default async function SmsPage() {
   return (
     <>
       <TopBar title="WhatsApp" actions={<Link href="/sms/campaigns"><Button variant="secondary" size="sm">Campaigns</Button></Link>} />
-      <main className="p-6">
+      <main className="p-10">
         <PageHeader
           title="WhatsApp Subscribers"
           description={`${total ?? 0} active subscribers`}

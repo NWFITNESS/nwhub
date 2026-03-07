@@ -22,7 +22,7 @@ export default async function EmailPage() {
           </Link>
         }
       />
-      <main className="p-6">
+      <main className="p-10">
         <PageHeader
           title="Email Subscribers"
           description={`${total ?? 0} active subscribers`}

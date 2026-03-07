@@ -15,7 +15,7 @@ export default async function ContactsPage() {
   return (
     <>
       <TopBar title="Contacts" />
-      <main className="p-6">
+      <main className="p-10">
         <PageHeader title="Contacts" description={`${contacts.length} contacts`} />
         <ContactsManager initialContacts={contacts} />
       </main>

@@ -24,9 +24,20 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  const isLoginPage = request.nextUrl.pathname === '/login'
+  const { pathname } = request.nextUrl
+  const isLoginPage = pathname === '/login'
 
-  if (!user && !isLoginPage) {
+  // Public blog pages — no auth required
+  const isPublicBlog =
+    pathname === '/blog' ||
+    (pathname.startsWith('/blog/') && !pathname.startsWith('/blog/manage'))
+
+  // Public API routes — no auth required
+  const isPublicApi =
+    pathname === '/api/chat' ||
+    pathname.startsWith('/api/chat/')
+
+  if (!user && !isLoginPage && !isPublicBlog && !isPublicApi) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)

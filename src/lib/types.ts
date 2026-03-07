@@ -68,7 +68,7 @@ export interface Contact {
   email: string | null
   phone: string | null         // UK E.164
   groups: string[]
-  source: 'manual' | 'import' | 'squarespace' | 'wodboard'
+  source: 'manual' | 'import' | 'squarespace' | 'wodboard' | 'website_chat'
   notes: string | null
   status: 'active' | 'inactive'
   created_at: string
@@ -139,6 +139,30 @@ export interface WhatsAppSubscriber {
   subscribed_at: string
 }
 
+export interface ChatSettings {
+  enabled: boolean
+  api_key: string
+  system_prompt: string
+  whatsapp_number: string
+}
+
+export interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+  timestamp: string
+}
+
+export interface ChatSession {
+  id: string
+  session_id: string
+  messages: ChatMessage[]
+  lead_captured: boolean
+  contact_id: string | null
+  ip_address: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface ReviewSettings {
   enabled: boolean
   google_place_id: string
@@ -161,6 +185,38 @@ export interface ReviewRequest {
   review_detected: boolean
   opted_out: boolean
   created_at: string
+}
+
+export interface MailchimpSettings {
+  api_key: string
+  audience_id: string
+  from_name: string
+  from_email: string
+  reply_to: string
+}
+
+export type MailchimpCampaignStatus = 'draft' | 'scheduled' | 'sending' | 'sent' | 'paused'
+
+export interface MailchimpAudience {
+  id: string
+  name: string
+  member_count: number
+}
+
+export interface MailchimpAudienceStats {
+  member_count: number
+  open_rate: number
+  click_rate: number
+}
+
+export interface MailchimpCampaignRow {
+  id: string
+  settings: { subject_line: string; title: string }
+  status: string
+  send_time: string | null
+  emails_sent: number
+  opens?: { open_rate: number; unique_opens: number }
+  clicks?: { click_rate: number; unique_clicks: number }
 }
 
 export interface WhatsAppCampaign {

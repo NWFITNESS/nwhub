@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { ChevronLeft } from 'lucide-react'
 import { Sidebar } from './Sidebar'
+import NeuralBackground from '@/components/ui/flow-field-background'
 
 interface SidebarProviderProps {
   children: React.ReactNode
@@ -19,6 +20,16 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
 
   return (
     <>
+      {/* Full-screen particle flow field — wrapper owns the positioning */}
+      <div className="fixed inset-0" style={{ zIndex: -1 }}>
+        <NeuralBackground
+          color="#967705"
+          trailOpacity={0.08}
+          particleCount={450}
+          speed={0.5}
+        />
+      </div>
+
       <Sidebar
         open={open}
         onToggle={() => setOpen((o) => !o)}
@@ -39,11 +50,12 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
         />
       </button>
 
-      {/* Main content — margin-left = sidebar + gap so tab never overlaps */}
+      {/* Main content */}
       <div
-        className="min-h-screen transition-all duration-300 ease-in-out"
+        className="relative min-h-screen transition-all duration-300 ease-in-out"
         style={{
           marginLeft: open ? `calc(var(--sidebar-w) + ${GAP})` : '0',
+          paddingRight: '10mm',
         }}
       >
         {children}

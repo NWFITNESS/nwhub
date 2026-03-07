@@ -68,7 +68,7 @@ export function TopBar({ title, actions }: TopBarProps) {
 
   return (
     <header
-      className="h-16 border-b bg-[#0a0a0a]/95 backdrop-blur-sm flex items-center px-6 gap-5 relative"
+      className="sticky top-0 z-30 h-16 border-b bg-[#0a0a0a]/95 backdrop-blur-sm flex items-center px-6 gap-5 relative"
       style={{ borderBottomColor: 'rgba(150,119,5,0.15)' }}
     >
       {/* Page title */}

@@ -207,6 +207,69 @@ export function LogOutNavIcon({ size = 17, className }: NavIconProps) {
   );
 }
 
+/* ─── BOT ── antenna rotates, eyes squint on hover */
+export function BotNavIcon({ size = 17, className }: NavIconProps) {
+  return (
+    <motion.svg viewBox="0 0 24 24" fill="none" className={className}
+      style={{ width: size, height: size }} whileHover="hovered" initial="idle" animate="idle">
+      {/* Antenna stem */}
+      <motion.line x1="12" y1="9" x2="12" y2="5"
+        stroke="currentColor" strokeWidth={1.75} strokeLinecap="round"
+        variants={{ idle: { rotate: 0 }, hovered: { rotate: 25 } }}
+        transition={{ duration: 0.35, ease }}
+        style={{ transformOrigin: '12px 9px' }}
+      />
+      {/* Antenna tip */}
+      <motion.circle cx="12" cy="4" r="1"
+        variants={{ idle: { rotate: 0 }, hovered: { rotate: 25 } }}
+        transition={{ duration: 0.35, ease }}
+        style={{ transformOrigin: '12px 9px' }}
+        fill="currentColor"
+      />
+      {/* Head */}
+      <rect x="4" y="9" width="16" height="11" rx="2.5"
+        stroke="currentColor" strokeWidth={1.75} />
+      {/* Left eye */}
+      <motion.rect x="8" y="13" width="2.5" height="2.5" rx="0.5"
+        fill="currentColor"
+        variants={{ idle: { scaleY: 1 }, hovered: { scaleY: 0.4 } }}
+        transition={{ duration: 0.2, ease }}
+        style={{ transformOrigin: '9.25px 14.25px' }}
+      />
+      {/* Right eye */}
+      <motion.rect x="13.5" y="13" width="2.5" height="2.5" rx="0.5"
+        fill="currentColor"
+        variants={{ idle: { scaleY: 1 }, hovered: { scaleY: 0.4 } }}
+        transition={{ duration: 0.2, ease, delay: 0.04 }}
+        style={{ transformOrigin: '14.75px 14.25px' }}
+      />
+    </motion.svg>
+  );
+}
+
+/* ─── MAILCHIMP ── envelope compresses/lifts, fold diagonals fade on hover */
+export function MailchimpNavIcon({ size = 17, className }: NavIconProps) {
+  return (
+    <motion.svg viewBox="0 0 24 24" fill="none" className={className}
+      style={{ width: size, height: size }} whileHover="hovered" initial="idle" animate="idle">
+      <motion.g
+        variants={{ idle: { scaleY: 1, y: 0 }, hovered: { scaleY: 0.6, y: -3 } }}
+        transition={{ duration: 0.3, ease }}
+        style={{ transformOrigin: '12px 5px' }}>
+        <rect x="2" y="5" width="20" height="16" rx="2" stroke="currentColor" strokeWidth={1.75} />
+        <polyline points="2 5 12 13 22 5"
+          stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" />
+        <motion.g
+          variants={{ idle: { opacity: 1 }, hovered: { opacity: 0.4 } }}
+          transition={{ duration: 0.3, ease }}>
+          <line x1="2" y1="21" x2="10" y2="14" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" />
+          <line x1="22" y1="21" x2="14" y2="14" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" />
+        </motion.g>
+      </motion.g>
+    </motion.svg>
+  );
+}
+
 /* ─── PANEL LEFT CLOSE ── chevron slides left on hover */
 export function PanelCloseNavIcon({ size = 15, className }: NavIconProps) {
   return (

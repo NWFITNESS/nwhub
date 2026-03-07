@@ -1,0 +1,23 @@
+# Supabase project config
+# Docs: https://supabase.com/docs/guides/cli/config
+
+[api]
+enabled = true
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+port = 54323
+
+# ─── Edge Functions ────────────────────────────────────────────────────────
+# review-check: polls Google Places API for new reviews, marks review_detected
+# Scheduled daily via pg_cron (see supabase/migrations/)
+[functions.review-check]
+verify_jwt = false
+
+# review-run: sends WhatsApp/SMS review requests to eligible contacts
+# Scheduled daily via pg_cron (see supabase/migrations/)
+[functions.review-run]
+verify_jwt = false

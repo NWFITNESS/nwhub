@@ -265,15 +265,17 @@ export function ReviewsDashboard({ initialRequests, initialSettings }: Props) {
             <Field label="Google Place ID" hint="Find in Google Maps URL or Place details">
               <TextInput value={settings.google_place_id} onChange={(v) => setSettings((s) => ({ ...s, google_place_id: v }))} placeholder="ChIJxxxxxxxxxxxxxxxx" />
             </Field>
-            <Field label="Review Link" hint="Passed as {{2}} in Content Templates">
+            <Field label="Review Link" hint="Direct link to your Google review page">
               <TextInput value={settings.review_link} onChange={(v) => setSettings((s) => ({ ...s, review_link: v }))} placeholder="https://g.page/r/..." />
             </Field>
-            <Field label="First Message Content SID" hint="From Twilio Console → Content Templates">
+
+            <Field label="First Message Content SID" hint="From Twilio Console → Content Templates. Variables: {{1}} = name, {{2}} = review link">
               <TextInput value={settings.first_content_sid} onChange={(v) => setSettings((s) => ({ ...s, first_content_sid: v }))} placeholder="HXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" />
             </Field>
-            <Field label="Reminder Content SID" hint="From Twilio Console → Content Templates">
+            <Field label="Reminder Content SID" hint="From Twilio Console → Content Templates. Variables: {{1}} = name, {{2}} = review link">
               <TextInput value={settings.reminder_content_sid} onChange={(v) => setSettings((s) => ({ ...s, reminder_content_sid: v }))} placeholder="HXxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" />
             </Field>
+
             <Field label="Days after joining before first request">
               <NumberInput value={settings.days_after_joining} onChange={(v) => setSettings((s) => ({ ...s, days_after_joining: v }))} min={1} />
             </Field>

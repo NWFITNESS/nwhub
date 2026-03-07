@@ -4,6 +4,7 @@ import type { ReviewSettings } from '@/lib/types'
 
 const DEFAULTS: ReviewSettings = {
   enabled: false,
+  channel: 'whatsapp',
   google_place_id: '',
   review_link: '',
   first_content_sid: '',

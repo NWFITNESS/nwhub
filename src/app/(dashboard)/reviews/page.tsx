@@ -6,6 +6,7 @@ import type { ReviewRequest, ReviewSettings } from '@/lib/types'
 
 const DEFAULT_SETTINGS: ReviewSettings = {
   enabled: false,
+  channel: 'whatsapp',
   google_place_id: '',
   review_link: '',
   first_content_sid: '',
@@ -39,7 +40,7 @@ export default async function ReviewsPage() {
   return (
     <>
       <TopBar title="Reviews" />
-      <main className="p-6">
+      <main className="p-10">
         <PageHeader title="Google Reviews" description="Automate review requests and track your reputation" />
         <ReviewsDashboard initialRequests={requests} initialSettings={settings} />
       </main>

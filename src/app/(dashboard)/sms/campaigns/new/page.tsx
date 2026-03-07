@@ -5,7 +5,7 @@ export default function NewSmsCampaignPage() {
   return (
     <>
       <TopBar title="New WhatsApp Campaign" />
-      <main className="p-6">
+      <main className="p-10">
         <SmsCampaignComposer />
       </main>
     </>

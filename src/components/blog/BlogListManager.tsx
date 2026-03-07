@@ -184,7 +184,7 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
           </select>
         )}
 
-        <Link href="/blog/new" className="ml-auto">
+        <Link href="/blog/manage/new" className="ml-auto">
           <Button variant="primary" size="sm">
             <Plus size={14} /> New Post
           </Button>
@@ -240,7 +240,7 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
               {/* Title + slug */}
               <div className="min-w-0">
                 <Link
-                  href={`/blog/${post.id}`}
+                  href={`/blog/manage/${post.id}`}
                   className="font-medium text-white hover:text-[#c9a70a] transition-colors truncate block"
                 >
                   {post.title}
@@ -286,12 +286,12 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
 
               {/* Actions */}
               <div className="flex items-center gap-1">
-                <Link href={`/blog/${post.id}`}>
+                <Link href={`/blog/manage/${post.id}`}>
                   <Button variant="ghost" size="sm" className="px-2 py-1.5">
                     <PenLine size={13} />
                   </Button>
                 </Link>
-                {post.slug && (
+                {post.status === 'published' && post.slug && (
                   <a href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer">
                     <Button variant="ghost" size="sm" className="px-2 py-1.5">
                       <Eye size={13} />

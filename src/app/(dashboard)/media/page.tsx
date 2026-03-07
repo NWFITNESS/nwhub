@@ -13,7 +13,7 @@ export default async function MediaPage() {
   return (
     <>
       <TopBar title="Media" />
-      <main className="p-6">
+      <main className="p-10">
         <PageHeader title="Media Library" description={`${media?.length ?? 0} files`} />
         <MediaGrid initialMedia={media ?? []} />
       </main>

@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
   const {
     title, slug, excerpt, content, featured_image_url,
-    category_id, tags, status, seo_title, seo_description,
+    category_id, tags, status, seo_title, seo_description, author,
   } = body
 
   if (!title?.trim()) {
@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
       category_id: category_id || null,
       tags: tags ?? [],
       status: status ?? 'draft',
+      author: author?.trim() || null,
       seo_title: seo_title?.trim() || null,
       seo_description: seo_description?.trim() || null,
       published_at: status === 'published' ? now : null,

@@ -16,7 +16,7 @@ export default async function SettingsPage() {
   return (
     <>
       <TopBar title="Settings" />
-      <main className="p-6">
+      <main className="p-10">
         <PageHeader
           title="Global Settings"
           description="Navigation, footer, contact info, and social links used across the site."
