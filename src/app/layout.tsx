@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${leagueSpartan.variable} ${oswald.variable} ${robotoSlab.variable} font-sans antialiased`}>
+      <body suppressHydrationWarning className={`${inter.variable} ${leagueSpartan.variable} ${oswald.variable} ${robotoSlab.variable} font-sans antialiased`}>
         {children}
       </body>
     </html>
