@@ -18,12 +18,12 @@
 
 /* ─── Dashboard page horizontal padding ────────────────────────────────────── */
 .page-pad {
-  padding-left: 1rem;   /* 16px mobile */
-  padding-right: 1rem;
+  padding-left: 0;      /* mobile handled by SidebarProvider wrapper */
+  padding-right: 0;
 }
 @media (min-width: 640px) {
   .page-pad {
-    padding-left: 1.5rem;  /* 24px small tablet */
+    padding-left: 1.5rem;  /* 24px tablet */
     padding-right: 1.5rem;
   }
 }
