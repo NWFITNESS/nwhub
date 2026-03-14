@@ -18,8 +18,8 @@
 
 /* ─── Dashboard page horizontal padding ────────────────────────────────────── */
 .page-pad {
-  padding-left: 1.25rem !important;   /* 20px mobile */
-  padding-right: 1.25rem !important;
+  padding-left: 7px !important;
+  padding-right: 7px !important;
 }
 @media (min-width: 640px) {
   .page-pad {
