@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, createContext, useContext } from 'react'
-import { ChevronLeft, Menu, X, Bell } from 'lucide-react'
+import { useState, useRef, useEffect, createContext, useContext } from 'react'
+import { Menu, X, Bell } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import NeuralBackground from '@/components/ui/flow-field-background'
 
@@ -34,9 +34,23 @@ interface SidebarProviderProps {
 }
 
 export function SidebarProvider({ children, unreadCount = 0, userEmail }: SidebarProviderProps) {
-  const [open, setOpen] = useState(true)
+  const [desktopOpen, setDesktopOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobileView, setIsMobileView] = useState(false)
+  const closeTimer = useRef<NodeJS.Timeout>()
+
+  const handleMouseEnter = () => {
+    clearTimeout(closeTimer.current)
+    setDesktopOpen(true)
+  }
+
+  const handleMouseLeave = () => {
+    closeTimer.current = setTimeout(() => setDesktopOpen(false), 300)
+  }
+
+  useEffect(() => {
+    return () => clearTimeout(closeTimer.current)
+  }, [])
 
   return (
     <SidebarCtx.Provider value={{ mobileMenuOpen, setMobileMenuOpen, isMobileView, setIsMobileView }}>
@@ -45,6 +59,31 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
       <div className="fixed inset-0" style={{ zIndex: -1 }}>
         <NeuralBackground color="#967705" trailOpacity={0.08} particleCount={450} speed={0.5} />
       </div>
+
+      {/* ── Desktop: invisible hover trigger zone on left edge ── */}
+      <div
+        className="fixed top-0 left-0 w-5 h-full z-40 hidden md:block"
+        onMouseEnter={handleMouseEnter}
+      />
+
+      {/* ── Desktop: hover-triggered overlay sidebar ── */}
+      <aside
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className={`fixed top-0 left-0 h-full z-50 w-[var(--sidebar-w)] hidden md:block bg-gradient-to-b from-[#131313] to-[#0d0d0d] border-r border-white/[0.06] shadow-[4px_0_40px_rgba(0,0,0,0.6)] transition-transform duration-300 ease-in-out ${desktopOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        <Sidebar
+          open={true}
+          unreadCount={unreadCount}
+          userEmail={userEmail}
+          onNavigate={() => setDesktopOpen(false)}
+        />
+      </aside>
+
+      {/* ── Desktop: subtle backdrop when sidebar open (non-blocking) ── */}
+      {desktopOpen && (
+        <div className="fixed inset-0 z-40 bg-black/20 pointer-events-none transition-opacity duration-300 hidden md:block" />
+      )}
 
       {/* ── Mobile drawer — always in DOM, CSS slide animation ── */}
       <div className={`fixed inset-y-0 left-0 w-[280px] z-50 md:hidden bg-gradient-to-b from-[#131313] to-[#0d0d0d] border-r border-white/[0.06] shadow-2xl transition-transform duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
@@ -65,36 +104,10 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
         />
       )}
 
-      {/* ── Desktop toggle tab (desktop only, fixed) ── */}
-      <button
-        onClick={() => setOpen((o) => !o)}
-        aria-label={open ? 'Close sidebar' : 'Open sidebar'}
-        className="fixed z-50 top-20 h-14 w-5 hidden md:flex items-center justify-center bg-[#1a1a1a] border border-white/[0.1] rounded-r-lg hover:bg-[#222] hover:border-[#967705]/40 transition-all duration-300 ease-in-out"
-        style={{ left: open ? 'var(--sidebar-w)' : '0' }}
-      >
-        <ChevronLeft
-          size={13}
-          className={`text-white/50 transition-transform duration-300 ${open ? '' : 'rotate-180'}`}
-        />
-      </button>
-
-      {/* ── App shell — flex row fills the screen ── */}
+      {/* ── App shell — full width, sidebar overlays on top ── */}
       <div className="flex h-screen overflow-hidden">
 
-        {/* Desktop sidebar — NEVER rendered on mobile, width-collapses when closed */}
-        <div
-          className="hidden md:flex flex-shrink-0 flex-col overflow-hidden transition-all duration-300 ease-in-out"
-          style={{ width: open ? 'var(--sidebar-w)' : '0' }}
-        >
-          <Sidebar
-            open={open}
-            onToggle={() => setOpen((o) => !o)}
-            unreadCount={unreadCount}
-            userEmail={userEmail}
-          />
-        </div>
-
-        {/* Main column — full width on mobile, remainder on desktop */}
+        {/* Main column — always full width on desktop, sidebar never affects layout */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
 
           {/* Mobile topbar (hidden on desktop) */}
