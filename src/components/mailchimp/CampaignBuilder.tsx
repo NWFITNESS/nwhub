@@ -176,28 +176,24 @@ function StepCard({ n, title, icon, complete, active, action, summary, onOpen, c
 
   return (
     <div className={`rounded-xl border ${borderCls} ${bgCls} transition-all duration-300`}>
-      {/* Header row — always visible */}
-      <button
-        type="button"
-        onClick={onOpen}
-        disabled={active}
-        className="w-full flex items-center justify-between px-6 py-4 text-left disabled:cursor-default"
+      {/* Header row — always visible. Use div+role so action buttons inside are valid HTML */}
+      <div
+        role={active ? undefined : 'button'}
+        tabIndex={active ? undefined : 0}
+        onClick={active ? undefined : onOpen}
+        onKeyDown={active ? undefined : (e) => { if (e.key === 'Enter' || e.key === ' ') onOpen() }}
+        className={`flex items-center justify-between px-6 py-4 ${active ? '' : 'cursor-pointer'}`}
       >
         <div className="flex items-center gap-3">
           <StepDot n={n} complete={complete} active={active} />
-          <div className="flex items-center gap-2">
-            <span className={`text-sm font-semibold transition-colors ${active ? 'text-[#F0F0F0]' : complete ? 'text-[#F0F0F0]' : 'text-white/30'}`}>
-              {title}
-            </span>
-            {!active && !complete && (
-              <span className="hidden">{icon}</span>
-            )}
-          </div>
+          <span className={`text-sm font-semibold transition-colors ${active ? 'text-[#F0F0F0]' : complete ? 'text-[#F0F0F0]' : 'text-white/30'}`}>
+            {title}
+          </span>
         </div>
         {complete && !active && action && (
-          <div className="flex-shrink-0">{action}</div>
+          <div className="flex-shrink-0" onClick={e => e.stopPropagation()}>{action}</div>
         )}
-      </button>
+      </div>
 
       {/* Collapsed summary */}
       {complete && !active && summary && (
@@ -639,7 +635,7 @@ export function CampaignBuilder({ settings, campaign, designJson }: Props) {
 
       {/* ── Page header ── */}
       <div className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#0d0d0d]/95 backdrop-blur-sm">
-        <div className="max-w-[720px] mx-auto px-6 h-16 flex items-center justify-between gap-4">
+        <div className="max-w-4xl mx-auto px-8 h-16 flex items-center justify-between gap-4">
           {/* Left: back + campaign name */}
           <div className="flex items-center gap-3 min-w-0">
             <button onClick={() => router.push('/mailchimp')}
@@ -690,7 +686,7 @@ export function CampaignBuilder({ settings, campaign, designJson }: Props) {
       </div>
 
       {/* ── Centered content ── */}
-      <div className="max-w-[720px] mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto px-8 py-8">
         <ProgressBar completedSteps={completedSteps} />
 
         <div className="flex flex-col gap-3">
