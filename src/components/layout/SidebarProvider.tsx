@@ -132,7 +132,7 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
           </div>
 
           {/* Scrollable page content */}
-          <div className="flex-1 overflow-y-auto px-4 sm:px-0">
+          <div className="flex-1 overflow-y-auto">
             {isMobileView ? (
               <div className="flex justify-center bg-[#050505] min-h-full pt-6 px-4">
                 <div className="w-[390px] bg-[#080808] min-h-[844px] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl">

@@ -18,19 +18,19 @@
 
 /* ─── Dashboard page horizontal padding ────────────────────────────────────── */
 .page-pad {
-  padding-left: 0;      /* mobile handled by SidebarProvider wrapper */
-  padding-right: 0;
+  padding-left: 1rem !important;   /* 16px mobile */
+  padding-right: 1rem !important;
 }
 @media (min-width: 640px) {
   .page-pad {
-    padding-left: 1.5rem;  /* 24px tablet */
-    padding-right: 1.5rem;
+    padding-left: 1.5rem !important;  /* 24px tablet */
+    padding-right: 1.5rem !important;
   }
 }
 @media (min-width: 1024px) {
   .page-pad {
-    padding-left: 3rem;  /* 48px desktop */
-    padding-right: 3rem;
+    padding-left: 3rem !important;  /* 48px desktop */
+    padding-right: 3rem !important;
   }
 }
 
