@@ -36,7 +36,7 @@ export default async function ContentPage() {
   return (
     <>
       <TopBar title="Content" />
-      <main className="flex flex-col gap-6 px-6 lg:px-12 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
+      <main style={{ paddingLeft: '48px', paddingRight: '48px' }} className="flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
           title="Site Content"
           description="Edit content for each page. Changes are reflected on the live site immediately."

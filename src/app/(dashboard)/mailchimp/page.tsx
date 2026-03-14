@@ -54,7 +54,7 @@ export default async function MailchimpPage() {
   return (
     <>
       <TopBar title="Mailchimp" />
-      <main className="flex flex-col gap-6 px-6 lg:px-12 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
+      <main style={{ paddingLeft: '48px', paddingRight: '48px' }} className="flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
         <PageHeader title="Mailchimp" description="Manage your email audience, sync subscribers, and send campaigns" />
         <MailchimpDashboard initialSettings={initialSettings} initialStats={initialStats} />
       </main>

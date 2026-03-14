@@ -70,8 +70,8 @@ export function TopBar({ title, actions }: TopBarProps) {
 
   return (
     <header
-      className="hidden md:flex sticky top-0 z-30 h-16 border-b bg-[#0a0a0a]/95 backdrop-blur-sm items-center px-6 gap-5 relative"
-      style={{ borderBottomColor: 'rgba(150,119,5,0.15)' }}
+      className="hidden md:flex sticky top-0 z-30 h-16 border-b bg-[#0a0a0a]/95 backdrop-blur-sm items-center gap-5 relative"
+      style={{ borderBottomColor: 'rgba(150,119,5,0.15)', paddingLeft: '48px', paddingRight: '48px' }}
     >
       {/* Page title */}
       <h1 className="text-xs font-semibold text-white/40 whitespace-nowrap uppercase tracking-widest shrink-0">
