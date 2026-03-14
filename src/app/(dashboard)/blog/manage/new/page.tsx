@@ -13,7 +13,7 @@ export default async function NewBlogPostPage() {
   return (
     <>
       <TopBar title="Blog — New Post" />
-      <main className="p-10">
+      <main className="p-10" style={{ paddingLeft: '48px', paddingRight: '48px' }}>
         <BlogPostEditor categories={(categories ?? []) as BlogCategory[]} />
       </main>
     </>

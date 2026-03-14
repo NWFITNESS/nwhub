@@ -27,7 +27,8 @@
       "Bash(echo \"=== $f ===\")",
       "Bash(for f in src/app/api/contacts/[id]/route.ts src/app/api/contacts/bulk/route.ts src/app/api/contacts/import/route.ts src/app/api/contacts/template/route.ts src/app/api/blog/[id]/route.ts src/app/api/email/campaigns/route.ts src/app/api/email/unsubscribe/route.ts src/app/api/reviews/check/route.ts src/app/api/reviews/requests/route.ts src/app/api/reviews/run/route.ts src/app/api/mailchimp/audiences/route.ts src/app/api/mailchimp/campaigns/route.ts src/app/api/mailchimp/draft/route.ts src/app/api/mailchimp/settings/route.ts src/app/api/mailchimp/stats/route.ts src/app/api/mailchimp/sync/route.ts src/app/api/mailchimp/test/route.ts src/app/api/mailchimp/templates/route.ts src/app/api/media/route.ts src/app/api/search/route.ts)",
       "Bash(for f in src/app/api/chat/route.ts src/app/api/email/subscribe/route.ts src/app/api/kids/calendar/route.ts src/app/api/kids/register/route.ts src/app/api/mongo-test/route.ts)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(for f in \"src/app/\\(dashboard\\)/blog/manage/new/page.tsx\" \"src/app/\\(dashboard\\)/blog/manage/[id]/page.tsx\" \"src/app/\\(dashboard\\)/content/[slug]/page.tsx\" \"src/app/\\(dashboard\\)/mailchimp/create/page.tsx\" \"src/app/\\(dashboard\\)/mailchimp/edit/[id]/page.tsx\")"
     ]
   }
 }
