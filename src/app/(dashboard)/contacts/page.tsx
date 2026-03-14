@@ -15,7 +15,7 @@ export default async function ContactsPage() {
   return (
     <>
       <TopBar title="Contacts" />
-      <main className="flex flex-col gap-6 p-8 min-h-[calc(100vh-5rem)]">
+      <main className="flex flex-col gap-6 p-4 lg:p-8 min-h-[calc(100vh-5rem)]">
         <PageHeader title="Contacts" description={`${contacts.length} contacts`} />
         <ContactsManager initialContacts={contacts} />
       </main>

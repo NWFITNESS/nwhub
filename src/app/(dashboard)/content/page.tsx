@@ -36,7 +36,7 @@ export default async function ContentPage() {
   return (
     <>
       <TopBar title="Content" />
-      <main className="flex flex-col gap-6 p-8 min-h-[calc(100vh-5rem)]">
+      <main className="flex flex-col gap-6 p-4 lg:p-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
           title="Site Content"
           description="Edit content for each page. Changes are reflected on the live site immediately."

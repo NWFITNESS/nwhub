@@ -16,7 +16,7 @@ export default async function SettingsPage() {
   return (
     <>
       <TopBar title="Settings" />
-      <main className="flex flex-col gap-6 p-8 min-h-[calc(100vh-5rem)]">
+      <main className="flex flex-col gap-6 p-4 lg:p-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
           title="Global Settings"
           description="Navigation, footer, contact info, and social links used across the site."

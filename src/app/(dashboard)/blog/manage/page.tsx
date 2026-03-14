@@ -26,7 +26,7 @@ export default async function BlogManagePage() {
   return (
     <>
       <TopBar title="Blog" />
-      <main className="flex flex-col gap-6 p-8 min-h-[calc(100vh-5rem)]">
+      <main className="flex flex-col gap-6 p-4 lg:p-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
           title="Blog & Posts"
           description={`${totalPosts} post${totalPosts !== 1 ? 's' : ''}`}

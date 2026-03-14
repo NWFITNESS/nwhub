@@ -21,7 +21,7 @@ export async function GET() {
 
   const [campaignsRes, reportsRes] = await Promise.all([
     mc(api_key, `/campaigns?list_id=${audience_id}&count=20&sort_field=create_time&sort_dir=DESC`),
-    mc(api_key, `/reports?list_id=${audience_id}&count=20`),
+    mc(api_key, `/reports?count=50&sort_field=send_time&sort_dir=DESC`),
   ])
 
   if (!campaignsRes.ok) {

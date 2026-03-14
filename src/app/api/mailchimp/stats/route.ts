@@ -22,7 +22,7 @@ export async function GET() {
   const [listRes, campaignsRes, reportsRes] = await Promise.all([
     mc(api_key, `/lists/${audience_id}`),
     mc(api_key, `/campaigns?list_id=${audience_id}&count=10&sort_field=send_time&sort_dir=DESC&status=sent`),
-    mc(api_key, `/reports?list_id=${audience_id}&count=10`),
+    mc(api_key, `/reports?count=50&sort_field=send_time&sort_dir=DESC`),
   ])
 
   if (!listRes.ok) {

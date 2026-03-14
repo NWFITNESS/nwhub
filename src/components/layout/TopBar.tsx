@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react'
 import {
-  Search, X,
+  Search, X, Smartphone,
   Users, Mail, PenSquare, Baby, Image, AtSign,
   MessageSquare, Send, Tag, Phone,
 } from 'lucide-react'
 import Link from 'next/link'
+import { useSidebarCtx } from './SidebarProvider'
 
 type SearchResult = { id: string; label: string; sub: string; href: string }
 type SearchResults = Record<string, SearchResult[]>
@@ -33,6 +34,7 @@ interface TopBarProps {
 }
 
 export function TopBar({ title, actions }: TopBarProps) {
+  const { isMobileView, setIsMobileView } = useSidebarCtx()
   const [query, setQuery]     = useState('')
   const [results, setResults] = useState<SearchResults | null>(null)
   const [loading, setLoading] = useState(false)
@@ -68,7 +70,7 @@ export function TopBar({ title, actions }: TopBarProps) {
 
   return (
     <header
-      className="sticky top-0 z-30 h-16 border-b bg-[#0a0a0a]/95 backdrop-blur-sm flex items-center px-6 gap-5 relative"
+      className="hidden md:flex sticky top-0 z-30 h-16 border-b bg-[#0a0a0a]/95 backdrop-blur-sm items-center px-6 gap-5 relative"
       style={{ borderBottomColor: 'rgba(150,119,5,0.15)' }}
     >
       {/* Page title */}
@@ -141,6 +143,21 @@ export function TopBar({ title, actions }: TopBarProps) {
           </div>
         )}
       </div>
+
+      {/* Mobile view toggle */}
+      <button
+        onClick={() => setIsMobileView(!isMobileView)}
+        title="Toggle mobile view"
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium
+                    transition-all duration-200 border shrink-0
+                    ${isMobileView
+                      ? 'text-[#C9A70A] border-[#967705]/40 bg-[#967705]/10'
+                      : 'text-white/40 border-white/[0.08] hover:text-white/70 hover:border-white/20'
+                    }`}
+      >
+        <Smartphone size={14} />
+        <span className="hidden lg:inline">Mobile</span>
+      </button>
 
       {actions && <div className="flex items-center gap-3 shrink-0">{actions}</div>}
 

@@ -407,14 +407,20 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
                               <span className="text-white/60 font-semibold">{c.emails_sent.toLocaleString()}</span> sent
                             </span>
                           )}
-                          {c.opens && (
+                          {c.opens ? (
                             <span className="text-xs text-white/35">
-                              <span className="text-green-400 font-bold">{(c.opens.open_rate * 100).toFixed(1)}%</span> opens
+                              <span className="text-green-400 font-bold">{(c.opens.open_rate * 100).toFixed(1)}%</span>
+                              {c.opens.unique_opens > 0 && <span className="text-white/25 ml-1">({c.opens.unique_opens.toLocaleString()})</span>}
+                              {' '}opens
                             </span>
-                          )}
+                          ) : c.status === 'sent' ? (
+                            <span className="text-xs text-white/20 italic">stats updating…</span>
+                          ) : null}
                           {c.clicks && (
                             <span className="text-xs text-white/35">
-                              <span className="text-blue-400 font-bold">{(c.clicks.click_rate * 100).toFixed(1)}%</span> clicks
+                              <span className="text-blue-400 font-bold">{(c.clicks.click_rate * 100).toFixed(1)}%</span>
+                              {c.clicks.unique_clicks > 0 && <span className="text-white/25 ml-1">({c.clicks.unique_clicks.toLocaleString()})</span>}
+                              {' '}clicks
                             </span>
                           )}
                         </div>

@@ -87,9 +87,10 @@ interface SidebarProps {
   onToggle?: () => void
   unreadCount?: number
   userEmail?: string
+  onNavigate?: () => void
 }
 
-export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail }: SidebarProps) {
+export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onNavigate }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
@@ -151,6 +152,7 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail }: S
         {/* Overview — standalone link */}
         <Link
           href="/"
+          onClick={onNavigate}
           className={cn(
             'flex items-center gap-3 px-3 py-3 rounded-lg text-base transition-colors group relative border',
             overviewActive
@@ -168,17 +170,25 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail }: S
           defaultValue={defaultOpenGroups.length > 0 ? defaultOpenGroups : ['content']}
           className="w-full -space-y-px"
         >
-          {navGroups.map((group) => {
+          {navGroups.map((group, idx) => {
             const GroupIcon = group.icon
             const groupHasActive = group.items.some(({ href }) =>
               href === '/' ? pathname === '/' : pathname.startsWith(href)
             )
+            const isFirst = idx === 0
+            const isLast = idx === navGroups.length - 1
+            const isContentGroup = group.value === 'content'
 
             return (
               <AccordionItem
                 key={group.value}
                 value={group.value}
-                className="border border-white/[0.08] bg-[#161616] first:rounded-t-lg last:rounded-b-lg last:border-b"
+                className={cn(
+                  'border border-white/[0.08] bg-[#161616]',
+                  isFirst && 'rounded-t-lg',
+                  isLast && 'rounded-b-lg border-b',
+                  isContentGroup && 'hidden md:block',
+                )}
               >
                 <AccordionTrigger
                   className={cn(
@@ -214,6 +224,7 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail }: S
                         <Link
                           key={href}
                           href={href}
+                          onClick={onNavigate}
                           className={cn(
                             'flex items-center gap-3 px-3 py-2.5 rounded-lg text-[15px] transition-colors group relative border',
                             active

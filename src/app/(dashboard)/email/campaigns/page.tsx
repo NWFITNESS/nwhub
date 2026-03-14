@@ -17,7 +17,7 @@ export default async function EmailCampaignsPage() {
   return (
     <>
       <TopBar title="Email Campaigns" />
-      <main className="flex flex-col gap-6 p-8 min-h-[calc(100vh-5rem)]">
+      <main className="flex flex-col gap-6 p-4 lg:p-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
           title="Email Campaigns"
           actions={

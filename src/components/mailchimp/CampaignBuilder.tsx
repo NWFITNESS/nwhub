@@ -88,65 +88,87 @@ function SummaryText({ children }: { children: React.ReactNode }) {
   return <p className="text-sm text-white/45 truncate">{children}</p>
 }
 
-// Phone inbox mockup for subject preview
+// Phone inbox mockup for subject preview — Brevo style
 function PhonePreview({ fromName, subject, previewText }: { fromName: string; subject: string; previewText: string }) {
   return (
-    <div className="flex-shrink-0 w-52">
-      <p className="text-xs font-semibold text-white/30 uppercase tracking-[0.1em] mb-2.5 text-center">Inbox preview</p>
-      {/* Phone shell */}
-      <div className="relative mx-auto w-48 rounded-[24px] bg-[#111] border border-white/[0.1] overflow-hidden shadow-xl">
+    <div className="flex flex-col items-end">
+      <p className="text-xs font-semibold text-white/30 uppercase tracking-[0.1em] mb-3 self-start">
+        INBOX PREVIEW
+      </p>
+
+      {/* Phone outer shell */}
+      <div className="w-[300px] rounded-[2rem] border-[2px] border-white/20 overflow-hidden shadow-2xl"
+           style={{ background: '#f5f5f5' }}>
+
         {/* Status bar */}
-        <div className="bg-[#0a0a0a] px-4 pt-3 pb-2 flex justify-between items-center">
-          <span className="text-[10px] text-white/30">9:41</span>
-          <div className="flex gap-1">
-            <div className="w-3 h-1.5 rounded-sm bg-white/20" />
-            <div className="w-1 h-1.5 rounded-sm bg-white/20" />
+        <div className="flex items-center justify-between px-5 pt-3 pb-1"
+             style={{ background: '#f5f5f5' }}>
+          <span className="text-[11px] font-semibold text-black">9:47</span>
+          <div className="w-16 h-4 bg-black rounded-full mx-auto" />
+          <div className="flex items-center gap-1">
+            <svg width="16" height="10" viewBox="0 0 16 10" fill="none">
+              <rect x="0" y="6" width="3" height="4" rx="0.5" fill="#000" opacity="0.5"/>
+              <rect x="4.5" y="4" width="3" height="6" rx="0.5" fill="#000" opacity="0.5"/>
+              <rect x="9" y="2" width="3" height="8" rx="0.5" fill="#000" opacity="0.5"/>
+              <rect x="13.5" y="0" width="3" height="10" rx="0.5" fill="#000"/>
+            </svg>
+            <svg width="20" height="10" viewBox="0 0 20 10" fill="none">
+              <rect x="0.5" y="0.5" width="16" height="9" rx="2" stroke="#000" strokeOpacity="0.35"/>
+              <rect x="2" y="2" width="11" height="6" rx="1" fill="#000" opacity="0.5"/>
+              <path d="M17.5 3.5v3a1.5 1.5 0 000-3z" fill="#000" opacity="0.4"/>
+            </svg>
           </div>
         </div>
-        {/* Header bar */}
-        <div className="bg-[#141414] px-3 py-2 border-b border-white/[0.06]">
-          <p className="text-[11px] font-semibold text-white/70 text-center">Inbox</p>
+
+        {/* Inbox title */}
+        <div className="px-4 py-2 border-b border-black/10" style={{ background: '#f5f5f5' }}>
+          <p className="text-[15px] font-bold text-black">Inbox</p>
         </div>
-        {/* Email row */}
-        <div className="bg-[#1a1a1a] px-3 py-3 border-b border-white/[0.06]">
-          <div className="flex items-start gap-2">
-            <div className="w-6 h-6 rounded-full bg-[#967705]/30 border border-[#967705]/50 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-[8px] font-bold text-[#C9A70A]">NW</span>
+
+        {/* Active email row — white background to stand out */}
+        <div className="px-4 py-3 border-b border-black/[0.08]" style={{ background: '#ffffff' }}>
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-full bg-[#C9A70A] flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span className="text-[10px] font-bold text-black">NW</span>
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex justify-between items-center mb-0.5">
-                <p className="text-[10px] font-semibold text-[#F0F0F0] truncate">
-                  {fromName || 'Northern Warrior'}
-                </p>
-                <p className="text-[9px] text-white/25 flex-shrink-0 ml-1">Now</p>
+              <div className="flex items-center justify-between mb-0.5">
+                <span className="text-[12px] font-bold text-black truncate">{fromName || 'Northern Warrior'}</span>
+                <span className="text-[10px] text-black/40 flex-shrink-0 ml-2">17:45</span>
               </div>
-              <p className="text-[10px] font-semibold text-white/80 truncate">
-                {subject || 'Your subject line'}
+              <p className="text-[12px] font-semibold text-black truncate">
+                {subject || 'Message subject...'}
               </p>
-              <p className="text-[9px] text-white/35 truncate mt-0.5">
-                {previewText || 'Preview text appears here…'}
+              <p className="text-[11px] text-black/50 truncate mt-0.5">
+                {previewText || 'Your preview text'}
               </p>
             </div>
           </div>
         </div>
-        {/* Dimmed rows below to simulate inbox */}
-        {[0.15, 0.08].map((op, i) => (
-          <div key={i} className="px-3 py-3 border-b border-white/[0.04]">
-            <div className="flex gap-2">
-              <div className="w-6 h-6 rounded-full bg-white/[0.05] flex-shrink-0" />
-              <div className="flex-1 space-y-1.5">
-                <div className="h-1.5 rounded bg-white/[0.08] w-3/4" />
-                <div className="h-1.5 rounded bg-white/[0.05] w-full" />
-                <div className="h-1.5 rounded bg-white/[0.04] w-2/3" />
+
+        {/* Ghost rows × 3 */}
+        {[1, 2, 3].map(i => (
+          <div key={i} className="px-4 py-3 border-b border-black/[0.06]"
+               style={{ background: '#f5f5f5', opacity: 1 - (i * 0.25) }}>
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-full bg-black/10 flex-shrink-0" />
+              <div className="flex-1 space-y-1.5 pt-0.5">
+                <div className="flex justify-between items-center">
+                  <div className="h-2.5 bg-black/20 rounded w-28" />
+                  <div className="h-2 bg-black/10 rounded w-8" />
+                </div>
+                <div className="h-2 bg-black/15 rounded w-36" />
+                <div className="h-2 bg-black/10 rounded w-24" />
               </div>
             </div>
           </div>
         ))}
-        {/* Home indicator */}
-        <div className="bg-[#111] py-2 flex justify-center">
-          <div className="w-10 h-1 rounded-full bg-white/20" />
-        </div>
+
       </div>
+
+      <p className="text-[10px] text-white/20 mt-2 text-center w-[300px]">
+        Actual preview may vary by email client.
+      </p>
     </div>
   )
 }
@@ -489,7 +511,7 @@ export function CampaignBuilder({ settings, campaign, designJson }: Props) {
   const canReadyToSend = completedSteps.has(1) && completedSteps.has(2) && completedSteps.has(3) && completedSteps.has(4)
 
   return (
-    <div className="min-h-[calc(100vh-5rem)] bg-[#080808]">
+    <div className="min-h-[calc(100vh-5rem)] bg-[#080808] flex flex-col items-center">
 
       {/* ── Toast ── */}
       {toast && (
@@ -634,8 +656,8 @@ export function CampaignBuilder({ settings, campaign, designJson }: Props) {
       )}
 
       {/* ── Page header ── */}
-      <div className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#0d0d0d]/95 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto px-8 h-16 flex items-center justify-between gap-4">
+      <div className="w-full sticky top-0 z-40 border-b border-white/[0.06] bg-[#0d0d0d]/95 backdrop-blur-sm">
+        <div className="w-full max-w-[860px] mx-auto px-8 h-16 flex items-center justify-between gap-4">
           {/* Left: back + campaign name */}
           <div className="flex items-center gap-3 min-w-0">
             <button onClick={() => router.push('/mailchimp')}
@@ -686,7 +708,7 @@ export function CampaignBuilder({ settings, campaign, designJson }: Props) {
       </div>
 
       {/* ── Centered content ── */}
-      <div className="max-w-4xl mx-auto px-8 py-8">
+      <div className="w-full max-w-[860px] px-8 py-8">
         <ProgressBar completedSteps={completedSteps} />
 
         <div className="flex flex-col gap-3">
@@ -828,9 +850,9 @@ export function CampaignBuilder({ settings, campaign, designJson }: Props) {
           >
             <div className="space-y-5">
               <p className="text-sm text-white/40">Add a subject line and preview text for your campaign.</p>
-              <div className="flex gap-6">
+              <div className="grid grid-cols-2 gap-6 items-start">
                 {/* Inputs */}
-                <div className="flex-1 space-y-4">
+                <div className="space-y-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-white/40 uppercase tracking-[0.1em]">Subject line</label>
                     <input

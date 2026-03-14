@@ -52,6 +52,14 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ── Mobile: strip sidebar margin so content fills the screen ── */
+@media (max-width: 767px) {
+  .main-content-area {
+    margin-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-surface); }
 ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }

@@ -34,7 +34,7 @@ export default async function AiChatPage() {
   return (
     <>
       <TopBar title="AI Chat" />
-      <main className="flex flex-col gap-6 p-8 min-h-[calc(100vh-5rem)]">
+      <main className="flex flex-col gap-6 p-4 lg:p-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
           title="AI Chat Widget"
           description="Manage the public chat assistant, edit the system prompt, and review conversations"
