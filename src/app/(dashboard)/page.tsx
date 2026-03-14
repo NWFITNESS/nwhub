@@ -229,7 +229,7 @@ export default async function DashboardPage() {
       <TopBar title="Overview" />
 
       {/* SKILL.md §8 — page layout wrapper */}
-      <div className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
+      <div className="page-pad flex flex-col gap-4 lg:gap-6 py-4 lg:py-8 min-h-[calc(100vh-5rem)]">
 
         {/* ── Section 1 — Greeting (SKILL.md §9) ── */}
         <div>
@@ -242,46 +242,47 @@ export default async function DashboardPage() {
         </div>
 
         {/* ── Section 2 — Stat Cards (SKILL.md §4.1 + §9) ── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-5">
           {statCards.map((card) => {
             const Icon = card.icon
             return (
               <div
                 key={card.label}
-                className="bg-[#161616] border border-white/[0.06] rounded-xl p-6 min-h-[130px] flex flex-col justify-between hover:border-[#967705]/30 transition-colors duration-200"
+                className="bg-[#161616] border border-white/[0.06] rounded-xl p-3 lg:p-6 min-h-[110px] lg:min-h-[130px] flex flex-col justify-between hover:border-[#967705]/30 transition-colors duration-200"
               >
                 {/* Top row: label + icon */}
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold text-white/40 uppercase tracking-[0.1em]">
+                <div className="flex items-center justify-between gap-1">
+                  <p className="text-[10px] lg:text-xs font-semibold text-white/40 uppercase tracking-[0.08em] lg:tracking-[0.1em] leading-tight">
                     {card.label}
                   </p>
                   <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                    className="w-7 h-7 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center flex-shrink-0"
                     style={{ background: card.iconBg }}
                   >
-                    <Icon size={18} className="text-white/70" strokeWidth={1.75} />
+                    <Icon size={14} className="text-white/70 lg:hidden" strokeWidth={1.75} />
+                    <Icon size={18} className="text-white/70 hidden lg:block" strokeWidth={1.75} />
                   </div>
                 </div>
 
                 {/* Bottom: number + trend */}
                 <div>
                   <p
-                    className="text-5xl font-bold text-[#F0F0F0]"
+                    className="text-3xl lg:text-5xl font-bold text-[#F0F0F0]"
                     style={{ fontFamily: 'Rajdhani' }}
                   >
                     {card.value.toLocaleString()}
                   </p>
 
                   {card.alert ? (
-                    <p className="text-xs mt-1 flex items-center gap-1 text-red-400">
-                      <ArrowUpRight size={12} />
+                    <p className="text-[10px] lg:text-xs mt-1 flex items-center gap-0.5 text-red-400">
+                      <ArrowUpRight size={10} />
                       Needs attention
                     </p>
                   ) : card.trend !== null ? (
-                    <p className="text-xs text-white/40 mt-1 flex items-center gap-1">
+                    <p className="text-[10px] lg:text-xs text-white/40 mt-1 flex items-center gap-0.5">
                       {card.trend >= 0
-                        ? <ArrowUpRight size={12} className="text-green-500" />
-                        : <ArrowDownRight size={12} className="text-red-500" />}
+                        ? <ArrowUpRight size={10} className="text-green-500" />
+                        : <ArrowDownRight size={10} className="text-red-500" />}
                       {Math.abs(card.trend)}% vs last month
                     </p>
                   ) : null}
@@ -301,7 +302,7 @@ export default async function DashboardPage() {
           <div className="lg:col-span-2 bg-[#161616] border border-white/[0.06] rounded-xl overflow-hidden flex flex-col">
 
             {/* Section header (SKILL.md §4.3) */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06]">
+            <div className="flex items-center justify-between px-4 lg:px-6 py-4 lg:py-5 border-b border-white/[0.06]">
               <div>
                 <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.15em] mb-0.5">
                   Inbound
@@ -342,7 +343,7 @@ export default async function DashboardPage() {
                   return (
                     <li
                       key={e.id}
-                      className="px-6 py-4 flex items-center gap-4 hover:bg-white/[0.02] transition-colors duration-200"
+                      className="px-4 lg:px-6 py-3 lg:py-4 flex items-center gap-3 lg:gap-4 hover:bg-white/[0.02] transition-colors duration-200"
                     >
                       {/* Avatar */}
                       <div className="w-9 h-9 rounded-full bg-[#967705]/15 border border-[#967705]/25 flex items-center justify-center flex-shrink-0">
@@ -367,7 +368,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Right col-span-1 — Setup Checklist */}
-          <div className="bg-[#161616] border border-white/[0.06] rounded-xl p-6 flex flex-col">
+          <div className="bg-[#161616] border border-white/[0.06] rounded-xl p-4 lg:p-6 flex flex-col">
 
             {/* Section header */}
             <div className="flex items-center justify-between mb-1">
@@ -426,7 +427,7 @@ export default async function DashboardPage() {
                 <Link
                   key={action.title}
                   href={action.href}
-                  className={`group bg-[#161616] border border-white/[0.06] rounded-xl p-6 min-h-[120px] flex items-start gap-5 hover:border-[#967705]/40 hover:bg-[#1a1a1a] transition-all duration-200 cursor-pointer ${action.mobileHide ? 'hidden md:flex' : ''}`}
+                  className={`group bg-[#161616] border border-white/[0.06] rounded-xl p-4 lg:p-6 min-h-[100px] lg:min-h-[120px] flex items-start gap-4 lg:gap-5 hover:border-[#967705]/40 hover:bg-[#1a1a1a] transition-all duration-200 cursor-pointer ${action.mobileHide ? 'hidden md:flex' : ''}`}
                 >
                   {/* Icon */}
                   <div className="w-11 h-11 rounded-lg bg-[#967705]/10 border border-[#967705]/20 flex items-center justify-center flex-shrink-0 group-hover:border-[#967705]/40 transition-colors duration-200">
