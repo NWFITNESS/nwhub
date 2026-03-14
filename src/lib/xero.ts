@@ -9,9 +9,7 @@ export const xero = new XeroClient({
     'profile',
     'email',
     'accounting.transactions.read',
-    'accounting.contacts.read',
     'accounting.reports.read',
-    'accounting.settings.read',
     'offline_access',
   ],
 })
