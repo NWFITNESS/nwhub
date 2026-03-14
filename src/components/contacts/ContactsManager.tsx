@@ -509,7 +509,7 @@ export function ContactsManager({ initialContacts }: Props) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/[0.08]">
-                <th className="pl-4 pr-2 py-3 w-10">
+                <th className="pl-6 pr-2 py-4 w-10">
                   <input
                     type="checkbox"
                     checked={allFilteredSelected}
@@ -519,16 +519,16 @@ export function ContactsManager({ initialContacts }: Props) {
                   />
                 </th>
                 {['Name', 'Email', 'Phone', 'Groups', 'Source', 'Added', ''].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">{h}</th>
+                  <th key={h} className="px-6 py-4 text-left text-xs font-medium text-white/40 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={8} className="px-4 py-12 text-center text-white/30">No contacts match your search</td></tr>
+                <tr><td colSpan={8} className="px-6 py-12 text-center text-white/30">No contacts match your search</td></tr>
               ) : filtered.map((c) => (
                 <tr key={c.id} className={`border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors ${selectedIds.has(c.id) ? 'bg-[#967705]/5' : ''}`}>
-                  <td className="pl-4 pr-2 py-3">
+                  <td className="pl-6 pr-2 py-4">
                     <input
                       type="checkbox"
                       checked={selectedIds.has(c.id)}
@@ -537,10 +537,10 @@ export function ContactsManager({ initialContacts }: Props) {
                       className="accent-[#967705] w-4 h-4 cursor-pointer rounded"
                     />
                   </td>
-                  <td className="px-4 py-3 font-medium text-white">{c.first_name} {c.last_name}</td>
-                  <td className="px-4 py-3 text-white/60">{c.email ?? '—'}</td>
-                  <td className="px-4 py-3 text-white/60 font-mono text-xs">{c.phone ?? '—'}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-6 py-4 font-medium text-white">{c.first_name} {c.last_name}</td>
+                  <td className="px-6 py-4 text-white/60">{c.email ?? '—'}</td>
+                  <td className="px-6 py-4 text-white/60 font-mono text-xs">{c.phone ?? '—'}</td>
+                  <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-1">
                       {c.groups.length === 0 ? (
                         <span className="text-white/25">—</span>
@@ -549,13 +549,13 @@ export function ContactsManager({ initialContacts }: Props) {
                       ))}
                     </div>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${sourceBadge[c.source] ?? sourceBadge.manual}`}>
                       {c.source}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-white/40 text-xs">{format(new Date(c.created_at), 'dd MMM yyyy')}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-6 py-4 text-white/40 text-xs">{format(new Date(c.created_at), 'dd MMM yyyy')}</td>
+                  <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-1">
                       <button onClick={() => openEdit(c)} className="p-1.5 rounded-md text-white/30 hover:text-white hover:bg-white/[0.07] transition-colors" aria-label="Edit">
                         <Pencil size={14} />

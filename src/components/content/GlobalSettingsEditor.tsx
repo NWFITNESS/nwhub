@@ -46,7 +46,7 @@ export function GlobalSettingsEditor({ initialSettings }: Props) {
   return (
     <div className="space-y-4">
       {SETTINGS_KEYS.map(({ key, label }) => (
-        <div key={key} className="bg-[#161616] border border-white/[0.08] rounded-xl p-5">
+        <div key={key} className="bg-[#161616] border border-white/[0.08] rounded-xl p-6">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-medium">{label}</h3>
             <Button

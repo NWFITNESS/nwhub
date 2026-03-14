@@ -38,7 +38,7 @@ function StatCard({ label, value, sub, icon: Icon }: {
   label: string; value: string | number; sub?: string; icon: React.ComponentType<{ size?: number; className?: string }>
 }) {
   return (
-    <div className="rounded-xl border border-white/[0.08] bg-[#0f0f0f] p-5 flex items-start gap-4">
+    <div className="rounded-xl border border-white/[0.08] bg-[#0f0f0f] p-6 flex items-start gap-4">
       <div className="w-9 h-9 rounded-lg bg-[#967705]/15 border border-[#967705]/20 flex items-center justify-center shrink-0">
         <Icon size={16} className="text-[#c9a70a]" />
       </div>

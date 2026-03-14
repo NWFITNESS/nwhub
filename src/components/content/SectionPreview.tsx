@@ -295,11 +295,7 @@ export function SectionBlock({ sectionKey, content, hasDraft, isSelected, onClic
     <button
       type="button"
       onClick={() => onClick(sectionKey)}
-      className={`w-full text-left group rounded-xl border bg-[#111] transition-all duration-150
-        ${isSelected
-          ? 'border-[#967705]/60 shadow-[inset_3px_0_0_#967705]'
-          : 'border-white/[0.08] hover:border-white/20'
-        }`}
+      className={`w-full text-left group rounded-xl border bg-[#111] transition-all duration-150 ${isSelected ? 'border-[#967705]/60 shadow-[inset_3px_0_0_#967705]' : 'border-white/[0.08] hover:border-white/20'}`}
     >
       <div className="p-4">
         {/* Header row */}

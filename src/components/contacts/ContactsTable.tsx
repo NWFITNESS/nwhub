@@ -73,16 +73,16 @@ export function ContactsTable({ initialEnquiries }: Props) {
           <thead>
             <tr className="border-b border-white/[0.08]">
               {visibleCols.map((col) => (
-                <th key={col.key} className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">
+                <th key={col.key} className="px-6 py-4 text-left text-xs font-medium text-white/40 uppercase tracking-wider">
                   {col.label}
                 </th>
               ))}
-              <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider" />
+              <th className="px-6 py-4 text-left text-xs font-medium text-white/40 uppercase tracking-wider" />
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={colSpan} className="px-4 py-12 text-center text-white/30">No enquiries</td></tr>
+              <tr><td colSpan={colSpan} className="px-6 py-12 text-center text-white/30">No enquiries</td></tr>
             ) : (
               filtered.map((e) => (
                 <tr
@@ -90,12 +90,12 @@ export function ContactsTable({ initialEnquiries }: Props) {
                   className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors cursor-pointer"
                   onClick={() => setSelected(e)}
                 >
-                  {visible.has('name') && <td className="px-4 py-3 font-medium text-white">{e.name}</td>}
-                  {visible.has('email') && <td className="px-4 py-3 text-white/60">{e.email}</td>}
-                  {visible.has('type') && <td className="px-4 py-3 text-white/50">{e.enquiry_type}</td>}
-                  {visible.has('status') && <td className="px-4 py-3"><Badge variant={statusToBadge(e.status)}>{e.status}</Badge></td>}
-                  {visible.has('date') && <td className="px-4 py-3 text-white/40 text-xs">{format(new Date(e.created_at), 'dd MMM yyyy')}</td>}
-                  <td className="px-4 py-3 text-right">
+                  {visible.has('name') && <td className="px-6 py-4 font-medium text-white">{e.name}</td>}
+                  {visible.has('email') && <td className="px-6 py-4 text-white/60">{e.email}</td>}
+                  {visible.has('type') && <td className="px-6 py-4 text-white/50">{e.enquiry_type}</td>}
+                  {visible.has('status') && <td className="px-6 py-4"><Badge variant={statusToBadge(e.status)}>{e.status}</Badge></td>}
+                  {visible.has('date') && <td className="px-6 py-4 text-white/40 text-xs">{format(new Date(e.created_at), 'dd MMM yyyy')}</td>}
+                  <td className="px-6 py-4 text-right">
                     <Button variant="ghost" size="sm" onClick={(ev) => { ev.stopPropagation(); setSelected(e) }}>
                       View
                     </Button>

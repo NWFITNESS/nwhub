@@ -25,7 +25,7 @@ function getStatusClass(r: ReviewRequest, maxMessages: number): string {
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="rounded-xl border border-white/[0.08] bg-[#0f0f0f] p-5">
+    <div className="rounded-xl border border-white/[0.08] bg-[#0f0f0f] p-6">
       <p className="text-xs text-white/35 uppercase tracking-wider mb-1">{label}</p>
       <p className="text-3xl font-bold text-white">{value}</p>
       {sub && <p className="text-xs text-white/30 mt-1">{sub}</p>}
@@ -224,31 +224,31 @@ export function ReviewsDashboard({ initialRequests, initialSettings }: Props) {
           <thead>
             <tr className="border-b border-white/[0.08]">
               {['Contact', 'Phone', 'Messages Sent', 'Last Sent', 'Status', ''].map((h) => (
-                <th key={h} className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">{h}</th>
+                <th key={h} className="px-6 py-4 text-left text-xs font-medium text-white/40 uppercase tracking-wider">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {requests.length === 0 ? (
-              <tr><td colSpan={6} className="px-4 py-12 text-center text-white/30">No review requests sent yet. Configure settings and click Run Now.</td></tr>
+              <tr><td colSpan={6} className="px-6 py-12 text-center text-white/30">No review requests sent yet. Configure settings and click Run Now.</td></tr>
             ) : requests.map((r) => {
               const c = r.contact
               return (
                 <tr key={r.id} className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors">
-                  <td className="px-4 py-3">
+                  <td className="px-6 py-4">
                     <p className="font-medium text-white">{c ? `${c.first_name} ${c.last_name}` : '—'}</p>
                   </td>
-                  <td className="px-4 py-3 text-white/40 text-xs font-mono">{r.phone_number}</td>
-                  <td className="px-4 py-3 text-white/60 text-center">{r.messages_sent}</td>
-                  <td className="px-4 py-3 text-white/40 text-xs">
+                  <td className="px-6 py-4 text-white/40 text-xs font-mono">{r.phone_number}</td>
+                  <td className="px-6 py-4 text-white/60 text-center">{r.messages_sent}</td>
+                  <td className="px-6 py-4 text-white/40 text-xs">
                     {r.last_sent_at ? format(new Date(r.last_sent_at), 'dd MMM yyyy') : '—'}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusClass(r, settings.max_messages)}`}>
                       {getStatusLabel(r, settings.max_messages)}
                     </span>
                   </td>
-                  <td className="px-4 py-3" />
+                  <td className="px-6 py-4" />
                 </tr>
               )
             })}

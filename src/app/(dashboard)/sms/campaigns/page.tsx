@@ -17,7 +17,7 @@ export default async function SmsCampaignsPage() {
   return (
     <>
       <TopBar title="WhatsApp Campaigns" />
-      <main className="flex flex-col gap-6 p-4 lg:p-8 min-h-[calc(100vh-5rem)]">
+      <main className="flex flex-col gap-6 px-6 lg:px-12 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
           title="WhatsApp Campaigns"
           actions={<Link href="/sms/campaigns/new"><Button variant="primary" size="sm"><Plus size={14} /> New Campaign</Button></Link>}
@@ -28,7 +28,7 @@ export default async function SmsCampaignsPage() {
               <thead>
                 <tr className="border-b border-white/[0.06]">
                   {['Name', 'Message', 'Status', 'Sent', 'Date'].map((h) => (
-                    <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold text-white/30 uppercase tracking-[0.1em]">{h}</th>
+                    <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-white/30 uppercase tracking-[0.1em]">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -44,11 +44,11 @@ export default async function SmsCampaignsPage() {
                   </tr>
                 ) : campaigns.map((c) => (
                   <tr key={c.id} className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors duration-200">
-                    <td className="px-5 py-4 font-medium text-[#F0F0F0]">{c.name}</td>
-                    <td className="px-5 py-4 text-white/50 max-w-64 truncate">{c.message}</td>
-                    <td className="px-5 py-4"><Badge variant={c.status as 'draft' | 'sent'}>{c.status}</Badge></td>
-                    <td className="px-5 py-4 text-white/50">{c.stats?.sent ?? 0}</td>
-                    <td className="px-5 py-4 text-white/40 text-xs">{format(new Date(c.created_at), 'dd MMM yyyy')}</td>
+                    <td className="px-6 py-4 font-medium text-[#F0F0F0]">{c.name}</td>
+                    <td className="px-6 py-4 text-white/50 max-w-64 truncate">{c.message}</td>
+                    <td className="px-6 py-4"><Badge variant={c.status as 'draft' | 'sent'}>{c.status}</Badge></td>
+                    <td className="px-6 py-4 text-white/50">{c.stats?.sent ?? 0}</td>
+                    <td className="px-6 py-4 text-white/40 text-xs">{format(new Date(c.created_at), 'dd MMM yyyy')}</td>
                   </tr>
                 ))}
               </tbody>

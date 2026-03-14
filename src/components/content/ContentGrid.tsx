@@ -96,10 +96,7 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
             placeholder="Search pages…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-[#1a1a1a] border border-white/[0.08] rounded-lg
-                       text-sm text-[#F0F0F0] placeholder:text-white/20
-                       focus:outline-none focus:border-[#967705]/60 focus:ring-1 focus:ring-[#967705]/30
-                       transition-all duration-200"
+            className="w-full pl-10 pr-4 py-2.5 bg-[#1a1a1a] border border-white/[0.08] rounded-lg text-sm text-[#F0F0F0] placeholder:text-white/20 focus:outline-none focus:border-[#967705]/60 focus:ring-1 focus:ring-[#967705]/30 transition-all duration-200"
           />
         </div>
         <div className="flex gap-1.5">
@@ -175,8 +172,7 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
                   key={slug}
                   variants={cardVariants}
                   whileHover={{ y: -4, transition: { duration: 0.2, ease: 'easeOut' } }}
-                  className="relative bg-[#161616] border border-white/[0.06] rounded-xl overflow-hidden
-                             hover:border-[#967705]/35 transition-colors duration-200 group"
+                  className="relative bg-[#161616] border border-white/[0.06] rounded-xl overflow-hidden hover:border-[#967705]/35 transition-colors duration-200 group"
                 >
                   {/* Top-right corner accent line */}
                   <div className="absolute top-0 right-0 w-16 h-16 pointer-events-none">
@@ -190,7 +186,7 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
                     style={{ background: 'radial-gradient(circle at 50% 0%, rgba(201,167,10,0.05), transparent 70%)' }}
                   />
 
-                  <div className="relative z-10 p-5 flex flex-col gap-4">
+                  <div className="relative z-10 p-6 flex flex-col gap-4">
                     {/* Icon + status badge */}
                     <div className="flex items-start justify-between">
                       <div
@@ -200,14 +196,12 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
                         <Icon size={22} strokeWidth={1.75} />
                       </div>
                       {isDraft ? (
-                        <span className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold
-                                         bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                        <span className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
                           <Circle size={8} className="fill-amber-400" />
                           Draft
                         </span>
                       ) : (
-                        <span className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold
-                                         bg-green-500/10 text-green-400 border border-green-500/20">
+                        <span className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-green-500/10 text-green-400 border border-green-500/20">
                           <CheckCircle2 size={10} />
                           Published
                         </span>
@@ -232,9 +226,7 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
                     <div className="flex gap-2">
                       <Link
                         href={`/content/${slug}`}
-                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold
-                                   text-black bg-gradient-to-r from-[#967705] to-[#C9A70A]
-                                   hover:opacity-90 transition-opacity shadow-[0_0_14px_rgba(201,167,10,0.2)]"
+                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-black bg-gradient-to-r from-[#967705] to-[#C9A70A] hover:opacity-90 transition-opacity shadow-[0_0_14px_rgba(201,167,10,0.2)]"
                       >
                         <Edit3 size={13} />
                         Edit Content
@@ -243,10 +235,7 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
                         href={`${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/${slug === 'home' ? '' : slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center w-9 h-9 rounded-lg
-                                   bg-white/[0.04] border border-white/[0.08] text-white/40
-                                   hover:text-[#C9A70A] hover:border-[#967705]/40 hover:bg-white/[0.07]
-                                   transition-all duration-200"
+                        className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/40 hover:text-[#C9A70A] hover:border-[#967705]/40 hover:bg-white/[0.07] transition-all duration-200"
                       >
                         <Eye size={14} />
                       </a>

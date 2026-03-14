@@ -172,7 +172,7 @@ export function ChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.95 }}
             transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-              className="w-[380px] max-h-[560px] flex flex-col rounded-2xl border border-white/[0.08] shadow-2xl overflow-hidden"
+            className="w-[380px] max-h-[560px] flex flex-col rounded-2xl border border-white/[0.08] shadow-2xl overflow-hidden"
             style={{ transformOrigin: 'bottom right', background: '#0d0d0d' }}
           >
             {/* Header */}

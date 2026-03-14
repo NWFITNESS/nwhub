@@ -39,16 +39,16 @@ export function KidsTable({ initialRegistrations }: Props) {
           <thead>
             <tr className="border-b border-white/[0.08]">
               {visibleCols.map((col) => (
-                <th key={col.key} className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">
+                <th key={col.key} className="px-6 py-4 text-left text-xs font-medium text-white/40 uppercase tracking-wider">
                   {col.label}
                 </th>
               ))}
-              <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider" />
+              <th className="px-6 py-4 text-left text-xs font-medium text-white/40 uppercase tracking-wider" />
             </tr>
           </thead>
           <tbody>
             {initialRegistrations.length === 0 ? (
-              <tr><td colSpan={colSpan} className="px-4 py-12 text-center text-white/30">No registrations yet</td></tr>
+              <tr><td colSpan={colSpan} className="px-6 py-12 text-center text-white/30">No registrations yet</td></tr>
             ) : (
               initialRegistrations.map((reg) => (
                 <tr
@@ -56,16 +56,16 @@ export function KidsTable({ initialRegistrations }: Props) {
                   className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors cursor-pointer"
                   onClick={() => setSelected(reg)}
                 >
-                  {visible.has('parent') && <td className="px-4 py-3 font-medium text-white">{reg.parent.name}</td>}
-                  {visible.has('email') && <td className="px-4 py-3 text-white/60">{reg.parent.email}</td>}
+                  {visible.has('parent') && <td className="px-6 py-4 font-medium text-white">{reg.parent.name}</td>}
+                  {visible.has('email') && <td className="px-6 py-4 text-white/60">{reg.parent.email}</td>}
                   {visible.has('children') && (
-                    <td className="px-4 py-3 text-white/60">
+                    <td className="px-6 py-4 text-white/60">
                       {Array.isArray(reg.children) ? reg.children.length : 0} child{Array.isArray(reg.children) && reg.children.length !== 1 ? 'ren' : ''}
                     </td>
                   )}
-                  {visible.has('status') && <td className="px-4 py-3"><Badge variant="active">{reg.status}</Badge></td>}
-                  {visible.has('date') && <td className="px-4 py-3 text-white/40 text-xs">{format(new Date(reg.created_at), 'dd MMM yyyy')}</td>}
-                  <td className="px-4 py-3 text-right">
+                  {visible.has('status') && <td className="px-6 py-4"><Badge variant="active">{reg.status}</Badge></td>}
+                  {visible.has('date') && <td className="px-6 py-4 text-white/40 text-xs">{format(new Date(reg.created_at), 'dd MMM yyyy')}</td>}
+                  <td className="px-6 py-4 text-right">
                     <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setSelected(reg) }}>View</Button>
                   </td>
                 </tr>

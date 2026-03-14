@@ -229,7 +229,7 @@ export default async function DashboardPage() {
       <TopBar title="Overview" />
 
       {/* SKILL.md §8 — page layout wrapper */}
-      <div className="flex flex-col gap-6 p-4 lg:p-8 min-h-[calc(100vh-5rem)]">
+      <div className="flex flex-col gap-6 px-6 lg:px-12 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
 
         {/* ── Section 1 — Greeting (SKILL.md §9) ── */}
         <div>
@@ -248,8 +248,7 @@ export default async function DashboardPage() {
             return (
               <div
                 key={card.label}
-                className="bg-[#161616] border border-white/[0.06] rounded-xl p-6 min-h-[130px]
-                           flex flex-col justify-between hover:border-[#967705]/30 transition-colors duration-200"
+                className="bg-[#161616] border border-white/[0.06] rounded-xl p-6 min-h-[130px] flex flex-col justify-between hover:border-[#967705]/30 transition-colors duration-200"
               >
                 {/* Top row: label + icon */}
                 <div className="flex items-center justify-between">
@@ -427,11 +426,7 @@ export default async function DashboardPage() {
                 <Link
                   key={action.title}
                   href={action.href}
-                  className={`group bg-[#161616] border border-white/[0.06] rounded-xl p-6 min-h-[120px]
-                             flex items-start gap-5
-                             hover:border-[#967705]/40 hover:bg-[#1a1a1a]
-                             transition-all duration-200 cursor-pointer
-                             ${action.mobileHide ? 'hidden md:flex' : ''}`}
+                  className={`group bg-[#161616] border border-white/[0.06] rounded-xl p-6 min-h-[120px] flex items-start gap-5 hover:border-[#967705]/40 hover:bg-[#1a1a1a] transition-all duration-200 cursor-pointer ${action.mobileHide ? 'hidden md:flex' : ''}`}
                 >
                   {/* Icon */}
                   <div className="w-11 h-11 rounded-lg bg-[#967705]/10 border border-[#967705]/20 flex items-center justify-center flex-shrink-0 group-hover:border-[#967705]/40 transition-colors duration-200">

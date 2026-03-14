@@ -118,10 +118,7 @@ export function VisualEditorPage({
         <div className="flex items-center gap-3">
           <Link
             href="/content"
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium
-                       text-white/50 border border-white/[0.08] bg-white/[0.03]
-                       hover:text-white hover:border-white/20 hover:bg-white/[0.06]
-                       transition-all duration-200"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-white/50 border border-white/[0.08] bg-white/[0.03] hover:text-white hover:border-white/20 hover:bg-white/[0.06] transition-all duration-200"
           >
             <ChevronLeft size={13} />
             All Pages

@@ -17,7 +17,7 @@ export default async function EmailCampaignsPage() {
   return (
     <>
       <TopBar title="Email Campaigns" />
-      <main className="flex flex-col gap-6 p-4 lg:p-8 min-h-[calc(100vh-5rem)]">
+      <main className="flex flex-col gap-6 px-6 lg:px-12 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
           title="Email Campaigns"
           actions={
@@ -32,7 +32,7 @@ export default async function EmailCampaignsPage() {
               <thead>
                 <tr className="border-b border-white/[0.06]">
                   {['Name', 'Subject', 'Status', 'Sent', 'Opened', 'Date'].map((h) => (
-                    <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold text-white/30 uppercase tracking-[0.1em]">{h}</th>
+                    <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-white/30 uppercase tracking-[0.1em]">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -49,12 +49,12 @@ export default async function EmailCampaignsPage() {
                 ) : (
                   campaigns.map((c) => (
                     <tr key={c.id} className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors duration-200">
-                      <td className="px-5 py-4 font-medium text-[#F0F0F0]">{c.name}</td>
-                      <td className="px-5 py-4 text-white/50 max-w-48 truncate">{c.subject}</td>
-                      <td className="px-5 py-4"><Badge variant={c.status as 'draft' | 'sent'}>{c.status}</Badge></td>
-                      <td className="px-5 py-4 text-white/50">{c.stats?.sent ?? 0}</td>
-                      <td className="px-5 py-4 text-white/50">{c.stats?.opened ?? 0}</td>
-                      <td className="px-5 py-4 text-white/40 text-xs">
+                      <td className="px-6 py-4 font-medium text-[#F0F0F0]">{c.name}</td>
+                      <td className="px-6 py-4 text-white/50 max-w-48 truncate">{c.subject}</td>
+                      <td className="px-6 py-4"><Badge variant={c.status as 'draft' | 'sent'}>{c.status}</Badge></td>
+                      <td className="px-6 py-4 text-white/50">{c.stats?.sent ?? 0}</td>
+                      <td className="px-6 py-4 text-white/50">{c.stats?.opened ?? 0}</td>
+                      <td className="px-6 py-4 text-white/40 text-xs">
                         {c.sent_at ? format(new Date(c.sent_at), 'dd MMM yyyy') : format(new Date(c.created_at), 'dd MMM yyyy')}
                       </td>
                     </tr>

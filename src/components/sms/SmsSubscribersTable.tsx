@@ -69,24 +69,24 @@ export function SmsSubscribersTable({ initialSubscribers }: Props) {
           <thead>
             <tr className="border-b border-white/[0.08]">
               {visibleCols.map((col) => (
-                <th key={col.key} className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">
+                <th key={col.key} className="px-6 py-4 text-left text-xs font-medium text-white/40 uppercase tracking-wider">
                   {col.label}
                 </th>
               ))}
-              <th className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider" />
+              <th className="px-6 py-4 text-left text-xs font-medium text-white/40 uppercase tracking-wider" />
             </tr>
           </thead>
           <tbody>
             {subscribers.length === 0 ? (
-              <tr><td colSpan={colSpan} className="px-4 py-12 text-center text-white/30">No WhatsApp subscribers yet</td></tr>
+              <tr><td colSpan={colSpan} className="px-6 py-12 text-center text-white/30">No WhatsApp subscribers yet</td></tr>
             ) : (
               subscribers.map((s) => (
                 <tr key={s.id} className="border-b border-white/[0.04] last:border-0">
-                  {visible.has('phone') && <td className="px-4 py-3 text-white">{s.phone}</td>}
-                  {visible.has('name') && <td className="px-4 py-3 text-white/60">{s.first_name || '—'}</td>}
-                  {visible.has('status') && <td className="px-4 py-3"><Badge variant={statusToBadge(s.status)}>{s.status}</Badge></td>}
-                  {visible.has('subscribed') && <td className="px-4 py-3 text-white/40 text-xs">{format(new Date(s.subscribed_at), 'dd MMM yyyy')}</td>}
-                  <td className="px-4 py-3 text-right">
+                  {visible.has('phone') && <td className="px-6 py-4 text-white">{s.phone}</td>}
+                  {visible.has('name') && <td className="px-6 py-4 text-white/60">{s.first_name || '—'}</td>}
+                  {visible.has('status') && <td className="px-6 py-4"><Badge variant={statusToBadge(s.status)}>{s.status}</Badge></td>}
+                  {visible.has('subscribed') && <td className="px-6 py-4 text-white/40 text-xs">{format(new Date(s.subscribed_at), 'dd MMM yyyy')}</td>}
+                  <td className="px-6 py-4 text-right">
                     {s.status === 'subscribed' && (
                       <Button variant="ghost" size="sm" onClick={() => handleUnsubscribe(s.id)}>Unsubscribe</Button>
                     )}
