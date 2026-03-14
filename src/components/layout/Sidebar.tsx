@@ -26,7 +26,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { cn } from '@/lib/utils'
-import { FileText, Users, Settings } from 'lucide-react'
+import { FileText, Users, Settings, PoundSterling } from 'lucide-react'
 
 interface NavItem {
   label: string
@@ -69,6 +69,7 @@ const navGroups: NavGroup[] = [
       { label: 'Reviews', href: '/reviews', icon: StarNavIcon },
       { label: 'Email Campaigns', href: '/mailchimp', icon: MailchimpNavIcon },
       { label: 'AI Chat', href: '/ai-chat', icon: BotNavIcon },
+      { label: 'Financials', href: '/financials', icon: PoundSterling },
     ],
   },
   {

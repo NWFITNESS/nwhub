@@ -37,7 +37,7 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
   const [desktopOpen, setDesktopOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobileView, setIsMobileView] = useState(false)
-  const closeTimer = useRef<NodeJS.Timeout>()
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const handleMouseEnter = () => {
     clearTimeout(closeTimer.current)

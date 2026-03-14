@@ -14,6 +14,7 @@ import {
   Newspaper,
   ArrowUpRight,
   ArrowDownRight,
+  TrendingUp,
 } from 'lucide-react'
 
 // ---------------------------------------------------------------------------
@@ -183,6 +184,38 @@ export default async function DashboardPage() {
   ]
   const doneCount = checklist.filter((i) => i.done).length
 
+  // Try to fetch Xero monthly revenue (gracefully skip if not connected)
+  let monthlyRevenue = 0
+  try {
+    const { data: xeroTokens } = await supabase
+      .from('settings').select('value').eq('key', 'xero_tokens').single()
+    const { data: xeroTenant } = await supabase
+      .from('settings').select('value').eq('key', 'xero_tenant_id').single()
+    if (xeroTokens && xeroTenant) {
+      const { xero } = await import('@/lib/xero')
+      await xero.setTokenSet(JSON.parse(xeroTokens.value))
+      const tokenSet = xero.readTokenSet()
+      if (tokenSet.expired()) await xero.refreshToken()
+      const now2 = new Date()
+      const fromDate = new Date(now2.getFullYear(), now2.getMonth(), 1).toISOString().split('T')[0]
+      const invoicesRes = await xero.accountingApi.getInvoices(
+        xeroTenant.value, undefined, undefined, undefined, undefined, undefined, undefined,
+        ['PAID'], undefined, undefined, undefined, undefined, undefined, 100
+      )
+      const invs = invoicesRes.body.invoices ?? []
+      monthlyRevenue = invs
+        .filter((inv: { date?: string; total?: number }) => {
+          if (!inv.date) return false
+          const match = inv.date.match(/\/Date\((\d+)/)
+          const d = match ? new Date(parseInt(match[1])) : new Date(inv.date)
+          return d.getFullYear() === now2.getFullYear() && d.getMonth() === now2.getMonth()
+        })
+        .reduce((s: number, inv: { total?: number }) => s + (inv.total ?? 0), 0)
+    }
+  } catch {
+    // Xero not connected or error — keep monthlyRevenue = 0
+  }
+
   const allVisitorRows = visitorRows1y ?? []
   const data24h = buildHourlyVisitors(allVisitorRows)
   const data7d  = buildDailyVisitors(allVisitorRows, 7)
@@ -199,6 +232,8 @@ export default async function DashboardPage() {
       icon:    Users,
       iconBg:  'rgba(201,167,10,0.15)',
       trend:   null as number | null,
+      alert:   false,
+      isCurrency: false,
     },
     {
       label:   'Email Subscribers',
@@ -206,6 +241,8 @@ export default async function DashboardPage() {
       icon:    Mail,
       iconBg:  'rgba(59,130,246,0.15)',
       trend:   null as number | null,
+      alert:   false,
+      isCurrency: false,
     },
     {
       label:   'Unread Enquiries',
@@ -214,13 +251,16 @@ export default async function DashboardPage() {
       iconBg:  enquiriesAlert ? 'rgba(239,68,68,0.15)' : 'rgba(201,167,10,0.15)',
       trend:   null as number | null,
       alert:   enquiriesAlert,
+      isCurrency: false,
     },
     {
-      label:   'Draft Posts',
-      value:   draftPosts ?? 0,
-      icon:    FileEdit,
-      iconBg:  'rgba(168,85,247,0.15)',
+      label:   'Monthly Revenue',
+      value:   monthlyRevenue,
+      icon:    TrendingUp,
+      iconBg:  'rgba(34,197,94,0.15)',
       trend:   null as number | null,
+      alert:   false,
+      isCurrency: true,
     },
   ]
 
@@ -269,7 +309,7 @@ export default async function DashboardPage() {
                     className="text-3xl @md/page:text-5xl font-bold text-[#F0F0F0]"
                     style={{ fontFamily: 'Rajdhani' }}
                   >
-                    {card.value.toLocaleString()}
+                    {card.isCurrency ? `£${card.value.toLocaleString()}` : card.value.toLocaleString()}
                   </p>
 
                   {card.alert ? (
