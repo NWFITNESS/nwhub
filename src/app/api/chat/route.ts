@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { DEFAULT_CHAT_SYSTEM_PROMPT } from '@/lib/chat-defaults'
+import { rateLimit } from '@/lib/rate-limit'
 import type { ChatSettings } from '@/lib/types'
 
 const SAVE_LEAD_TOOL: Anthropic.Tool = {
@@ -20,6 +21,12 @@ const SAVE_LEAD_TOOL: Anthropic.Tool = {
 }
 
 export async function POST(req: NextRequest) {
+  // 20 messages per IP per minute — public endpoint, needs rate limiting
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? req.headers.get('x-real-ip') ?? 'unknown'
+  if (!rateLimit(`chat:${ip}`, 20, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests — slow down' }, { status: 429 })
+  }
+
   const supabase = createAdminClient()
 
   // Load settings

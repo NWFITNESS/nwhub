@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { mc } from '@/lib/mailchimp'
+import { mc, resolveApiKey } from '@/lib/mailchimp'
 import type { MailchimpSettings } from '@/lib/types'
 
 export async function POST(req: NextRequest) {
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     .single()
 
   const settings = (settingsData?.value ?? {}) as Partial<MailchimpSettings>
-  const { api_key } = settings
+  const api_key = resolveApiKey(settings.api_key)
 
   if (!api_key) {
     return NextResponse.json({ error: 'Mailchimp not configured' }, { status: 400 })

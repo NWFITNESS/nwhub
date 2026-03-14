@@ -1,8 +1,19 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getResend, FROM_EMAIL, REPLY_TO } from '@/lib/resend'
+import { requireAuth } from '@/lib/auth-guard'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
+
+  // 5 campaign sends per admin per hour (prevents accidental spam loops)
+  const ip = getClientIp(request)
+  if (!rateLimit(`email-send:${ip}`, 5, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: 'Too many requests — try again later' }, { status: 429 })
+  }
+
   try {
     const body = await request.json()
     const { name, subject, preview_text, from_name, from_email, reply_to, html_content, segment_tags } = body

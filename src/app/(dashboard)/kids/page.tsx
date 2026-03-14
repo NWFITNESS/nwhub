@@ -13,7 +13,7 @@ export default async function KidsPage() {
   return (
     <>
       <TopBar title="Kids & Teens Registrations" />
-      <main className="p-10">
+      <main className="flex flex-col gap-6 p-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
           title="Kids & Teens Registrations"
           description={`${registrations?.length ?? 0} registrations`}

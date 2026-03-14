@@ -1,5 +1,10 @@
 import { createHash } from 'crypto'
 
+/** Returns the API key from env var, falling back to the value from the database. */
+export function resolveApiKey(dbKey?: string): string {
+  return process.env.MAILCHIMP_API_KEY || dbKey || ''
+}
+
 export function getMailchimpDc(apiKey: string): string {
   return apiKey.split('-').pop()!
 }

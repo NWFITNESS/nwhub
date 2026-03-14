@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useEffect, useCallback } from 'react'
+import { useRef, useState, useLayoutEffect, useCallback } from 'react'
 
 const TARGET_WIDTH = 1100
 
@@ -27,19 +27,29 @@ export function ScaledPreview({
     onScaleChange?.(s)
   }, [onScaleChange])
 
-  useEffect(() => {
+  // useLayoutEffect fires synchronously before the browser paints, so the user
+  // never sees the uncalculated state. The ResizeObserver handles subsequent changes.
+  useLayoutEffect(() => {
+    recalculate()
     const ro = new ResizeObserver(recalculate)
     if (containerRef.current) ro.observe(containerRef.current)
     if (innerRef.current) ro.observe(innerRef.current)
-    recalculate()
     return () => ro.disconnect()
   }, [recalculate])
+
+  // While scaledHeight is being measured, use overflow:visible so the absolute
+  // inner div is visible and its scrollHeight can be read correctly. Once we have
+  // a measurement, switch to overflow:hidden to clip the scaled content cleanly.
+  const measured = scaledHeight !== undefined
 
   return (
     <div
       ref={containerRef}
-      className="relative w-full overflow-hidden"
-      style={{ height: scaledHeight ?? 'auto' }}
+      className="relative w-full"
+      style={{
+        height: measured ? scaledHeight : 'auto',
+        overflow: measured ? 'hidden' : 'visible',
+      }}
     >
       <div
         ref={innerRef}

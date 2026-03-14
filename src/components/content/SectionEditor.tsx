@@ -245,6 +245,281 @@ function GenericArrayEditor({ content, onChange, fields }: {
   )
 }
 
+// String array editor (plain string[] items — stations, perks, how_it_works)
+function StringArrayEditor({
+  content,
+  onChange,
+  label = 'Item',
+}: {
+  content: Record<string, unknown>
+  onChange: (v: Record<string, unknown>) => void
+  label?: string
+}) {
+  const items = (content.items as string[]) ?? []
+
+  function updateItem(i: number, value: string) {
+    const next = items.map((s, idx) => (idx === i ? value : s))
+    onChange({ ...content, items: next })
+  }
+  function addItem() {
+    onChange({ ...content, items: [...items, ''] })
+  }
+  function removeItem(i: number) {
+    onChange({ ...content, items: items.filter((_, idx) => idx !== i) })
+  }
+
+  return (
+    <div className="space-y-2">
+      {items.map((item, i) => (
+        <ArrayItemWrapper key={i} index={i} onRemove={() => removeItem(i)}>
+          <Input value={item} onChange={(e) => updateItem(i, e.target.value)} />
+        </ArrayItemWrapper>
+      ))}
+      <Button variant="ghost" size="sm" onClick={addItem} type="button">
+        <Plus size={14} /> Add {label}
+      </Button>
+    </div>
+  )
+}
+
+// Single text field editor (hwpo, terms)
+function SingleTextEditor({
+  content,
+  onChange,
+}: {
+  content: Record<string, unknown>
+  onChange: (v: Record<string, unknown>) => void
+}) {
+  return (
+    <Field label="Content">
+      <Textarea
+        value={(content.text as string) ?? ''}
+        onChange={(e) => onChange({ ...content, text: e.target.value })}
+        className="min-h-[120px]"
+      />
+    </Field>
+  )
+}
+
+// Single URL editor (embed_url)
+function SingleUrlEditor({
+  content,
+  onChange,
+}: {
+  content: Record<string, unknown>
+  onChange: (v: Record<string, unknown>) => void
+}) {
+  return (
+    <Field label="URL">
+      <Input
+        value={(content.url as string) ?? ''}
+        onChange={(e) => onChange({ ...content, url: e.target.value })}
+        placeholder="https://..."
+      />
+    </Field>
+  )
+}
+
+// Contact block editor (home contact_block — address array, whatsapp, email)
+function ContactBlockEditor({
+  content,
+  onChange,
+}: {
+  content: Record<string, unknown>
+  onChange: (v: Record<string, unknown>) => void
+}) {
+  const s = content as { address?: string[]; whatsapp?: string; email?: string }
+  const addressStr = (s.address ?? []).join('\n')
+  return (
+    <div className="space-y-4">
+      <Field label="Address (one line per entry)">
+        <Textarea
+          value={addressStr}
+          onChange={(e) =>
+            onChange({ ...content, address: e.target.value.split('\n').filter(Boolean) })
+          }
+          className="min-h-[80px]"
+        />
+      </Field>
+      <Field label="WhatsApp Number">
+        <Input
+          value={s.whatsapp ?? ''}
+          onChange={(e) => onChange({ ...content, whatsapp: e.target.value })}
+          placeholder="+447..."
+        />
+      </Field>
+      <Field label="Email">
+        <Input
+          value={s.email ?? ''}
+          onChange={(e) => onChange({ ...content, email: e.target.value })}
+        />
+      </Field>
+    </div>
+  )
+}
+
+// Contact details editor (contact page details section — email, address string)
+function ContactDetailsEditor({
+  content,
+  onChange,
+}: {
+  content: Record<string, unknown>
+  onChange: (v: Record<string, unknown>) => void
+}) {
+  const s = content as { email?: string; address?: string | string[] }
+  const addressStr = Array.isArray(s.address) ? s.address.join('\n') : (s.address ?? '')
+  return (
+    <div className="space-y-4">
+      <Field label="Email">
+        <Input
+          value={s.email ?? ''}
+          onChange={(e) => onChange({ ...content, email: e.target.value })}
+        />
+      </Field>
+      <Field label="Address">
+        <Textarea
+          value={addressStr}
+          onChange={(e) => onChange({ ...content, address: e.target.value })}
+          className="min-h-[80px]"
+        />
+      </Field>
+    </div>
+  )
+}
+
+// Form enquiry types editor (contact form dropdown options)
+function FormEnquiryEditor({
+  content,
+  onChange,
+}: {
+  content: Record<string, unknown>
+  onChange: (v: Record<string, unknown>) => void
+}) {
+  const types = (content.enquiry_types as string[]) ?? []
+
+  function updateType(i: number, value: string) {
+    const next = types.map((t, idx) => (idx === i ? value : t))
+    onChange({ ...content, enquiry_types: next })
+  }
+  function addType() {
+    onChange({ ...content, enquiry_types: [...types, ''] })
+  }
+  function removeType(i: number) {
+    onChange({ ...content, enquiry_types: types.filter((_, idx) => idx !== i) })
+  }
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-white/40 mb-3">Options shown in the contact form dropdown</p>
+      {types.map((type, i) => (
+        <ArrayItemWrapper key={i} index={i} onRemove={() => removeType(i)}>
+          <Input value={type} onChange={(e) => updateType(i, e.target.value)} />
+        </ArrayItemWrapper>
+      ))}
+      <Button variant="ghost" size="sm" onClick={addType} type="button">
+        <Plus size={14} /> Add Option
+      </Button>
+    </div>
+  )
+}
+
+// Options editor for start-here (kicker, title, desc, image_url + nested buttons)
+function OptionsEditor({
+  content,
+  onChange,
+}: {
+  content: Record<string, unknown>
+  onChange: (v: Record<string, unknown>) => void
+}) {
+  type ButtonItem = { label: string; href: string; variant: string }
+  type OptionItem = { kicker?: string; title: string; desc: string; image_url?: string; buttons: ButtonItem[] }
+  const items = (content.items as OptionItem[]) ?? []
+
+  function updateItem(i: number, field: string, value: unknown) {
+    const next = items.map((item, idx) => (idx === i ? { ...item, [field]: value } : item))
+    onChange({ ...content, items: next })
+  }
+  function addItem() {
+    onChange({ ...content, items: [...items, { kicker: '', title: '', desc: '', image_url: '', buttons: [] }] })
+  }
+  function removeItem(i: number) {
+    onChange({ ...content, items: items.filter((_, idx) => idx !== i) })
+  }
+  function updateButton(itemIdx: number, btnIdx: number, field: string, value: string) {
+    const item = items[itemIdx]
+    const buttons = item.buttons.map((b, bi) => (bi === btnIdx ? { ...b, [field]: value } : b))
+    updateItem(itemIdx, 'buttons', buttons)
+  }
+  function addButton(itemIdx: number) {
+    const item = items[itemIdx]
+    updateItem(itemIdx, 'buttons', [...item.buttons, { label: '', href: '', variant: 'primary' }])
+  }
+  function removeButton(itemIdx: number, btnIdx: number) {
+    const item = items[itemIdx]
+    updateItem(itemIdx, 'buttons', item.buttons.filter((_, bi) => bi !== btnIdx))
+  }
+
+  return (
+    <div className="space-y-4">
+      {items.map((item, i) => (
+        <ArrayItemWrapper key={i} index={i} onRemove={() => removeItem(i)}>
+          <div className="space-y-3">
+            <Field label="Kicker">
+              <Input value={item.kicker ?? ''} onChange={(e) => updateItem(i, 'kicker', e.target.value)} />
+            </Field>
+            <Field label="Title">
+              <Input value={item.title} onChange={(e) => updateItem(i, 'title', e.target.value)} />
+            </Field>
+            <Field label="Description">
+              <Textarea value={item.desc} onChange={(e) => updateItem(i, 'desc', e.target.value)} />
+            </Field>
+            <Field label="Image">
+              <ImageField value={item.image_url ?? ''} onChange={(url) => updateItem(i, 'image_url', url)} />
+            </Field>
+            <div>
+              <p className="text-xs text-white/40 mb-2">Buttons</p>
+              <div className="space-y-2 pl-3 border-l border-white/10">
+                {item.buttons.map((btn, bi) => (
+                  <div key={bi} className="flex gap-2 items-end">
+                    <div className="flex-1 grid grid-cols-3 gap-2">
+                      <Field label="Label">
+                        <Input value={btn.label} onChange={(e) => updateButton(i, bi, 'label', e.target.value)} />
+                      </Field>
+                      <Field label="Link">
+                        <Input value={btn.href} onChange={(e) => updateButton(i, bi, 'href', e.target.value)} />
+                      </Field>
+                      <Field label="Style">
+                        <Input
+                          value={btn.variant}
+                          onChange={(e) => updateButton(i, bi, 'variant', e.target.value)}
+                          placeholder="primary/outline"
+                        />
+                      </Field>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeButton(i, bi)}
+                      className="text-white/30 hover:text-red-400 transition-colors mb-1"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                ))}
+                <Button variant="ghost" size="sm" onClick={() => addButton(i)} type="button">
+                  <Plus size={12} /> Add Button
+                </Button>
+              </div>
+            </div>
+          </div>
+        </ArrayItemWrapper>
+      ))}
+      <Button variant="ghost" size="sm" onClick={addItem} type="button">
+        <Plus size={14} /> Add Option
+      </Button>
+    </div>
+  )
+}
+
 // Social Carousel section editor
 function SocialCarouselEditor({ content, onChange }: { content: Record<string, unknown>; onChange: (v: Record<string, unknown>) => void }) {
   const s = content as { heading?: string; subtext?: string; ig_url?: string; speed?: number }
@@ -348,6 +623,56 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
     ]} />
   ),
   social_carousel: (p) => <SocialCarouselEditor {...p} />,
+  plans: (p) => <MembershipsEditor {...p} />,
+  sessions: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'title', label: 'Title' },
+      { key: 'type', label: 'Type (e.g. Coached)' },
+      { key: 'desc', label: 'Description', multiline: true },
+      { key: 'image_url', label: 'Image' },
+      { key: 'link', label: 'Link URL' },
+    ]} />
+  ),
+  specialist: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'title', label: 'Title' },
+      { key: 'type', label: 'Type' },
+      { key: 'desc', label: 'Description', multiline: true },
+      { key: 'image_url', label: 'Image' },
+      { key: 'link', label: 'Link URL' },
+    ]} />
+  ),
+  hwpo: (p) => <SingleTextEditor {...p} />,
+  stations: (p) => <StringArrayEditor {...p} label="Station" />,
+  training_blocks: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'title', label: 'Title' },
+      { key: 'desc', label: 'Description', multiline: true },
+      { key: 'image_url', label: 'Image' },
+    ]} />
+  ),
+  age_groups: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'name', label: 'Name' },
+      { key: 'ages', label: 'Age Range' },
+      { key: 'desc', label: 'Description', multiline: true },
+      { key: 'image_url', label: 'Image' },
+    ]} />
+  ),
+  how_it_works: (p) => <StringArrayEditor {...p} label="Step" />,
+  perks: (p) => <StringArrayEditor {...p} label="Perk" />,
+  discounts: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'label', label: 'Discount Name' },
+      { key: 'desc', label: 'Description', multiline: true },
+    ]} />
+  ),
+  terms: (p) => <SingleTextEditor {...p} />,
+  embed_url: (p) => <SingleUrlEditor {...p} />,
+  options: (p) => <OptionsEditor {...p} />,
+  contact_block: (p) => <ContactBlockEditor {...p} />,
+  form: (p) => <FormEnquiryEditor {...p} />,
+  details: (p) => <ContactDetailsEditor {...p} />,
 }
 
 export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave, onContentChange, saveLabel = 'Save Section' }: SectionEditorProps) {

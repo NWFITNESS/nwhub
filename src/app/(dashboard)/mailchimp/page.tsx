@@ -54,7 +54,7 @@ export default async function MailchimpPage() {
   return (
     <>
       <TopBar title="Mailchimp" />
-      <main className="p-10">
+      <main className="flex flex-col gap-6 p-8 min-h-[calc(100vh-5rem)]">
         <PageHeader title="Mailchimp" description="Manage your email audience, sync subscribers, and send campaigns" />
         <MailchimpDashboard initialSettings={initialSettings} initialStats={initialStats} />
       </main>

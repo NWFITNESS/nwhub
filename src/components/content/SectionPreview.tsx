@@ -122,6 +122,107 @@ function ScrollStoryPreview({ content }: { content: Record<string, unknown> }) {
   )
 }
 
+function StringArrayPreview({ content, itemsKey = 'items' }: { content: Record<string, unknown>; itemsKey?: string }) {
+  const items = (content[itemsKey] as string[]) ?? []
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {items.slice(0, 5).map((s, i) => (
+        <span key={i} className="text-[10px] bg-white/[0.06] border border-white/10 rounded px-2 py-1 text-white/60">
+          {s || '—'}
+        </span>
+      ))}
+      {items.length > 5 && <span className="text-[10px] text-white/30">+{items.length - 5} more</span>}
+      {items.length === 0 && <p className="text-white/30 text-xs italic">No items yet</p>}
+    </div>
+  )
+}
+
+function SingleTextPreview({ content }: { content: Record<string, unknown> }) {
+  const text = (content.text as string) ?? ''
+  return text ? (
+    <p className="text-xs text-white/60 line-clamp-2">{text}</p>
+  ) : (
+    <p className="text-white/30 text-xs italic">No content yet</p>
+  )
+}
+
+function SingleUrlPreview({ content }: { content: Record<string, unknown> }) {
+  const url = (content.url as string) ?? ''
+  return url ? (
+    <p className="text-xs text-[#967705]/80 truncate font-mono">{url}</p>
+  ) : (
+    <p className="text-white/30 text-xs italic">No URL set</p>
+  )
+}
+
+function OptionsPreview({ content }: { content: Record<string, unknown> }) {
+  const items = (content.items as Array<{ title?: string; kicker?: string }>) ?? []
+  return (
+    <div className="space-y-1">
+      {items.slice(0, 3).map((item, i) => (
+        <div key={i} className="text-xs text-white/60">
+          {item.kicker && <span className="text-[#967705] text-[10px] mr-1">{item.kicker}</span>}
+          {item.title || 'Option…'}
+        </div>
+      ))}
+      {items.length > 3 && <p className="text-[10px] text-white/30">+{items.length - 3} more</p>}
+      {items.length === 0 && <p className="text-white/30 text-xs italic">No options yet</p>}
+    </div>
+  )
+}
+
+function DiscountsPreview({ content }: { content: Record<string, unknown> }) {
+  const items = (content.items as Array<{ label?: string }>) ?? []
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {items.slice(0, 4).map((item, i) => (
+        <span key={i} className="text-[10px] bg-white/[0.06] border border-white/10 rounded px-2 py-1 text-white/60">
+          {item.label || '—'}
+        </span>
+      ))}
+      {items.length === 0 && <p className="text-white/30 text-xs italic">No discounts</p>}
+    </div>
+  )
+}
+
+function ContactBlockPreview({ content }: { content: Record<string, unknown> }) {
+  const s = content as { address?: string[]; whatsapp?: string }
+  return (
+    <div className="text-xs text-white/50 space-y-0.5">
+      {s.address?.[0] && <p className="truncate">{s.address[0]}</p>}
+      {s.whatsapp && <p className="text-[#967705]/80">{s.whatsapp}</p>}
+      {!s.address?.[0] && !s.whatsapp && <p className="italic">No contact info</p>}
+    </div>
+  )
+}
+
+function DetailsPreview({ content }: { content: Record<string, unknown> }) {
+  const s = content as { email?: string; address?: string | string[] }
+  const addressStr = Array.isArray(s.address) ? s.address[0] : s.address
+  return (
+    <div className="text-xs text-white/50 space-y-0.5">
+      {s.email && <p className="truncate">{s.email}</p>}
+      {addressStr && <p className="truncate text-white/30">{addressStr}</p>}
+      {!s.email && !addressStr && <p className="italic">No details</p>}
+    </div>
+  )
+}
+
+function FormPreview({ content }: { content: Record<string, unknown> }) {
+  const types = (content.enquiry_types as string[]) ?? []
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {types.slice(0, 4).map((t, i) => (
+        <span key={i} className="text-[10px] bg-white/[0.06] border border-white/10 rounded px-2 py-1 text-white/60">
+          {t}
+        </span>
+      ))}
+      {types.length > 4 && <span className="text-[10px] text-white/30">+{types.length - 4} more</span>}
+      {types.length === 0 && <p className="text-white/30 text-xs italic">No types</p>}
+    </div>
+  )
+}
+
 function DefaultPreview({ content, sectionKey }: { content: Record<string, unknown>; sectionKey: string }) {
   const keys = Object.keys(content)
   const arrayKeys = keys.filter((k) => Array.isArray(content[k]))
@@ -159,6 +260,21 @@ const PREVIEW_MAP: Record<
   coaches: ({ content }) => <CoachesPreview content={content} />,
   facilities: ({ content }) => <FacilitiesPreview content={content} />,
   scroll_story: ({ content }) => <ScrollStoryPreview content={content} />,
+  plans: ({ content }) => <MembershipsPreview content={content} />,
+  sessions: ({ content }) => <FacilitiesPreview content={content} />,
+  specialist: ({ content }) => <FacilitiesPreview content={content} />,
+  training_blocks: ({ content }) => <FacilitiesPreview content={content} />,
+  hwpo: ({ content }) => <SingleTextPreview content={content} />,
+  stations: ({ content }) => <StringArrayPreview content={content} />,
+  how_it_works: ({ content }) => <StringArrayPreview content={content} />,
+  perks: ({ content }) => <StringArrayPreview content={content} />,
+  discounts: ({ content }) => <DiscountsPreview content={content} />,
+  terms: ({ content }) => <SingleTextPreview content={content} />,
+  embed_url: ({ content }) => <SingleUrlPreview content={content} />,
+  options: ({ content }) => <OptionsPreview content={content} />,
+  contact_block: ({ content }) => <ContactBlockPreview content={content} />,
+  form: ({ content }) => <FormPreview content={content} />,
+  details: ({ content }) => <DetailsPreview content={content} />,
 }
 
 // ─── SectionBlock wrapper ─────────────────────────────────────────────────────

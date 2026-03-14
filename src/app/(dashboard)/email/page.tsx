@@ -22,7 +22,7 @@ export default async function EmailPage() {
           </Link>
         }
       />
-      <main className="p-10">
+      <main className="flex flex-col gap-6 p-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
           title="Email Subscribers"
           description={`${total ?? 0} active subscribers`}

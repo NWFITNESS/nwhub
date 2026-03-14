@@ -5,7 +5,7 @@ export default function NewEmailCampaignPage() {
   return (
     <>
       <TopBar title="New Email Campaign" />
-      <main className="p-10">
+      <main className="flex flex-col gap-6 p-8 min-h-[calc(100vh-5rem)]">
         <CampaignBuilder />
       </main>
     </>

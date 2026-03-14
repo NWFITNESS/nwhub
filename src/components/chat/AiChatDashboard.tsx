@@ -138,12 +138,12 @@ export function AiChatDashboard({ initialSettings, initialSessions }: Props) {
       )}
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 p-1 rounded-lg bg-[#111] border border-white/[0.08] w-fit">
+      <div className="flex items-center gap-1 p-1.5 rounded-xl bg-[#111] border border-white/[0.08] w-fit">
         {(['settings', 'conversations'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium capitalize transition-colors ${
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors ${
               activeTab === tab
                 ? 'bg-[#967705]/20 text-[#c9a70a] border border-[#967705]/30'
                 : 'text-white/40 hover:text-white/70'

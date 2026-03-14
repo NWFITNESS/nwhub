@@ -156,53 +156,109 @@ function PostContent({
   const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
 
   return (
-    <div className="bg-[#0a0a0a] text-white min-h-full">
-      {/* Hero */}
-      <div className="relative w-full" style={{ aspectRatio: mobile ? '9/10' : '21/9' }}>
+    <article style={{ minHeight: '100%', background: '#0a0a0a', color: '#fff' }}>
+      {/* Header Image */}
+      <div style={{ position: 'relative', overflow: 'hidden', height: mobile ? 300 : 500 }}>
         {featuredImageUrl ? (
-          <img src={featuredImageUrl} alt={title} className="w-full h-full object-cover" />
+          <img src={featuredImageUrl} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-[#967705]/20 to-[#0a0a0a]" />
+          <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, rgba(150,119,5,0.2), #0a0a0a)' }} />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 px-6 pb-8">
-          <h1 className={`font-bold text-white leading-tight drop-shadow-lg ${mobile ? 'text-2xl' : 'text-4xl md:text-5xl'}`}>
-            {title || 'Untitled Post'}
-          </h1>
-        </div>
-      </div>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #0a0a0a, rgba(10,10,10,0.8) 50%, transparent)' }} />
 
-      {/* Body */}
-      <div className={`mx-auto px-6 py-10 ${mobile ? '' : 'max-w-3xl'}`}>
-        {/* Meta row */}
-        <div className="flex flex-wrap items-center gap-3 mb-6">
-          {categoryName && (
-            <span className="text-xs font-semibold uppercase tracking-widest text-[#c9a70a] border border-[#967705]/40 px-2.5 py-1 rounded-full">
+        {/* Back Button */}
+        <div style={{
+          position: 'absolute', top: 32, left: 32,
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: mobile ? '8px 16px' : '12px 24px',
+          fontSize: mobile ? 13 : 14,
+          background: 'rgba(26,26,26,0.9)', backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(201,167,10,0.3)', borderRadius: 8, color: '#fff',
+        }}>
+          ← Back to Blog
+        </div>
+
+        {/* Category Badge */}
+        {categoryName && (
+          <div style={{ position: 'absolute', top: 32, right: 32 }}>
+            <span style={{
+              background: '#C9A70A', color: '#0a0a0a',
+              fontSize: mobile ? 10 : 12, fontWeight: 600,
+              padding: mobile ? '4px 12px' : '8px 24px',
+              borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.1em',
+              boxShadow: '0 0 20px rgba(201,167,10,0.6)',
+            }}>
               {categoryName}
             </span>
+          </div>
+        )}
+      </div>
+
+      {/* Content Card */}
+      <div style={{ maxWidth: mobile ? undefined : 896, margin: '0 auto', padding: '0 24px', marginTop: -128, position: 'relative', zIndex: 10 }}>
+        <div style={{
+          background: '#1a1a1a',
+          border: '1px solid rgba(201,167,10,0.2)',
+          borderRadius: 16,
+          padding: mobile ? 24 : 48,
+          boxShadow: '0 0 40px rgba(201,167,10,0.2)',
+        }}>
+          {/* Title */}
+          <h1 style={{
+            fontSize: mobile ? 22 : 32, fontWeight: 700,
+            marginBottom: 24, color: '#C9A70A',
+            textShadow: '0 0 15px rgba(201,167,10,0.3)',
+          }}>
+            {title || 'Untitled Post'}
+          </h1>
+
+          {/* Meta Info */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            paddingBottom: 32, marginBottom: 32,
+            borderBottom: '1px solid rgba(201,167,10,0.2)',
+          }}>
+            <div>
+              {author && <p style={{ color: '#fff', fontWeight: 500 }}>{author}</p>}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, color: '#888', fontSize: 14, marginTop: 4 }}>
+                <span>{today}</span>
+                <span>·</span>
+                <span>{readTime} min read</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Excerpt */}
+          {excerpt && (
+            <blockquote style={{ borderLeft: '4px solid #C9A70A', paddingLeft: 24, marginBottom: 32, margin: '0 0 32px 0' }}>
+              <p style={{ color: '#888', lineHeight: 1.75, fontStyle: 'italic', fontSize: mobile ? 16 : 18, margin: 0 }}>{excerpt}</p>
+            </blockquote>
           )}
-          {author && (
-            <>
-              <span className="text-sm text-white/40">By {author}</span>
-              <span className="text-white/20">·</span>
-            </>
-          )}
-          <span className="text-sm text-white/40">{today}</span>
-          <span className="text-white/20">·</span>
-          <span className="text-sm text-white/40">{readTime} min read</span>
+
+          {/* Body HTML */}
+          <div className="post-content" dangerouslySetInnerHTML={{ __html: content }} />
         </div>
 
-        {/* Excerpt */}
-        {excerpt && (
-          <blockquote className="border-l-2 border-[#967705] pl-5 mb-8">
-            <p className="text-lg text-white/60 leading-relaxed italic">{excerpt}</p>
-          </blockquote>
+        {/* Author Bio */}
+        {author && (
+          <div style={{
+            marginTop: 48,
+            background: 'linear-gradient(135deg, #1a1a1a, #0a0a0a)',
+            border: '1px solid rgba(201,167,10,0.3)',
+            borderRadius: 16, padding: 32,
+            boxShadow: '0 0 30px rgba(201,167,10,0.2)',
+          }}>
+            <h3 style={{ fontSize: 18, fontWeight: 600, color: '#fff', marginBottom: 8 }}>About {author}</h3>
+            <p style={{ color: '#888', margin: 0 }}>
+              Certified coach helping athletes reach their full potential. Passionate about functional fitness and performance training.
+            </p>
+          </div>
         )}
-
-        {/* Body HTML */}
-        <div className="post-content" dangerouslySetInnerHTML={{ __html: content }} />
       </div>
-    </div>
+
+      {/* Bottom Spacing */}
+      <div style={{ height: 80 }} />
+    </article>
   )
 }
 

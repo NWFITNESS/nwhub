@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAuth } from '@/lib/auth-guard'
 
 // POST /api/media — upload a file
 export async function POST(req: NextRequest) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
+
   const supabase = createAdminClient()
   const form = await req.formData()
   const file = form.get('file') as File | null
@@ -31,6 +35,9 @@ export async function POST(req: NextRequest) {
 
 // DELETE /api/media — delete a file by id
 export async function DELETE(req: NextRequest) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
+
   const supabase = createAdminClient()
   const { id, storage_path } = await req.json()
   if (!id || !storage_path) return NextResponse.json({ error: 'Missing id or storage_path' }, { status: 400 })

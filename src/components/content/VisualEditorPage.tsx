@@ -1,16 +1,15 @@
 'use client'
 
-import { useState, useTransition, useEffect } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, X, Upload } from 'lucide-react'
-import { SectionBlock } from './SectionPreview'
-import { SectionEditor } from './SectionEditor'
-import { SectionFullPreview } from './SectionFullPreview'
-import { ScaledPreview } from './ScaledPreview'
+import { ChevronLeft, Upload, Trash2 } from 'lucide-react'
+import { IframeCanvas } from './IframeCanvas'
+import { FloatingEditor } from './FloatingEditor'
 
 type PageSection = {
   section_key: string
+  sort_order: number | null
   content: Record<string, unknown>
   draft_content: Record<string, unknown> | null
   updated_at: string
@@ -27,6 +26,15 @@ interface VisualEditorPageProps {
     content: Record<string, unknown> | null
   ) => Promise<void>
   publishPageAction: (slug: string) => Promise<void>
+  saveAndPublishAction: (
+    slug: string,
+    edits: Record<string, Record<string, unknown>>
+  ) => Promise<void>
+}
+
+interface EditorPos {
+  clientX: number
+  clientY: number
 }
 
 export function VisualEditorPage({
@@ -35,204 +43,154 @@ export function VisualEditorPage({
   sections,
   draftCount,
   saveDraftAction,
-  publishPageAction,
+  saveAndPublishAction,
 }: VisualEditorPageProps) {
   const router = useRouter()
+  const [liveEdits, setLiveEdits] = useState<Record<string, Record<string, unknown>>>({})
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
-  const [previewScale, setPreviewScale] = useState<number | null>(null)
+  const [editorPos, setEditorPos] = useState<EditorPos | null>(null)
   const [publishing, startPublish] = useTransition()
   const [discarding, startDiscard] = useTransition()
 
-  const selectedSection = sections.find((s) => s.section_key === selectedKey)
+  const hasLiveEdits = Object.keys(liveEdits).length > 0
+  const hasChanges = hasLiveEdits || draftCount > 0
 
-  // Effective content for the editor: draft takes precedence over live
-  const editingContent = selectedSection
-    ? (selectedSection.draft_content ?? selectedSection.content)
-    : {}
+  function getEffective(sectionKey: string): Record<string, unknown> {
+    const s = sections.find((x) => x.section_key === sectionKey)
+    return liveEdits[sectionKey] ?? s?.draft_content ?? s?.content ?? {}
+  }
 
-  // Live content state — updated in real-time as the user edits fields
-  const [liveContent, setLiveContent] = useState<Record<string, unknown>>(editingContent)
+  // ── Section click → open floating editor ────────────────────────────────────
 
-  // Reset live content when section changes
-  useEffect(() => {
-    setLiveContent(editingContent)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedKey])
-
-  function handleSectionClick(key: string) {
+  function handleSectionClick(key: string, clientX: number, clientY: number) {
     setSelectedKey(key)
+    setEditorPos({ clientX, clientY })
   }
 
-  function handleClose() {
-    setSelectedKey(null)
+  // ── Live field update → update liveEdits + propagate to iframe ───────────────
+
+  function handleContentChange(content: Record<string, unknown>) {
+    if (!selectedKey) return
+    setLiveEdits((prev) => ({ ...prev, [selectedKey]: content }))
   }
 
-  async function handleSaveDraft(sectionKey: string, content: Record<string, unknown>) {
-    await saveDraftAction(slug, sectionKey, content)
+  // ── Save draft for current section ───────────────────────────────────────────
+
+  async function handleSaveDraftCurrent() {
+    if (!selectedKey) return
+    await saveDraftAction(slug, selectedKey, getEffective(selectedKey))
     router.refresh()
   }
 
+  // ── Publish all ──────────────────────────────────────────────────────────────
+
   function handlePublish() {
     startPublish(async () => {
-      await publishPageAction(slug)
+      await saveAndPublishAction(slug, liveEdits)
+      setLiveEdits({})
+      setSelectedKey(null)
+      setEditorPos(null)
       router.refresh()
     })
   }
 
-  function handleDiscard() {
-    if (!selectedKey) return
+  // ── Discard all drafts ────────────────────────────────────────────────────────
+
+  function handleDiscardAll() {
     startDiscard(async () => {
-      await saveDraftAction(slug, selectedKey, null)
+      setLiveEdits({})
+      setSelectedKey(null)
+      setEditorPos(null)
+      await Promise.all(
+        sections
+          .filter((s) => s.draft_content != null)
+          .map((s) => saveDraftAction(slug, s.section_key, null))
+      )
       router.refresh()
     })
   }
-
-  const hasSelectedDraft = selectedSection?.draft_content != null
 
   return (
-    <div className="flex h-[calc(100vh-5rem)] overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-5rem)]">
 
-      {/* ── Column 1: section list ── */}
-      <div className="w-56 flex-shrink-0 border-r border-white/[0.08] flex flex-col bg-[#0d0d0d] overflow-hidden">
-        {/* Header */}
-        <div className="px-4 pt-4 pb-3 border-b border-white/[0.08] flex-shrink-0">
-          <div className="flex items-center gap-2 mb-3">
-            <Link
-              href="/content"
-              className="text-white/40 hover:text-white transition-colors p-1 -ml-1 rounded"
+      {/* ── Top toolbar ── */}
+      <div className="flex items-center justify-between px-6 py-3 border-b border-white/[0.08] bg-[#0d0d0d] flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/content"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium
+                       text-white/50 border border-white/[0.08] bg-white/[0.03]
+                       hover:text-white hover:border-white/20 hover:bg-white/[0.06]
+                       transition-all duration-200"
+          >
+            <ChevronLeft size={13} />
+            All Pages
+          </Link>
+          <span className="text-white/20 text-sm">/</span>
+          <p className="text-sm font-semibold text-white">{label}</p>
+          {hasChanges && (
+            <span className="px-2 py-0.5 rounded-full bg-[#967705]/20 border border-[#967705]/40 text-[10px] text-[#c4a015] font-semibold">
+              {hasLiveEdits ? 'unsaved changes' : `${draftCount} draft${draftCount !== 1 ? 's' : ''}`}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          {hasChanges && (
+            <button
+              type="button"
+              onClick={handleDiscardAll}
+              disabled={discarding}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 hover:border-red-400/40 text-white/40 hover:text-red-400 disabled:opacity-50 transition-colors text-xs font-medium"
             >
-              <ChevronLeft size={16} />
-            </Link>
-            <div>
-              <p className="text-sm font-semibold text-white leading-tight">{label}</p>
-              <p className="text-xs text-white/30 mt-0.5">
-                {sections.length} section{sections.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-          </div>
-          {draftCount > 0 && (
+              <Trash2 size={12} />
+              {discarding ? 'Discarding…' : 'Discard All'}
+            </button>
+          )}
+          {hasChanges && (
             <button
               type="button"
               onClick={handlePublish}
               disabled={publishing}
-              className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[#967705] hover:bg-[#b08e06] disabled:opacity-60 transition-colors text-white text-xs font-semibold"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#967705] hover:bg-[#b08e06] disabled:opacity-60 transition-colors text-white text-xs font-semibold"
             >
               <Upload size={13} />
-              {publishing
-                ? 'Publishing…'
-                : `Publish ${draftCount} change${draftCount !== 1 ? 's' : ''}`}
+              {publishing ? 'Publishing…' : 'Publish'}
             </button>
           )}
         </div>
-
-        {/* Section list */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-2">
-          {sections.length === 0 ? (
-            <p className="text-white/20 text-xs italic text-center py-6">No sections found</p>
-          ) : (
-            sections.map((section) => (
-              <SectionBlock
-                key={section.section_key}
-                sectionKey={section.section_key}
-                content={section.draft_content ?? section.content}
-                hasDraft={section.draft_content != null}
-                isSelected={selectedKey === section.section_key}
-                onClick={handleSectionClick}
-              />
-            ))
-          )}
-        </div>
       </div>
 
-      {/* ── Column 2: form editor ── */}
-      <div className="w-96 flex-shrink-0 border-r border-white/[0.08] flex flex-col bg-[#0d0d0d]">
-        {selectedKey && selectedSection ? (
-          <>
-            {/* Header */}
-            <div className="px-5 py-4 border-b border-white/[0.08] flex-shrink-0 flex items-start justify-between">
-              <div>
-                <p className="text-[10px] uppercase tracking-widest text-white/30 mb-0.5">Editing</p>
-                <p className="text-white font-semibold text-sm capitalize">
-                  {selectedKey.replace(/_/g, ' ')}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={handleClose}
-                className="text-white/30 hover:text-white transition-colors p-1 rounded mt-0.5"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            {/* Editor */}
-            <div className="flex-1 overflow-y-auto p-5">
-              <SectionEditor
-                key={selectedKey}
-                pageSlug={slug}
-                sectionKey={selectedKey}
-                initialContent={editingContent}
-                onSave={handleSaveDraft}
-                onContentChange={setLiveContent}
-                saveLabel="Save Draft"
-              />
-            </div>
-
-            {/* Discard draft */}
-            {hasSelectedDraft && (
-              <div className="px-5 py-4 border-t border-white/[0.06]">
-                <button
-                  type="button"
-                  onClick={handleDiscard}
-                  disabled={discarding}
-                  className="w-full text-center text-xs text-white/30 hover:text-red-400 transition-colors disabled:opacity-50"
-                >
-                  {discarding ? 'Discarding…' : 'Discard draft for this section'}
-                </button>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <p className="text-white/20 text-sm">Select a section to edit</p>
-          </div>
-        )}
+      {/* ── Canvas — scrollable, iframe renders at full page height ── */}
+      <div
+        id="editor-canvas"
+        className="editor-scroll-container bg-[#0a0a0a]"
+        style={{
+          height: 'calc(100vh - 5rem)',
+          overflowY: 'scroll',
+          overflowX: 'hidden',
+        }}
+      >
+        <IframeCanvas
+          slug={slug}
+          liveEdits={liveEdits}
+          selectedKey={selectedKey}
+          onSectionClick={handleSectionClick}
+        />
       </div>
 
-      {/* ── Column 3: scaled live preview ── */}
-      <div className="flex-1 overflow-y-auto bg-[#080808]">
-        <div className="p-5">
-          {/* Header bar */}
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-xs uppercase tracking-widest text-white/25">Live Preview</p>
-              {selectedKey && (
-                <p className="text-sm font-semibold text-white capitalize mt-0.5">
-                  {selectedKey.replace(/_/g, ' ')}
-                </p>
-              )}
-            </div>
-            {previewScale !== null && (
-              <span className="text-[10px] text-white/20 font-mono">
-                {Math.round(previewScale * 100)}%
-              </span>
-            )}
-          </div>
-
-          {/* Browser-chrome frame */}
-          <div className="rounded-2xl border border-white/[0.08] overflow-hidden">
-            {selectedKey ? (
-              <ScaledPreview onScaleChange={setPreviewScale}>
-                <SectionFullPreview sectionKey={selectedKey} content={liveContent} />
-              </ScaledPreview>
-            ) : (
-              <div className="h-64 flex items-center justify-center bg-[#0d0d0d]">
-                <p className="text-white/15 text-sm">Preview will appear here</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* ── Floating contextual editor — portal to body, position: fixed ── */}
+      {selectedKey && editorPos && (
+        <FloatingEditor
+          sectionKey={selectedKey}
+          content={getEffective(selectedKey)}
+          clientX={editorPos.clientX}
+          clientY={editorPos.clientY}
+          onContentChange={handleContentChange}
+          onSaveDraft={handleSaveDraftCurrent}
+          onClose={() => { setSelectedKey(null); setEditorPos(null) }}
+        />
+      )}
 
     </div>
   )

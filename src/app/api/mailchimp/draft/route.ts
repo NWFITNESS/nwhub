@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { mc } from '@/lib/mailchimp'
+import { mc, resolveApiKey } from '@/lib/mailchimp'
 import type { MailchimpSettings } from '@/lib/types'
 
 export async function POST(req: NextRequest) {
@@ -12,13 +12,14 @@ export async function POST(req: NextRequest) {
     .single()
 
   const settings = (settingsData?.value ?? {}) as Partial<MailchimpSettings>
-  const { api_key, audience_id } = settings
+  const api_key = resolveApiKey(settings.api_key)
+  const audience_id = settings.audience_id ?? ''
 
   if (!api_key || !audience_id) {
     return NextResponse.json({ error: 'Mailchimp not configured' }, { status: 400 })
   }
 
-  const { campaign_id, subject, title, preview_text, from_name, from_email, reply_to, html, design_json } = await req.json()
+  const { campaign_id, subject, title, preview_text, from_name, from_email, reply_to, html, design_json, segment_emails } = await req.json()
   let campaignId = campaign_id as string | undefined
 
   const campaignSettings = {
@@ -29,12 +30,32 @@ export async function POST(req: NextRequest) {
     reply_to: reply_to || from_email || '',
   }
 
+  const segmentEmails = Array.isArray(segment_emails)
+    ? (segment_emails as string[]).filter(Boolean)
+    : []
+
+  const recipients =
+    segmentEmails.length > 0
+      ? {
+          list_id: audience_id,
+          segment_opts: {
+            match: 'any',
+            conditions: segmentEmails.map((email: string) => ({
+              condition_type: 'EmailAddress',
+              field: 'EMAIL',
+              op: 'is',
+              value: email,
+            })),
+          },
+        }
+      : { list_id: audience_id }
+
   if (!campaignId) {
     const createRes = await mc(api_key, '/campaigns', {
       method: 'POST',
       body: {
         type: 'regular',
-        recipients: { list_id: audience_id },
+        recipients,
         settings: campaignSettings,
       },
     })
@@ -48,7 +69,7 @@ export async function POST(req: NextRequest) {
     const patchRes = await mc(api_key, `/campaigns/${campaignId}`, {
       method: 'PATCH',
       body: {
-        recipients: { list_id: audience_id },
+        recipients,
         settings: campaignSettings,
       },
     })

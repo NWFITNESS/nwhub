@@ -1,8 +1,19 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { twilioClient, WHATSAPP_FROM } from '@/lib/twilio'
+import { requireAuth } from '@/lib/auth-guard'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
+
+  // 5 campaign sends per admin per hour
+  const ip = getClientIp(request)
+  if (!rateLimit(`sms-send:${ip}`, 5, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: 'Too many requests — try again later' }, { status: 429 })
+  }
+
   try {
     const { name, message, segment_tags } = await request.json()
     if (!name || !message) return NextResponse.json({ error: 'Name and message are required' }, { status: 400 })

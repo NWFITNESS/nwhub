@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { mc } from '@/lib/mailchimp'
+import { mc, resolveApiKey } from '@/lib/mailchimp'
+import { requireAuth } from '@/lib/auth-guard'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import type { MailchimpSettings } from '@/lib/types'
 
 export async function POST(req: NextRequest) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
+
+  const ip = getClientIp(req)
+  if (!rateLimit(`mailchimp-send:${ip}`, 5, 60 * 60 * 1000)) {
+    return NextResponse.json({ error: 'Too many requests — try again later' }, { status: 429 })
+  }
   const supabase = createAdminClient()
   const { data: settingsData } = await supabase
     .from('global_settings')
@@ -12,7 +21,8 @@ export async function POST(req: NextRequest) {
     .single()
 
   const settings = (settingsData?.value ?? {}) as Partial<MailchimpSettings>
-  const { api_key, audience_id, from_name, reply_to } = settings
+  const api_key = resolveApiKey(settings.api_key)
+  const { audience_id, from_name, reply_to } = settings
 
   if (!api_key || !audience_id) {
     return NextResponse.json({ error: 'Mailchimp not configured' }, { status: 400 })

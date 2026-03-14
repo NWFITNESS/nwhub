@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { twilioClient, WHATSAPP_FROM } from '@/lib/twilio'
+import { requireAuth } from '@/lib/auth-guard'
 import type { ReviewSettings } from '@/lib/types'
 
 export async function POST() {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   const supabase = createAdminClient()
 
   const { data: settingsRow } = await supabase

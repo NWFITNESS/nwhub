@@ -64,10 +64,10 @@ const navGroups: NavGroup[] = [
       { label: 'Contacts', href: '/contacts', icon: UsersNavIcon },
       { label: 'Enquiries', href: '/enquiries', icon: MailNavIcon, badge: 'contacts' as const },
       { label: 'Kids & Teens', href: '/kids', icon: BabyNavIcon },
-      { label: 'Email', href: '/email', icon: UsersNavIcon },
-      { label: 'WhatsApp', href: '/sms', icon: ChatNavIcon },
+      { label: 'Subscribers', href: '/email', icon: UsersNavIcon },
+      { label: 'WhatsApp Campaigns', href: '/sms', icon: ChatNavIcon },
       { label: 'Reviews', href: '/reviews', icon: StarNavIcon },
-      { label: 'Mailchimp', href: '/mailchimp', icon: MailchimpNavIcon },
+      { label: 'Email Campaigns', href: '/mailchimp', icon: MailchimpNavIcon },
       { label: 'AI Chat', href: '/ai-chat', icon: BotNavIcon },
     ],
   },
@@ -205,7 +205,7 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail }: S
                     </div>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="px-2 pb-2 pt-0">
+                <AccordionContent className="px-3 pb-3 pt-0">
                   <div className="space-y-0.5">
                     {group.items.map(({ label, href, icon: Icon, badge }) => {
                       const active = href === '/' ? pathname === '/' : pathname.startsWith(href)

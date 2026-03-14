@@ -1,6 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { TopBar } from '@/components/layout/TopBar'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { BlogListManager } from '@/components/blog/BlogListManager'
+import Link from 'next/link'
+import { Button } from '@/components/ui/Button'
+import { Plus } from 'lucide-react'
 import type { BlogPost, BlogCategory } from '@/lib/types'
 
 export default async function BlogManagePage() {
@@ -17,10 +21,23 @@ export default async function BlogManagePage() {
       .order('name'),
   ])
 
+  const totalPosts = posts?.length ?? 0
+
   return (
     <>
       <TopBar title="Blog" />
-      <main className="p-10">
+      <main className="flex flex-col gap-6 p-8 min-h-[calc(100vh-5rem)]">
+        <PageHeader
+          title="Blog & Posts"
+          description={`${totalPosts} post${totalPosts !== 1 ? 's' : ''}`}
+          actions={
+            <Link href="/blog/manage/new">
+              <Button variant="primary" size="sm">
+                <Plus size={14} /> New Post
+              </Button>
+            </Link>
+          }
+        />
         <BlogListManager
           initialPosts={(posts ?? []) as unknown as (BlogPost & { category?: BlogCategory | null })[]}
           categories={(categories ?? []) as BlogCategory[]}

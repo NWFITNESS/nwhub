@@ -35,9 +35,16 @@ export async function middleware(request: NextRequest) {
   // Public API routes — no auth required
   const isPublicApi =
     pathname === '/api/chat' ||
-    pathname.startsWith('/api/chat/')
+    pathname.startsWith('/api/chat/') ||
+    pathname === '/api/analytics/track' ||  // public tracking beacon from public website
+    pathname === '/api/email/unsubscribe'   // token-based unsubscribe, no session needed
 
   if (!user && !isLoginPage && !isPublicBlog && !isPublicApi) {
+    // API consumers must receive 401 JSON — never redirect them to /login
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
+    }
+
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)

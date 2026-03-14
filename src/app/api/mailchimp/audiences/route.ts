@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { mc } from '@/lib/mailchimp'
+import { mc, resolveApiKey } from '@/lib/mailchimp'
 import type { MailchimpAudience, MailchimpSettings } from '@/lib/types'
 
 export async function GET() {
@@ -11,7 +11,7 @@ export async function GET() {
     .eq('key', 'mailchimp_settings')
     .single()
 
-  const key: string = (data?.value as Partial<MailchimpSettings>)?.api_key ?? ''
+  const key = resolveApiKey((data?.value as Partial<MailchimpSettings>)?.api_key)
   if (!key) return NextResponse.json({ error: 'API key not configured' }, { status: 400 })
 
   const res = await mc(key, '/lists?count=50&fields=lists.id,lists.name,lists.stats.member_count')

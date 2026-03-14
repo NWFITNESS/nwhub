@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { TopBar } from '@/components/layout/TopBar'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { ContentGrid } from '@/components/content/ContentGrid'
+import { Globe } from 'lucide-react'
 
 const PAGES = [
   { slug: 'home', label: 'Home' },
@@ -35,10 +36,23 @@ export default async function ContentPage() {
   return (
     <>
       <TopBar title="Content" />
-      <main className="p-10">
+      <main className="flex flex-col gap-6 p-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
           title="Site Content"
           description="Edit content for each page. Changes are reflected on the live site immediately."
+          actions={
+            <a
+              href={process.env.NEXT_PUBLIC_SITE_URL ?? '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold
+                         text-black bg-gradient-to-r from-[#967705] to-[#C9A70A]
+                         hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(201,167,10,0.25)]"
+            >
+              <Globe size={15} />
+              View Live Site
+            </a>
+          }
         />
         <ContentGrid
           pages={PAGES.map(({ slug, label }) => ({

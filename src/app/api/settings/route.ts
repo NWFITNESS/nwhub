@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAuth } from '@/lib/auth-guard'
 
 export async function POST(request: Request) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   try {
     const { key, value } = await request.json()
     if (!key) return NextResponse.json({ error: 'Key is required' }, { status: 400 })

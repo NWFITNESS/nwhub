@@ -17,34 +17,43 @@ export default async function SmsCampaignsPage() {
   return (
     <>
       <TopBar title="WhatsApp Campaigns" />
-      <main className="p-10">
+      <main className="flex flex-col gap-6 p-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
           title="WhatsApp Campaigns"
           actions={<Link href="/sms/campaigns/new"><Button variant="primary" size="sm"><Plus size={14} /> New Campaign</Button></Link>}
         />
-        <div className="overflow-x-auto rounded-xl border border-white/[0.08]">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.08]">
-                {['Name', 'Message', 'Status', 'Sent', 'Date'].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {!campaigns?.length ? (
-                <tr><td colSpan={5} className="px-4 py-12 text-center text-white/30">No campaigns yet</td></tr>
-              ) : campaigns.map((c) => (
-                <tr key={c.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="px-4 py-3 font-medium text-white">{c.name}</td>
-                  <td className="px-4 py-3 text-white/60 max-w-64 truncate">{c.message}</td>
-                  <td className="px-4 py-3"><Badge variant={c.status as 'draft' | 'sent'}>{c.status}</Badge></td>
-                  <td className="px-4 py-3 text-white/50">{c.stats?.sent ?? 0}</td>
-                  <td className="px-4 py-3 text-white/40 text-xs">{format(new Date(c.created_at), 'dd MMM yyyy')}</td>
+        <div className="bg-[#161616] border border-white/[0.06] rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06]">
+                  {['Name', 'Message', 'Status', 'Sent', 'Date'].map((h) => (
+                    <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold text-white/30 uppercase tracking-[0.1em]">{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {!campaigns?.length ? (
+                  <tr>
+                    <td colSpan={5}>
+                      <div className="flex flex-col items-center justify-center py-16 gap-3">
+                        <p className="text-sm font-medium text-white/40">No campaigns yet</p>
+                        <p className="text-xs text-white/20">Create your first WhatsApp campaign to get started</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : campaigns.map((c) => (
+                  <tr key={c.id} className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors duration-200">
+                    <td className="px-5 py-4 font-medium text-[#F0F0F0]">{c.name}</td>
+                    <td className="px-5 py-4 text-white/50 max-w-64 truncate">{c.message}</td>
+                    <td className="px-5 py-4"><Badge variant={c.status as 'draft' | 'sent'}>{c.status}</Badge></td>
+                    <td className="px-5 py-4 text-white/50">{c.stats?.sent ?? 0}</td>
+                    <td className="px-5 py-4 text-white/40 text-xs">{format(new Date(c.created_at), 'dd MMM yyyy')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
     </>
