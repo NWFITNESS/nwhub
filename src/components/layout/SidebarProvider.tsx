@@ -33,9 +33,6 @@ interface SidebarProviderProps {
   userEmail?: string
 }
 
-// Tab is w-5 (20px). Gap is 2.5rem (40px) past the sidebar edge.
-const GAP = '2.5rem'
-
 export function SidebarProvider({ children, unreadCount = 0, userEmail }: SidebarProviderProps) {
   const [open, setOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -43,25 +40,38 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
 
   return (
     <SidebarCtx.Provider value={{ mobileMenuOpen, setMobileMenuOpen, isMobileView, setIsMobileView }}>
-      {/* Full-screen particle flow field */}
+
+      {/* ── Particle background ── */}
       <div className="fixed inset-0" style={{ zIndex: -1 }}>
-        <NeuralBackground
-          color="#967705"
-          trailOpacity={0.08}
-          particleCount={450}
-          speed={0.5}
+        <NeuralBackground color="#967705" trailOpacity={0.08} particleCount={450} speed={0.5} />
+      </div>
+
+      {/* ── Mobile drawer — always in DOM, CSS slide animation ── */}
+      <div
+        className={`fixed inset-y-0 left-0 w-[280px] z-50 md:hidden
+                    bg-gradient-to-b from-[#131313] to-[#0d0d0d]
+                    border-r border-white/[0.06] shadow-2xl
+                    transition-transform duration-300 ease-in-out
+                    ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        <Sidebar
+          open={true}
+          onToggle={() => setMobileMenuOpen(false)}
+          unreadCount={unreadCount}
+          userEmail={userEmail}
+          onNavigate={() => setMobileMenuOpen(false)}
         />
       </div>
 
-      {/* ── Desktop sidebar (hidden on mobile via CSS) ── */}
-      <Sidebar
-        open={open}
-        onToggle={() => setOpen((o) => !o)}
-        unreadCount={unreadCount}
-        userEmail={userEmail}
-      />
+      {/* ── Mobile backdrop ── */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
 
-      {/* ── Desktop toggle tab (hidden on mobile) ── */}
+      {/* ── Desktop toggle tab (desktop only, fixed) ── */}
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? 'Close sidebar' : 'Open sidebar'}
@@ -77,70 +87,65 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
         />
       </button>
 
-      {/* ── Mobile topbar (hidden on desktop) ── */}
-      <div className="flex md:hidden items-center justify-between px-4 h-14
-                      bg-[#0d0d0d] border-b border-white/[0.06] sticky top-0 z-40">
-        <button
-          onClick={() => setMobileMenuOpen((v) => !v)}
-          className="w-9 h-9 flex items-center justify-center rounded-lg
-                     text-white/60 hover:text-white hover:bg-white/[0.06] transition-all"
-        >
-          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+      {/* ── App shell — flex row fills the screen ── */}
+      <div className="flex h-screen overflow-hidden">
 
-        <div className="flex items-center gap-2">
-          <img src="/nw-logo.svg" alt="NW" className="w-7 h-7 object-contain" />
-          <span className="text-sm font-bold text-white" style={{ fontFamily: 'Rajdhani' }}>
-            Northern Warrior
-          </span>
+        {/* Desktop sidebar — hidden on mobile, in flex flow on desktop */}
+        <div
+          className={`hidden flex-shrink-0 flex-col overflow-hidden transition-all duration-300 ease-in-out ${open ? 'md:flex' : ''}`}
+          style={{ width: 'var(--sidebar-w)' }}
+        >
+          <Sidebar
+            open={open}
+            onToggle={() => setOpen((o) => !o)}
+            unreadCount={unreadCount}
+            userEmail={userEmail}
+          />
         </div>
 
-        <button className="w-9 h-9 flex items-center justify-center rounded-lg
-                           text-white/60 hover:text-white hover:bg-white/[0.06]">
-          <Bell size={18} />
-        </button>
-      </div>
+        {/* Main column — full width on mobile, remainder on desktop */}
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
 
-      {/* ── Mobile drawer ── */}
-      {mobileMenuOpen && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/60 z-40 md:hidden"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-          <div className="fixed top-0 left-0 h-full w-[280px] z-50 md:hidden
-                          bg-gradient-to-b from-[#131313] to-[#0d0d0d]
-                          border-r border-white/[0.06] shadow-2xl
-                          animate-in slide-in-from-left duration-200">
-            <Sidebar
-              open={true}
-              onToggle={() => setMobileMenuOpen(false)}
-              unreadCount={unreadCount}
-              userEmail={userEmail}
-              onNavigate={() => setMobileMenuOpen(false)}
-            />
-          </div>
-        </>
-      )}
+          {/* Mobile topbar (hidden on desktop) */}
+          <div className="flex md:hidden items-center justify-between px-4 h-14 flex-shrink-0
+                          bg-[#0d0d0d] border-b border-white/[0.06]">
+            <button
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              className="w-9 h-9 flex items-center justify-center rounded-lg
+                         text-white/60 hover:text-white hover:bg-white/[0.06] transition-all"
+            >
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
 
-      {/* ── Main content ── */}
-      <div
-        className="main-content-area relative min-h-screen transition-all duration-300 ease-in-out"
-        style={{
-          marginLeft: open ? `calc(var(--sidebar-w) + ${GAP})` : '0',
-          paddingRight: '10mm',
-        }}
-      >
-        {isMobileView ? (
-          <div className="flex justify-center bg-[#050505] min-h-screen pt-6 px-4">
-            <div className="w-[390px] bg-[#080808] min-h-[844px] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl">
-              {children}
+            <div className="flex items-center gap-2">
+              <img src="/nw-logo.svg" alt="NW" className="w-7 h-7 object-contain" />
+              <span className="text-sm font-bold text-white" style={{ fontFamily: 'Rajdhani' }}>
+                Northern Warrior
+              </span>
             </div>
+
+            <button className="w-9 h-9 flex items-center justify-center rounded-lg
+                               text-white/60 hover:text-white hover:bg-white/[0.06]">
+              <Bell size={18} />
+            </button>
           </div>
-        ) : (
-          children
-        )}
+
+          {/* Scrollable page content */}
+          <div className="flex-1 overflow-y-auto">
+            {isMobileView ? (
+              <div className="flex justify-center bg-[#050505] min-h-full pt-6 px-4">
+                <div className="w-[390px] bg-[#080808] min-h-[844px] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl">
+                  {children}
+                </div>
+              </div>
+            ) : (
+              children
+            )}
+          </div>
+
+        </div>
       </div>
+
     </SidebarCtx.Provider>
   )
 }

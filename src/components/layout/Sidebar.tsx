@@ -113,12 +113,8 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onN
 
   return (
     <aside
-      className="fixed left-0 top-0 h-screen border-r border-white/[0.08] flex flex-col z-40 transition-transform duration-300 ease-in-out"
-      style={{
-        width: 'var(--sidebar-w)',
-        background: 'linear-gradient(180deg, #131313 0%, #0d0d0d 100%)',
-        transform: open ? 'translateX(0)' : 'translateX(-100%)',
-      }}
+      className="h-full border-r border-white/[0.08] flex flex-col overflow-hidden"
+      style={{ background: 'linear-gradient(180deg, #131313 0%, #0d0d0d 100%)' }}
     >
       {/* Logo */}
       <div className="relative px-5 pt-7 pb-6 border-b border-[#967705]/20 flex flex-col items-center gap-3 text-center">
