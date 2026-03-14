@@ -29,7 +29,7 @@ export default async function EditBlogPostPage({ params }: Props) {
   return (
     <>
       <TopBar title={`Blog — ${post.title}`} />
-      <main className="p-10" style={{ paddingLeft: '48px', paddingRight: '48px' }}>
+      <main className="p-10 page-pad">
         <BlogPostEditor
           initialPost={post as unknown as BlogPost & { category?: BlogCategory | null }}
           categories={(categories ?? []) as BlogCategory[]}

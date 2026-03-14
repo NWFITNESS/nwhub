@@ -16,7 +16,7 @@ export default async function SettingsPage() {
   return (
     <>
       <TopBar title="Settings" />
-      <main style={{ paddingLeft: '48px', paddingRight: '48px' }} className="flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
+      <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
           title="Global Settings"
           description="Navigation, footer, contact info, and social links used across the site."

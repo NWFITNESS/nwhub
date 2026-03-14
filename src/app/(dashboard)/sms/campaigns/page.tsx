@@ -17,7 +17,7 @@ export default async function SmsCampaignsPage() {
   return (
     <>
       <TopBar title="WhatsApp Campaigns" />
-      <main style={{ paddingLeft: '48px', paddingRight: '48px' }} className="flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
+      <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
           title="WhatsApp Campaigns"
           actions={<Link href="/sms/campaigns/new"><Button variant="primary" size="sm"><Plus size={14} /> New Campaign</Button></Link>}

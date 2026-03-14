@@ -40,7 +40,7 @@ export default async function ReviewsPage() {
   return (
     <>
       <TopBar title="Reviews" />
-      <main style={{ paddingLeft: '48px', paddingRight: '48px' }} className="flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
+      <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
         <PageHeader title="Google Reviews" description="Automate review requests and track your reputation" />
         <ReviewsDashboard initialRequests={requests} initialSettings={settings} />
       </main>

@@ -16,6 +16,24 @@
   to { height: 0; }
 }
 
+/* ─── Dashboard page horizontal padding ────────────────────────────────────── */
+.page-pad {
+  padding-left: 1rem;   /* 16px mobile */
+  padding-right: 1rem;
+}
+@media (min-width: 640px) {
+  .page-pad {
+    padding-left: 1.5rem;  /* 24px small tablet */
+    padding-right: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .page-pad {
+    padding-left: 3rem;  /* 48px desktop */
+    padding-right: 3rem;
+  }
+}
+
 :root {
   --bg-base: #0a0a0a;
   --bg-surface: #111111;
