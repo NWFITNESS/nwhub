@@ -188,9 +188,9 @@ export default async function DashboardPage() {
   let monthlyRevenue = 0
   try {
     const { data: xeroTokens } = await supabase
-      .from('settings').select('value').eq('key', 'xero_tokens').single()
+      .from('global_settings').select('value').eq('key', 'xero_tokens').single()
     const { data: xeroTenant } = await supabase
-      .from('settings').select('value').eq('key', 'xero_tenant_id').single()
+      .from('global_settings').select('value').eq('key', 'xero_tenant_id').single()
     if (xeroTokens && xeroTenant) {
       const { xero } = await import('@/lib/xero')
       await xero.setTokenSet(JSON.parse(xeroTokens.value))
