@@ -61,10 +61,32 @@ export function VisualEditorPage({
     const s = sections.find((x) => x.section_key === sectionKey)
     // Live unsaved edits always win
     if (liveEdits[sectionKey]) return liveEdits[sectionKey]
-    // Only use saved DB content if it actually has data — empty {} falls through to defaults
+
     const saved = s?.draft_content ?? s?.content
-    if (saved && Object.keys(saved).length > 0) return saved
-    return defaults[sectionKey] ?? {}
+    const fallback = defaults[sectionKey]
+
+    // No fallback defined — use raw saved content (or empty)
+    if (!fallback) return (saved && Object.keys(saved).length > 0) ? saved : {}
+
+    // No saved content (or empty) — return fallback defaults as-is
+    if (!saved || Object.keys(saved).length === 0) return fallback
+
+    // Both exist: deep-merge so saved content wins, but any keys that only
+    // exist in the fallback (e.g. image_position added after initial save)
+    // are still present for the editor to render.
+    const merged: Record<string, unknown> = { ...fallback, ...saved }
+
+    // For items arrays, merge each saved item with the corresponding default
+    // item so new fields added to defaults show up in older saved content.
+    const fbItems = Array.isArray(fallback.items) ? (fallback.items as Record<string, unknown>[]) : null
+    const svItems = Array.isArray((saved as Record<string, unknown>).items)
+      ? ((saved as Record<string, unknown>).items as Record<string, unknown>[])
+      : null
+    if (fbItems && svItems) {
+      merged.items = svItems.map((item, i) => ({ ...(fbItems[i] ?? {}), ...item }))
+    }
+
+    return merged
   }
 
   // ── Section click → open floating editor ────────────────────────────────────
