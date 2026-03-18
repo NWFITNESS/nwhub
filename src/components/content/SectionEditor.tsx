@@ -769,6 +769,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'title', label: 'Title' },
       { key: 'type', label: 'Type badge (e.g. Daily WOD)' },
       { key: 'desc', label: 'Description', multiline: true },
+      { key: 'image_position', label: 'Image position (e.g. center, top, bottom, 50% 20%)' },
       { key: 'detail', label: 'Detail line (e.g. 7 sessions/week)' },
       { key: 'image_url', label: 'Background Image' },
       { key: 'link', label: 'Link URL' },
@@ -794,6 +795,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'kicker', label: 'Eyebrow label (e.g. Functional Fitness)' },
       { key: 'heading', label: 'Heading', multiline: true },
       { key: 'body', label: 'Body text', multiline: true },
+      { key: 'image_position', label: 'Image position (e.g. center, top, bottom, 50% 20%)' },
       { key: 'image_url', label: 'Background Image' },
     ]} />
   ),
