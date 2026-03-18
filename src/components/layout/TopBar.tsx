@@ -74,7 +74,7 @@ export function TopBar({ title, actions }: TopBarProps) {
       style={{ borderBottomColor: 'rgba(150,119,5,0.15)' }}
     >
       {/* Page title */}
-      <h1 className="text-xs font-semibold text-white/40 whitespace-nowrap uppercase tracking-widest shrink-0">
+      <h1 className="text-sm font-semibold text-white/40 whitespace-nowrap uppercase tracking-widest shrink-0">
         {title}
       </h1>
 
@@ -88,7 +88,7 @@ export function TopBar({ title, actions }: TopBarProps) {
             onKeyDown={(e) => { if (e.key === 'Escape') { setOpen(false); setQuery('') } }}
             placeholder="Search everything — contacts, blog, media, campaigns…"
             style={{ paddingLeft: '2.5rem' }}
-            className="w-full pr-8 py-2 rounded-lg bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#967705]/50 focus:bg-white/[0.07] transition-all"
+            className="w-full pr-8 py-2 rounded-lg bg-white/[0.05] border border-white/[0.08] text-base text-white placeholder:text-white/20 focus:outline-none focus:border-[#967705]/50 focus:bg-white/[0.07] transition-all"
           />
           <Search
             size={15}
@@ -131,8 +131,8 @@ export function TopBar({ title, actions }: TopBarProps) {
                         className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/[0.05] border-b border-white/[0.03] last:border-0 transition-colors group"
                       >
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-white/75 group-hover:text-white truncate transition-colors">{r.label}</p>
-                          {r.sub && <p className="text-xs text-white/30 truncate mt-0.5">{r.sub}</p>}
+                          <p className="text-base text-white/75 group-hover:text-white truncate transition-colors">{r.label}</p>
+                          {r.sub && <p className="text-sm text-white/30 truncate mt-0.5">{r.sub}</p>}
                         </div>
                       </Link>
                     ))}
@@ -148,7 +148,7 @@ export function TopBar({ title, actions }: TopBarProps) {
       <button
         onClick={() => setIsMobileView(!isMobileView)}
         title="Toggle mobile view"
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium
                     transition-all duration-200 border shrink-0
                     ${isMobileView
                       ? 'text-[#C9A70A] border-[#967705]/40 bg-[#967705]/10'

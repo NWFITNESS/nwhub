@@ -11,12 +11,28 @@ function isVideo(mimeType: string | null, url?: string): boolean {
   return false
 }
 
-async function uploadFile(file: File): Promise<Media | null> {
-  const form = new FormData()
-  form.append('file', file)
-  const res = await fetch('/api/media', { method: 'POST', body: form })
-  if (!res.ok) { console.error(await res.text()); return null }
-  return res.json()
+async function uploadFile(file: File): Promise<{ data: Media | null; error: string | null }> {
+  try {
+    const bytes = await file.arrayBuffer()
+    const res = await fetch('/api/media', {
+      method: 'POST',
+      body: bytes,
+      headers: {
+        'content-type': file.type || 'application/octet-stream',
+        'x-filename': encodeURIComponent(file.name),
+        'x-filesize': String(file.size),
+      },
+    })
+    const text = await res.text()
+    if (!res.ok) {
+      let msg = text
+      try { msg = JSON.parse(text)?.error ?? text } catch { /* keep raw text */ }
+      return { data: null, error: msg || `Upload failed (${res.status})` }
+    }
+    return { data: JSON.parse(text) as Media, error: null }
+  } catch (e) {
+    return { data: null, error: e instanceof Error ? e.message : 'Network error' }
+  }
 }
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
@@ -31,6 +47,7 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
   const [media, setMedia] = useState<Media[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const [filter, setFilter] = useState<'all' | 'images' | 'videos'>('all')
   const fileInput = useRef<HTMLInputElement>(null)
   const supabase = createClient()
@@ -49,8 +66,14 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
   async function handleUpload(files: FileList | null) {
     if (!files || files.length === 0) return
     setUploading(true)
+    setUploadError(null)
     for (const file of Array.from(files)) {
-      const row = await uploadFile(file)
+      const { data: row, error } = await uploadFile(file)
+      if (error) {
+        setUploadError(error)
+        setUploading(false)
+        return
+      }
       if (row) {
         setMedia((prev) => [row, ...prev])
         onSelect(row.public_url)
@@ -151,6 +174,11 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
               onChange={(e) => handleUpload(e.target.files)}
             />
           </div>
+          {uploadError && (
+            <div className="mt-2 flex items-start gap-2 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20">
+              <span className="text-red-400 text-xs leading-relaxed">{uploadError}</span>
+            </div>
+          )}
         </div>
 
         {/* Grid */}

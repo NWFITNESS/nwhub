@@ -239,6 +239,107 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
       heading: 'Something for every goal.',
       subtext: 'From functional fitness to Olympic weightlifting — every programme is designed with intent and coached from warm-up to cool-down.',
     },
+    sessions: {
+      items: [
+        {
+          title: 'Workout of the Day',
+          type: 'WOD',
+          desc: 'Our daily session. Functional fitness combining strength, conditioning and skill work — programmed by HWPO and coached from warmup to cooldown. Scales to any level.',
+          image_url: '/feature-1.jpg',
+          image_position: '',
+          link: '',
+        },
+        {
+          title: 'HYROX',
+          type: 'Race prep',
+          desc: 'Hybrid race prep: running, stations, pacing and conditioning. As an official HYROX affiliate, we build you for race day from first-timer to podium finisher.',
+          image_url: '/feature-2.jpg',
+          image_position: '',
+          link: '/hyrox',
+        },
+        {
+          title: 'EMOM40',
+          type: 'Engine',
+          desc: '40 minutes, every minute on the minute. An engine-building session mixing monostructural cardio, gymnastics and weightlifting. Relentless but sustainable.',
+          image_url: '/ig/4.png',
+          image_position: '',
+          link: '',
+        },
+        {
+          title: 'BodyBuilding',
+          type: 'Hypertrophy',
+          desc: 'Hypertrophy-focused work alongside your conditioning. Compound and isolation movements programmed to build strength and physique with intent.',
+          image_url: '/ig/7.png',
+          image_position: '',
+          link: '',
+        },
+        {
+          title: 'Weightlifting',
+          type: 'Olympic',
+          desc: 'Snatch and clean & jerk, broken down properly. Positional drills, technique cycles and heavy singles — suitable for beginners through to competitors.',
+          image_url: '/ig/10.png',
+          image_position: '',
+          link: '',
+        },
+        {
+          title: 'Gymnastics',
+          type: 'Skill',
+          desc: 'Skill-based sessions run in focused blocks. Progressions from foundational pulling and pressing strength through to muscle-ups, handstand walks and beyond.',
+          image_url: '/ig/2.png',
+          image_position: '',
+          link: '',
+        },
+      ],
+    },
+    specialist: {
+      items: [
+        {
+          title: 'Open Gym',
+          type: 'Open — 10 members max',
+          desc: 'Self-directed training time with a qualified coach on the floor. Up to 10 members at a time. Included in all memberships.',
+          image_url: '/ig/5.png',
+          image_position: '',
+          link: '',
+        },
+        {
+          title: 'Kids & Teens',
+          type: 'Specialist',
+          desc: 'Mini Warriors (3–5), Little Warriors (5–10) and Teen Warriors (10–18). Coached, safe and seriously fun.',
+          image_url: '/feature-3.jpg',
+          image_position: '',
+          link: '/kids-teens',
+        },
+      ],
+    },
+  },
+
+  results: {
+    hero: {
+      kicker: 'Member Results',
+      heading: 'Real training. Real results.',
+      subtext: 'From first sessions to podium finishes — every result in here started with someone showing up.',
+      image_url: '/feature-1.jpg',
+    },
+    stories: {
+      items: [
+        { name: 'Sarah M.', role: 'Member since 2021', quote: 'Northern Warrior completely changed my approach to fitness. I went from never setting foot in a gym to completing my first HYROX race in under 1:10. The community here is like nothing else.', stat_before: 'Zero gym experience', stat_after: 'HYROX finisher — 1:08', image_url: '/ig/1.png' },
+        { name: 'James T.', role: 'HYROX Competitor', quote: "I came in knowing nothing about functional fitness. Within 3 months I'd completed my first HYROX race. Within a year I podiumed in my age category. The coaching is phenomenal.", stat_before: 'No race experience', stat_after: 'Age category podium', image_url: '/ig/3.png' },
+        { name: 'Lauren K.', role: 'Unlimited Member', quote: "I've tried every gym in Cumbria. Nothing comes close to NW. The programming is elite, the coaches actually care, and the community keeps you accountable.", stat_before: '3 failed gym memberships', stat_after: 'Training 4x/week consistently', image_url: '/ig/6.png' },
+        { name: 'Mark D.', role: 'Dad of two warriors', quote: 'Started to lose weight, stayed for the community. Lost 18kg in 6 months. My kids now train in the Teens class. Best decision our family ever made.', stat_before: '18kg overweight', stat_after: '18kg down, still going', image_url: '/ig/9.png' },
+        { name: 'Claire F.', role: 'NHS Worker', quote: 'Night shifts make gym life hard. The 24/7 access membership changed everything. I train when it suits me and the programming keeps me on track without a coach.', stat_before: 'Irregular training, low energy', stat_after: 'Training 5x/week around shifts', image_url: '/ig/11.png' },
+        { name: 'Tom W.', role: 'Forces Veteran', quote: "The coaches here understand what hard work actually means. The forces discount is appreciated. The programming is the best I've followed outside the military.", stat_before: 'Post-service detraining', stat_after: 'Back to peak fitness', image_url: '/ig/2.png' },
+      ],
+    },
+    competition_results: {
+      items: [
+        { event: 'HYROX Manchester', athlete: 'James T.', result: 'Age Category Podium — Top 3', year: '2024' },
+        { event: 'HYROX Liverpool', athlete: 'Sarah M.', result: 'Sub 1:10 finish', year: '2024' },
+        { event: 'HYROX Birmingham', athlete: 'Chris B.', result: 'First race — completed', year: '2023' },
+        { event: 'HYROX Manchester', athlete: 'Laura P.', result: "Women's Doubles — Podium", year: '2024' },
+        { event: 'HYROX Edinburgh', athlete: 'Dave H.', result: 'Sub 1:30 — first race', year: '2023' },
+        { event: 'HYROX Sheffield', athlete: 'Multiple Athletes', result: '5 NW athletes on podium', year: '2024' },
+      ],
+    },
   },
 
   'kids-teens': {

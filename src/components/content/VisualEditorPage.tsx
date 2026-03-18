@@ -71,19 +71,29 @@ export function VisualEditorPage({
     // No saved content (or empty) — return fallback defaults as-is
     if (!saved || Object.keys(saved).length === 0) return fallback
 
-    // Both exist: deep-merge so saved content wins, but any keys that only
-    // exist in the fallback (e.g. image_position added after initial save)
-    // are still present for the editor to render.
-    const merged: Record<string, unknown> = { ...fallback, ...saved }
+    // Both exist: rebuild using only the fallback schema's keys so stale keys
+    // from old DB saves (e.g. "panel") are silently dropped.
+    const savedObj = saved as Record<string, unknown>
+    const merged: Record<string, unknown> = {}
+    for (const key of Object.keys(fallback)) {
+      merged[key] = key in savedObj && savedObj[key] != null ? savedObj[key] : fallback[key]
+    }
 
-    // For items arrays, merge each saved item with the corresponding default
-    // item so new fields added to defaults show up in older saved content.
+    // For items arrays, per-item merge using fallback item keys as the schema.
+    // Extra saved items beyond the default count are preserved as-is.
     const fbItems = Array.isArray(fallback.items) ? (fallback.items as Record<string, unknown>[]) : null
-    const svItems = Array.isArray((saved as Record<string, unknown>).items)
-      ? ((saved as Record<string, unknown>).items as Record<string, unknown>[])
-      : null
+    const svItems = Array.isArray(savedObj.items) ? (savedObj.items as Record<string, unknown>[]) : null
     if (fbItems && svItems) {
-      merged.items = svItems.map((item, i) => ({ ...(fbItems[i] ?? {}), ...item }))
+      const schemaTemplate = fbItems[0] ?? {}
+      merged.items = svItems.map((item, i) => {
+        const fbItem = fbItems[i] ?? schemaTemplate
+        const itemObj = item as Record<string, unknown>
+        const mergedItem: Record<string, unknown> = {}
+        for (const k of Object.keys(fbItem)) {
+          mergedItem[k] = k in itemObj && itemObj[k] != null ? itemObj[k] : fbItem[k]
+        }
+        return mergedItem
+      })
     }
 
     return merged

@@ -70,8 +70,14 @@ export interface Contact {
   groups: string[]
   source: 'manual' | 'import' | 'squarespace' | 'wodboard' | 'website_chat'
   notes: string | null
-  status: 'active' | 'inactive'
+  status: 'active' | 'inactive' | 'trial' | 'member' | 'cancelled'
   created_at: string
+  // WodBoard lifecycle fields
+  trial_start_date?: string | null
+  trial_end_date?: string | null
+  member_since?: string | null
+  last_attendance?: string | null
+  programme?: string | null
 }
 
 export interface KidsRegistration {

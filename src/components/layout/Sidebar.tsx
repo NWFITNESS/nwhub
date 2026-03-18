@@ -26,7 +26,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { cn } from '@/lib/utils'
-import { FileText, Users, Settings, PoundSterling } from 'lucide-react'
+import { FileText, Users, Settings, PoundSterling, RefreshCw, Zap } from 'lucide-react'
 
 interface NavItem {
   label: string
@@ -67,9 +67,9 @@ const navGroups: NavGroup[] = [
       { label: 'Subscribers', href: '/email', icon: UsersNavIcon },
       { label: 'WhatsApp Campaigns', href: '/sms', icon: ChatNavIcon },
       { label: 'Reviews', href: '/reviews', icon: StarNavIcon },
+      { label: 'Workflows', href: '/workflows', icon: Zap },
       { label: 'Email Campaigns', href: '/mailchimp', icon: MailchimpNavIcon },
       { label: 'AI Chat', href: '/ai-chat', icon: BotNavIcon },
-      { label: 'Financials', href: '/financials', icon: PoundSterling },
     ],
   },
   {
@@ -78,6 +78,7 @@ const navGroups: NavGroup[] = [
     subtitle: 'Configuration & preferences',
     icon: Settings,
     items: [
+      { label: 'WodBoard Sync', href: '/sync', icon: RefreshCw },
       { label: 'Settings', href: '/settings', icon: SettingsNavIcon },
     ],
   },
@@ -138,7 +139,7 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onN
         <div className="leading-tight">
           <p className="text-xl font-bold text-white tracking-tight">Northern Warrior</p>
           <p className="text-lg font-semibold text-[#c9a70a]">Hub</p>
-          <span className="inline-block mt-1.5 text-[11px] uppercase tracking-[0.25em] text-white/25 bg-white/[0.04] border border-white/[0.07] px-2 py-0.5 rounded-full">
+          <span className="inline-block mt-1.5 text-[13px] uppercase tracking-[0.25em] text-white/25 bg-white/[0.04] border border-white/[0.07] px-2 py-0.5 rounded-full">
             Admin Panel
           </span>
         </div>
@@ -159,6 +160,21 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onN
         >
           <DashboardNavIcon size={20} className="flex-shrink-0" />
           <span className="flex-1">Overview</span>
+        </Link>
+
+        {/* Financials — standalone link */}
+        <Link
+          href="/financials"
+          onClick={onNavigate}
+          className={cn(
+            'flex items-center gap-3 px-3 py-3 rounded-lg text-base transition-colors group relative border',
+            pathname.startsWith('/financials')
+              ? 'bg-gradient-to-r from-[#967705]/15 to-transparent text-[#c9a70a] border-[#967705]/25 shadow-[inset_0_1px_0_rgba(150,119,5,0.15)]'
+              : 'text-white/55 hover:text-white hover:bg-white/[0.05] border-transparent'
+          )}
+        >
+          <PoundSterling size={20} className="flex-shrink-0" />
+          <span className="flex-1">Financials</span>
         </Link>
 
         {/* Accordion groups */}
@@ -205,10 +221,10 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onN
                       <GroupIcon size={19} />
                     </div>
                     <div className="flex flex-col items-start text-left">
-                      <span className={cn('text-[15px] font-semibold', groupHasActive ? 'text-[#c9a70a]' : 'text-white/80')}>
+                      <span className={cn('text-[17px] font-semibold', groupHasActive ? 'text-[#c9a70a]' : 'text-white/80')}>
                         {group.label}
                       </span>
-                      <span className="text-[12px] text-white/35">{group.subtitle}</span>
+                      <span className="text-[13px] text-white/35">{group.subtitle}</span>
                     </div>
                   </div>
                 </AccordionTrigger>
@@ -223,7 +239,7 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onN
                           href={href}
                           onClick={onNavigate}
                           className={cn(
-                            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-[15px] transition-colors group relative border',
+                            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-[17px] transition-colors group relative border',
                             active
                               ? 'bg-gradient-to-r from-[#967705]/15 to-transparent text-[#c9a70a] border-[#967705]/25 shadow-[inset_0_1px_0_rgba(150,119,5,0.15)]'
                               : 'text-white/45 hover:text-white/80 hover:bg-white/[0.05] border-transparent'
@@ -259,7 +275,7 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onN
         )}
         <button
           onClick={handleSignOut}
-          className="w-full flex items-center gap-2.5 px-3 py-3 rounded-lg text-[15px] text-white/40 hover:text-white/75 hover:bg-white/[0.05] transition-colors"
+          className="w-full flex items-center gap-2.5 px-3 py-3 rounded-lg text-[17px] text-white/40 hover:text-white/75 hover:bg-white/[0.05] transition-colors"
         >
           <LogOutNavIcon size={17} className="flex-shrink-0" />
           Sign out

@@ -32,6 +32,101 @@ function isImageKey(key: string, value: string): boolean {
   return false
 }
 
+function isFocalPointKey(key: string): boolean {
+  return key === 'image_position'
+}
+
+function FocalPointPicker({ imageUrl, value, onChange }: {
+  imageUrl: string
+  value: string
+  onChange: (v: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+
+  function parsePos(v: string): { x: number; y: number } {
+    if (!v) return { x: 50, y: 50 }
+    const parts = v.trim().split(/\s+/)
+    const p = (s?: string) => s?.endsWith('%') ? parseFloat(s) : 50
+    return { x: p(parts[0]), y: p(parts[1]) }
+  }
+
+  function handleImageClick(e: React.MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = Math.round(((e.clientX - rect.left) / rect.width) * 100)
+    const y = Math.round(((e.clientY - rect.top) / rect.height) * 100)
+    onChange(`${x}% ${y}%`)
+  }
+
+  const pos = parsePos(value)
+  const displayLabel = value || 'center'
+
+  return (
+    <div>
+      <FieldLabel label="Image Position" />
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg border border-white/[0.08] bg-[#0d0d0d] text-sm text-white/60 hover:border-[#967705]/60 transition-colors"
+      >
+        <span className="flex items-center gap-2">
+          {/* Mini 3×3 grid indicator */}
+          <div className="w-4 h-4 rounded bg-white/[0.08] relative flex-shrink-0 overflow-hidden">
+            <div
+              className="absolute w-2 h-2 rounded-full bg-[#c9a70a] -translate-x-1/2 -translate-y-1/2"
+              style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+            />
+          </div>
+          <span className="font-mono text-xs">{displayLabel}</span>
+        </span>
+        <span className="text-white/30 text-xs">{open ? 'close' : 'pick'}</span>
+      </button>
+
+      {open && (
+        <div className="mt-2 rounded-xl overflow-hidden border border-white/10 bg-black/40">
+          <p className="text-[10px] text-white/30 px-3 pt-2 pb-1">
+            Click on the image to set the focal point
+          </p>
+          {imageUrl ? (
+            <div
+              className="relative cursor-crosshair mx-3 mb-3 rounded-lg overflow-hidden"
+              style={{ height: 160 }}
+              onClick={handleImageClick}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={imageUrl}
+                alt=""
+                className="w-full h-full object-cover select-none pointer-events-none"
+                draggable={false}
+              />
+              {/* Focal point dot */}
+              <div
+                className="absolute w-5 h-5 rounded-full border-2 border-[#c9a70a] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                style={{
+                  left: `${pos.x}%`,
+                  top: `${pos.y}%`,
+                  boxShadow: '0 0 0 1px rgba(0,0,0,0.6), 0 0 10px rgba(201,167,10,0.6)',
+                }}
+              />
+            </div>
+          ) : (
+            <div className="px-3 pb-3">
+              <p className="text-[10px] text-white/20 mb-2">No image set — enter position manually</p>
+              <input
+                type="text"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder="e.g. 50% 30%"
+                className={INPUT_BASE + ' font-mono text-xs'}
+              />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function isMultilineKey(key: string, value: string): boolean {
   if (value.length > 80) return true
   return ['subtext', 'desc', 'description', 'text', 'bio', 'excerpt', 'copy', 'a', 'note', 'message', 'address', 'body'].includes(key)
@@ -45,11 +140,15 @@ function FieldLabel({ label }: { label: string }) {
   )
 }
 
-function StringField({ fieldKey, value, onChange }: {
+function StringField({ fieldKey, value, onChange, imageUrl }: {
   fieldKey: string
   value: string
   onChange: (v: string) => void
+  imageUrl?: string
 }) {
+  if (isFocalPointKey(fieldKey)) {
+    return <FocalPointPicker imageUrl={imageUrl ?? ''} value={value} onChange={onChange} />
+  }
   if (isImageKey(fieldKey, value)) {
     return (
       <div>
@@ -148,6 +247,7 @@ function ArrayField({ fieldKey, items, onChange }: {
                       fieldKey={k}
                       value={obj[k] as string}
                       onChange={(v) => updateItemField(i, k, v)}
+                      imageUrl={isFocalPointKey(k) ? (obj['image_url'] as string | undefined) ?? '' : undefined}
                     />
                   ))}
                 </div>
@@ -275,6 +375,7 @@ export function FloatingEditor({
                 fieldKey={key}
                 value={value}
                 onChange={(v) => updateField(key, v)}
+                imageUrl={isFocalPointKey(key) ? (local['image_url'] as string | undefined) ?? '' : undefined}
               />
             )
           }

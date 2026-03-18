@@ -274,7 +274,7 @@ export default async function DashboardPage() {
         {/* ── Section 1 — Greeting (SKILL.md §9) ── */}
         <div>
           <p className="text-xs text-white/30 uppercase tracking-[0.15em]">ADMIN PANEL</p>
-          <h1 style={{ fontFamily: 'Rajdhani' }} className="leading-tight mt-0.5">
+          <h1 style={{ fontFamily: 'League Spartan' }} className="leading-tight mt-0.5">
             <span className="text-[#F0F0F0] font-bold text-4xl">Northern Warrior </span>
             <span className="text-[#C9A70A] font-bold text-4xl">Hub</span>
           </h1>
@@ -307,7 +307,7 @@ export default async function DashboardPage() {
                 <div>
                   <p
                     className="text-3xl @md/page:text-5xl font-bold text-[#F0F0F0]"
-                    style={{ fontFamily: 'Rajdhani' }}
+                    style={{ fontFamily: 'League Spartan' }}
                   >
                     {card.isCurrency ? `£${card.value.toLocaleString()}` : card.value.toLocaleString()}
                   </p>

@@ -1,6 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { TopBar } from '@/components/layout/TopBar'
-import { PageHeader } from '@/components/layout/PageHeader'
 import { ReviewsDashboard } from '@/components/reviews/ReviewsDashboard'
 import type { ReviewRequest, ReviewSettings } from '@/lib/types'
 
@@ -11,16 +10,24 @@ const DEFAULT_SETTINGS: ReviewSettings = {
   review_link: '',
   first_content_sid: '',
   reminder_content_sid: '',
-  days_after_joining: 7,
+  days_after_joining: 30,
   reminder_interval_days: 7,
   max_messages: 2,
   last_known_review_count: 0,
 }
 
+export interface ContactRow {
+  id: string
+  first_name: string
+  last_name: string | null
+  phone: string
+  created_at: string
+}
+
 export default async function ReviewsPage() {
   const supabase = createAdminClient()
 
-  const [{ data: requestsData }, { data: settingsData }] = await Promise.all([
+  const [{ data: requestsData }, { data: settingsData }, { data: contactsData }] = await Promise.all([
     supabase
       .from('review_requests')
       .select('*, contact:contacts(first_name, last_name, phone)')
@@ -30,19 +37,29 @@ export default async function ReviewsPage() {
       .select('value')
       .eq('key', 'review_settings')
       .single(),
+    supabase
+      .from('contacts')
+      .select('id, first_name, last_name, phone, created_at')
+      .eq('status', 'active')
+      .not('phone', 'is', null)
+      .order('created_at', { ascending: false }),
   ])
 
   const requests = (requestsData ?? []) as ReviewRequest[]
   const settings: ReviewSettings = settingsData?.value
     ? { ...DEFAULT_SETTINGS, ...(settingsData.value as Partial<ReviewSettings>) }
     : DEFAULT_SETTINGS
+  const contacts = (contactsData ?? []) as ContactRow[]
 
   return (
     <>
       <TopBar title="Reviews" />
       <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
-        <PageHeader title="Google Reviews" description="Automate review requests and track your reputation" />
-        <ReviewsDashboard initialRequests={requests} initialSettings={settings} />
+        <ReviewsDashboard
+          initialRequests={requests}
+          initialSettings={settings}
+          initialContacts={contacts}
+        />
       </main>
     </>
   )

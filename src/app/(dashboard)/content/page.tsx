@@ -5,18 +5,20 @@ import { ContentGrid } from '@/components/content/ContentGrid'
 import { Globe } from 'lucide-react'
 
 const PAGES = [
-  { slug: 'home', label: 'Home' },
-  { slug: 'training', label: 'Training' },
-  { slug: 'hyrox', label: 'Hyrox' },
-  { slug: 'kids-teens', label: 'Kids & Teens' },
-  { slug: 'membership', label: 'Membership' },
-  { slug: 'our-facilities', label: 'Our Facilities' },
-  { slug: 'start-here', label: 'Start Here' },
-  { slug: 'team', label: 'The Team' },
-  { slug: 'contact', label: 'Contact' },
-  { slug: 'timetable', label: 'Timetable' },
+  { slug: 'home',             label: 'Home'             },
+  { slug: 'training',         label: 'Training'         },
+  { slug: 'hyrox',            label: 'HYROX'            },
+  { slug: 'kids-teens',       label: 'Kids & Teens'     },
+  { slug: 'membership',       label: 'Membership'       },
+  { slug: 'our-facilities',   label: 'Our Facilities'   },
+  { slug: 'start-here',       label: 'Start Here'       },
+  { slug: 'team',             label: 'The Team'         },
+  { slug: 'why-us',           label: 'Why Us'           },
+  { slug: 'results',          label: 'Results'          },
+  { slug: 'contact',          label: 'Contact'          },
+  { slug: 'timetable',        label: 'Timetable'        },
   { slug: 'membership-terms', label: 'Membership Terms' },
-  { slug: 'global', label: 'Global Settings' },
+  { slug: 'global',           label: 'Global Settings'  },
 ]
 
 export default async function ContentPage() {

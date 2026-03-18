@@ -121,7 +121,7 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
         <div className="flex items-center gap-2.5">
           <div className="w-1.5 h-1.5 rounded-full bg-[#C9A70A] shadow-[0_0_6px_rgba(201,167,10,0.8)]" />
           <span className="text-xs text-white/40">Total Pages</span>
-          <span className="text-sm font-semibold text-[#C9A70A]" style={{ fontFamily: 'Rajdhani' }}>
+          <span className="text-sm font-semibold text-[#C9A70A]" style={{ fontFamily: 'League Spartan' }}>
             {allPages.length}
           </span>
         </div>
@@ -129,7 +129,7 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
         <div className="flex items-center gap-2.5">
           <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.8)]" />
           <span className="text-xs text-white/40">Published</span>
-          <span className="text-sm font-semibold text-green-400" style={{ fontFamily: 'Rajdhani' }}>
+          <span className="text-sm font-semibold text-green-400" style={{ fontFamily: 'League Spartan' }}>
             {published}
           </span>
         </div>
@@ -137,7 +137,7 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
         <div className="flex items-center gap-2.5">
           <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.8)]" />
           <span className="text-xs text-white/40">Drafts</span>
-          <span className="text-sm font-semibold text-amber-400" style={{ fontFamily: 'Rajdhani' }}>
+          <span className="text-sm font-semibold text-amber-400" style={{ fontFamily: 'League Spartan' }}>
             {drafts}
           </span>
         </div>
@@ -212,7 +212,7 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
                     <div>
                       <p
                         className="text-[15px] font-semibold text-[#F0F0F0] group-hover:text-[#C9A70A] transition-colors duration-200 leading-tight"
-                        style={{ fontFamily: 'Rajdhani' }}
+                        style={{ fontFamily: 'League Spartan' }}
                       >
                         {label}
                       </p>
