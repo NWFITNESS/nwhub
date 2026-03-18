@@ -20,6 +20,7 @@ interface VisualEditorPageProps {
   label: string
   sections: PageSection[]
   draftCount: number
+  defaults?: Record<string, Record<string, unknown>>
   saveDraftAction: (
     slug: string,
     sectionKey: string,
@@ -42,6 +43,7 @@ export function VisualEditorPage({
   label,
   sections,
   draftCount,
+  defaults = {},
   saveDraftAction,
   saveAndPublishAction,
 }: VisualEditorPageProps) {
@@ -57,7 +59,7 @@ export function VisualEditorPage({
 
   function getEffective(sectionKey: string): Record<string, unknown> {
     const s = sections.find((x) => x.section_key === sectionKey)
-    return liveEdits[sectionKey] ?? s?.draft_content ?? s?.content ?? {}
+    return liveEdits[sectionKey] ?? s?.draft_content ?? s?.content ?? defaults[sectionKey] ?? {}
   }
 
   // ── Section click → open floating editor ────────────────────────────────────

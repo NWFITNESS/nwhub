@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { TopBar } from '@/components/layout/TopBar'
 import { VisualEditorPage } from '@/components/content/VisualEditorPage'
 import { saveDraftAction, publishPageAction, saveAndPublishAction } from './actions'
+import { PAGE_SECTION_DEFAULTS } from '@/lib/content-defaults'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -49,6 +50,8 @@ export default async function ContentEditorPage({ params }: Props) {
   const label = PAGE_LABELS[slug] ?? slug
   const draftCount = sortedSections.filter((s) => s.draft_content != null).length
 
+  const defaults = PAGE_SECTION_DEFAULTS[slug] ?? {}
+
   return (
     <>
       <TopBar title={`Content — ${label}`} />
@@ -57,6 +60,7 @@ export default async function ContentEditorPage({ params }: Props) {
         label={label}
         sections={sortedSections as PageSection[]}
         draftCount={draftCount}
+        defaults={defaults}
         saveDraftAction={saveDraftAction}
         publishPageAction={publishPageAction}
         saveAndPublishAction={saveAndPublishAction}

@@ -2,14 +2,13 @@
 
 import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { X, ChevronDown, ChevronRight } from 'lucide-react'
+import { X, ChevronDown, ChevronRight, Save, Pencil } from 'lucide-react'
+import { ImageField } from '@/components/media/MediaPicker'
 
 interface FloatingEditorProps {
   sectionKey: string
   content: Record<string, unknown>
-  /** Viewport X of the click that opened this editor */
   clientX: number
-  /** Viewport Y of the click that opened this editor */
   clientY: number
   onContentChange: (content: Record<string, unknown>) => void
   onSaveDraft: () => void
@@ -17,29 +16,76 @@ interface FloatingEditorProps {
 }
 
 const INPUT_BASE =
-  'w-full rounded-lg bg-[#111] border border-white/10 px-3 py-2 text-xs text-white ' +
-  'outline-none focus:border-[#967705]/60 transition-colors'
+  'w-full rounded-lg bg-[#0d0d0d] border border-white/[0.08] px-3 py-2.5 text-sm text-white ' +
+  'placeholder:text-white/20 outline-none focus:border-[#967705]/60 focus:ring-1 focus:ring-[#967705]/20 transition-colors'
+
+function isImageKey(key: string, value: string): boolean {
+  const k = key.toLowerCase()
+  if (
+    k.includes('image') || k.includes('img') || k.includes('photo') ||
+    k.includes('background') || k === 'bg' || k.startsWith('bg_') ||
+    k.includes('thumbnail') || k.includes('avatar') ||
+    k.endsWith('_url') || k.endsWith('_src')
+  ) return true
+  if (value && /\.(jpg|jpeg|png|gif|webp|svg|avif)(\?.*)?$/i.test(value)) return true
+  if (value && value.includes('/storage/v1/object/public/')) return true
+  return false
+}
 
 function isMultilineKey(key: string, value: string): boolean {
   if (value.length > 80) return true
-  return ['subtext', 'desc', 'description', 'text', 'bio', 'excerpt', 'copy', 'a', 'note', 'message'].includes(key)
+  return ['subtext', 'desc', 'description', 'text', 'bio', 'excerpt', 'copy', 'a', 'note', 'message', 'address', 'body'].includes(key)
 }
 
-function StringField({ fieldKey, value, onChange }: { fieldKey: string; value: string; onChange: (v: string) => void }) {
+function FieldLabel({ label }: { label: string }) {
+  return (
+    <p className="text-[11px] font-semibold tracking-[0.08em] uppercase text-white/35 mb-1.5">
+      {label.replace(/_/g, ' ')}
+    </p>
+  )
+}
+
+function StringField({ fieldKey, value, onChange }: {
+  fieldKey: string
+  value: string
+  onChange: (v: string) => void
+}) {
+  if (isImageKey(fieldKey, value)) {
+    return (
+      <div>
+        <FieldLabel label={fieldKey} />
+        <ImageField value={value} onChange={onChange} />
+      </div>
+    )
+  }
   const multiline = isMultilineKey(fieldKey, value)
   return (
     <div>
-      <div className="text-[10px] tracking-widest text-white/40 uppercase mb-1.5">{fieldKey.replace(/_/g, ' ')}</div>
+      <FieldLabel label={fieldKey} />
       {multiline ? (
-        <textarea rows={3} value={value} onChange={(e) => onChange(e.target.value)} className={INPUT_BASE + ' resize-none'} />
+        <textarea
+          rows={3}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={INPUT_BASE + ' resize-none leading-relaxed'}
+        />
       ) : (
-        <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className={INPUT_BASE} />
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={INPUT_BASE}
+        />
       )}
     </div>
   )
 }
 
-function ArrayField({ fieldKey, items, onChange }: { fieldKey: string; items: unknown[]; onChange: (v: unknown[]) => void }) {
+function ArrayField({ fieldKey, items, onChange }: {
+  fieldKey: string
+  items: unknown[]
+  onChange: (v: unknown[]) => void
+}) {
   const [expanded, setExpanded] = useState(false)
 
   function updateItemString(i: number, val: string) {
@@ -55,30 +101,54 @@ function ArrayField({ fieldKey, items, onChange }: { fieldKey: string; items: un
 
   return (
     <div>
-      <button type="button" onClick={() => setExpanded(!expanded)} className="flex items-center gap-1.5 w-full text-left mb-1">
-        {expanded
-          ? <ChevronDown size={10} className="text-white/40 shrink-0" />
-          : <ChevronRight size={10} className="text-white/40 shrink-0" />}
-        <span className="text-[10px] tracking-widest text-white/40 uppercase">
-          {fieldKey.replace(/_/g, ' ')} ({items.length})
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center gap-2 w-full text-left mb-1.5 group"
+      >
+        <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-colors ${
+          expanded ? 'bg-[#967705]/20 text-[#c9a70a]' : 'bg-white/[0.06] text-white/30'
+        }`}>
+          {expanded ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
+        </div>
+        <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-white/35 group-hover:text-white/55 transition-colors">
+          {fieldKey.replace(/_/g, ' ')}{' '}
+          <span className="text-white/20 normal-case font-normal">({items.length} items)</span>
         </span>
       </button>
 
       {expanded && (
-        <div className="space-y-3 pl-3 border-l border-white/[0.08] ml-1">
+        <div className="space-y-2.5 pl-3 border-l border-[#967705]/20 ml-1.5 mt-2">
           {items.map((item, i) => {
             if (typeof item === 'string') {
-              return <StringField key={i} fieldKey={`${i + 1}`} value={item} onChange={(v) => updateItemString(i, v)} />
+              return (
+                <div key={i} className="bg-white/[0.03] rounded-lg p-2.5 border border-white/[0.06]">
+                  <FieldLabel label={String(i + 1)} />
+                  <input
+                    type="text"
+                    value={item}
+                    onChange={(e) => updateItemString(i, e.target.value)}
+                    className={INPUT_BASE}
+                  />
+                </div>
+              )
             }
             if (item && typeof item === 'object' && !Array.isArray(item)) {
               const obj = item as Record<string, unknown>
               const stringKeys = Object.keys(obj).filter((k) => typeof obj[k] === 'string')
               if (stringKeys.length === 0) return null
               return (
-                <div key={i} className="space-y-2.5">
-                  <div className="text-[9px] tracking-widest text-white/25 uppercase">— {i + 1}</div>
+                <div key={i} className="bg-white/[0.03] rounded-lg p-3 border border-white/[0.06] space-y-3">
+                  <p className="text-[10px] font-semibold text-[#967705]/60 uppercase tracking-widest">
+                    Item {i + 1}
+                  </p>
                   {stringKeys.map((k) => (
-                    <StringField key={k} fieldKey={k} value={obj[k] as string} onChange={(v) => updateItemField(i, k, v)} />
+                    <StringField
+                      key={k}
+                      fieldKey={k}
+                      value={obj[k] as string}
+                      onChange={(v) => updateItemField(i, k, v)}
+                    />
                   ))}
                 </div>
               )
@@ -91,29 +161,37 @@ function ArrayField({ fieldKey, items, onChange }: { fieldKey: string; items: un
   )
 }
 
-export function FloatingEditor({ sectionKey, content, clientX, clientY, onContentChange, onSaveDraft, onClose }: FloatingEditorProps) {
+export function FloatingEditor({
+  sectionKey,
+  content,
+  clientX,
+  clientY,
+  onContentChange,
+  onSaveDraft,
+  onClose,
+}: FloatingEditorProps) {
   const [local, setLocal] = useState<Record<string, unknown>>(content)
   const boxRef = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState({ top: clientY, left: clientX })
+  const [saved, setSaved] = useState(false)
 
-  // Re-init fields when section changes
+  // Re-init when section changes
   useEffect(() => { setLocal(content) }, [sectionKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Position the box near the click, keeping inside viewport
+  // Position near click, clamped inside viewport
   useLayoutEffect(() => {
     const box = boxRef.current
     if (!box) return
-    const W = box.offsetWidth || 288
-    const H = box.offsetHeight || 400
+    const W = box.offsetWidth || 320
+    const H = box.offsetHeight || 480
     const vw = window.innerWidth
     const vh = window.innerHeight
-    // Prefer left of click; fall back to right
     const left = clientX - W - 16 > 8 ? clientX - W - 16 : Math.min(clientX + 16, vw - W - 8)
     const top = Math.min(Math.max(clientY - 60, 8), vh - H - 8)
     setPos({ top, left })
   }, [clientX, clientY, sectionKey])
 
-  // Dismiss on outside mousedown
+  // Close on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (boxRef.current && !boxRef.current.contains(e.target as Node)) onClose()
@@ -128,66 +206,159 @@ export function FloatingEditor({ sectionKey, content, clientX, clientY, onConten
     onContentChange(next)
   }
 
+  function handleSave() {
+    onSaveDraft()
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+  }
+
   const label = sectionKey.replace(/_/g, ' ')
+  const fieldCount = Object.values(local).filter((v) => v !== null && v !== undefined).length
 
   const box = (
     <div
       ref={boxRef}
-      className="fixed z-50 w-72 rounded-2xl border border-white/[0.12] bg-[#1a1a1a] shadow-2xl shadow-black/70 overflow-hidden"
-      style={{ top: pos.top, left: pos.left }}
+      className="fixed z-50 w-80 rounded-2xl overflow-hidden"
+      style={{
+        top: pos.top,
+        left: pos.left,
+        background: 'linear-gradient(180deg, #1c1c1c 0%, #131313 100%)',
+        border: '1px solid rgba(255,255,255,0.1)',
+        boxShadow: '0 32px 80px rgba(0,0,0,0.85), 0 0 0 1px rgba(150,119,5,0.08)',
+      }}
       onMouseDown={(e) => e.stopPropagation()}
     >
+      {/* Gold top accent bar */}
+      <div
+        className="h-[2px] w-full flex-shrink-0"
+        style={{ background: 'linear-gradient(90deg, transparent 0%, #967705 25%, #c9a70a 50%, #967705 75%, transparent 100%)' }}
+      />
+
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.08]">
-        <span className="text-xs font-semibold text-white capitalize">{label}</span>
-        <button type="button" onClick={onClose} className="text-white/40 hover:text-white transition-colors rounded p-0.5">
-          <X size={14} />
-        </button>
+      <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/[0.07]">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(150,119,5,0.15)', border: '1px solid rgba(150,119,5,0.25)' }}>
+            <Pencil size={12} className="text-[#c9a70a]" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold tracking-[0.12em] uppercase leading-none mb-0.5"
+              style={{ color: 'rgba(201,167,10,0.7)' }}>
+              Editing
+            </p>
+            <p className="text-white font-semibold text-sm capitalize truncate leading-none">{label}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+          <span className="text-[11px] tabular-nums px-1.5 py-0.5 rounded-md bg-white/[0.05] text-white/25">
+            {fieldCount} {fieldCount === 1 ? 'field' : 'fields'}
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white hover:bg-white/[0.08] transition-colors"
+          >
+            <X size={14} />
+          </button>
+        </div>
       </div>
 
       {/* Fields */}
-      <div className="p-4 space-y-4 max-h-[460px] overflow-y-auto">
+      <div className="p-4 space-y-4 max-h-[440px] overflow-y-auto editor-scroll-container">
         {Object.entries(local).map(([key, value]) => {
           if (value === null || value === undefined) return null
 
           if (typeof value === 'string') {
-            return <StringField key={key} fieldKey={key} value={value} onChange={(v) => updateField(key, v)} />
+            return (
+              <StringField
+                key={key}
+                fieldKey={key}
+                value={value}
+                onChange={(v) => updateField(key, v)}
+              />
+            )
           }
           if (typeof value === 'number') {
             return (
               <div key={key}>
-                <div className="text-[10px] tracking-widest text-white/40 uppercase mb-1.5">{key.replace(/_/g, ' ')}</div>
-                <input type="number" value={value} onChange={(e) => updateField(key, Number(e.target.value))} className={INPUT_BASE} />
+                <FieldLabel label={key} />
+                <input
+                  type="number"
+                  value={value}
+                  onChange={(e) => updateField(key, Number(e.target.value))}
+                  className={INPUT_BASE}
+                />
               </div>
             )
           }
           if (typeof value === 'boolean') {
             return (
-              <div key={key} className="flex items-center gap-2">
-                <input type="checkbox" id={`fe-${key}`} checked={value} onChange={(e) => updateField(key, e.target.checked)} className="accent-[#967705]" />
-                <label htmlFor={`fe-${key}`} className="text-xs text-white/70 capitalize">{key.replace(/_/g, ' ')}</label>
-              </div>
+              <label
+                key={key}
+                htmlFor={`fe-${key}`}
+                className="flex items-center gap-3 bg-white/[0.03] rounded-lg px-3 py-2.5 border border-white/[0.06] cursor-pointer select-none"
+              >
+                <input
+                  type="checkbox"
+                  id={`fe-${key}`}
+                  checked={value}
+                  onChange={(e) => updateField(key, e.target.checked)}
+                  className="w-4 h-4 accent-[#967705] rounded"
+                />
+                <span className="text-sm text-white/60 capitalize">{key.replace(/_/g, ' ')}</span>
+              </label>
             )
           }
           if (Array.isArray(value)) {
-            return <ArrayField key={key} fieldKey={key} items={value} onChange={(v) => updateField(key, v)} />
+            return (
+              <ArrayField
+                key={key}
+                fieldKey={key}
+                items={value}
+                onChange={(v) => updateField(key, v)}
+              />
+            )
           }
           return null
         })}
 
         {Object.keys(local).length === 0 && (
-          <p className="text-xs text-white/30 text-center py-3">No editable fields.</p>
+          <div className="py-8 text-center">
+            <p className="text-sm text-white/20">No editable fields</p>
+          </div>
         )}
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-white/[0.08]">
+      <div className="px-4 py-3.5 border-t border-white/[0.07]" style={{ background: 'rgba(0,0,0,0.25)' }}>
         <button
           type="button"
-          onClick={onSaveDraft}
-          className="w-full rounded-lg bg-white/[0.05] border border-white/10 hover:border-[#967705]/50 hover:bg-[#967705]/[0.08] px-3 py-2 text-xs text-white/60 hover:text-white transition-colors"
+          onClick={handleSave}
+          className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all duration-300"
+          style={saved ? {
+            background: 'rgba(34,197,94,0.12)',
+            color: '#22c55e',
+            border: '1px solid rgba(34,197,94,0.25)',
+          } : {
+            background: 'linear-gradient(135deg, #967705 0%, #c9a70a 100%)',
+            color: '#000',
+            border: '1px solid rgba(201,167,10,0.3)',
+            boxShadow: '0 4px 16px rgba(150,119,5,0.3)',
+          }}
         >
-          Save Draft
+          {saved ? (
+            <>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Draft Saved
+            </>
+          ) : (
+            <>
+              <Save size={14} />
+              Save Draft
+            </>
+          )}
         </button>
       </div>
     </div>

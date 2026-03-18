@@ -2,8 +2,14 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Upload, X, Check, Image as ImageIcon } from 'lucide-react'
+import { Upload, X, Check, Image as ImageIcon, Video, Play } from 'lucide-react'
 import type { Media } from '@/lib/types'
+
+function isVideo(mimeType: string | null, url?: string): boolean {
+  if (mimeType) return mimeType.startsWith('video/')
+  if (url) return /\.(mp4|webm|mov|m4v|avi|mkv)(\?.*)?$/i.test(url)
+  return false
+}
 
 async function uploadFile(file: File): Promise<Media | null> {
   const form = new FormData()
@@ -25,6 +31,7 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
   const [media, setMedia] = useState<Media[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
+  const [filter, setFilter] = useState<'all' | 'images' | 'videos'>('all')
   const fileInput = useRef<HTMLInputElement>(null)
   const supabase = createClient()
 
@@ -55,17 +62,21 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
     setUploading(false)
   }
 
-  // Close on backdrop click
   function handleBackdrop(e: React.MouseEvent<HTMLDivElement>) {
     if (e.target === e.currentTarget) onClose()
   }
 
-  // Close on Escape
   useEffect(() => {
     function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
+
+  const filtered = media.filter((item) => {
+    if (filter === 'images') return !isVideo(item.mime_type, item.public_url)
+    if (filter === 'videos') return isVideo(item.mime_type, item.public_url)
+    return true
+  })
 
   return (
     <div
@@ -81,13 +92,32 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
               {loading ? 'Loading…' : `${media.length} file${media.length !== 1 ? 's' : ''}`}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-white/30 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/[0.06]"
-          >
-            <X size={16} />
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Filter tabs */}
+            <div className="flex gap-1 bg-white/[0.04] rounded-lg p-0.5">
+              {(['all', 'images', 'videos'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setFilter(tab)}
+                  className={`px-2.5 py-1 text-[10px] font-medium rounded-md transition-colors capitalize ${
+                    filter === tab
+                      ? 'bg-white/10 text-white'
+                      : 'text-white/40 hover:text-white/60'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-white/30 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/[0.06]"
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Upload zone */}
@@ -106,13 +136,16 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
             ) : (
               <>
                 <Upload size={16} className="mx-auto text-white/20 mb-1" />
-                <p className="text-xs text-white/40">Drop an image here or <span className="text-[#967705]">click to upload</span></p>
+                <p className="text-xs text-white/40">
+                  Drop an image or video here or <span className="text-[#967705]">click to upload</span>
+                </p>
+                <p className="text-[10px] text-white/20 mt-1">JPG, PNG, WebP, GIF · MP4, WebM, MOV</p>
               </>
             )}
             <input
               ref={fileInput}
               type="file"
-              accept="image/*"
+              accept="image/*,video/mp4,video/webm,video/quicktime,video/mov"
               multiple
               className="hidden"
               onChange={(e) => handleUpload(e.target.files)}
@@ -128,15 +161,25 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
                 <div key={i} className="aspect-square bg-white/[0.04] rounded-lg animate-pulse" />
               ))}
             </div>
-          ) : media.length === 0 ? (
+          ) : filtered.length === 0 ? (
             <div className="py-12 text-center">
-              <ImageIcon size={32} className="mx-auto text-white/10 mb-3" />
-              <p className="text-white/30 text-sm">No media yet — upload your first image above</p>
+              {filter === 'videos' ? (
+                <>
+                  <Video size={32} className="mx-auto text-white/10 mb-3" />
+                  <p className="text-white/30 text-sm">No videos yet — upload your first video above</p>
+                </>
+              ) : (
+                <>
+                  <ImageIcon size={32} className="mx-auto text-white/10 mb-3" />
+                  <p className="text-white/30 text-sm">No media yet — upload your first file above</p>
+                </>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-4 gap-2">
-              {media.map((item) => {
+              {filtered.map((item) => {
                 const isSelected = item.public_url === value
+                const itemIsVideo = isVideo(item.mime_type, item.public_url)
                 return (
                   <button
                     key={item.id}
@@ -148,12 +191,27 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
                         : 'border-transparent hover:border-white/20'
                     }`}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={item.public_url}
-                      alt={item.alt_text || item.filename}
-                      className="w-full h-full object-cover"
-                    />
+                    {itemIsVideo ? (
+                      <>
+                        <video
+                          src={item.public_url}
+                          className="w-full h-full object-cover"
+                          preload="metadata"
+                          muted
+                        />
+                        {/* Video badge */}
+                        <div className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center">
+                          <Play size={9} className="text-white fill-white ml-0.5" />
+                        </div>
+                      </>
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={item.public_url}
+                        alt={item.alt_text || item.filename}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
                     {/* Selected checkmark */}
                     {isSelected && (
                       <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[#967705] flex items-center justify-center">
@@ -175,7 +233,7 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
   )
 }
 
-// ─── ImageField ───────────────────────────────────────────────────────────────
+// ─── ImageField (handles both images and videos) ──────────────────────────────
 
 interface ImageFieldProps {
   value: string
@@ -185,6 +243,7 @@ interface ImageFieldProps {
 
 export function ImageField({ value, onChange, label }: ImageFieldProps) {
   const [open, setOpen] = useState(false)
+  const valueIsVideo = isVideo(null, value)
 
   const handleSelect = useCallback((url: string) => {
     onChange(url)
@@ -199,10 +258,19 @@ export function ImageField({ value, onChange, label }: ImageFieldProps) {
         )}
         <div className="flex gap-2 items-start">
           {/* Thumbnail */}
-          <div className="w-14 h-14 rounded-lg border border-white/10 bg-white/[0.04] flex-shrink-0 overflow-hidden">
+          <div className="w-14 h-14 rounded-lg border border-white/10 bg-white/[0.04] flex-shrink-0 overflow-hidden relative">
             {value ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={value} alt="" className="w-full h-full object-cover" />
+              valueIsVideo ? (
+                <>
+                  <video src={value} className="w-full h-full object-cover" preload="metadata" muted />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <Play size={14} className="text-white fill-white" />
+                  </div>
+                </>
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={value} alt="" className="w-full h-full object-cover" />
+              )
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <ImageIcon size={18} className="text-white/15" />
@@ -234,7 +302,7 @@ export function ImageField({ value, onChange, label }: ImageFieldProps) {
                   type="button"
                   onClick={() => onChange('')}
                   className="px-2.5 py-1.5 text-xs bg-white/[0.04] hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 rounded-lg text-white/40 hover:text-red-400 transition-colors"
-                  title="Remove image"
+                  title="Remove media"
                 >
                   <X size={12} />
                 </button>

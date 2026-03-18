@@ -21,7 +21,7 @@ interface Props {
   onSectionClick: (sectionKey: string, clientX: number, clientY: number) => void
 }
 
-const SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001'
+const SITE_ORIGIN = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 // The iframe always renders at full desktop width; CSS transform scales it to fit
 const DESIGN_WIDTH = 1440
 

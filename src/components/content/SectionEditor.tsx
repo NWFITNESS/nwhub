@@ -75,7 +75,7 @@ function ArrayItemWrapper({
 
 // Hero section editor
 function HeroEditor({ content, onChange }: { content: Record<string, unknown>; onChange: (v: Record<string, unknown>) => void }) {
-  const s = content as { kicker?: string; heading?: string; subtext?: string; image_url?: string }
+  const s = content as { kicker?: string; heading?: string; subtext?: string; image_url?: string; video_url?: string }
   return (
     <div className="space-y-4">
       <Field label="Kicker (small text above heading)">
@@ -87,7 +87,10 @@ function HeroEditor({ content, onChange }: { content: Record<string, unknown>; o
       <Field label="Subtext">
         <Textarea value={s.subtext ?? ''} onChange={(e) => onChange({ ...content, subtext: e.target.value })} />
       </Field>
-      <Field label="Background Image">
+      <Field label="Background Video (takes priority over image)">
+        <ImageField value={s.video_url ?? ''} onChange={(url) => onChange({ ...content, video_url: url })} />
+      </Field>
+      <Field label="Background Image (fallback when no video)">
         <ImageField value={s.image_url ?? ''} onChange={(url) => onChange({ ...content, image_url: url })} />
       </Field>
     </div>
@@ -520,6 +523,91 @@ function OptionsEditor({
   )
 }
 
+// Heading + subtext + items array editor (icon_row, induction, etc.)
+function HeaderWithItemsEditor({ content, onChange, fields, itemLabel = 'Item' }: {
+  content: Record<string, unknown>
+  onChange: (v: Record<string, unknown>) => void
+  fields: Array<{ key: string; label: string; multiline?: boolean }>
+  itemLabel?: string
+}) {
+  const items = (content.items as Array<Record<string, string>>) ?? []
+
+  function updateItem(i: number, field: string, value: string) {
+    const next = items.map((item, idx) => (idx === i ? { ...item, [field]: value } : item))
+    onChange({ ...content, items: next })
+  }
+  function addItem() {
+    onChange({ ...content, items: [...items, Object.fromEntries(fields.map((f) => [f.key, '']))] })
+  }
+  function removeItem(i: number) {
+    onChange({ ...content, items: items.filter((_, idx) => idx !== i) })
+  }
+
+  return (
+    <div className="space-y-4">
+      <Field label="Heading">
+        <Textarea value={(content.heading as string) ?? ''} onChange={(e) => onChange({ ...content, heading: e.target.value })} className="min-h-[60px]" />
+      </Field>
+      <Field label="Subtext / Body">
+        <Textarea value={(content.subtext as string) ?? ''} onChange={(e) => onChange({ ...content, subtext: e.target.value })} />
+      </Field>
+      <div className="border-t border-white/10 pt-3">
+        <p className="text-xs text-white/40 mb-3">Items</p>
+        <div className="space-y-3">
+          {items.map((item, i) => (
+            <ArrayItemWrapper key={i} index={i} onRemove={() => removeItem(i)}>
+              <div className="space-y-3">
+                {fields.map((f) =>
+                  f.key === 'image_url' ? (
+                    <Field key={f.key} label={f.label}>
+                      <ImageField value={item[f.key] ?? ''} onChange={(url) => updateItem(i, f.key, url)} />
+                    </Field>
+                  ) : f.multiline ? (
+                    <Field key={f.key} label={f.label}>
+                      <Textarea value={item[f.key] ?? ''} onChange={(e) => updateItem(i, f.key, e.target.value)} />
+                    </Field>
+                  ) : (
+                    <Field key={f.key} label={f.label}>
+                      <Input value={item[f.key] ?? ''} onChange={(e) => updateItem(i, f.key, e.target.value)} />
+                    </Field>
+                  )
+                )}
+              </div>
+            </ArrayItemWrapper>
+          ))}
+          <Button variant="ghost" size="sm" onClick={addItem} type="button">
+            <Plus size={14} /> Add {itemLabel}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Simple heading + subtext editor (used for CTA blocks, intro sections, etc.)
+function SimpleContentEditor({
+  content,
+  onChange,
+}: {
+  content: Record<string, unknown>
+  onChange: (v: Record<string, unknown>) => void
+}) {
+  const s = content as { kicker?: string; heading?: string; subtext?: string }
+  return (
+    <div className="space-y-4">
+      <Field label="Kicker (small eyebrow text)">
+        <Input value={s.kicker ?? ''} onChange={(e) => onChange({ ...content, kicker: e.target.value })} />
+      </Field>
+      <Field label="Heading">
+        <Textarea value={s.heading ?? ''} onChange={(e) => onChange({ ...content, heading: e.target.value })} className="min-h-[60px]" />
+      </Field>
+      <Field label="Subtext / Body">
+        <Textarea value={s.subtext ?? ''} onChange={(e) => onChange({ ...content, subtext: e.target.value })} className="min-h-[80px]" />
+      </Field>
+    </div>
+  )
+}
+
 // Social Carousel section editor
 function SocialCarouselEditor({ content, onChange }: { content: Record<string, unknown>; onChange: (v: Record<string, unknown>) => void }) {
   const s = content as { heading?: string; subtext?: string; ig_url?: string; speed?: number }
@@ -597,8 +685,9 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
     <GenericArrayEditor {...p} fields={[
       { key: 'name', label: 'Name' },
       { key: 'role', label: 'Role' },
-      { key: 'excerpt', label: 'Excerpt', multiline: true },
-      { key: 'image_url', label: 'Image URL' },
+      { key: 'excerpt', label: 'Short bio (card)', multiline: true },
+      { key: 'bio', label: 'Full bio (modal)', multiline: true },
+      { key: 'image_url', label: 'Image' },
     ]} />
   ),
   facilities: (p) => (
@@ -609,11 +698,10 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
     ]} />
   ),
   icon_row: (p) => (
-    <GenericArrayEditor {...p} fields={[
-      { key: 'num', label: 'Number / Stat' },
-      { key: 'title', label: 'Title' },
+    <HeaderWithItemsEditor {...p} fields={[
+      { key: 'label', label: 'Feature name' },
       { key: 'desc', label: 'Description', multiline: true },
-    ]} />
+    ]} itemLabel="Feature" />
   ),
   training_sessions: (p) => (
     <GenericArrayEditor {...p} fields={[
@@ -673,6 +761,95 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
   contact_block: (p) => <ContactBlockEditor {...p} />,
   form: (p) => <FormEnquiryEditor {...p} />,
   details: (p) => <ContactDetailsEditor {...p} />,
+
+  // ── Homepage sections ──────────────────────────────────────────────────────
+  trust_bar: (p) => <StringArrayEditor {...p} label="Marquee item" />,
+  programs: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'title', label: 'Title' },
+      { key: 'type', label: 'Type badge (e.g. Daily WOD)' },
+      { key: 'desc', label: 'Description', multiline: true },
+      { key: 'detail', label: 'Detail line (e.g. 7 sessions/week)' },
+      { key: 'image_url', label: 'Background Image' },
+      { key: 'link', label: 'Link URL' },
+    ]} />
+  ),
+  stats: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'value', label: 'Value (e.g. 150)' },
+      { key: 'suffix', label: 'Suffix (e.g. +)' },
+      { key: 'label', label: 'Label' },
+      { key: 'sub', label: 'Sub-label' },
+    ]} />
+  ),
+  testimonials: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'quote', label: 'Quote', multiline: true },
+      { key: 'name', label: 'Name' },
+      { key: 'role', label: 'Role / Member since' },
+    ]} />
+  ),
+  scroll_story: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'kicker', label: 'Eyebrow label (e.g. Functional Fitness)' },
+      { key: 'heading', label: 'Heading', multiline: true },
+      { key: 'body', label: 'Body text', multiline: true },
+      { key: 'image_url', label: 'Background Image' },
+    ]} />
+  ),
+  induction: (p) => (
+    <HeaderWithItemsEditor {...p} fields={[
+      { key: 'title', label: 'Feature title' },
+      { key: 'desc', label: 'Description', multiline: true },
+    ]} itemLabel="Feature bullet" />
+  ),
+
+  // ── HYROX sections ─────────────────────────────────────────────────────────
+  intro_statement: (p) => <SimpleContentEditor {...p} />,
+  what_is_hyrox: (p) => <SimpleContentEditor {...p} />,
+  example_day: (p) => <SimpleContentEditor {...p} />,
+  hyrox_timetable: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'day', label: 'Day' },
+      { key: 'time', label: 'Time (e.g. 18:15)' },
+      { key: 'type', label: 'Session Type' },
+    ]} />
+  ),
+  race_cta: (p) => <SimpleContentEditor {...p} />,
+
+  // ── Why Us sections ────────────────────────────────────────────────────────
+  differentiators: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'num', label: 'Number (01, 02…)' },
+      { key: 'title', label: 'Title' },
+      { key: 'desc', label: 'Short description', multiline: true },
+      { key: 'detail', label: 'Detail paragraph', multiline: true },
+      { key: 'image_url', label: 'Image' },
+    ]} />
+  ),
+
+  // ── Team sections ──────────────────────────────────────────────────────────
+  intro: (p) => <SimpleContentEditor {...p} />,
+
+  // ── Results sections ───────────────────────────────────────────────────────
+  stories: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'name', label: 'Name' },
+      { key: 'role', label: 'Role / Member since' },
+      { key: 'quote', label: 'Quote', multiline: true },
+      { key: 'stat_before', label: 'Before stat' },
+      { key: 'stat_after', label: 'After stat' },
+      { key: 'image_url', label: 'Image' },
+    ]} />
+  ),
+  competition_results: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'event', label: 'Event' },
+      { key: 'athlete', label: 'Athlete' },
+      { key: 'result', label: 'Result' },
+      { key: 'year', label: 'Year' },
+    ]} />
+  ),
 }
 
 export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave, onContentChange, saveLabel = 'Save Section' }: SectionEditorProps) {
