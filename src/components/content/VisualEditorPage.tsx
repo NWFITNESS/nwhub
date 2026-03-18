@@ -59,7 +59,12 @@ export function VisualEditorPage({
 
   function getEffective(sectionKey: string): Record<string, unknown> {
     const s = sections.find((x) => x.section_key === sectionKey)
-    return liveEdits[sectionKey] ?? s?.draft_content ?? s?.content ?? defaults[sectionKey] ?? {}
+    // Live unsaved edits always win
+    if (liveEdits[sectionKey]) return liveEdits[sectionKey]
+    // Only use saved DB content if it actually has data — empty {} falls through to defaults
+    const saved = s?.draft_content ?? s?.content
+    if (saved && Object.keys(saved).length > 0) return saved
+    return defaults[sectionKey] ?? {}
   }
 
   // ── Section click → open floating editor ────────────────────────────────────
