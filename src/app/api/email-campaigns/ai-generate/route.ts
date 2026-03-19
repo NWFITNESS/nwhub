@@ -46,7 +46,13 @@ Technical requirements:
 - If no images provided, use CSS shapes/borders for decorative elements only
 - Gold accent lines/borders to add visual structure
 - Generous whitespace — never cramped
-- Use {{first_name}} merge tag in the opening greeting where appropriate
+MERGE TAGS — Mailchimp replaces these automatically per subscriber when the campaign sends:
+- *|FNAME|* = subscriber's first name
+- *|LNAME|* = subscriber's last name
+- *|EMAIL|* = subscriber's email address
+
+Always use these exact tags (not {{first_name}} or any other format).
+Example greeting: "Hey *|FNAME|*,"
 `
 
 const AUDIENCE_LABELS: Record<string, string> = {

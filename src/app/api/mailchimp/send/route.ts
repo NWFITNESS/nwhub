@@ -1,4 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+
+// Normalise merge tags — convert {{first_name}} style to Mailchimp *|FNAME|* style
+function normaliseMergeTags(html: string): string {
+  return html
+    .replace(/\{\{first_name\}\}/gi, '*|FNAME|*')
+    .replace(/\{\{last_name\}\}/gi,  '*|LNAME|*')
+    .replace(/\{\{email\}\}/gi,      '*|EMAIL|*')
+}
 import { createAdminClient } from '@/lib/supabase/admin'
 import { mc, resolveApiKey } from '@/lib/mailchimp'
 import { requireAuth } from '@/lib/auth-guard'
@@ -56,7 +64,7 @@ export async function POST(req: NextRequest) {
 
     const contentRes = await mc(api_key, `/campaigns/${campaignId}/content`, {
       method: 'PUT',
-      body: { html },
+      body: { html: normaliseMergeTags(html) },
     })
     if (!contentRes.ok) {
       const err = await contentRes.json().catch(() => ({}))

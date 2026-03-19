@@ -264,6 +264,7 @@ export function AIEmailCreatorClient() {
               className="w-full bg-[#1a1a1a] border border-white/[0.08] rounded-lg px-4 py-3 text-sm text-white placeholder:text-white/20 resize-none focus:outline-none focus:border-[#967705]/60 focus:ring-1 focus:ring-[#967705]/30 transition-colors leading-relaxed"
             />
             <p className="text-xs text-white/20 mt-2">The more detail you give, the better the email. Press ⌘+Enter to generate.</p>
+            <p className="text-xs text-white/20 mt-1">Personalise with <span className="text-[#967705]/80 font-mono">*|FNAME|*</span> — e.g. <span className="text-white/30 font-mono">Hey *|FNAME|*,</span> — Mailchimp replaces this automatically per subscriber.</p>
           </div>
 
           {/* Options */}
