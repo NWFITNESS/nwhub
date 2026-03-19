@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Upload, Clipboard, Trash2, X, Check } from 'lucide-react'
+import { Upload, Clipboard, Trash2, X, Check, Pencil } from 'lucide-react'
 import type { Media } from '@/lib/types'
 
 const CATEGORIES = ['logo', 'hero', 'team', 'gym', 'classes', 'kids', 'hyrox', 'general'] as const
@@ -29,11 +29,88 @@ function getImageDimensions(file: File): Promise<{ width: number; height: number
   })
 }
 
+function EditModal({ item, onSave, onClose }: {
+  item: Media
+  onSave: (updated: Media) => void
+  onClose: () => void
+}) {
+  const [alt, setAlt]           = useState(item.alt ?? '')
+  const [category, setCategory] = useState(item.category ?? 'general')
+  const [saving, setSaving]     = useState(false)
+
+  async function save() {
+    setSaving(true)
+    const res = await fetch('/api/media', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: item.id, alt, category }),
+    })
+    if (res.ok) onSave(await res.json() as Media)
+    setSaving(false)
+    onClose()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="bg-[#111] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.08]">
+          <p className="text-sm font-semibold text-white">Edit image details</p>
+          <button onClick={onClose} className="text-white/30 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/[0.06]"><X size={15} /></button>
+        </div>
+        <div className="p-5 flex gap-4">
+          <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-black border border-white/[0.08]">
+            <img src={item.url} alt="" className="w-full h-full object-cover" />
+          </div>
+          <div className="flex-1 flex flex-col gap-3">
+            <p className="text-xs text-white/40 truncate">{item.filename}</p>
+            <div>
+              <label className="block text-xs font-semibold text-white/40 uppercase tracking-[0.1em] mb-1.5">Category</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full bg-[#1a1a1a] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-white capitalize focus:outline-none focus:border-[#967705]/60 focus:ring-1 focus:ring-[#967705]/30 transition-colors"
+              >
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div className="px-5 pb-5">
+          <label className="block text-xs font-semibold text-white/40 uppercase tracking-[0.1em] mb-1.5">Alt text — describe this image for the AI</label>
+          <textarea
+            value={alt}
+            onChange={(e) => setAlt(e.target.value)}
+            placeholder="e.g. Members working out on the gym floor during a HYROX class"
+            rows={3}
+            className="w-full bg-[#1a1a1a] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/20 resize-none focus:outline-none focus:border-[#967705]/60 focus:ring-1 focus:ring-[#967705]/30 transition-colors leading-relaxed"
+          />
+          <p className="text-xs text-white/20 mt-1.5">The AI uses this to understand what's in the image when building emails.</p>
+        </div>
+        <div className="flex gap-3 px-5 py-4 border-t border-white/[0.06]">
+          <button
+            onClick={save}
+            disabled={saving}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-black bg-gradient-to-r from-[#967705] to-[#C9A70A] hover:opacity-90 transition-opacity disabled:opacity-50"
+          >
+            {saving ? <><div className="w-4 h-4 border-2 border-black/40 border-t-black rounded-full animate-spin" /> Saving...</> : <><Check size={14} /> Save</>}
+          </button>
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm text-white/40 hover:text-white/70 border border-white/[0.08] hover:border-white/20 transition-all">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function MediaGrid({ initialMedia }: Props) {
   const [media, setMedia]       = useState(initialMedia)
   const [pending, setPending]   = useState<PendingFile[]>([])
   const [uploading, setUploading] = useState(false)
   const [copied, setCopied]     = useState<string | null>(null)
+  const [editing, setEditing]   = useState<Media | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
 
   async function queueFiles(files: FileList | null) {
@@ -201,7 +278,20 @@ export function MediaGrid({ initialMedia }: Props) {
                 </span>
               </div>
             )}
+            {/* Missing alt/category warning */}
+            {(!item.alt || !item.category) && (
+              <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-amber-500 flex items-center justify-center" title="Missing alt text or category">
+                <span className="text-[9px] font-bold text-black">!</span>
+              </div>
+            )}
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5">
+              <button
+                onClick={() => setEditing(item)}
+                className="p-1.5 bg-white/10 rounded hover:bg-[#967705]/40 transition-colors"
+                title="Edit details"
+              >
+                <Pencil size={12} className="text-white" />
+              </button>
               <button
                 onClick={() => copyUrl(item.url)}
                 className="p-1.5 bg-white/10 rounded hover:bg-white/20 transition-colors"
@@ -233,6 +323,14 @@ export function MediaGrid({ initialMedia }: Props) {
 
       {media.length === 0 && pending.length === 0 && (
         <p className="text-center text-white/30 text-sm py-12">No media yet. Upload your first image.</p>
+      )}
+
+      {editing && (
+        <EditModal
+          item={editing}
+          onSave={(updated) => setMedia((prev) => prev.map((m) => m.id === updated.id ? updated : m))}
+          onClose={() => setEditing(null)}
+        />
       )}
     </div>
   )

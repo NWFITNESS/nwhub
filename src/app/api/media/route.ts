@@ -53,6 +53,26 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// PATCH /api/media — update alt and category
+export async function PATCH(req: NextRequest) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
+
+  const supabase = createAdminClient()
+  const { id, alt, category } = await req.json()
+  if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
+
+  const { data: row, error } = await supabase
+    .from('media')
+    .update({ alt, category })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json(row)
+}
+
 // DELETE /api/media — delete a file by id
 export async function DELETE(req: NextRequest) {
   const unauth = await requireAuth()
