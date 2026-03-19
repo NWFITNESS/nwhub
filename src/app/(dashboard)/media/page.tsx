@@ -8,7 +8,7 @@ export default async function MediaPage() {
   const { data: media } = await supabase
     .from('media')
     .select('*')
-    .order('uploaded_at', { ascending: false })
+    .order('created_at', { ascending: false })
 
   return (
     <>

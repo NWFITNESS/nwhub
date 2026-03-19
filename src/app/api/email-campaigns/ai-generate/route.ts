@@ -31,8 +31,8 @@ Brand voice:
 - Authentic — real people, real results
 
 Email structure (always follow this):
-1. Dark header (#0a0a0a) with "NORTHERN WARRIOR" in gold (#C9A70A) bold uppercase, "FITNESS" below in white, gold bottom border line
-2. Hero section with bold headline and short intro
+1. Dark header (#0a0a0a) with logo in the header — use the logo URL provided, or fallback to "NORTHERN WARRIOR" text in gold (#C9A70A) bold uppercase, "FITNESS" below in white
+2. Hero section — if a hero image is provided, use it as a full-width banner below the header. If no image, use a bold headline with gold accent line
 3. Body — clear sections with adequate spacing
 4. One prominent gold CTA button (#C9A70A text-black, rounded, padding 14px 32px)
 5. Footer — dark bg, address, unsubscribe placeholder, Instagram link
@@ -42,7 +42,8 @@ Technical requirements:
 - All CSS inline or in a <style> block in <head>
 - Mobile responsive — single column on mobile, max-width 600px centered on desktop
 - Web-safe fonts only: Arial, Georgia, serif, sans-serif
-- No external images — use CSS shapes/borders for decorative elements
+- Images: use actual <img> tags with the exact URLs provided — never placeholder or made-up URLs
+- If no images provided, use CSS shapes/borders for decorative elements only
 - Gold accent lines/borders to add visual structure
 - Generous whitespace — never cramped
 - Use {{first_name}} merge tag in the opening greeting where appropriate
@@ -69,8 +70,38 @@ export async function POST(req: NextRequest) {
   const unauth = await requireAuth()
   if (unauth) return unauth
 
-  const { prompt, tone, audience } = await req.json()
+  const { prompt, tone, audience, selectedImages, logoUrl } = await req.json()
   if (!prompt) return NextResponse.json({ error: 'Prompt is required' }, { status: 400 })
+
+  // Build image context
+  const imageLines: string[] = []
+
+  if (logoUrl) {
+    imageLines.push(`LOGO URL (use in header): ${logoUrl}`)
+  } else {
+    imageLines.push('No logo URL provided — use text "NORTHERN WARRIOR FITNESS" styled in gold in the header')
+  }
+
+  if (selectedImages && selectedImages.length > 0) {
+    imageLines.push('')
+    imageLines.push('IMAGES TO USE IN THIS EMAIL (use real <img> tags with exact URLs below):')
+    selectedImages.forEach((img: { url: string; alt: string | null; category: string | null }, i: number) => {
+      imageLines.push(`Image ${i + 1}:`)
+      imageLines.push(`  URL: ${img.url}`)
+      imageLines.push(`  Alt text: ${img.alt ?? ''}`)
+      imageLines.push(`  Category: ${img.category ?? 'general'}`)
+    })
+    imageLines.push('')
+    imageLines.push('Image placement rules:')
+    imageLines.push('- Image 1 should be used as a full-width hero/banner image directly below the header (max-width 600px, width 100%)')
+    imageLines.push('- Additional images can be placed in relevant content sections')
+    imageLines.push('- Always use the exact alt text provided for each image')
+    imageLines.push('- Never invent or guess image URLs — only use the ones listed above')
+  } else {
+    imageLines.push('No additional images selected — use text-based design with CSS decorative elements only')
+  }
+
+  const imageContext = imageLines.join('\n')
 
   const message = await anthropic.messages.create({
     model: 'claude-opus-4-6',
@@ -81,6 +112,8 @@ export async function POST(req: NextRequest) {
         content: `You are an expert email designer and copywriter for Northern Warrior Fitness, a gym in Egremont, Cumbria.
 
 ${NW_BRAND}
+
+${imageContext}
 
 Create a complete, production-ready HTML email based on the following brief.
 

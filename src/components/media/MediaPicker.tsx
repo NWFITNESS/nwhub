@@ -5,24 +5,18 @@ import { createClient } from '@/lib/supabase/client'
 import { Upload, X, Check, Image as ImageIcon, Video, Play } from 'lucide-react'
 import type { Media } from '@/lib/types'
 
-function isVideo(mimeType: string | null, url?: string): boolean {
-  if (mimeType) return mimeType.startsWith('video/')
-  if (url) return /\.(mp4|webm|mov|m4v|avi|mkv)(\?.*)?$/i.test(url)
-  return false
+function isVideo(url?: string): boolean {
+  if (!url) return false
+  return /\.(mp4|webm|mov|m4v|avi|mkv)(\?.*)?$/i.test(url)
 }
 
 async function uploadFile(file: File): Promise<{ data: Media | null; error: string | null }> {
   try {
-    const bytes = await file.arrayBuffer()
-    const res = await fetch('/api/media', {
-      method: 'POST',
-      body: bytes,
-      headers: {
-        'content-type': file.type || 'application/octet-stream',
-        'x-filename': encodeURIComponent(file.name),
-        'x-filesize': String(file.size),
-      },
-    })
+    const form = new FormData()
+    form.append('file', file)
+    form.append('alt', '')
+    form.append('category', 'general')
+    const res = await fetch('/api/media', { method: 'POST', body: form })
     const text = await res.text()
     if (!res.ok) {
       let msg = text
@@ -44,19 +38,19 @@ interface MediaPickerModalProps {
 }
 
 function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
-  const [media, setMedia] = useState<Media[]>([])
-  const [loading, setLoading] = useState(true)
+  const [media, setMedia]         = useState<Media[]>([])
+  const [loading, setLoading]     = useState(true)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
-  const [filter, setFilter] = useState<'all' | 'images' | 'videos'>('all')
+  const [filter, setFilter]       = useState<'all' | 'images' | 'videos'>('all')
   const fileInput = useRef<HTMLInputElement>(null)
-  const supabase = createClient()
+  const supabase  = createClient()
 
   useEffect(() => {
     supabase
       .from('media')
       .select('*')
-      .order('uploaded_at', { ascending: false })
+      .order('created_at', { ascending: false })
       .then(({ data }) => {
         setMedia((data as Media[]) ?? [])
         setLoading(false)
@@ -69,14 +63,10 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
     setUploadError(null)
     for (const file of Array.from(files)) {
       const { data: row, error } = await uploadFile(file)
-      if (error) {
-        setUploadError(error)
-        setUploading(false)
-        return
-      }
+      if (error) { setUploadError(error); setUploading(false); return }
       if (row) {
         setMedia((prev) => [row, ...prev])
-        onSelect(row.public_url)
+        onSelect(row.url)
         onClose()
         setUploading(false)
         return
@@ -96,8 +86,8 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
   }, [onClose])
 
   const filtered = media.filter((item) => {
-    if (filter === 'images') return !isVideo(item.mime_type, item.public_url)
-    if (filter === 'videos') return isVideo(item.mime_type, item.public_url)
+    if (filter === 'images') return !isVideo(item.url)
+    if (filter === 'videos') return isVideo(item.url)
     return true
   })
 
@@ -116,7 +106,6 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {/* Filter tabs */}
             <div className="flex gap-1 bg-white/[0.04] rounded-lg p-0.5">
               {(['all', 'images', 'videos'] as const).map((tab) => (
                 <button
@@ -124,9 +113,7 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
                   type="button"
                   onClick={() => setFilter(tab)}
                   className={`px-2.5 py-1 text-[10px] font-medium rounded-md transition-colors capitalize ${
-                    filter === tab
-                      ? 'bg-white/10 text-white'
-                      : 'text-white/40 hover:text-white/60'
+                    filter === tab ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white/60'
                   }`}
                 >
                   {tab}
@@ -160,7 +147,7 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
               <>
                 <Upload size={16} className="mx-auto text-white/20 mb-1" />
                 <p className="text-xs text-white/40">
-                  Drop an image or video here or <span className="text-[#967705]">click to upload</span>
+                  Drop a file here or <span className="text-[#967705]">click to upload</span>
                 </p>
                 <p className="text-[10px] text-white/20 mt-1">JPG, PNG, WebP, GIF · MP4, WebM, MOV</p>
               </>
@@ -194,7 +181,7 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
               {filter === 'videos' ? (
                 <>
                   <Video size={32} className="mx-auto text-white/10 mb-3" />
-                  <p className="text-white/30 text-sm">No videos yet — upload your first video above</p>
+                  <p className="text-white/30 text-sm">No videos yet</p>
                 </>
               ) : (
                 <>
@@ -206,13 +193,13 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
           ) : (
             <div className="grid grid-cols-4 gap-2">
               {filtered.map((item) => {
-                const isSelected = item.public_url === value
-                const itemIsVideo = isVideo(item.mime_type, item.public_url)
+                const isSelected  = item.url === value
+                const itemIsVideo = isVideo(item.url)
                 return (
                   <button
                     key={item.id}
                     type="button"
-                    onClick={() => { onSelect(item.public_url); onClose() }}
+                    onClick={() => { onSelect(item.url); onClose() }}
                     className={`group relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                       isSelected
                         ? 'border-[#967705] ring-1 ring-[#967705]/40'
@@ -221,34 +208,22 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
                   >
                     {itemIsVideo ? (
                       <>
-                        <video
-                          src={item.public_url}
-                          className="w-full h-full object-cover"
-                          preload="metadata"
-                          muted
-                        />
-                        {/* Video badge */}
+                        <video src={item.url} className="w-full h-full object-cover" preload="metadata" muted />
                         <div className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center">
                           <Play size={9} className="text-white fill-white ml-0.5" />
                         </div>
                       </>
                     ) : (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={item.public_url}
-                        alt={item.alt_text || item.filename}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={item.url} alt={item.alt ?? item.filename} className="w-full h-full object-cover" />
                     )}
-                    {/* Selected checkmark */}
                     {isSelected && (
                       <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[#967705] flex items-center justify-center">
                         <Check size={11} className="text-white" strokeWidth={3} />
                       </div>
                     )}
-                    {/* Hover filename */}
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2 py-1.5 translate-y-full group-hover:translate-y-0 transition-transform duration-150">
-                      <p className="text-[9px] text-white/70 truncate">{item.filename}</p>
+                      <p className="text-[9px] text-white/70 truncate">{item.alt ?? item.filename}</p>
                     </div>
                   </button>
                 )
@@ -261,7 +236,7 @@ function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
   )
 }
 
-// ─── ImageField (handles both images and videos) ──────────────────────────────
+// ─── ImageField ───────────────────────────────────────────────────────────────
 
 interface ImageFieldProps {
   value: string
@@ -271,7 +246,7 @@ interface ImageFieldProps {
 
 export function ImageField({ value, onChange, label }: ImageFieldProps) {
   const [open, setOpen] = useState(false)
-  const valueIsVideo = isVideo(null, value)
+  const valueIsVideo    = isVideo(value)
 
   const handleSelect = useCallback((url: string) => {
     onChange(url)
@@ -281,11 +256,8 @@ export function ImageField({ value, onChange, label }: ImageFieldProps) {
   return (
     <>
       <div className="space-y-1.5">
-        {label && (
-          <p className="text-xs text-white/50 font-medium">{label}</p>
-        )}
+        {label && <p className="text-xs text-white/50 font-medium">{label}</p>}
         <div className="flex gap-2 items-start">
-          {/* Thumbnail */}
           <div className="w-14 h-14 rounded-lg border border-white/10 bg-white/[0.04] flex-shrink-0 overflow-hidden relative">
             {value ? (
               valueIsVideo ? (
@@ -305,9 +277,7 @@ export function ImageField({ value, onChange, label }: ImageFieldProps) {
               </div>
             )}
           </div>
-
           <div className="flex-1 min-w-0 space-y-1.5">
-            {/* URL input */}
             <input
               type="text"
               value={value}
@@ -315,8 +285,6 @@ export function ImageField({ value, onChange, label }: ImageFieldProps) {
               placeholder="https://… or browse below"
               className="w-full bg-[#1a1a1a] border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-[#967705]/50 transition-colors"
             />
-
-            {/* Actions */}
             <div className="flex gap-1.5">
               <button
                 type="button"
@@ -341,11 +309,7 @@ export function ImageField({ value, onChange, label }: ImageFieldProps) {
       </div>
 
       {open && (
-        <MediaPickerModal
-          value={value}
-          onSelect={handleSelect}
-          onClose={() => setOpen(false)}
-        />
+        <MediaPickerModal value={value} onSelect={handleSelect} onClose={() => setOpen(false)} />
       )}
     </>
   )

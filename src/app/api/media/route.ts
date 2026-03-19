@@ -10,12 +10,19 @@ export async function POST(req: NextRequest) {
 
     const supabase = createAdminClient()
 
-    const bytes = await req.arrayBuffer()
-    if (!bytes.byteLength) return NextResponse.json({ error: 'No file' }, { status: 400 })
+    const form = await req.formData()
+    const file = form.get('file') as File | null
+    if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 })
 
-    const filename = decodeURIComponent(req.headers.get('x-filename') ?? 'upload')
-    const contentType = req.headers.get('content-type') || 'application/octet-stream'
-    const fileSize = Number(req.headers.get('x-filesize') ?? 0)
+    const alt      = (form.get('alt')      as string | null) ?? ''
+    const category = (form.get('category') as string | null) ?? 'general'
+    const width    = Number(form.get('width')  ?? 0) || null
+    const height   = Number(form.get('height') ?? 0) || null
+
+    const bytes       = await file.arrayBuffer()
+    const contentType = file.type || 'application/octet-stream'
+    const filename    = file.name
+    const size        = file.size
 
     const path = `media/${Date.now()}-${filename.replace(/[^a-z0-9.-]/gi, '_')}`
 
@@ -31,7 +38,7 @@ export async function POST(req: NextRequest) {
 
     const { data: row, error: dbError } = await supabase
       .from('media')
-      .insert({ filename, storage_path: path, public_url: publicUrl, file_size: fileSize, mime_type: contentType })
+      .insert({ filename, storage_path: path, url: publicUrl, alt, category, size, width, height })
       .select()
       .single()
 

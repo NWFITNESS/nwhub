@@ -41,13 +41,13 @@ export interface Media {
   id: string
   filename: string
   storage_path: string
-  public_url: string
-  alt_text: string
-  file_size: number | null
-  mime_type: string | null
+  url: string
+  alt: string | null
+  category: string | null
+  size: number | null
   width: number | null
   height: number | null
-  uploaded_at: string
+  created_at: string
 }
 
 export interface ContactEnquiry {

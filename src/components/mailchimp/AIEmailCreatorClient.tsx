@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import {
   Sparkles, Copy, Download, RefreshCw,
-  ChevronRight, Check, Eye, Code,
+  ChevronRight, Check, Eye, Code, Image as ImageIcon, Lock,
 } from 'lucide-react'
 
 const QUICK_PROMPTS = [
@@ -34,22 +35,170 @@ const AUDIENCES = [
   { value: 'hyrox',        label: 'Hyrox Members' },
 ]
 
+const IMAGE_CATEGORIES = ['all', 'hero', 'gym', 'classes', 'team', 'kids', 'hyrox', 'general']
+
 const GENERATING_STEPS = [
   'Applying Northern Warrior branding',
   'Writing copy based on your brief',
   'Building HTML structure',
+  'Placing your selected images',
   'Checking mobile responsiveness',
 ]
 
+type MediaItem = {
+  id: string
+  filename: string
+  url: string
+  alt: string | null
+  category: string | null
+}
+
+function ImagePicker({ onSelect }: { onSelect: (images: MediaItem[]) => void }) {
+  const [media, setMedia]     = useState<MediaItem[]>([])
+  const [selected, setSelected] = useState<string[]>([])
+  const [filter, setFilter]   = useState('all')
+  const supabase = createClient()
+
+  useEffect(() => {
+    supabase
+      .from('media')
+      .select('id, filename, url, alt, category')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => { if (data) setMedia(data) })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  function toggle(id: string) {
+    setSelected((prev) => {
+      const next = prev.includes(id)
+        ? prev.filter((i) => i !== id)
+        : prev.length < 3 ? [...prev, id] : prev
+      onSelect(media.filter((m) => next.includes(m.id)))
+      return next
+    })
+  }
+
+  const logo     = media.find((m) => m.category === 'logo')
+  const filtered = media.filter((m) =>
+    m.category !== 'logo' && (filter === 'all' || m.category === filter)
+  )
+
+  return (
+    <div className="bg-[#161616] border border-white/[0.06] rounded-xl p-6">
+      <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.15em] mb-4">SELECT IMAGES</p>
+
+      {/* Logo — always included */}
+      {logo ? (
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-[#967705]/10 border border-[#967705]/20 mb-4">
+          <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-white/[0.08]">
+            <img src={logo.url} alt={logo.alt ?? 'NW Logo'} className="w-full h-full object-contain" />
+          </div>
+          <div className="flex-1">
+            <p className="text-xs font-semibold text-white">NW Logo</p>
+            <p className="text-xs text-white/30">Always included in every email</p>
+          </div>
+          <div className="w-6 h-6 rounded-full bg-[#C9A70A] flex items-center justify-center flex-shrink-0">
+            <Lock size={10} className="text-black" />
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/[0.06] mb-4">
+          <div className="w-12 h-12 rounded-lg flex-shrink-0 bg-[#967705]/10 border border-[#967705]/20 flex items-center justify-center">
+            <ImageIcon size={18} className="text-[#967705]/50" />
+          </div>
+          <div className="flex-1">
+            <p className="text-xs font-semibold text-white/40">No logo uploaded yet</p>
+            <p className="text-xs text-white/20">Upload a logo in the Media Library with category "logo"</p>
+          </div>
+        </div>
+      )}
+
+      {/* Category filter */}
+      <div className="flex gap-2 flex-wrap mb-4">
+        {IMAGE_CATEGORIES.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setFilter(cat)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${
+              filter === cat
+                ? 'bg-[#967705]/20 text-[#C9A70A] border border-[#967705]/30'
+                : 'text-white/30 border border-white/[0.06] hover:text-white/60'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Image grid */}
+      <div className="grid grid-cols-3 gap-3 max-h-64 overflow-y-auto pr-1">
+        {filtered.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => toggle(item.id)}
+            className={`relative rounded-lg overflow-hidden aspect-square group transition-all ${
+              selected.includes(item.id)
+                ? 'ring-2 ring-[#C9A70A]'
+                : 'ring-1 ring-white/[0.06] hover:ring-white/20'
+            }`}
+          >
+            <img src={item.url} alt={item.alt ?? item.filename} className="w-full h-full object-cover" />
+            <div className={`absolute inset-0 transition-all ${
+              selected.includes(item.id) ? 'bg-[#C9A70A]/20' : 'bg-black/0 group-hover:bg-black/30'
+            }`} />
+            {selected.includes(item.id) && (
+              <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[#C9A70A] flex items-center justify-center">
+                <Check size={12} className="text-black" />
+              </div>
+            )}
+            <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+              <p className="text-[10px] text-white/70 truncate">{item.alt ?? item.filename}</p>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {selected.length > 0 && (
+        <p className="text-xs text-white/30 mt-3">
+          {selected.length} image{selected.length > 1 ? 's' : ''} selected — max 3
+        </p>
+      )}
+
+      {filtered.length === 0 && (
+        <div className="flex flex-col items-center py-8 gap-2">
+          <ImageIcon size={24} className="text-white/20" />
+          <p className="text-xs text-white/30">No images in this category yet</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function AIEmailCreatorClient() {
-  const [prompt, setPrompt]         = useState('')
-  const [tone, setTone]             = useState('warm')
-  const [audience, setAudience]     = useState('all_members')
-  const [generating, setGenerating] = useState(false)
-  const [html, setHtml]             = useState('')
-  const [error, setError]           = useState('')
-  const [copied, setCopied]         = useState(false)
-  const [activeTab, setActiveTab]   = useState<'preview' | 'html'>('preview')
+  const [prompt, setPrompt]           = useState('')
+  const [tone, setTone]               = useState('warm')
+  const [audience, setAudience]       = useState('all_members')
+  const [selectedImages, setSelectedImages] = useState<MediaItem[]>([])
+  const [generating, setGenerating]   = useState(false)
+  const [html, setHtml]               = useState('')
+  const [error, setError]             = useState('')
+  const [copied, setCopied]           = useState(false)
+  const [activeTab, setActiveTab]     = useState<'preview' | 'html'>('preview')
+  const [logoUrl, setLogoUrl]         = useState('')
+
+  const supabase = createClient()
+
+  // Fetch logo URL on mount
+  useEffect(() => {
+    supabase
+      .from('media')
+      .select('url')
+      .eq('category', 'logo')
+      .limit(1)
+      .single()
+      .then(({ data }) => { if (data) setLogoUrl(data.url) })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function generate() {
     if (!prompt.trim()) return
@@ -61,7 +210,7 @@ export function AIEmailCreatorClient() {
       const res = await fetch('/api/email-campaigns/ai-generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, tone, audience }),
+        body: JSON.stringify({ prompt, tone, audience, selectedImages, logoUrl }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Generation failed')
@@ -146,6 +295,9 @@ export function AIEmailCreatorClient() {
             </div>
           </div>
 
+          {/* Image picker */}
+          <ImagePicker onSelect={setSelectedImages} />
+
           {/* Quick prompts */}
           <div className="bg-[#161616] border border-white/[0.06] rounded-xl p-6">
             <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.15em] mb-4">QUICK START</p>
@@ -174,7 +326,7 @@ export function AIEmailCreatorClient() {
           >
             {generating
               ? <><RefreshCw size={15} className="animate-spin" /> Generating your email...</>
-              : <><Sparkles size={15} /> Generate Email</>
+              : <><Sparkles size={15} /> Generate Email{selectedImages.length > 0 ? ` with ${selectedImages.length} image${selectedImages.length > 1 ? 's' : ''}` : ''}</>
             }
           </button>
         </div>
