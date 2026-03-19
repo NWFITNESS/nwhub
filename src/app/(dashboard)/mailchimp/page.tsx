@@ -4,6 +4,9 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { MailchimpDashboard } from '@/components/mailchimp/MailchimpDashboard'
 import { mc } from '@/lib/mailchimp'
 import type { MailchimpSettings, MailchimpAudienceStats } from '@/lib/types'
+import Link from 'next/link'
+import { Button } from '@/components/ui/Button'
+import { Sparkles } from 'lucide-react'
 
 const DEFAULTS: MailchimpSettings = {
   api_key: '',
@@ -55,7 +58,17 @@ export default async function MailchimpPage() {
     <>
       <TopBar title="Mailchimp" />
       <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
-        <PageHeader title="Mailchimp" description="Manage your email audience, sync subscribers, and send campaigns" />
+        <PageHeader
+          title="Mailchimp"
+          description="Manage your email audience, sync subscribers, and send campaigns"
+          actions={
+            <Link href="/mailchimp/create-ai">
+              <Button variant="primary" size="sm">
+                <Sparkles size={14} /> AI Email Creator
+              </Button>
+            </Link>
+          }
+        />
         <MailchimpDashboard initialSettings={initialSettings} initialStats={initialStats} />
       </main>
     </>

@@ -1,0 +1,101 @@
+import Anthropic from '@anthropic-ai/sdk'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/auth-guard'
+
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+const NW_BRAND = `
+NORTHERN WARRIOR FITNESS — BRAND GUIDELINES FOR EMAIL
+
+Colours:
+- Primary gold: #C9A70A
+- Dark gold: #967705
+- Background dark: #0a0a0a
+- Card dark: #111111
+- Text primary: #F0F0F0
+- Text muted: #999999
+
+Business details:
+- Name: Northern Warrior Fitness
+- Website: northernwarrior.co.uk
+- Email: info@northernwarrior.co.uk
+- Location: Egremont, Cumbria, CA22
+- Instagram: @northernwarriorfitness
+- Google Review Link: https://g.page/r/CdM6goa0gQ8TEAI/review
+
+Brand voice:
+- Community-first, never corporate
+- Warm but direct — like a message from a trusted coach
+- Proud of Cumbria and the Lake District
+- Inclusive — all fitness levels welcome
+- Authentic — real people, real results
+
+Email structure (always follow this):
+1. Dark header (#0a0a0a) with "NORTHERN WARRIOR" in gold (#C9A70A) bold uppercase, "FITNESS" below in white, gold bottom border line
+2. Hero section with bold headline and short intro
+3. Body — clear sections with adequate spacing
+4. One prominent gold CTA button (#C9A70A text-black, rounded, padding 14px 32px)
+5. Footer — dark bg, address, unsubscribe placeholder, Instagram link
+
+Technical requirements:
+- Fully self-contained HTML + CSS (no external stylesheets)
+- All CSS inline or in a <style> block in <head>
+- Mobile responsive — single column on mobile, max-width 600px centered on desktop
+- Web-safe fonts only: Arial, Georgia, serif, sans-serif
+- No external images — use CSS shapes/borders for decorative elements
+- Gold accent lines/borders to add visual structure
+- Generous whitespace — never cramped
+- Use {{first_name}} merge tag in the opening greeting where appropriate
+`
+
+const AUDIENCE_LABELS: Record<string, string> = {
+  all_members:   'all current Northern Warrior members',
+  adult_members: 'adult members only',
+  kids_parents:  'parents of Kids & Teens programme members',
+  trials:        'members currently on a 2-week free trial',
+  inactive:      "members who haven't attended recently and need re-engaging",
+  hyrox:         'members interested in or currently doing Hyrox training',
+}
+
+const TONE_LABELS: Record<string, string> = {
+  warm:         "warm, personal and friendly — like a message from a trusted friend and coach",
+  motivating:   'energetic, motivating and inspiring — fire them up',
+  direct:       "clear, concise and direct — respect the reader's time, no fluff",
+  professional: 'professional and polished, but still human',
+  fun:          'fun, casual and light-hearted — keep it upbeat',
+}
+
+export async function POST(req: NextRequest) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
+
+  const { prompt, tone, audience } = await req.json()
+  if (!prompt) return NextResponse.json({ error: 'Prompt is required' }, { status: 400 })
+
+  const message = await anthropic.messages.create({
+    model: 'claude-opus-4-6',
+    max_tokens: 4096,
+    messages: [
+      {
+        role: 'user',
+        content: `You are an expert email designer and copywriter for Northern Warrior Fitness, a gym in Egremont, Cumbria.
+
+${NW_BRAND}
+
+Create a complete, production-ready HTML email based on the following brief.
+
+BRIEF:
+${prompt}
+
+TONE: ${TONE_LABELS[tone] ?? tone}
+AUDIENCE: ${AUDIENCE_LABELS[audience] ?? audience}
+
+Return ONLY the raw HTML — no explanation, no markdown code fences, no backticks. Start your response with <!DOCTYPE html> and end with </html>. Nothing else.`,
+      },
+    ],
+  })
+
+  const html = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
+
+  return NextResponse.json({ html })
+}
