@@ -69,13 +69,11 @@ function ImagePicker({ onSelect }: { onSelect: (images: MediaItem[]) => void }) 
   }, [])
 
   function toggle(id: string) {
-    setSelected((prev) => {
-      const next = prev.includes(id)
-        ? prev.filter((i) => i !== id)
-        : prev.length < 3 ? [...prev, id] : prev
-      onSelect(media.filter((m) => next.includes(m.id)))
-      return next
-    })
+    const next = selected.includes(id)
+      ? selected.filter((i) => i !== id)
+      : selected.length < 3 ? [...selected, id] : selected
+    setSelected(next)
+    onSelect(media.filter((m) => next.includes(m.id)))
   }
 
   const logo     = media.find((m) => m.category === 'logo')
