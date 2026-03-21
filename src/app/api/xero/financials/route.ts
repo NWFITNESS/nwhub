@@ -13,6 +13,9 @@ export async function GET() {
       return NextResponse.json({ error: 'not_connected' }, { status: 401 })
     }
 
+    // initialize() sets up openIdClient via OIDC discovery — required before
+    // any token operations (setTokenSet, refreshToken, accountingApi calls)
+    await xero.initialize()
     await xero.setTokenSet(JSON.parse(tokenData.value))
 
     // Refresh token if expired
