@@ -2,6 +2,35 @@ import { xero } from '@/lib/xero'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 
+// Refresh a Xero token directly via HTTP — no SDK openIdClient needed
+async function refreshXeroToken(refreshToken: string) {
+  const credentials = Buffer.from(
+    `${process.env.XERO_CLIENT_ID}:${process.env.XERO_CLIENT_SECRET}`
+  ).toString('base64')
+
+  const res = await fetch('https://identity.xero.com/connect/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Authorization: `Basic ${credentials}`,
+    },
+    body: new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+    }),
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Xero token refresh failed (${res.status}): ${text}`)
+  }
+
+  const newToken = await res.json()
+  // Xero returns expires_in (seconds); compute expires_at for consistency
+  newToken.expires_at = Math.floor(Date.now() / 1000) + (newToken.expires_in ?? 1800)
+  return newToken
+}
+
 export async function GET() {
   try {
     const supabase = createAdminClient()
@@ -13,22 +42,25 @@ export async function GET() {
       return NextResponse.json({ error: 'not_connected' }, { status: 401 })
     }
 
-    // initialize() sets up openIdClient via OIDC discovery — required before
-    // any token operations (setTokenSet, refreshToken, accountingApi calls)
-    await xero.initialize()
-    await xero.setTokenSet(JSON.parse(tokenData.value))
+    let tokenSet = JSON.parse(tokenData.value)
 
-    // Refresh token if expired
-    const tokenSet = xero.readTokenSet()
-    if (tokenSet.expired()) {
-      const newTokenSet = await xero.refreshToken()
+    // Refresh if expired (expires_at is Unix seconds)
+    const expiresAt: number = tokenSet.expires_at ?? 0
+    if (expiresAt < Math.floor(Date.now() / 1000) + 60) {
+      if (!tokenSet.refresh_token) {
+        return NextResponse.json({ error: 'not_connected' }, { status: 401 })
+      }
+      tokenSet = await refreshXeroToken(tokenSet.refresh_token)
       await supabase.from('global_settings').upsert(
-        { key: 'xero_tokens', value: JSON.stringify(newTokenSet), updated_at: new Date().toISOString() },
+        { key: 'xero_tokens', value: JSON.stringify(tokenSet), updated_at: new Date().toISOString() },
         { onConflict: 'key' }
       )
     }
 
-    // Get tenantId — from DB or discover via updateTenants
+    // Set token on SDK client (same pattern as the working dashboard page)
+    await xero.setTokenSet(tokenSet)
+
+    // Get tenantId
     let tenantId = ''
     const { data: tenantData } = await supabase
       .from('global_settings').select('value').eq('key', 'xero_tenant_id').single()
