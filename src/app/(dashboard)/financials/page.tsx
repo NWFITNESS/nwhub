@@ -153,7 +153,10 @@ export default function FinancialsPage() {
     try {
       const res = await fetch('/api/xero/financials')
       if (res.status === 401) { setNotConnected(true); setLoading(false); return }
-      const json = await res.json()
+      const text = await res.text()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let json: any = {}
+      try { if (text) json = JSON.parse(text) } catch { /* ignore */ }
       if (!res.ok) {
         setApiError(json?.message ?? `Xero API error (${res.status})`)
         setLoading(false)

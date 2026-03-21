@@ -3,51 +3,50 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
-  const supabase = createAdminClient()
+  try {
+    const supabase = createAdminClient()
 
-  const { data: tokenData } = await supabase
-    .from('global_settings').select('value').eq('key', 'xero_tokens').single()
+    const { data: tokenData } = await supabase
+      .from('global_settings').select('value').eq('key', 'xero_tokens').single()
 
-  if (!tokenData?.value) {
-    return NextResponse.json({ error: 'not_connected' }, { status: 401 })
-  }
+    if (!tokenData?.value) {
+      return NextResponse.json({ error: 'not_connected' }, { status: 401 })
+    }
 
-  await xero.setTokenSet(JSON.parse(tokenData.value))
+    await xero.setTokenSet(JSON.parse(tokenData.value))
 
-  // Refresh token if expired
-  const tokenSet = xero.readTokenSet()
-  if (tokenSet.expired()) {
-    const newTokenSet = await xero.refreshToken()
-    await supabase.from('global_settings').upsert(
-      { key: 'xero_tokens', value: JSON.stringify(newTokenSet), updated_at: new Date().toISOString() },
-      { onConflict: 'key' }
-    )
-  }
-
-  // Get tenantId — from DB or discover via updateTenants
-  let tenantId = ''
-  const { data: tenantData } = await supabase
-    .from('global_settings').select('value').eq('key', 'xero_tenant_id').single()
-
-  if (tenantData?.value) {
-    tenantId = tenantData.value
-  } else {
-    // Discover tenants and cache
-    await xero.updateTenants()
-    tenantId = xero.tenants?.[0]?.tenantId ?? ''
-    if (tenantId) {
+    // Refresh token if expired
+    const tokenSet = xero.readTokenSet()
+    if (tokenSet.expired()) {
+      const newTokenSet = await xero.refreshToken()
       await supabase.from('global_settings').upsert(
-        { key: 'xero_tenant_id', value: tenantId, updated_at: new Date().toISOString() },
+        { key: 'xero_tokens', value: JSON.stringify(newTokenSet), updated_at: new Date().toISOString() },
         { onConflict: 'key' }
       )
     }
-  }
 
-  if (!tenantId) {
-    return NextResponse.json({ error: 'no_tenant' }, { status: 401 })
-  }
+    // Get tenantId — from DB or discover via updateTenants
+    let tenantId = ''
+    const { data: tenantData } = await supabase
+      .from('global_settings').select('value').eq('key', 'xero_tenant_id').single()
 
-  try {
+    if (tenantData?.value) {
+      tenantId = tenantData.value
+    } else {
+      await xero.updateTenants()
+      tenantId = xero.tenants?.[0]?.tenantId ?? ''
+      if (tenantId) {
+        await supabase.from('global_settings').upsert(
+          { key: 'xero_tenant_id', value: tenantId, updated_at: new Date().toISOString() },
+          { onConflict: 'key' }
+        )
+      }
+    }
+
+    if (!tenantId) {
+      return NextResponse.json({ error: 'no_tenant' }, { status: 401 })
+    }
+
     const [invoices, payments, contacts] = await Promise.all([
       xero.accountingApi.getInvoices(
         tenantId, undefined, undefined, undefined, undefined, undefined, undefined,
@@ -73,8 +72,8 @@ export async function GET() {
       profitLoss,
     })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown Xero API error'
-    console.error('[xero/financials] Xero API error:', message)
-    return NextResponse.json({ error: 'xero_api_error', message }, { status: 502 })
+    const message = err instanceof Error ? err.message : 'Unknown error'
+    console.error('[xero/financials]', message)
+    return NextResponse.json({ error: 'xero_error', message }, { status: 502 })
   }
 }
