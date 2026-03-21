@@ -1,9 +1,9 @@
 import { xero } from '@/lib/xero'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const { data: tokenData } = await supabase
     .from('global_settings').select('value').eq('key', 'xero_tokens').single()
@@ -47,28 +47,34 @@ export async function GET() {
     return NextResponse.json({ error: 'no_tenant' }, { status: 401 })
   }
 
-  const [invoices, payments, contacts] = await Promise.all([
-    xero.accountingApi.getInvoices(
-      tenantId, undefined, undefined, undefined, undefined, undefined, undefined,
-      ['AUTHORISED', 'PAID'], undefined, undefined, undefined, undefined, undefined, 100
-    ),
-    xero.accountingApi.getPayments(tenantId),
-    xero.accountingApi.getContacts(tenantId),
-  ])
-
-  // P&L is a separate scope — try it but don't fail if unavailable
-  let profitLoss = null
   try {
-    const pl = await xero.accountingApi.getReportProfitAndLoss(tenantId)
-    profitLoss = pl.body
-  } catch {
-    // scope may not be granted
-  }
+    const [invoices, payments, contacts] = await Promise.all([
+      xero.accountingApi.getInvoices(
+        tenantId, undefined, undefined, undefined, undefined, undefined, undefined,
+        ['AUTHORISED', 'PAID'], undefined, undefined, undefined, undefined, undefined, 100
+      ),
+      xero.accountingApi.getPayments(tenantId),
+      xero.accountingApi.getContacts(tenantId),
+    ])
 
-  return NextResponse.json({
-    invoices: invoices.body.invoices,
-    payments: payments.body.payments,
-    contacts: contacts.body.contacts,
-    profitLoss,
-  })
+    // P&L is a separate scope — try it but don't fail if unavailable
+    let profitLoss = null
+    try {
+      const pl = await xero.accountingApi.getReportProfitAndLoss(tenantId)
+      profitLoss = pl.body
+    } catch {
+      // scope may not be granted
+    }
+
+    return NextResponse.json({
+      invoices: invoices.body.invoices,
+      payments: payments.body.payments,
+      contacts: contacts.body.contacts,
+      profitLoss,
+    })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown Xero API error'
+    console.error('[xero/financials] Xero API error:', message)
+    return NextResponse.json({ error: 'xero_api_error', message }, { status: 502 })
+  }
 }

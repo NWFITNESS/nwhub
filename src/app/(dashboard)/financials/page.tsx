@@ -144,18 +144,25 @@ export default function FinancialsPage() {
   const [data, setData] = useState<FinancialsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [notConnected, setNotConnected] = useState(false)
+  const [apiError, setApiError] = useState<string | null>(null)
   const [lastSynced, setLastSynced] = useState<string>('')
 
   async function load() {
     setLoading(true)
+    setApiError(null)
     try {
       const res = await fetch('/api/xero/financials')
       if (res.status === 401) { setNotConnected(true); setLoading(false); return }
       const json = await res.json()
+      if (!res.ok) {
+        setApiError(json?.message ?? `Xero API error (${res.status})`)
+        setLoading(false)
+        return
+      }
       setData(json)
       setLastSynced(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }))
-    } catch {
-      setNotConnected(true)
+    } catch (err) {
+      setApiError(err instanceof Error ? err.message : 'Failed to load financial data')
     } finally {
       setLoading(false)
     }
@@ -279,6 +286,23 @@ export default function FinancialsPage() {
         {/* ── Not Connected ── */}
         {notConnected && <NotConnected />}
 
+        {/* ── API Error ── */}
+        {!notConnected && apiError && (
+          <div className="flex flex-col items-center justify-center min-h-[300px] gap-3">
+            <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+              <Receipt size={22} className="text-red-400" strokeWidth={1.75} />
+            </div>
+            <p className="text-sm font-semibold text-red-400">Failed to load Xero data</p>
+            <p className="text-xs text-white/40 text-center max-w-[360px]">{apiError}</p>
+            <button
+              onClick={load}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium text-white/60 border border-white/[0.1] bg-white/[0.03] hover:text-white hover:border-white/20 transition-all mt-1"
+            >
+              <RefreshCw size={12} /> Retry
+            </button>
+          </div>
+        )}
+
         {/* ── Loading skeletons ── */}
         {loading && !notConnected && (
           <>
@@ -293,7 +317,7 @@ export default function FinancialsPage() {
         )}
 
         {/* ── Connected Dashboard ── */}
-        {!loading && !notConnected && data && (
+        {!loading && !notConnected && !apiError && data && (
           <>
             {/* Row 1 — Stat Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
