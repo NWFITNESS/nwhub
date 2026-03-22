@@ -72,9 +72,11 @@ export async function POST(req: NextRequest) {
       contentVariables: JSON.stringify({ '1': firstName ?? '', '2': reviewLink }),
     })
   } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : 'Twilio error'
-    console.error('[reviews/send] Twilio error:', msg, { from: fromWa, to: toWa, templateSid })
-    return NextResponse.json({ error: msg }, { status: 500 })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const err = e as any
+    const detail = `${err?.message ?? 'Twilio error'} [code:${err?.code ?? '?'}] from:${fromWa} to:${toWa} sid:${templateSid}`
+    console.error('[reviews/send]', detail)
+    return NextResponse.json({ error: detail }, { status: 500 })
   }
 
   // Upsert review_requests
