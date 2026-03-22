@@ -26,7 +26,6 @@ async function refreshXeroToken(refreshToken: string) {
   }
 
   const newToken = await res.json()
-  // Xero returns expires_in (seconds); compute expires_at for consistency
   newToken.expires_at = Math.floor(Date.now() / 1000) + (newToken.expires_in ?? 1800)
   return newToken
 }
@@ -57,10 +56,8 @@ export async function GET() {
       )
     }
 
-    // Set token on SDK client (same pattern as the working dashboard page)
     await xero.setTokenSet(tokenSet)
 
-    // Get tenantId
     let tenantId = ''
     const { data: tenantData } = await supabase
       .from('global_settings').select('value').eq('key', 'xero_tenant_id').single()
@@ -91,7 +88,6 @@ export async function GET() {
       xero.accountingApi.getContacts(tenantId),
     ])
 
-    // P&L is a separate scope — try it but don't fail if unavailable
     let profitLoss = null
     try {
       const pl = await xero.accountingApi.getReportProfitAndLoss(tenantId)
@@ -100,38 +96,11 @@ export async function GET() {
       // scope may not be granted
     }
 
-    const invList = invoices.body.invoices ?? []
-    const pymList = payments.body.payments ?? []
-
-    // Fetch a few invoices with no status filter to see if any exist at all
-    const anyInvRes = await fetch(
-      'https://api.xero.com/api.xro/2.0/Invoices?pageSize=5',
-      {
-        headers: {
-          Authorization: `Bearer ${tokenSet.access_token}`,
-          'Xero-Tenant-Id': tenantId,
-          Accept: 'application/json',
-        },
-      }
-    )
-    const anyInvJson = await anyInvRes.json().catch(() => null)
-    const anyInvoices = anyInvJson?.Invoices ?? anyInvJson?.invoices ?? []
-
     return NextResponse.json({
-      invoices: invList,
-      payments: pymList,
-      contacts: contacts.body.contacts,
+      invoices: invoices.body.invoices ?? [],
+      payments: payments.body.payments ?? [],
+      contacts: contacts.body.contacts ?? [],
       profitLoss,
-      _debug: {
-        tenantId,
-        anyInvoicesCount: anyInvoices.length,
-        anyInvoicesSample: anyInvoices.slice(0, 3).map((inv: { Status?: string; Type?: string; Total?: number; Date?: string }) => ({
-          status: inv.Status,
-          type: inv.Type,
-          total: inv.Total,
-          date: inv.Date,
-        })),
-      },
     })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
