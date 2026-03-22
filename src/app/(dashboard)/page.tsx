@@ -184,7 +184,7 @@ export default async function DashboardPage() {
   ]
   const doneCount = checklist.filter((i) => i.done).length
 
-  // Try to fetch Xero monthly revenue (gracefully skip if not connected)
+  // Try to fetch Xero monthly revenue from P&L (gracefully skip if not connected)
   let monthlyRevenue = 0
   try {
     const { data: xeroTokens } = await supabase
@@ -192,25 +192,48 @@ export default async function DashboardPage() {
     const { data: xeroTenant } = await supabase
       .from('global_settings').select('value').eq('key', 'xero_tenant_id').single()
     if (xeroTokens && xeroTenant) {
+      // Manual token refresh — avoids needing xero.initialize()
+      let tokenSet = JSON.parse(xeroTokens.value)
+      const expiresAt: number = tokenSet.expires_at ?? 0
+      if (expiresAt < Math.floor(Date.now() / 1000) + 60 && tokenSet.refresh_token) {
+        const creds = Buffer.from(`${process.env.XERO_CLIENT_ID}:${process.env.XERO_CLIENT_SECRET}`).toString('base64')
+        const r = await fetch('https://identity.xero.com/connect/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', Authorization: `Basic ${creds}` },
+          body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: tokenSet.refresh_token }),
+        })
+        if (r.ok) {
+          tokenSet = await r.json()
+          tokenSet.expires_at = Math.floor(Date.now() / 1000) + (tokenSet.expires_in ?? 1800)
+          await supabase.from('global_settings').upsert(
+            { key: 'xero_tokens', value: JSON.stringify(tokenSet), updated_at: new Date().toISOString() },
+            { onConflict: 'key' }
+          )
+        }
+      }
+
       const { xero } = await import('@/lib/xero')
-      await xero.setTokenSet(JSON.parse(xeroTokens.value))
-      const tokenSet = xero.readTokenSet()
-      if (tokenSet.expired()) await xero.refreshToken()
+      await xero.setTokenSet(tokenSet)
+
       const now2 = new Date()
       const fromDate = new Date(now2.getFullYear(), now2.getMonth(), 1).toISOString().split('T')[0]
-      const invoicesRes = await xero.accountingApi.getInvoices(
-        xeroTenant.value, undefined, undefined, undefined, undefined, undefined, undefined,
-        ['PAID'], undefined, undefined, undefined, undefined, undefined, 100
+      const toDate = new Date(now2.getFullYear(), now2.getMonth() + 1, 0).toISOString().split('T')[0]
+
+      const plRes = await xero.accountingApi.getReportProfitAndLoss(
+        xeroTenant.value, fromDate, toDate
       )
-      const invs = invoicesRes.body.invoices ?? []
-      monthlyRevenue = invs
-        .filter((inv: { date?: string; total?: number }) => {
-          if (!inv.date) return false
-          const match = inv.date.match(/\/Date\((\d+)/)
-          const d = match ? new Date(parseInt(match[1])) : new Date(inv.date)
-          return d.getFullYear() === now2.getFullYear() && d.getMonth() === now2.getMonth()
-        })
-        .reduce((s: number, inv: { total?: number }) => s + (inv.total ?? 0), 0)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rows: any[] = (plRes.body as any)?.reports?.[0]?.rows ?? []
+      for (const section of rows) {
+        if (section.rowType !== 'Section') continue
+        const summary = section.rows?.find((r: any) => r.rowType === 'SummaryRow')
+        if (!summary?.cells?.length) continue
+        const title = String(summary.cells[0]?.value ?? '').toLowerCase()
+        if (title.includes('total income') || title.includes('total revenue') || title.includes('total trading income')) {
+          monthlyRevenue = Math.round(Math.abs(parseFloat(String(summary.cells[1]?.value ?? '').replace(/,/g, '')) || 0))
+          break
+        }
+      }
     }
   } catch {
     // Xero not connected or error — keep monthlyRevenue = 0
