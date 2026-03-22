@@ -8,16 +8,9 @@ export function XeroRevenueCard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/xero/financials')
+    fetch('/api/xero/revenue-cache')
       .then((r) => r.ok ? r.json() : null)
-      .then((data) => {
-        if (data?.monthly?.length) {
-          // Last entry = most recent month
-          setRevenue(data.monthly[data.monthly.length - 1].income ?? 0)
-        } else {
-          setRevenue(0)
-        }
-      })
+      .then((data) => setRevenue(data?.revenue ?? 0))
       .catch(() => setRevenue(0))
       .finally(() => setLoading(false))
   }, [])

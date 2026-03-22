@@ -172,6 +172,13 @@ export async function GET() {
       type: String(t.type ?? '').includes('RECEIVE') ? 'IN' : 'OUT',
     }))
 
+    // Cache the most recent month's income for the dashboard card (avoids concurrent token refreshes)
+    const lastIncome = monthly[monthly.length - 1]?.income ?? 0
+    await supabase.from('global_settings').upsert(
+      { key: 'xero_revenue_cache', value: String(lastIncome), updated_at: new Date().toISOString() },
+      { onConflict: 'key' }
+    ).then(() => {}).catch(() => {})
+
     return NextResponse.json({ monthly, incomeBreakdown, bankTransactions })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
