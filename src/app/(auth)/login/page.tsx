@@ -28,11 +28,24 @@ function setAttemptData(data: { count: number; lockUntil: number }) {
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data))
 }
 
+function LogoBadge({ url, size = 'md' }: { url: string | null; size?: 'sm' | 'md' }) {
+  const dim = size === 'md' ? 'w-11 h-11' : 'w-10 h-10'
+  if (url) {
+    return <img src={url} alt="Northern Warrior" className={`${dim} object-contain rounded-xl`} />
+  }
+  return (
+    <div className={`${dim} rounded-xl bg-[#967705] flex items-center justify-center shadow-[0_0_24px_rgba(150,119,5,0.5)]`}>
+      <span className="text-black font-bold text-sm tracking-wider">NW</span>
+    </div>
+  )
+}
+
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
 
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -42,6 +55,13 @@ export default function LoginPage() {
 
   const resetSuccess = searchParams.get('reset') === 'success'
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // Fetch logo from media library
+  useEffect(() => {
+    supabase.from('media').select('url').eq('category', 'logo').maybeSingle()
+      .then(({ data }) => { if (data?.url) setLogoUrl(data.url) })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Check for active lockout on mount
   useEffect(() => {
@@ -152,9 +172,7 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div className="relative flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-[#967705] flex items-center justify-center shadow-[0_0_24px_rgba(150,119,5,0.5)]">
-            <span className="text-black font-bold text-base tracking-wider">NW</span>
-          </div>
+          <LogoBadge url={logoUrl} size="md" />
           <div>
             <p className="text-white font-semibold text-sm leading-none tracking-wide">Northern Warrior</p>
             <p className="text-white/40 text-xs mt-0.5 tracking-wider uppercase">Admin Panel</p>
@@ -199,9 +217,7 @@ export default function LoginPage() {
       <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-10">
         {/* Mobile logo */}
         <div className="lg:hidden flex items-center gap-3 mb-10">
-          <div className="w-10 h-10 rounded-xl bg-[#967705] flex items-center justify-center shadow-[0_0_20px_rgba(150,119,5,0.4)]">
-            <span className="text-black font-bold text-sm tracking-wider">NW</span>
-          </div>
+          <LogoBadge url={logoUrl} size="sm" />
           <div>
             <p className="text-white font-semibold text-sm leading-none">Northern Warrior</p>
             <p className="text-white/40 text-xs mt-0.5">Admin Panel</p>
