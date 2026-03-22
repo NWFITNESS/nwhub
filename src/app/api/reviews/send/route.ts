@@ -60,6 +60,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Template SID not configured — set in Reviews settings or env vars' }, { status: 400 })
   }
 
+  if (!WHATSAPP_FROM) {
+    return NextResponse.json({ error: 'TWILIO_WHATSAPP_NUMBER env var is not set' }, { status: 500 })
+  }
+
   // Ensure whatsapp: prefix on both numbers
   const fromWa = WHATSAPP_FROM.startsWith('whatsapp:') ? WHATSAPP_FROM : `whatsapp:${WHATSAPP_FROM}`
   const toWa = `whatsapp:${phone}`
