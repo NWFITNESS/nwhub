@@ -39,6 +39,8 @@ interface FinancialsData {
   payments: XeroPayment[]
   contacts: unknown[]
   profitLoss: unknown
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _debug?: any
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -285,6 +287,13 @@ export default function FinancialsPage() {
             </button>
           )}
         </div>
+
+        {/* ── DEBUG (remove after diagnosis) ── */}
+        {data?._debug && (
+          <pre className="text-xs text-white/50 bg-white/5 rounded p-3 overflow-x-auto">
+            {JSON.stringify(data._debug, null, 2)}
+          </pre>
+        )}
 
         {/* ── Not Connected ── */}
         {notConnected && <NotConnected />}

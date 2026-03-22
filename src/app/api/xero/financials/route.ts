@@ -100,11 +100,21 @@ export async function GET() {
       // scope may not be granted
     }
 
+    const invList = invoices.body.invoices ?? []
+    const pymList = payments.body.payments ?? []
+
     return NextResponse.json({
-      invoices: invoices.body.invoices,
-      payments: payments.body.payments,
+      invoices: invList,
+      payments: pymList,
       contacts: contacts.body.contacts,
       profitLoss,
+      _debug: {
+        invoiceCount: invList.length,
+        paymentCount: pymList.length,
+        firstInvoice: invList[0]
+          ? { status: invList[0].status, date: invList[0].date, total: invList[0].total }
+          : null,
+      },
     })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
