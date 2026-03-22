@@ -105,7 +105,17 @@ export async function GET() {
       if (!tokenSet.refresh_token) {
         return NextResponse.json({ error: 'not_connected' }, { status: 401 })
       }
-      tokenSet = await refreshXeroToken(tokenSet.refresh_token)
+      try {
+        tokenSet = await refreshXeroToken(tokenSet.refresh_token)
+      } catch (refreshErr: unknown) {
+        const msg = refreshErr instanceof Error ? refreshErr.message : String(refreshErr)
+        // invalid_grant = refresh token expired or revoked — clear dead token and prompt reconnect
+        if (msg.includes('invalid_grant') || msg.includes('400')) {
+          await supabase.from('global_settings')
+            .delete().in('key', ['xero_tokens', 'xero_tenant_id'])
+        }
+        return NextResponse.json({ error: 'not_connected' }, { status: 401 })
+      }
       await supabase.from('global_settings').upsert(
         { key: 'xero_tokens', value: JSON.stringify(tokenSet), updated_at: new Date().toISOString() },
         { onConflict: 'key' }
