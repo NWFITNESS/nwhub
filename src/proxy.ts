@@ -27,6 +27,12 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const isLoginPage = pathname === '/login'
 
+  // Auth pages — no session required
+  const isAuthPage =
+    pathname === '/forgot-password' ||
+    pathname === '/reset-password' ||
+    pathname.startsWith('/auth/')
+
   // Public blog pages — no auth required
   const isPublicBlog =
     pathname === '/blog' ||
@@ -39,7 +45,7 @@ export async function proxy(request: NextRequest) {
     pathname === '/api/analytics/track' ||  // public tracking beacon from public website
     pathname === '/api/email/unsubscribe'   // token-based unsubscribe, no session needed
 
-  if (!user && !isLoginPage && !isPublicBlog && !isPublicApi) {
+  if (!user && !isLoginPage && !isAuthPage && !isPublicBlog && !isPublicApi) {
     // API consumers must receive 401 JSON — never redirect them to /login
     if (pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
