@@ -64,18 +64,31 @@ export async function POST(req: NextRequest) {
   const fromWa = WHATSAPP_FROM.startsWith('whatsapp:') ? WHATSAPP_FROM : `whatsapp:${WHATSAPP_FROM}`
   const toWa = `whatsapp:${phone}`
 
+  const contentVariables = JSON.stringify({ '1': firstName ?? '', '2': reviewLink })
+  console.log('[reviews/send] Attempting send:', { from: fromWa, to: toWa, templateSid, contentVariables })
+
   try {
     await twilioClient.messages.create({
       from: fromWa,
       to: toWa,
       contentSid: templateSid,
-      contentVariables: JSON.stringify({ '1': firstName ?? '', '2': reviewLink }),
+      contentVariables,
     })
   } catch (e: unknown) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const err = e as any
-    console.error('[reviews/send] Twilio error:', err?.code, err?.message, { from: fromWa, to: toWa, templateSid })
-    return NextResponse.json({ error: `Failed to send WhatsApp message (${err?.code ?? err?.message ?? 'unknown'})` }, { status: 500 })
+    console.error('[reviews/send] Twilio error:', {
+      code: err?.code,
+      message: err?.message,
+      details: err?.details,
+      moreInfo: err?.moreInfo,
+      from: fromWa,
+      to: toWa,
+      templateSid,
+      contentVariables,
+    })
+    const detail = err?.details ? ` — ${JSON.stringify(err.details)}` : ''
+    return NextResponse.json({ error: `Failed to send WhatsApp message (${err?.code ?? err?.message ?? 'unknown'})${detail}` }, { status: 500 })
   }
 
   // Upsert review_requests
