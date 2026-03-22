@@ -8,10 +8,20 @@ export async function POST(req: NextRequest) {
   const unauth = await requireAuth()
   if (unauth) return unauth
 
-  const { contactId, phone, firstName } = await req.json()
-  if (!contactId || !phone) {
+  const { contactId, phone: rawPhone, firstName } = await req.json()
+  if (!contactId || !rawPhone) {
     return NextResponse.json({ error: 'contactId and phone are required' }, { status: 400 })
   }
+
+  // Normalise to E.164 — UK 07... → +447..., strip spaces/dashes
+  const digits = String(rawPhone).replace(/[\s\-().+]/g, '')
+  const phone = digits.startsWith('07')
+    ? `+44${digits.slice(1)}`
+    : digits.startsWith('44')
+      ? `+${digits}`
+      : digits.startsWith('+')
+        ? String(rawPhone).replace(/[\s\-()]/g, '')
+        : `+${digits}`
 
   const supabase = createAdminClient()
 
@@ -50,15 +60,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Template SID not configured — set in Reviews settings or env vars' }, { status: 400 })
   }
 
+  // Ensure whatsapp: prefix on both numbers
+  const fromWa = WHATSAPP_FROM.startsWith('whatsapp:') ? WHATSAPP_FROM : `whatsapp:${WHATSAPP_FROM}`
+  const toWa = `whatsapp:${phone}`
+
   try {
     await twilioClient.messages.create({
-      from: WHATSAPP_FROM,
-      to: `whatsapp:${phone}`,
+      from: fromWa,
+      to: toWa,
       contentSid: templateSid,
       contentVariables: JSON.stringify({ '1': firstName ?? '', '2': reviewLink }),
     })
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : 'Twilio error'
+    console.error('[reviews/send] Twilio error:', msg, { from: fromWa, to: toWa, templateSid })
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 
