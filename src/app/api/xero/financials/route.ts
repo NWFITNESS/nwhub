@@ -111,6 +111,14 @@ export async function GET() {
       _debug: {
         invoiceCount: invList.length,
         paymentCount: pymList.length,
+        invoicesBodyKeys: Object.keys(invoices.body ?? {}),
+        paymentsBodyKeys: Object.keys(payments.body ?? {}),
+        invoicesHttpStatus: invoices.response?.statusCode,
+        paymentsHttpStatus: payments.response?.statusCode,
+        accessTokenPrefix: tokenSet.access_token
+          ? (tokenSet.access_token as string).slice(0, 12) + '...'
+          : 'MISSING',
+        tenantId,
         firstInvoice: invList[0]
           ? { status: invList[0].status, date: invList[0].date, total: invList[0].total }
           : null,
