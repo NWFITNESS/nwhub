@@ -74,9 +74,8 @@ export async function POST(req: NextRequest) {
   } catch (e: unknown) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const err = e as any
-    const detail = `${err?.message ?? 'Twilio error'} [code:${err?.code ?? '?'}] from:${fromWa} to:${toWa} sid:${templateSid}`
-    console.error('[reviews/send]', detail)
-    return NextResponse.json({ error: detail }, { status: 500 })
+    console.error('[reviews/send] Twilio error:', err?.code, err?.message, { from: fromWa, to: toWa, templateSid })
+    return NextResponse.json({ error: `Failed to send WhatsApp message (${err?.code ?? err?.message ?? 'unknown'})` }, { status: 500 })
   }
 
   // Upsert review_requests
