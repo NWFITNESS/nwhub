@@ -216,16 +216,16 @@ export default async function DashboardPage() {
       await xero.setTokenSet(tokenSet)
 
       const now2 = new Date()
-      const fromDate = new Date(now2.getFullYear(), now2.getMonth(), 1).toISOString().split('T')[0]
       const toDate = new Date(now2.getFullYear(), now2.getMonth() + 1, 0).toISOString().split('T')[0]
 
       const plRes = await xero.accountingApi.getReportProfitAndLoss(
-        xeroTenant.value, fromDate, toDate
+        xeroTenant.value, undefined, toDate, 1, 'MONTH'
       )
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const rows: any[] = (plRes.body as any)?.reports?.[0]?.rows ?? []
       for (const section of rows) {
         if (section.rowType !== 'Section') continue
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const summary = section.rows?.find((r: any) => r.rowType === 'SummaryRow')
         if (!summary?.cells?.length) continue
         const title = String(summary.cells[0]?.value ?? '').toLowerCase()
@@ -235,8 +235,8 @@ export default async function DashboardPage() {
         }
       }
     }
-  } catch {
-    // Xero not connected or error — keep monthlyRevenue = 0
+  } catch (e) {
+    console.error('[dashboard] Xero monthly revenue error:', e instanceof Error ? e.message : e)
   }
 
   const allVisitorRows = visitorRows1y ?? []
