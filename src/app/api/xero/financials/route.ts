@@ -103,6 +103,19 @@ export async function GET() {
     const invList = invoices.body.invoices ?? []
     const pymList = payments.body.payments ?? []
 
+    // Raw HTTP call to Xero — bypasses SDK to confirm token + tenant work
+    const rawRes = await fetch(
+      `https://api.xero.com/api.xro/2.0/Invoices?Statuses=PAID&pageSize=3`,
+      {
+        headers: {
+          Authorization: `Bearer ${tokenSet.access_token}`,
+          'Xero-Tenant-Id': tenantId,
+          Accept: 'application/json',
+        },
+      }
+    )
+    const rawJson = await rawRes.json().catch(() => null)
+
     return NextResponse.json({
       invoices: invList,
       payments: pymList,
@@ -111,17 +124,14 @@ export async function GET() {
       _debug: {
         invoiceCount: invList.length,
         paymentCount: pymList.length,
-        invoicesBodyKeys: Object.keys(invoices.body ?? {}),
-        paymentsBodyKeys: Object.keys(payments.body ?? {}),
-        invoicesHttpStatus: invoices.response?.statusCode,
-        paymentsHttpStatus: payments.response?.statusCode,
+        sdkWarnings: invoices.body.warnings,
         accessTokenPrefix: tokenSet.access_token
           ? (tokenSet.access_token as string).slice(0, 12) + '...'
           : 'MISSING',
         tenantId,
-        firstInvoice: invList[0]
-          ? { status: invList[0].status, date: invList[0].date, total: invList[0].total }
-          : null,
+        rawHttpStatus: rawRes.status,
+        rawInvoiceCount: rawJson?.Invoices?.length ?? rawJson?.invoices?.length ?? 'n/a',
+        rawFirstInvoice: rawJson?.Invoices?.[0] ?? rawJson?.invoices?.[0] ?? null,
       },
     })
   } catch (err: unknown) {
