@@ -187,7 +187,7 @@ interface Props { initialContacts: Contact[] }
 
 type FormState = {
   first_name: string; last_name: string; email: string; phone: string
-  groups: string[]; notes: string; status: 'active' | 'inactive'
+  groups: string[]; notes: string; status: 'active' | 'inactive' | 'trial' | 'member' | 'cancelled'
 }
 
 const emptyForm: FormState = {
