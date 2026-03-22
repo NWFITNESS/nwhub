@@ -103,14 +103,19 @@ export async function GET() {
     const invList = invoices.body.invoices ?? []
     const pymList = payments.body.payments ?? []
 
-    // Check which tenants this token has access to
-    const tenantsRes = await fetch('https://api.xero.com/connections', {
-      headers: {
-        Authorization: `Bearer ${tokenSet.access_token}`,
-        Accept: 'application/json',
-      },
-    })
-    const allTenants = await tenantsRes.json().catch(() => null)
+    // Fetch a few invoices with no status filter to see if any exist at all
+    const anyInvRes = await fetch(
+      'https://api.xero.com/api.xro/2.0/Invoices?pageSize=5',
+      {
+        headers: {
+          Authorization: `Bearer ${tokenSet.access_token}`,
+          'Xero-Tenant-Id': tenantId,
+          Accept: 'application/json',
+        },
+      }
+    )
+    const anyInvJson = await anyInvRes.json().catch(() => null)
+    const anyInvoices = anyInvJson?.Invoices ?? anyInvJson?.invoices ?? []
 
     return NextResponse.json({
       invoices: invList,
@@ -118,14 +123,14 @@ export async function GET() {
       contacts: contacts.body.contacts,
       profitLoss,
       _debug: {
-        storedTenantId: tenantId,
-        allTenants: Array.isArray(allTenants)
-          ? allTenants.map((t: { tenantId: string; tenantName: string; tenantType: string }) => ({
-              tenantId: t.tenantId,
-              tenantName: t.tenantName,
-              tenantType: t.tenantType,
-            }))
-          : allTenants,
+        tenantId,
+        anyInvoicesCount: anyInvoices.length,
+        anyInvoicesSample: anyInvoices.slice(0, 3).map((inv: { Status?: string; Type?: string; Total?: number; Date?: string }) => ({
+          status: inv.Status,
+          type: inv.Type,
+          total: inv.Total,
+          date: inv.Date,
+        })),
       },
     })
   } catch (err: unknown) {
