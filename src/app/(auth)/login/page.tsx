@@ -28,14 +28,13 @@ function setAttemptData(data: { count: number; lockUntil: number }) {
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data))
 }
 
-function LogoBadge({ url, size = 'md' }: { url: string | null; size?: 'sm' | 'md' }) {
-  const dim = size === 'md' ? 'w-11 h-11' : 'w-10 h-10'
+function Logo({ url, className = '' }: { url: string | null; className?: string }) {
   if (url) {
-    return <img src={url} alt="Northern Warrior" className={`${dim} object-contain rounded-xl`} />
+    return <img src={url} alt="Northern Warrior" className={`object-contain ${className}`} />
   }
   return (
-    <div className={`${dim} rounded-xl bg-[#967705] flex items-center justify-center shadow-[0_0_24px_rgba(150,119,5,0.5)]`}>
-      <span className="text-black font-bold text-sm tracking-wider">NW</span>
+    <div className={`bg-[#967705] flex items-center justify-center ${className}`}>
+      <span className="text-black font-bold text-2xl tracking-widest">NW</span>
     </div>
   )
 }
@@ -171,12 +170,8 @@ export default function LoginPage() {
         </svg>
 
         {/* Logo */}
-        <div className="relative flex items-center gap-3">
-          <LogoBadge url={logoUrl} size="md" />
-          <div>
-            <p className="text-white font-semibold text-sm leading-none tracking-wide">Northern Warrior</p>
-            <p className="text-white/40 text-xs mt-0.5 tracking-wider uppercase">Admin Panel</p>
-          </div>
+        <div className="relative">
+          <Logo url={logoUrl} className="h-20 w-auto" />
         </div>
 
         {/* Centre content */}
@@ -216,12 +211,8 @@ export default function LoginPage() {
       {/* ── Right panel — form ────────────────────────────────────── */}
       <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-10">
         {/* Mobile logo */}
-        <div className="lg:hidden flex items-center gap-3 mb-10">
-          <LogoBadge url={logoUrl} size="sm" />
-          <div>
-            <p className="text-white font-semibold text-sm leading-none">Northern Warrior</p>
-            <p className="text-white/40 text-xs mt-0.5">Admin Panel</p>
-          </div>
+        <div className="lg:hidden mb-10">
+          <Logo url={logoUrl} className="h-16 w-auto" />
         </div>
 
         <div className="w-full max-w-sm">
