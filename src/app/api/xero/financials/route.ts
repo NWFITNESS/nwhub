@@ -103,9 +103,6 @@ export async function GET() {
     const invList = invoices.body.invoices ?? []
     const pymList = payments.body.payments ?? []
 
-    const invList = invoices.body.invoices ?? []
-    const pymList = payments.body.payments ?? []
-
     // Check which tenants this token has access to
     const tenantsRes = await fetch('https://api.xero.com/connections', {
       headers: {
