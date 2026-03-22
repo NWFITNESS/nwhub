@@ -142,7 +142,7 @@ export async function GET() {
 
     const [plRes, txnRes] = await Promise.all([
       xero.accountingApi.getReportProfitAndLoss(
-        tenantId, undefined, toDate, 12, undefined, undefined, undefined,
+        tenantId, undefined, toDate, 12, 'MONTH', undefined, undefined,
         undefined, undefined, undefined, undefined
       ).then(r => r).catch(() => null),
       xero.accountingApi.getBankTransactions(tenantId, undefined, undefined, 'Date DESC')
@@ -151,6 +151,19 @@ export async function GET() {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const report = (plRes?.body as any)?.reports?.[0]
+
+    // DEBUG — remove once working
+    const firstSection = report?.rows?.find((r: any) => r.rowType === 'Section')
+    return NextResponse.json({
+      _debug: {
+        reportKeys: Object.keys(report ?? {}),
+        rowCount: report?.rows?.length ?? 0,
+        headerCells: report?.rows?.find((r: any) => r.rowType === 'Header')?.cells?.map((c: any) => c.value),
+        firstSectionTitle: firstSection?.title,
+        firstSectionSummaryRow: firstSection?.rows?.find((r: any) => r.rowType === 'SummaryRow')?.cells?.map((c: any) => c.value),
+      }
+    })
+
     const { monthly, incomeBreakdown } = parsePnL(report)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
