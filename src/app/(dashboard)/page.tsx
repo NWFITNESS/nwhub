@@ -14,8 +14,8 @@ import {
   Newspaper,
   ArrowUpRight,
   ArrowDownRight,
-  TrendingUp,
 } from 'lucide-react'
+import { XeroRevenueCard } from '@/components/dashboard/XeroRevenueCard'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -184,61 +184,6 @@ export default async function DashboardPage() {
   ]
   const doneCount = checklist.filter((i) => i.done).length
 
-  // Try to fetch Xero monthly revenue from P&L (gracefully skip if not connected)
-  let monthlyRevenue = 0
-  try {
-    const { data: xeroTokens } = await supabase
-      .from('global_settings').select('value').eq('key', 'xero_tokens').single()
-    const { data: xeroTenant } = await supabase
-      .from('global_settings').select('value').eq('key', 'xero_tenant_id').single()
-    if (xeroTokens && xeroTenant) {
-      // Manual token refresh — avoids needing xero.initialize()
-      let tokenSet = JSON.parse(xeroTokens.value)
-      const expiresAt: number = tokenSet.expires_at ?? 0
-      if (expiresAt < Math.floor(Date.now() / 1000) + 60 && tokenSet.refresh_token) {
-        const creds = Buffer.from(`${process.env.XERO_CLIENT_ID}:${process.env.XERO_CLIENT_SECRET}`).toString('base64')
-        const r = await fetch('https://identity.xero.com/connect/token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded', Authorization: `Basic ${creds}` },
-          body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: tokenSet.refresh_token }),
-        })
-        if (r.ok) {
-          tokenSet = await r.json()
-          tokenSet.expires_at = Math.floor(Date.now() / 1000) + (tokenSet.expires_in ?? 1800)
-          await supabase.from('global_settings').upsert(
-            { key: 'xero_tokens', value: JSON.stringify(tokenSet), updated_at: new Date().toISOString() },
-            { onConflict: 'key' }
-          )
-        }
-      }
-
-      const { xero } = await import('@/lib/xero')
-      await xero.setTokenSet(tokenSet)
-
-      const now2 = new Date()
-      const toDate = new Date(now2.getFullYear(), now2.getMonth() + 1, 0).toISOString().split('T')[0]
-
-      const plRes = await xero.accountingApi.getReportProfitAndLoss(
-        xeroTenant.value, undefined, toDate, 1, 'MONTH'
-      )
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rows: any[] = (plRes.body as any)?.reports?.[0]?.rows ?? []
-      for (const section of rows) {
-        if (section.rowType !== 'Section') continue
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const summary = section.rows?.find((r: any) => r.rowType === 'SummaryRow')
-        if (!summary?.cells?.length) continue
-        const title = String(summary.cells[0]?.value ?? '').toLowerCase()
-        if (title.includes('total income') || title.includes('total revenue') || title.includes('total trading income')) {
-          monthlyRevenue = Math.round(Math.abs(parseFloat(String(summary.cells[1]?.value ?? '').replace(/,/g, '')) || 0))
-          break
-        }
-      }
-    }
-  } catch (e) {
-    console.error('[dashboard] Xero monthly revenue error:', e instanceof Error ? e.message : e)
-  }
-
   const allVisitorRows = visitorRows1y ?? []
   const data24h = buildHourlyVisitors(allVisitorRows)
   const data7d  = buildDailyVisitors(allVisitorRows, 7)
@@ -275,15 +220,6 @@ export default async function DashboardPage() {
       trend:   null as number | null,
       alert:   enquiriesAlert,
       isCurrency: false,
-    },
-    {
-      label:   'Monthly Revenue',
-      value:   monthlyRevenue,
-      icon:    TrendingUp,
-      iconBg:  'rgba(34,197,94,0.15)',
-      trend:   null as number | null,
-      alert:   false,
-      isCurrency: true,
     },
   ]
 
@@ -352,6 +288,8 @@ export default async function DashboardPage() {
               </div>
             )
           })}
+          {/* Xero revenue — client component, fetches from /api/xero/financials */}
+          <XeroRevenueCard />
         </div>
 
         {/* ── Section 3 — Website Visitors Chart (SKILL.md §5.1) ── */}
