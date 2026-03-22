@@ -187,7 +187,7 @@ export async function GET() {
     await supabase.from('global_settings').upsert(
       { key: 'xero_revenue_cache', value: String(lastIncome), updated_at: new Date().toISOString() },
       { onConflict: 'key' }
-    ).then(() => {}).catch(() => {})
+    ).catch(() => {})
 
     return NextResponse.json({ monthly, incomeBreakdown, bankTransactions })
   } catch (err: unknown) {
