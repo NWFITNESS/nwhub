@@ -140,15 +140,18 @@ export async function GET() {
     const toDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
       .toISOString().split('T')[0]
 
-    const [plRes, txnRes] = await Promise.all([
-      xero.accountingApi.getReportProfitAndLoss(
+    let plRes = null, plError = null
+    try {
+      plRes = await xero.accountingApi.getReportProfitAndLoss(
         tenantId, undefined, toDate, 12, 'MONTH', undefined, undefined,
         undefined, undefined, undefined, undefined
-      ).then(r => r).catch(() => null),
-      xero.accountingApi.getBankTransactions(tenantId, undefined, undefined, 'Date DESC')
-        .catch(() => null),
-    ])
+      )
+    } catch (e: unknown) {
+      plError = e instanceof Error ? e.message : String(e)
+    }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const bodyKeys = Object.keys((plRes?.body as any) ?? {})
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const report = (plRes?.body as any)?.reports?.[0]
 
@@ -156,6 +159,9 @@ export async function GET() {
     const firstSection = report?.rows?.find((r: any) => r.rowType === 'Section')
     return NextResponse.json({
       _debug: {
+        plError,
+        plResNull: plRes === null,
+        bodyKeys,
         reportKeys: Object.keys(report ?? {}),
         rowCount: report?.rows?.length ?? 0,
         headerCells: report?.rows?.find((r: any) => r.rowType === 'Header')?.cells?.map((c: any) => c.value),
