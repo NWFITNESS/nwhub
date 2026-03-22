@@ -143,34 +143,24 @@ export async function GET() {
     let plRes = null, plError = null
     try {
       plRes = await xero.accountingApi.getReportProfitAndLoss(
-        tenantId, undefined, toDate, 12, 'MONTH', undefined, undefined,
+        tenantId, undefined, toDate, 11, 'MONTH', undefined, undefined,
         undefined, undefined, undefined, undefined
       )
     } catch (e: unknown) {
       plError = e instanceof Error ? e.message : String(e)
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const bodyKeys = Object.keys((plRes?.body as any) ?? {})
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const report = (plRes?.body as any)?.reports?.[0]
+    if (plError || !plRes) {
+      console.error('[xero/financials] P&L error:', plError)
+      return NextResponse.json({ error: 'xero_error', message: plError ?? 'P&L fetch failed' }, { status: 502 })
+    }
 
-    // DEBUG — remove once working
-    const firstSection = report?.rows?.find((r: any) => r.rowType === 'Section')
-    return NextResponse.json({
-      _debug: {
-        plError,
-        plResNull: plRes === null,
-        bodyKeys,
-        reportKeys: Object.keys(report ?? {}),
-        rowCount: report?.rows?.length ?? 0,
-        headerCells: report?.rows?.find((r: any) => r.rowType === 'Header')?.cells?.map((c: any) => c.value),
-        firstSectionTitle: firstSection?.title,
-        firstSectionSummaryRow: firstSection?.rows?.find((r: any) => r.rowType === 'SummaryRow')?.cells?.map((c: any) => c.value),
-      }
-    })
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const report = (plRes.body as any)?.reports?.[0]
     const { monthly, incomeBreakdown } = parsePnL(report)
+
+    const txnRes = await xero.accountingApi.getBankTransactions(tenantId, undefined, undefined, 'Date DESC')
+      .catch(() => null)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rawTxns: any[] = (txnRes?.body as any)?.bankTransactions ?? []

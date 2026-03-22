@@ -189,13 +189,6 @@ export default function FinancialsPage() {
           )}
         </div>
 
-        {/* DEBUG */}
-        {(data as any)?._debug && (
-          <pre className="text-xs text-white/50 bg-white/5 rounded p-3 overflow-x-auto">
-            {JSON.stringify((data as any)._debug, null, 2)}
-          </pre>
-        )}
-
         {/* ── Not Connected ── */}
         {notConnected && <NotConnected />}
 
