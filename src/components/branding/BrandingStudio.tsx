@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { toPng } from 'html-to-image'
-import { Sparkles, Download, Copy, Check, ChevronUp, ChevronDown, Image as ImageIcon, X } from 'lucide-react'
+import { Sparkles, Download, Copy, Check, ChevronUp, ChevronDown, Image as ImageIcon, X, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { MediaPickerModal } from '@/components/media/MediaPicker'
@@ -294,6 +294,20 @@ const STYLES: { id: Style; label: string; desc: string }[] = [
   { id: 'minimal', label: 'Minimal', desc: 'Clean, understated layout' },
 ]
 
+type SocialPlatform = 'facebook' | 'instagram' | 'linkedin'
+
+interface PlatformInfo {
+  connected: boolean
+  label: string
+  subtitle?: string
+}
+
+interface PublishResult {
+  ok: boolean
+  post_id?: string
+  error?: string
+}
+
 function PostGenerator({ review, onClose }: { review: Review; onClose: () => void }) {
   const [style, setStyle] = useState<Style>('quote')
   const [imageUrl, setImageUrl] = useState<string>('')
@@ -304,27 +318,69 @@ function PostGenerator({ review, onClose }: { review: Review; onClose: () => voi
   const [copied, setCopied] = useState(false)
   const fullResRef = useRef<HTMLDivElement>(null)
 
+  // ── Social publishing state ──────────────────────────────────────────────
+  const [platforms, setPlatforms] = useState<Record<SocialPlatform, PlatformInfo>>({
+    facebook:  { connected: false, label: 'Facebook' },
+    instagram: { connected: false, label: 'Instagram' },
+    linkedin:  { connected: false, label: 'LinkedIn' },
+  })
+  const [selectedPlatforms, setSelectedPlatforms] = useState<Set<SocialPlatform>>(new Set())
+  const [captions, setCaptions] = useState<Record<SocialPlatform, string>>({ facebook: '', instagram: '', linkedin: '' })
+  const [publishing, setPublishing] = useState(false)
+  const [publishResults, setPublishResults] = useState<Record<string, PublishResult> | null>(null)
+
+  // Fetch connection status once when content is first generated
+  useEffect(() => {
+    fetch('/api/social/connections')
+      .then((r) => r.json())
+      .then((data) => {
+        setPlatforms({
+          facebook:  { connected: data.facebook?.connected ?? false,  label: 'Facebook',  subtitle: data.facebook?.page_name },
+          instagram: { connected: data.instagram?.connected ?? false, label: 'Instagram', subtitle: data.instagram?.username ? `@${data.instagram.username}` : undefined },
+          linkedin:  { connected: data.linkedin?.connected ?? false,  label: 'LinkedIn',  subtitle: data.linkedin?.organization_name },
+        })
+        // Pre-select all connected platforms
+        const pre = new Set<SocialPlatform>()
+        if (data.facebook?.connected)  pre.add('facebook')
+        if (data.instagram?.connected) pre.add('instagram')
+        if (data.linkedin?.connected)  pre.add('linkedin')
+        setSelectedPlatforms(pre)
+      })
+      .catch(() => {/* non-critical */})
+  }, [])
+
   const generate = useCallback(async () => {
     setGenerating(true)
     setContent(null)
+    setPublishResults(null)
     try {
       const res = await fetch('/api/branding/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ review, style }),
       })
-      const data = await res.json()
+      const data: GeneratedContent = await res.json()
       setContent(data)
+      // Pre-fill all captions with AI caption + hashtags
+      const hashtags = data.hashtags?.map((h: string) => `#${h.replace(/^#/, '')}`).join(' ') ?? ''
+      const fullCaption = hashtags ? `${data.caption}\n\n${hashtags}` : data.caption
+      setCaptions({ facebook: fullCaption, instagram: fullCaption, linkedin: data.caption })
     } finally {
       setGenerating(false)
     }
   }, [review, style])
 
+  /** Renders the off-screen full-res div to a PNG dataUrl */
+  const getImageDataUrl = useCallback(async (): Promise<string> => {
+    if (!fullResRef.current) throw new Error('Post ref not ready')
+    return toPng(fullResRef.current, { width: 1080, height: 1080, pixelRatio: 1 })
+  }, [])
+
   const download = useCallback(async () => {
-    if (!fullResRef.current || !content) return
+    if (!content) return
     setDownloading(true)
     try {
-      const dataUrl = await toPng(fullResRef.current, { width: 1080, height: 1080, pixelRatio: 1 })
+      const dataUrl = await getImageDataUrl()
       const a = document.createElement('a')
       a.href = dataUrl
       a.download = `nw-post-${review.author_name.toLowerCase().replace(/\s+/g, '-')}.png`
@@ -332,7 +388,33 @@ function PostGenerator({ review, onClose }: { review: Review; onClose: () => voi
     } finally {
       setDownloading(false)
     }
-  }, [content, review.author_name])
+  }, [content, review.author_name, getImageDataUrl])
+
+  const publish = useCallback(async () => {
+    if (!content || selectedPlatforms.size === 0) return
+    setPublishing(true)
+    setPublishResults(null)
+    try {
+      const imageDataUrl = await getImageDataUrl()
+      const res = await fetch('/api/social/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageDataUrl,
+          captions: Object.fromEntries(
+            Array.from(selectedPlatforms).map((p) => [p, captions[p]])
+          ),
+          platforms: Array.from(selectedPlatforms),
+        }),
+      })
+      const data = await res.json()
+      setPublishResults(data.results ?? {})
+    } catch (err) {
+      setPublishResults({ _error: { ok: false, error: err instanceof Error ? err.message : 'Publish failed' } })
+    } finally {
+      setPublishing(false)
+    }
+  }, [content, selectedPlatforms, captions, getImageDataUrl])
 
   const copyCaption = useCallback(async () => {
     if (!content) return
@@ -478,7 +560,7 @@ function PostGenerator({ review, onClose }: { review: Review; onClose: () => voi
           {/* Caption panel */}
           <div className="rounded-lg bg-[#161616] border border-white/[0.06] p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs text-white/40 uppercase tracking-widest">Instagram Caption</p>
+              <p className="text-xs text-white/40 uppercase tracking-widest">AI Caption</p>
               <button
                 onClick={copyCaption}
                 className="flex items-center gap-1.5 text-xs text-white/50 hover:text-[#c9a70a] transition-colors"
@@ -492,6 +574,110 @@ function PostGenerator({ review, onClose }: { review: Review; onClose: () => voi
               {content.hashtags.map((h) => `#${h.replace(/^#/, '')}`).join(' ')}
             </p>
           </div>
+
+          {/* ── Publish to Social Media ────────────────────────────────────── */}
+          {(() => {
+            const connectedPlatforms = (Object.entries(platforms) as [SocialPlatform, PlatformInfo][]).filter(([, v]) => v.connected)
+            if (connectedPlatforms.length === 0) return (
+              <div className="rounded-xl border border-white/[0.06] p-4 text-center">
+                <Send size={16} className="text-white/20 mx-auto mb-2" />
+                <p className="text-xs text-white/30">No social accounts connected.</p>
+                <a href="/settings" className="text-xs text-[#c9a70a] hover:underline mt-1 inline-block">Connect in Settings →</a>
+              </div>
+            )
+            return (
+              <div className="rounded-xl border border-white/[0.08] bg-[#0a0a0a] p-4 space-y-4">
+                <p className="text-xs text-white/40 uppercase tracking-widest">Publish to Social Media</p>
+
+                {/* Platform checkboxes */}
+                <div className="flex flex-wrap gap-2">
+                  {connectedPlatforms.map(([id, info]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedPlatforms((prev) => {
+                          const next = new Set(prev)
+                          next.has(id) ? next.delete(id) : next.add(id)
+                          return next
+                        })
+                        setPublishResults(null)
+                      }}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                        selectedPlatforms.has(id)
+                          ? 'border-[#967705] bg-[#967705]/15 text-[#c9a70a]'
+                          : 'border-white/[0.08] bg-[#161616] text-white/45 hover:text-white/70'
+                      }`}
+                    >
+                      <span className={`w-3.5 h-3.5 rounded flex-shrink-0 border flex items-center justify-center transition-colors ${
+                        selectedPlatforms.has(id) ? 'border-[#c9a70a] bg-[#c9a70a]' : 'border-white/25'
+                      }`}>
+                        {selectedPlatforms.has(id) && <Check size={9} className="text-black" strokeWidth={3} />}
+                      </span>
+                      {info.label}
+                      {info.subtitle && <span className="text-white/30">· {info.subtitle}</span>}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Per-platform caption editors */}
+                {selectedPlatforms.size > 0 && (
+                  <div className="space-y-3">
+                    {Array.from(selectedPlatforms).map((id) => (
+                      <div key={id}>
+                        <label className="text-xs text-white/35 uppercase tracking-widest block mb-1.5">
+                          {platforms[id].label} caption
+                        </label>
+                        <textarea
+                          value={captions[id]}
+                          onChange={(e) => setCaptions((prev) => ({ ...prev, [id]: e.target.value }))}
+                          rows={4}
+                          className="w-full bg-[#161616] border border-white/[0.08] rounded-lg px-3 py-2.5 text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-[#967705]/50 resize-none transition-colors"
+                          placeholder={`Caption for ${platforms[id].label}…`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Publish button */}
+                <Button
+                  variant="primary"
+                  onClick={publish}
+                  loading={publishing}
+                  disabled={selectedPlatforms.size === 0}
+                  className="w-full gap-2"
+                >
+                  {publishing ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+                  {publishing ? 'Publishing…' : `Publish to ${selectedPlatforms.size} platform${selectedPlatforms.size !== 1 ? 's' : ''}`}
+                </Button>
+
+                {/* Results */}
+                {publishResults && (
+                  <div className="space-y-2">
+                    {Object.entries(publishResults).map(([platform, result]) => (
+                      <div
+                        key={platform}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm border ${
+                          result.ok
+                            ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400'
+                            : 'bg-red-500/10 border-red-500/25 text-red-400'
+                        }`}
+                      >
+                        {result.ok
+                          ? <CheckCircle size={14} className="flex-shrink-0" />
+                          : <AlertCircle size={14} className="flex-shrink-0" />}
+                        <span className="font-medium capitalize">{platform}</span>
+                        <span className="text-xs opacity-70">
+                          {result.ok ? 'Published successfully' : result.error}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })()}
         </>
       )}
 

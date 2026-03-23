@@ -3,6 +3,7 @@ import { TopBar } from '@/components/layout/TopBar'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { GlobalSettingsEditor } from '@/components/content/GlobalSettingsEditor'
 import { AccountSecuritySettings } from '@/components/content/AccountSecuritySettings'
+import { SocialConnections } from '@/components/settings/SocialConnections'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -23,6 +24,14 @@ export default async function SettingsPage() {
           description="Navigation, footer, contact info, and social links used across the site."
         />
         <GlobalSettingsEditor initialSettings={settingsMap} />
+
+        <div className="mt-4">
+          <PageHeader
+            title="Social Media"
+            description="Connect Facebook, Instagram, and LinkedIn to publish branded posts directly from the Branding Studio."
+          />
+        </div>
+        <SocialConnections />
 
         <div className="mt-4">
           <PageHeader
