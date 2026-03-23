@@ -220,7 +220,16 @@ type ImportStep = 'upload' | 'map' | 'result'
 export function ContactsManager({ initialContacts }: Props) {
   const [contacts, setContacts] = useState<Contact[]>(initialContacts)
   const [search, setSearch]     = useState('')
-  const [groupFilter, setGroupFilter] = useState('all')
+
+  // Column filters
+  const [colFilters, setColFilters] = useState({
+    name: '', email: '', phone: '', group: 'all', source: 'all', dateFrom: '', status: 'all',
+  })
+  function setCol<K extends keyof typeof colFilters>(key: K, value: typeof colFilters[K]) {
+    setColFilters((f) => ({ ...f, [key]: value }))
+  }
+  const hasColFilters = colFilters.name || colFilters.email || colFilters.phone ||
+    colFilters.group !== 'all' || colFilters.source !== 'all' || colFilters.dateFrom || colFilters.status !== 'all'
 
   // Modals
   const [addEditModal, setAddEditModal] = useState(false)
@@ -255,15 +264,23 @@ export function ContactsManager({ initialContacts }: Props) {
 
   // Derived
   const allGroups = Array.from(new Set(contacts.flatMap((c) => c.groups))).sort()
+  const allSources = Array.from(new Set(contacts.map((c) => c.source))).sort()
   const filtered  = contacts.filter((c) => {
     const q = search.toLowerCase()
-    const matchSearch = !q ||
-      c.first_name.toLowerCase().includes(q) ||
-      c.last_name.toLowerCase().includes(q) ||
-      (c.email ?? '').toLowerCase().includes(q) ||
-      (c.phone ?? '').includes(q)
-    const matchGroup = groupFilter === 'all' || c.groups.includes(groupFilter)
-    return matchSearch && matchGroup
+    const fullName = `${c.first_name} ${c.last_name}`.toLowerCase()
+    if (q && !fullName.includes(q) && !(c.email ?? '').toLowerCase().includes(q) && !(c.phone ?? '').includes(q)) return false
+    if (colFilters.name && !fullName.includes(colFilters.name.toLowerCase())) return false
+    if (colFilters.email && !(c.email ?? '').toLowerCase().includes(colFilters.email.toLowerCase())) return false
+    if (colFilters.phone && !(c.phone ?? '').includes(colFilters.phone)) return false
+    if (colFilters.group === '__none__') { if (c.groups.length > 0) return false }
+    else if (colFilters.group !== 'all' && !c.groups.includes(colFilters.group)) return false
+    if (colFilters.source !== 'all' && c.source !== colFilters.source) return false
+    if (colFilters.dateFrom && new Date(c.created_at) < new Date(colFilters.dateFrom)) return false
+    if (colFilters.status !== 'all') {
+      const s = getMembershipStatus(c.groups)
+      if (colFilters.status !== s) return false
+    }
+    return true
   })
 
   const allFilteredSelected = filtered.length > 0 && filtered.every((c) => selectedIds.has(c.id))
@@ -472,20 +489,20 @@ export function ContactsManager({ initialContacts }: Props) {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, email or phone…"
+            placeholder="Quick search by name, email or phone…"
             style={{ paddingLeft: '2.25rem' }}
             className="w-full pr-4 py-2 rounded-lg bg-[#111] border border-white/10 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#967705]/60 transition-colors"
           />
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none z-10" />
         </div>
-        <select
-          value={groupFilter}
-          onChange={(e) => setGroupFilter(e.target.value)}
-          className="px-3 py-2 rounded-lg bg-[#111] border border-white/10 text-sm text-white focus:outline-none focus:border-[#967705]/60 transition-colors"
-        >
-          <option value="all">All groups</option>
-          {allGroups.map((g) => <option key={g} value={g}>{g}</option>)}
-        </select>
+        {hasColFilters && (
+          <button
+            onClick={() => setColFilters({ name: '', email: '', phone: '', group: 'all', source: 'all', dateFrom: '', status: 'all' })}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-white/50 border border-white/10 hover:border-white/25 hover:text-white/80 transition-colors"
+          >
+            <X size={12} />Clear filters
+          </button>
+        )}
         <Button variant="secondary" size="sm" onClick={openImport}>
           <Upload size={14} />Import
         </Button>
@@ -555,8 +572,9 @@ export function ContactsManager({ initialContacts }: Props) {
         <div className="overflow-x-auto rounded-xl border border-white/[0.08]">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/[0.08]">
-                <th className="pl-6 pr-2 py-4 w-10">
+              {/* Column labels */}
+              <tr className="border-b border-white/[0.04]">
+                <th className="pl-6 pr-2 py-3 w-10">
                   <input
                     type="checkbox"
                     checked={allFilteredSelected}
@@ -566,8 +584,60 @@ export function ContactsManager({ initialContacts }: Props) {
                   />
                 </th>
                 {['Name', 'Email', 'Phone', 'Groups', 'Source', 'Added', 'Status', ''].map((h) => (
-                  <th key={h} className="px-6 py-4 text-left text-xs font-medium text-white/40 uppercase tracking-wider">{h}</th>
+                  <th key={h} className="px-6 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">{h}</th>
                 ))}
+              </tr>
+              {/* Column filters */}
+              <tr className="border-b border-white/[0.08] bg-[#0d0d0d]">
+                <th className="pl-6 pr-2 py-2" />
+                {/* Name */}
+                <th className="px-3 py-2">
+                  <input value={colFilters.name} onChange={(e) => setCol('name', e.target.value)} placeholder="Filter…"
+                    className="w-full px-2 py-1 rounded bg-[#111] border border-white/[0.07] text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-[#967705]/40" />
+                </th>
+                {/* Email */}
+                <th className="px-3 py-2">
+                  <input value={colFilters.email} onChange={(e) => setCol('email', e.target.value)} placeholder="Filter…"
+                    className="w-full px-2 py-1 rounded bg-[#111] border border-white/[0.07] text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-[#967705]/40" />
+                </th>
+                {/* Phone */}
+                <th className="px-3 py-2">
+                  <input value={colFilters.phone} onChange={(e) => setCol('phone', e.target.value)} placeholder="Filter…"
+                    className="w-full px-2 py-1 rounded bg-[#111] border border-white/[0.07] text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-[#967705]/40" />
+                </th>
+                {/* Groups */}
+                <th className="px-3 py-2">
+                  <select value={colFilters.group} onChange={(e) => setCol('group', e.target.value)}
+                    className="w-full px-2 py-1 rounded bg-[#111] border border-white/[0.07] text-xs text-white focus:outline-none focus:border-[#967705]/40">
+                    <option value="all">All</option>
+                    <option value="__none__">No group</option>
+                    {allGroups.map((g) => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                </th>
+                {/* Source */}
+                <th className="px-3 py-2">
+                  <select value={colFilters.source} onChange={(e) => setCol('source', e.target.value)}
+                    className="w-full px-2 py-1 rounded bg-[#111] border border-white/[0.07] text-xs text-white focus:outline-none focus:border-[#967705]/40">
+                    <option value="all">All</option>
+                    {allSources.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </th>
+                {/* Added (from date) */}
+                <th className="px-3 py-2">
+                  <input type="date" value={colFilters.dateFrom} onChange={(e) => setCol('dateFrom', e.target.value)}
+                    className="w-full px-2 py-1 rounded bg-[#111] border border-white/[0.07] text-xs text-white focus:outline-none focus:border-[#967705]/40 [color-scheme:dark]" />
+                </th>
+                {/* Status */}
+                <th className="px-3 py-2">
+                  <select value={colFilters.status} onChange={(e) => setCol('status', e.target.value)}
+                    className="w-full px-2 py-1 rounded bg-[#111] border border-white/[0.07] text-xs text-white focus:outline-none focus:border-[#967705]/40">
+                    <option value="all">All</option>
+                    <option value="green">Membership</option>
+                    <option value="amber">Class pack</option>
+                    <option value="red">No membership</option>
+                  </select>
+                </th>
+                <th className="px-3 py-2" />
               </tr>
             </thead>
             <tbody>
