@@ -204,7 +204,8 @@ export function ReviewsDashboard({ initialRequests, initialSettings, initialCont
     const data = await res.json()
     setRunning(false)
     if (!res.ok) { showToast(data.error ?? 'Run failed', false); return }
-    showToast(`${data.sent} messages sent, ${data.skipped} skipped`)
+    const errPart = data.errors > 0 ? `, ${data.errors} failed` : ''
+    showToast(`${data.sent} sent, ${data.skipped} skipped${errPart}`, data.errors === 0)
     const fresh = await fetch('/api/reviews/requests').then((r) => r.json())
     if (Array.isArray(fresh)) {
       setRequests(fresh)

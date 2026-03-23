@@ -108,7 +108,9 @@ export async function POST(req: NextRequest) {
       )
 
       results.sent++
-    } catch {
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e)
+      console.error('[reviews/automation] Send failed for', contact.id, msg)
       results.errors++
     }
   }
