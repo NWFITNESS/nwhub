@@ -37,7 +37,7 @@ interface MediaPickerModalProps {
   onClose: () => void
 }
 
-function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
+export function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalProps) {
   const [media, setMedia]         = useState<Media[]>([])
   const [loading, setLoading]     = useState(true)
   const [uploading, setUploading] = useState(false)

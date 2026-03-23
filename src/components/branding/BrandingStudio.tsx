@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { toPng } from 'html-to-image'
-import { Sparkles, Download, Copy, Check, ChevronUp, ChevronDown } from 'lucide-react'
+import { Sparkles, Download, Copy, Check, ChevronUp, ChevronDown, Image as ImageIcon, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { MediaPickerModal } from '@/components/media/MediaPicker'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -42,13 +43,13 @@ function Stars({ rating, size = 14 }: { rating: number; size?: number }) {
 
 // ─── Post Templates ───────────────────────────────────────────────────────────
 
-function TemplateQuote({
-  review,
-  content,
-}: {
+interface TemplateProps {
   review: Review
   content: GeneratedContent
-}) {
+  imageUrl?: string
+}
+
+function TemplateQuote({ review, content, imageUrl }: TemplateProps) {
   return (
     <div
       style={{
@@ -63,67 +64,81 @@ function TemplateQuote({
         position: 'relative',
         fontFamily: 'Georgia, serif',
         boxSizing: 'border-box',
+        overflow: 'hidden',
       }}
     >
+      {/* Background image (if provided) */}
+      {imageUrl && (
+        <>
+          <img
+            src={imageUrl}
+            alt=""
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+            crossOrigin="anonymous"
+          />
+          {/* Dark overlay */}
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.72)' }} />
+        </>
+      )}
+
       {/* Gold dot pattern overlay */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage:
-            'radial-gradient(circle, rgba(201,167,10,0.08) 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
-          pointerEvents: 'none',
-        }}
-      />
+      {!imageUrl && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: 'radial-gradient(circle, rgba(201,167,10,0.08) 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+
       {/* Corner accents */}
-      <div style={{ position: 'absolute', top: 32, left: 32, width: 40, height: 40, borderTop: '2px solid #c9a70a', borderLeft: '2px solid #c9a70a' }} />
-      <div style={{ position: 'absolute', top: 32, right: 32, width: 40, height: 40, borderTop: '2px solid #c9a70a', borderRight: '2px solid #c9a70a' }} />
-      <div style={{ position: 'absolute', bottom: 32, left: 32, width: 40, height: 40, borderBottom: '2px solid #c9a70a', borderLeft: '2px solid #c9a70a' }} />
-      <div style={{ position: 'absolute', bottom: 32, right: 32, width: 40, height: 40, borderBottom: '2px solid #c9a70a', borderRight: '2px solid #c9a70a' }} />
+      <div style={{ position: 'absolute', top: 32, left: 32, width: 40, height: 40, borderTop: '2px solid #c9a70a', borderLeft: '2px solid #c9a70a', zIndex: 1 }} />
+      <div style={{ position: 'absolute', top: 32, right: 32, width: 40, height: 40, borderTop: '2px solid #c9a70a', borderRight: '2px solid #c9a70a', zIndex: 1 }} />
+      <div style={{ position: 'absolute', bottom: 32, left: 32, width: 40, height: 40, borderBottom: '2px solid #c9a70a', borderLeft: '2px solid #c9a70a', zIndex: 1 }} />
+      <div style={{ position: 'absolute', bottom: 32, right: 32, width: 40, height: 40, borderBottom: '2px solid #c9a70a', borderRight: '2px solid #c9a70a', zIndex: 1 }} />
 
-      {/* Stars */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 36 }}>
-        {Array.from({ length: review.rating }).map((_, i) => (
-          <svg key={i} width={32} height={32} viewBox="0 0 20 20" fill="#c9a70a">
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-          </svg>
-        ))}
+      {/* Content */}
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        {/* Stars */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 36 }}>
+          {Array.from({ length: review.rating }).map((_, i) => (
+            <svg key={i} width={32} height={32} viewBox="0 0 20 20" fill="#c9a70a">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+          ))}
+        </div>
+
+        {/* Headline */}
+        <p style={{ color: '#c9a70a', fontSize: 54, fontWeight: 700, letterSpacing: '-0.5px', textAlign: 'center', marginBottom: 32, lineHeight: 1.1, fontFamily: 'Arial, sans-serif' }}>
+          &ldquo;{content.headline}&rdquo;
+        </p>
+
+        {/* Review text */}
+        <p style={{ color: 'rgba(255,255,255,0.80)', fontSize: 30, fontStyle: 'italic', textAlign: 'center', lineHeight: 1.6, marginBottom: 40, maxWidth: 860 }}>
+          {review.text.length > 220 ? review.text.slice(0, 220) + '…' : review.text}
+        </p>
+
+        {/* Author */}
+        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 22, letterSpacing: 1, marginBottom: 40, fontFamily: 'Arial, sans-serif' }}>
+          — {review.author_name}
+        </p>
+
+        {/* Gold rule */}
+        <div style={{ width: 280, height: 1, background: 'linear-gradient(90deg, transparent, #c9a70a, transparent)', marginBottom: 32 }} />
+
+        {/* Brand */}
+        <p style={{ color: '#c9a70a', fontSize: 20, fontWeight: 700, letterSpacing: '0.3em', fontFamily: 'Arial, sans-serif', textTransform: 'uppercase' }}>
+          NORTHERN WARRIOR
+        </p>
       </div>
-
-      {/* Headline */}
-      <p style={{ color: '#c9a70a', fontSize: 54, fontWeight: 700, letterSpacing: '-0.5px', textAlign: 'center', marginBottom: 32, lineHeight: 1.1, fontFamily: 'Arial, sans-serif' }}>
-        &ldquo;{content.headline}&rdquo;
-      </p>
-
-      {/* Review text */}
-      <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 30, fontStyle: 'italic', textAlign: 'center', lineHeight: 1.6, marginBottom: 40, maxWidth: 860 }}>
-        {review.text.length > 220 ? review.text.slice(0, 220) + '…' : review.text}
-      </p>
-
-      {/* Author */}
-      <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 22, letterSpacing: 1, marginBottom: 40, fontFamily: 'Arial, sans-serif' }}>
-        — {review.author_name}
-      </p>
-
-      {/* Gold rule */}
-      <div style={{ width: 280, height: 1, background: 'linear-gradient(90deg, transparent, #c9a70a, transparent)', marginBottom: 32 }} />
-
-      {/* Brand */}
-      <p style={{ color: '#c9a70a', fontSize: 20, fontWeight: 700, letterSpacing: '0.3em', fontFamily: 'Arial, sans-serif', textTransform: 'uppercase' }}>
-        NORTHERN WARRIOR
-      </p>
     </div>
   )
 }
 
-function TemplateBold({
-  review,
-  content,
-}: {
-  review: Review
-  content: GeneratedContent
-}) {
+function TemplateBold({ review, content, imageUrl }: TemplateProps) {
   return (
     <div
       style={{
@@ -137,8 +152,23 @@ function TemplateBold({
         position: 'relative',
         fontFamily: 'Arial, sans-serif',
         boxSizing: 'border-box',
+        overflow: 'hidden',
       }}
     >
+      {/* Background image (right half with gradient fade) */}
+      {imageUrl && (
+        <>
+          <img
+            src={imageUrl}
+            alt=""
+            style={{ position: 'absolute', right: 0, top: 0, width: '55%', height: '100%', objectFit: 'cover' }}
+            crossOrigin="anonymous"
+          />
+          {/* Fade left so text stays readable */}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #161616 45%, rgba(22,22,22,0.7) 70%, rgba(22,22,22,0.3) 100%)' }} />
+        </>
+      )}
+
       {/* Left gold accent bar */}
       <div
         style={{
@@ -148,53 +178,51 @@ function TemplateBold({
           bottom: 0,
           width: 10,
           background: 'linear-gradient(180deg, #c9a70a 0%, #967705 100%)',
+          zIndex: 1,
         }}
       />
 
-      {/* Headline */}
-      <p style={{ color: '#ffffff', fontSize: 86, fontWeight: 900, lineHeight: 1.0, marginBottom: 32, letterSpacing: '-2px', textTransform: 'uppercase' }}>
-        {content.headline}
-      </p>
-
-      {/* Gold divider */}
-      <div style={{ width: 120, height: 4, background: '#c9a70a', marginBottom: 40, borderRadius: 2 }} />
-
-      {/* Subheadline */}
-      {content.subheadline && (
-        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 30, marginBottom: 32, lineHeight: 1.4 }}>
-          {content.subheadline}
+      {/* Content */}
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: imageUrl ? '58%' : '100%' }}>
+        {/* Headline */}
+        <p style={{ color: '#ffffff', fontSize: 86, fontWeight: 900, lineHeight: 1.0, marginBottom: 32, letterSpacing: '-2px', textTransform: 'uppercase' }}>
+          {content.headline}
         </p>
-      )}
 
-      {/* Review text */}
-      <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 28, lineHeight: 1.65, marginBottom: 48, maxWidth: 860 }}>
-        &ldquo;{review.text.length > 200 ? review.text.slice(0, 200) + '…' : review.text}&rdquo;
-      </p>
+        {/* Gold divider */}
+        <div style={{ width: 120, height: 4, background: '#c9a70a', marginBottom: 40, borderRadius: 2 }} />
 
-      {/* Footer row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-        <div style={{ display: 'flex', gap: 4 }}>
-          {Array.from({ length: review.rating }).map((_, i) => (
-            <svg key={i} width={28} height={28} viewBox="0 0 20 20" fill="#c9a70a">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-          ))}
+        {/* Subheadline */}
+        {content.subheadline && (
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 30, marginBottom: 32, lineHeight: 1.4 }}>
+            {content.subheadline}
+          </p>
+        )}
+
+        {/* Review text */}
+        <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: 28, lineHeight: 1.65, marginBottom: 48 }}>
+          &ldquo;{review.text.length > 200 ? review.text.slice(0, 200) + '…' : review.text}&rdquo;
+        </p>
+
+        {/* Footer row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {Array.from({ length: review.rating }).map((_, i) => (
+              <svg key={i} width={28} height={28} viewBox="0 0 20 20" fill="#c9a70a">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+            ))}
+          </div>
+          <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 22 }}>
+            {review.author_name} · Northern Warrior
+          </span>
         </div>
-        <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 22 }}>
-          {review.author_name} · Northern Warrior
-        </span>
       </div>
     </div>
   )
 }
 
-function TemplateMinimal({
-  review,
-  content,
-}: {
-  review: Review
-  content: GeneratedContent
-}) {
+function TemplateMinimal({ review, content, imageUrl }: TemplateProps) {
   return (
     <div
       style={{
@@ -203,34 +231,52 @@ function TemplateMinimal({
         background: '#111111',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
+        justifyContent: imageUrl ? 'flex-end' : 'center',
         padding: '100px',
         position: 'relative',
         fontFamily: 'Georgia, serif',
         boxSizing: 'border-box',
+        overflow: 'hidden',
       }}
     >
-      {/* Review text */}
-      <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 38, lineHeight: 1.7, marginBottom: 56, fontStyle: 'italic' }}>
-        &ldquo;{review.text.length > 220 ? review.text.slice(0, 220) + '…' : review.text}&rdquo;
-      </p>
+      {/* Background image (top portion) */}
+      {imageUrl && (
+        <>
+          <img
+            src={imageUrl}
+            alt=""
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '50%', width: '100%', objectFit: 'cover' }}
+            crossOrigin="anonymous"
+          />
+          {/* Fade to bg */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '60%', background: 'linear-gradient(180deg, rgba(17,17,17,0) 30%, #111111 100%)' }} />
+        </>
+      )}
 
-      {/* Author row */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
-        <div>
-          <p style={{ color: '#ffffff', fontSize: 28, fontWeight: 700, fontFamily: 'Arial, sans-serif', marginBottom: 6 }}>
-            {review.author_name}
-          </p>
-          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 22, fontFamily: 'Arial, sans-serif', letterSpacing: 1 }}>
-            Northern Warrior Fitness
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 4 }}>
-          {Array.from({ length: review.rating }).map((_, i) => (
-            <svg key={i} width={30} height={30} viewBox="0 0 20 20" fill="#c9a70a">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-          ))}
+      {/* Content */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {/* Review text */}
+        <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 38, lineHeight: 1.7, marginBottom: 56, fontStyle: 'italic' }}>
+          &ldquo;{review.text.length > 220 ? review.text.slice(0, 220) + '…' : review.text}&rdquo;
+        </p>
+
+        {/* Author row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
+          <div>
+            <p style={{ color: '#ffffff', fontSize: 28, fontWeight: 700, fontFamily: 'Arial, sans-serif', marginBottom: 6 }}>
+              {review.author_name}
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 22, fontFamily: 'Arial, sans-serif', letterSpacing: 1 }}>
+              Northern Warrior Fitness
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {Array.from({ length: review.rating }).map((_, i) => (
+              <svg key={i} width={30} height={30} viewBox="0 0 20 20" fill="#c9a70a">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -250,12 +296,12 @@ const STYLES: { id: Style; label: string; desc: string }[] = [
 
 function PostGenerator({ review, onClose }: { review: Review; onClose: () => void }) {
   const [style, setStyle] = useState<Style>('quote')
+  const [imageUrl, setImageUrl] = useState<string>('')
+  const [showMediaPicker, setShowMediaPicker] = useState(false)
   const [content, setContent] = useState<GeneratedContent | null>(null)
   const [generating, setGenerating] = useState(false)
   const [downloading, setDownloading] = useState(false)
   const [copied, setCopied] = useState(false)
-  const postRef = useRef<HTMLDivElement>(null)
-  // Hidden full-res div for download
   const fullResRef = useRef<HTMLDivElement>(null)
 
   const generate = useCallback(async () => {
@@ -330,6 +376,45 @@ function PostGenerator({ review, onClose }: { review: Review; onClose: () => voi
         </div>
       </div>
 
+      {/* Step 1b — Optional image */}
+      <div>
+        <p className="text-xs text-white/40 uppercase tracking-widest mb-3">Background image <span className="normal-case text-white/25">(optional)</span></p>
+        {imageUrl ? (
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-[#161616] border border-white/[0.08]">
+            <img src={imageUrl} alt="" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-white/60 truncate">{imageUrl.split('/').pop()}</p>
+              <button
+                onClick={() => setShowMediaPicker(true)}
+                className="text-xs text-[#c9a70a] hover:text-[#967705] transition-colors mt-1"
+              >
+                Change image
+              </button>
+            </div>
+            <button
+              onClick={() => { setImageUrl(''); setContent(null) }}
+              className="text-white/30 hover:text-white/70 transition-colors flex-shrink-0"
+              title="Remove image"
+            >
+              <X size={15} />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowMediaPicker(true)}
+            className="w-full flex items-center gap-3 p-3 rounded-lg border border-dashed border-white/[0.12] hover:border-[#967705]/50 bg-[#161616] hover:bg-[#967705]/5 transition-all text-white/40 hover:text-white/70"
+          >
+            <div className="w-10 h-10 rounded-lg bg-white/[0.04] flex items-center justify-center flex-shrink-0">
+              <ImageIcon size={16} />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-medium">Add from media library</p>
+              <p className="text-xs text-white/30 mt-0.5">Used as background photo in the post</p>
+            </div>
+          </button>
+        )}
+      </div>
+
       {/* Step 2 — Generate */}
       <Button
         variant="primary"
@@ -349,14 +434,9 @@ function PostGenerator({ review, onClose }: { review: Review; onClose: () => voi
             <p className="text-xs text-white/40 uppercase tracking-widest mb-3">Preview</p>
             <div
               className="rounded-lg overflow-hidden"
-              style={{
-                width: 1080 * SCALE,
-                height: 1080 * SCALE,
-                position: 'relative',
-              }}
+              style={{ width: 1080 * SCALE, height: 1080 * SCALE, position: 'relative' }}
             >
               <div
-                ref={postRef}
                 style={{
                   transformOrigin: 'top left',
                   transform: `scale(${SCALE})`,
@@ -367,7 +447,7 @@ function PostGenerator({ review, onClose }: { review: Review; onClose: () => voi
                   left: 0,
                 }}
               >
-                <PostTemplate review={review} content={content} />
+                <PostTemplate review={review} content={content} imageUrl={imageUrl || undefined} />
               </div>
             </div>
           </div>
@@ -385,7 +465,7 @@ function PostGenerator({ review, onClose }: { review: Review; onClose: () => voi
             }}
           >
             <div ref={fullResRef}>
-              <PostTemplate review={review} content={content} />
+              <PostTemplate review={review} content={content} imageUrl={imageUrl || undefined} />
             </div>
           </div>
 
@@ -413,6 +493,15 @@ function PostGenerator({ review, onClose }: { review: Review; onClose: () => voi
             </p>
           </div>
         </>
+      )}
+
+      {/* Media picker modal */}
+      {showMediaPicker && (
+        <MediaPickerModal
+          value={imageUrl}
+          onSelect={(url) => { setImageUrl(url); setContent(null) }}
+          onClose={() => setShowMediaPicker(false)}
+        />
       )}
     </div>
   )
@@ -506,7 +595,7 @@ export function BrandingStudio({ placeId }: BrandingStudioProps) {
         }
         setReviews(data.reviews ?? [])
         setMeta({ place_name: data.place_name, rating: data.rating, total_reviews: data.total_reviews })
-      } catch (e) {
+      } catch {
         setError('Failed to fetch reviews')
       } finally {
         setLoading(false)
