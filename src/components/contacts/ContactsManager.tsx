@@ -223,12 +223,16 @@ export function ContactsManager({ initialContacts }: Props) {
 
   // Column filters
   const [colFilters, setColFilters] = useState({
-    name: '', email: '', phone: '', group: 'all', source: 'all', dateFrom: '', status: 'all',
+    nameSort: '' as '' | 'asc' | 'desc',
+    email: '', phone: '', group: 'all', source: 'all', dateFrom: '', status: 'all',
   })
   function setCol<K extends keyof typeof colFilters>(key: K, value: typeof colFilters[K]) {
     setColFilters((f) => ({ ...f, [key]: value }))
   }
-  const hasColFilters = colFilters.name || colFilters.email || colFilters.phone ||
+  function cycleNameSort() {
+    setColFilters((f) => ({ ...f, nameSort: f.nameSort === '' ? 'asc' : f.nameSort === 'asc' ? 'desc' : '' }))
+  }
+  const hasColFilters = colFilters.nameSort !== '' || colFilters.email || colFilters.phone ||
     colFilters.group !== 'all' || colFilters.source !== 'all' || colFilters.dateFrom || colFilters.status !== 'all'
 
   // Modals
@@ -265,23 +269,32 @@ export function ContactsManager({ initialContacts }: Props) {
   // Derived
   const allGroups = Array.from(new Set(contacts.flatMap((c) => c.groups))).sort()
   const allSources = Array.from(new Set(contacts.map((c) => c.source))).sort()
-  const filtered  = contacts.filter((c) => {
-    const q = search.toLowerCase()
-    const fullName = `${c.first_name} ${c.last_name}`.toLowerCase()
-    if (q && !fullName.includes(q) && !(c.email ?? '').toLowerCase().includes(q) && !(c.phone ?? '').includes(q)) return false
-    if (colFilters.name && !fullName.includes(colFilters.name.toLowerCase())) return false
-    if (colFilters.email && !(c.email ?? '').toLowerCase().includes(colFilters.email.toLowerCase())) return false
-    if (colFilters.phone && !(c.phone ?? '').includes(colFilters.phone)) return false
-    if (colFilters.group === '__none__') { if (c.groups.length > 0) return false }
-    else if (colFilters.group !== 'all' && !c.groups.includes(colFilters.group)) return false
-    if (colFilters.source !== 'all' && c.source !== colFilters.source) return false
-    if (colFilters.dateFrom && new Date(c.created_at) < new Date(colFilters.dateFrom)) return false
-    if (colFilters.status !== 'all') {
-      const s = getMembershipStatus(c.groups)
-      if (colFilters.status !== s) return false
+  const filtered = (() => {
+    const result = contacts.filter((c) => {
+      const q = search.toLowerCase()
+      const fullName = `${c.first_name} ${c.last_name}`.toLowerCase()
+      if (q && !fullName.includes(q) && !(c.email ?? '').toLowerCase().includes(q) && !(c.phone ?? '').includes(q)) return false
+      if (colFilters.email && !(c.email ?? '').toLowerCase().includes(colFilters.email.toLowerCase())) return false
+      if (colFilters.phone && !(c.phone ?? '').includes(colFilters.phone)) return false
+      if (colFilters.group === '__none__') { if (c.groups.length > 0) return false }
+      else if (colFilters.group !== 'all' && !c.groups.includes(colFilters.group)) return false
+      if (colFilters.source !== 'all' && c.source !== colFilters.source) return false
+      if (colFilters.dateFrom && new Date(c.created_at) < new Date(colFilters.dateFrom)) return false
+      if (colFilters.status !== 'all') {
+        const s = getMembershipStatus(c.groups)
+        if (colFilters.status !== s) return false
+      }
+      return true
+    })
+    if (colFilters.nameSort) {
+      result.sort((a, b) => {
+        const an = `${a.first_name} ${a.last_name}`.toLowerCase()
+        const bn = `${b.first_name} ${b.last_name}`.toLowerCase()
+        return colFilters.nameSort === 'asc' ? an.localeCompare(bn) : bn.localeCompare(an)
+      })
     }
-    return true
-  })
+    return result
+  })()
 
   const allFilteredSelected = filtered.length > 0 && filtered.every((c) => selectedIds.has(c.id))
   const someFilteredSelected = filtered.some((c) => selectedIds.has(c.id))
@@ -497,7 +510,7 @@ export function ContactsManager({ initialContacts }: Props) {
         </div>
         {hasColFilters && (
           <button
-            onClick={() => setColFilters({ name: '', email: '', phone: '', group: 'all', source: 'all', dateFrom: '', status: 'all' })}
+            onClick={() => setColFilters({ nameSort: '', email: '', phone: '', group: 'all', source: 'all', dateFrom: '', status: 'all' })}
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-white/50 border border-white/10 hover:border-white/25 hover:text-white/80 transition-colors"
           >
             <X size={12} />Clear filters
@@ -590,10 +603,18 @@ export function ContactsManager({ initialContacts }: Props) {
               {/* Column filters */}
               <tr className="border-b border-white/[0.08] bg-[#0d0d0d]">
                 <th className="pl-6 pr-2 py-2" />
-                {/* Name */}
+                {/* Name sort */}
                 <th className="px-3 py-2">
-                  <input value={colFilters.name} onChange={(e) => setCol('name', e.target.value)} placeholder="Filter…"
-                    className="w-full px-2 py-1 rounded bg-[#111] border border-white/[0.07] text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-[#967705]/40" />
+                  <button
+                    onClick={cycleNameSort}
+                    className={`flex items-center gap-1 px-2 py-1 rounded border text-xs transition-colors w-full justify-center ${
+                      colFilters.nameSort
+                        ? 'bg-[#967705]/15 border-[#967705]/40 text-[#c9a70a]'
+                        : 'bg-[#111] border-white/[0.07] text-white/30 hover:text-white/60'
+                    }`}
+                  >
+                    {colFilters.nameSort === 'asc' ? 'A → Z' : colFilters.nameSort === 'desc' ? 'Z → A' : 'A – Z'}
+                  </button>
                 </th>
                 {/* Email */}
                 <th className="px-3 py-2">
