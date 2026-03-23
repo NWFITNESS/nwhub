@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   Star, Send, RefreshCw, CheckCircle, AlertCircle,
   ChevronDown, ChevronUp, Pause, Play, Zap, Users,
   MessageSquare, ThumbsUp, XCircle, Clock,
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { format, formatDistanceToNow } from 'date-fns'
 import type { ReviewRequest, ReviewSettings } from '@/lib/types'
@@ -118,6 +119,7 @@ interface Props {
 }
 
 export function ReviewsDashboard({ initialRequests, initialSettings, initialContacts }: Props) {
+  const router = useRouter()
   const [requests, setRequests]   = useState<ReviewRequest[]>(initialRequests)
   const [settings, setSettings]   = useState<ReviewSettings>(initialSettings)
   const [settingsOpen, setSettingsOpen] = useState(!initialSettings.google_place_id)
@@ -136,6 +138,13 @@ export function ReviewsDashboard({ initialRequests, initialSettings, initialCont
     return initialContacts.map((c) => ({ ...c, request: map[c.id] ?? null }))
   }
   const [queue, setQueue] = useState<QueueContact[]>(() => buildQueue(initialRequests))
+
+  // Sync state when the server component re-fetches fresh data (after router.refresh())
+  useEffect(() => {
+    setRequests(initialRequests)
+    setQueue(buildQueue(initialRequests))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialRequests])
 
   // Stats
   const totalSent     = requests.filter((r) => r.messages_sent >= 1).length
@@ -206,11 +215,7 @@ export function ReviewsDashboard({ initialRequests, initialSettings, initialCont
     if (!res.ok) { showToast(data.error ?? 'Run failed', false); return }
     const errPart = data.errors > 0 ? `, ${data.errors} failed` : ''
     showToast(`${data.sent} sent, ${data.skipped} skipped${errPart}`, data.errors === 0)
-    const fresh = await fetch('/api/reviews/requests').then((r) => r.json())
-    if (Array.isArray(fresh)) {
-      setRequests(fresh)
-      setQueue(buildQueue(fresh))
-    }
+    router.refresh()
   }
 
   async function handleCheck() {
@@ -221,11 +226,7 @@ export function ReviewsDashboard({ initialRequests, initialSettings, initialCont
     if (!res.ok) { showToast(data.error ?? 'Check failed', false); return }
     setCheckResult(data)
     showToast(`${data.new_detected} new review${data.new_detected !== 1 ? 's' : ''} detected`)
-    const fresh = await fetch('/api/reviews/requests').then((r) => r.json())
-    if (Array.isArray(fresh)) {
-      setRequests(fresh)
-      setQueue(buildQueue(fresh))
-    }
+    router.refresh()
   }
 
   async function handleSaveSettings() {
