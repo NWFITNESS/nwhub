@@ -43,11 +43,10 @@ export async function POST(req: NextRequest) {
     ? process.env.TWILIO_REVIEW_FOLLOWUP_SID
     : settings.reminder_content_sid
 
-  // Get all active contacts with phones
+  // Get all contacts with phones
   const { data: contacts } = await supabase
     .from('contacts')
     .select('id, first_name, phone, created_at')
-    .eq('status', 'active')
     .not('phone', 'is', null)
 
   // Get all existing review requests
