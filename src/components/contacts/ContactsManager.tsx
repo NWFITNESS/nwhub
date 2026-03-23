@@ -229,6 +229,8 @@ export function ContactsManager({ initialContacts }: Props) {
   const [showNewGroupInput, setShowNewGroupInput] = useState(false)
   const [newGroupInput, setNewGroupInput]     = useState('')
   const [bulkAssigning, setBulkAssigning]     = useState(false)
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false)
+  const [bulkDeleting, setBulkDeleting]       = useState(false)
 
   // Derived
   const allGroups = Array.from(new Set(contacts.flatMap((c) => c.groups))).sort()
@@ -261,6 +263,23 @@ export function ContactsManager({ initialContacts }: Props) {
     } else {
       setSelectedIds((prev) => { const next = new Set(prev); filtered.forEach((c) => next.add(c.id)); return next })
     }
+  }
+
+  async function handleBulkDelete() {
+    if (!selectedIds.size) return
+    setBulkDeleting(true)
+    const ids = Array.from(selectedIds)
+    const res = await fetch('/api/contacts/bulk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids, action: 'delete' }),
+    })
+    if (res.ok) {
+      setContacts((prev) => prev.filter((c) => !selectedIds.has(c.id)))
+      setSelectedIds(new Set())
+    }
+    setBulkDeleting(false)
+    setBulkDeleteConfirm(false)
   }
 
   async function handleBulkAddGroup(group: string) {
@@ -498,6 +517,13 @@ export function ContactsManager({ initialContacts }: Props) {
             </button>
           )}
           {bulkAssigning && <span className="text-xs text-white/30 animate-pulse ml-1">Saving…</span>}
+          <div className="h-4 w-px bg-white/[0.12] mx-0.5" />
+          <button
+            onClick={() => setBulkDeleteConfirm(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs text-red-400 border border-red-500/25 hover:bg-red-500/15 transition-colors"
+          >
+            <Trash2 size={11} />Delete {selectedIds.size}
+          </button>
         </div>
       )}
 
@@ -789,6 +815,17 @@ export function ContactsManager({ initialContacts }: Props) {
         message={`Delete ${deleteTarget?.first_name} ${deleteTarget?.last_name}? This cannot be undone.`}
         confirmLabel="Delete"
         loading={deleting}
+      />
+
+      {/* Bulk delete confirm */}
+      <ConfirmModal
+        open={bulkDeleteConfirm}
+        onClose={() => setBulkDeleteConfirm(false)}
+        onConfirm={handleBulkDelete}
+        title="Delete contacts"
+        message={`Permanently delete ${selectedIds.size} contact${selectedIds.size !== 1 ? 's' : ''}? This cannot be undone.`}
+        confirmLabel={`Delete ${selectedIds.size}`}
+        loading={bulkDeleting}
       />
     </div>
   )

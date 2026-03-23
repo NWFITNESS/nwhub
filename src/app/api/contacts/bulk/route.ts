@@ -5,8 +5,14 @@ export async function POST(req: NextRequest) {
   const supabase = createAdminClient()
   const { ids, action, group } = await req.json()
 
-  if (!ids?.length || !action || !group) {
+  if (!ids?.length || !action) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+  }
+
+  if (action === 'delete') {
+    const { error } = await supabase.from('contacts').delete().in('id', ids)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ deleted: ids.length })
   }
 
   if (action === 'add_group') {
