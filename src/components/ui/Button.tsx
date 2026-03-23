@@ -12,10 +12,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantStyles: Record<Variant, string> = {
-  primary: 'bg-[#967705] hover:bg-[#b08e06] text-black font-semibold tracking-wide hover:shadow-[0_0_28px_rgba(150,119,5,0.4)] active:scale-[0.98]',
-  secondary: 'bg-[#1e1e1e] hover:bg-[#2a2a2a] text-white border border-white/10 active:scale-[0.98]',
-  ghost: 'hover:bg-white/5 text-white/70 hover:text-white active:scale-[0.98]',
-  destructive: 'bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/30 active:scale-[0.98]',
+  primary: 'bg-gradient-to-br from-[#f2ca50] to-[#d4af37] hover:from-[#f5d060] hover:to-[#dbb93a] text-[#3c2f00] font-semibold tracking-wide hover:shadow-[0_0_24px_rgba(212,175,55,0.4)] active:scale-[0.98]',
+  secondary: 'bg-[#2a2a2a] hover:bg-[#353534] text-[#e5e2e1] border border-[#4d4635]/30 hover:border-[#4d4635]/60 active:scale-[0.98]',
+  ghost: 'hover:bg-[#2a2a2a] text-[#d0c5af]/60 hover:text-[#e5e2e1] active:scale-[0.98]',
+  destructive: 'bg-red-600/15 hover:bg-red-600/25 text-red-400 border border-red-600/25 active:scale-[0.98]',
 }
 
 const sizeStyles: Record<Size, string> = {

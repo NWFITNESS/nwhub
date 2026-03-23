@@ -5,6 +5,7 @@
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
   --font-sans: var(--font-league-spartan), system-ui, sans-serif;
+  --font-body: var(--font-manrope), system-ui, sans-serif;
 }
 
 @keyframes accordion-down {
@@ -36,22 +37,28 @@
 }
 
 :root {
-  --bg-base: #0a0a0a;
-  --bg-surface: #111111;
-  --bg-card: #161616;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(255, 255, 255, 0.16);
-  --gold: #967705;
-  --gold-bright: #c9a70a;
-  --text: #ffffff;
-  --text-muted: rgba(255, 255, 255, 0.5);
-  --text-subtle: rgba(255, 255, 255, 0.3);
+  /* ── Gilded Foundry palette ─────────────────────────────── */
+  --bg-base: #131313;
+  --bg-surface: #1c1b1b;
+  --bg-card: #201f1f;
+  --bg-card-high: #2a2a2a;
+  --bg-card-highest: #353534;
+  --border: rgba(77, 70, 53, 0.28);
+  --border-hover: rgba(77, 70, 53, 0.55);
+  --gold: #d4af37;
+  --gold-bright: #f2ca50;
+  --gold-dim: #e9c349;
+  --outline-variant: #4d4635;
+  --text: #e5e2e1;
+  --text-muted: #d0c5af;
+  --text-subtle: rgba(208, 197, 175, 0.5);
   --danger: #ef4444;
   --success: #22c55e;
   --info: #3b82f6;
-  --gold-glow: 0 0 24px rgba(150, 119, 5, 0.35);
-  --card-inset: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  --sidebar-w: 20rem;
+  --gold-glow: 0 0 28px rgba(212, 175, 55, 0.4);
+  --gold-inset-glow: inset 0 0 8px rgba(212, 175, 55, 0.12);
+  --card-inset: inset 0 1px 0 rgba(212, 175, 55, 0.06);
+  --sidebar-w: 17rem;
 }
 
 * {
@@ -68,15 +75,25 @@ html {
 body {
   background-color: transparent;
   color: var(--text);
-  font-family: var(--font-league-spartan), system-ui, sans-serif;
+  font-family: var(--font-manrope), var(--font-league-spartan), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
+/* Utility: use Manrope for body content areas */
+.font-body {
+  font-family: var(--font-manrope), system-ui, sans-serif;
+}
 
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: var(--bg-surface); }
-::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(150, 119, 5, 0.4); }
+/* Utility: League Spartan for headlines */
+.font-headline {
+  font-family: var(--font-league-spartan), system-ui, sans-serif;
+}
+
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(77, 70, 53, 0.5); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.4); }
 
 /* ─── Editor canvas scrollbar — thick and always visible ──── */
 #editor-canvas,
@@ -93,7 +110,7 @@ body {
 #editor-canvas::-webkit-scrollbar-thumb:hover,
 .editor-scroll-container::-webkit-scrollbar-thumb:hover { background: #b08e06; }
 
-.gold-glow { box-shadow: 0 0 28px rgba(150, 119, 5, 0.35); }
+.gold-glow { box-shadow: 0 0 28px rgba(212, 175, 55, 0.4); }
 
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 

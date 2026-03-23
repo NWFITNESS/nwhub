@@ -1,7 +1,7 @@
 import { InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes, forwardRef } from 'react'
 import { ChevronDown } from 'lucide-react'
 
-const baseClass = 'w-full bg-[#111111] border border-white/10 rounded-lg px-3 py-2.5 text-[15px] text-white placeholder:text-white/30 focus:outline-none focus:border-[#967705] transition-colors'
+const baseClass = 'w-full bg-[#1c1b1b] border border-[#4d4635]/30 rounded-lg px-3 py-2.5 text-[15px] text-[#e5e2e1] placeholder:text-[#d0c5af]/30 focus:outline-none focus:border-[#d4af37]/60 focus:bg-[#201f1f] transition-colors'
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   ({ className = '', ...props }, ref) => (
@@ -38,7 +38,7 @@ Select.displayName = 'Select'
 
 interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {}
 export function Label({ className = '', ...props }: LabelProps) {
-  return <label className={`block text-sm font-medium text-white/60 mb-1.5 ${className}`} {...props} />
+  return <label className={`block text-sm font-medium text-[#d0c5af]/70 mb-1.5 ${className}`} {...props} />
 }
 
 interface FieldProps {

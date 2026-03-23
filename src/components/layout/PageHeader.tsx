@@ -10,14 +10,17 @@ export function PageHeader({ title, description, actions, label = 'Northern Warr
   return (
     <div className="flex items-start justify-between gap-6">
       <div>
-        <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.15em] mb-1">
+        <p className="text-[10px] font-semibold text-[#d4af37]/70 uppercase tracking-[0.2em] mb-1.5">
           {label}
         </p>
-        <h1 className="text-3xl font-bold text-[#F0F0F0]" style={{ fontFamily: 'Rajdhani' }}>
+        <h1
+          className="text-3xl font-bold text-[#e5e2e1] leading-tight"
+          style={{ fontFamily: 'var(--font-league-spartan), system-ui, sans-serif' }}
+        >
           {title}
         </h1>
         {description && (
-          <p className="text-sm text-white/40 mt-1">{description}</p>
+          <p className="text-sm text-[#d0c5af]/50 mt-1.5 font-body">{description}</p>
         )}
       </div>
       {actions && (

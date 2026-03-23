@@ -9,10 +9,8 @@ import {
   PenNavIcon,
   ImageNavIcon,
   MailNavIcon,
-  ChatNavIcon,
   UsersNavIcon,
   BabyNavIcon,
-  StarNavIcon,
   BotNavIcon,
   MailchimpNavIcon,
   SettingsNavIcon,
@@ -102,7 +100,6 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onN
     router.push('/login')
   }
 
-  // Determine which accordion groups should be open by default (those containing the active route)
   const defaultOpenGroups = navGroups
     .filter((group) =>
       group.items.some(({ href }) =>
@@ -114,66 +111,73 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onN
   const overviewActive = pathname === '/'
 
   return (
-    <aside
-      className="h-full border-r border-white/[0.08] flex flex-col overflow-hidden"
-      style={{ background: 'linear-gradient(180deg, #131313 0%, #0d0d0d 100%)' }}
-    >
-      {/* Logo */}
-      <div className="relative px-5 pt-7 pb-6 border-b border-[#967705]/20 flex flex-col items-center gap-3 text-center">
+    <aside className="h-full flex flex-col overflow-hidden bg-[#1c1b1b]">
+      {/* ── Header ──────────────────────────────────────────── */}
+      <div className="relative px-5 pt-6 pb-5 border-b border-[#4d4635]/20">
         {onToggle && (
           <button
             onClick={onToggle}
             aria-label="Close sidebar"
-            className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-md text-white/25 hover:text-white/60 hover:bg-white/[0.06] transition-colors"
+            className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-md text-[#d0c5af]/40 hover:text-[#f2ca50] hover:bg-[#2a2a2a] transition-all"
           >
-            <PanelCloseNavIcon size={15} />
+            <PanelCloseNavIcon size={14} />
           </button>
         )}
-        <div className="relative">
-          <div
-            className="absolute -inset-4 rounded-full"
-            style={{ background: 'radial-gradient(circle, rgba(150,119,5,0.25), transparent 70%)' }}
-          />
-          <img src="/nw-logo.svg" alt="NW" className="w-28 h-28 object-contain relative" />
+        <div className="flex items-center gap-3 mb-2">
+          <div className="relative flex-shrink-0">
+            <div
+              className="absolute -inset-2 rounded-full pointer-events-none"
+              style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.18), transparent 70%)' }}
+            />
+            <img src="/nw-logo.svg" alt="NW" className="w-10 h-10 object-contain relative" />
+          </div>
+          <div className="min-w-0">
+            <p
+              className="text-[#d4af37] font-bold uppercase tracking-widest text-base leading-tight"
+              style={{ fontFamily: 'var(--font-league-spartan), system-ui, sans-serif' }}
+            >
+              Northern Warrior
+            </p>
+            <p className="text-[#f2ca50] text-sm font-semibold leading-tight" style={{ fontFamily: 'var(--font-league-spartan), system-ui, sans-serif' }}>
+              Hub
+            </p>
+          </div>
         </div>
-        <div className="leading-tight">
-          <p className="text-xl font-bold text-white tracking-tight">Northern Warrior</p>
-          <p className="text-lg font-semibold text-[#c9a70a]">Hub</p>
-          <span className="inline-block mt-1.5 text-[13px] uppercase tracking-[0.25em] text-white/25 bg-white/[0.04] border border-white/[0.07] px-2 py-0.5 rounded-full">
-            Admin Panel
-          </span>
-        </div>
+        <span className="inline-block text-[10px] uppercase tracking-[0.22em] text-[#d0c5af]/50 font-medium">
+          Admin Panel
+        </span>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-5 overflow-y-auto space-y-3">
-        {/* Overview — standalone link */}
+      {/* ── Navigation ──────────────────────────────────────── */}
+      <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-1.5">
+        {/* Overview */}
         <Link
           href="/"
           onClick={onNavigate}
           className={cn(
-            'flex items-center gap-3 px-3 py-3 rounded-lg text-base transition-colors group relative border',
+            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-[15px] font-medium transition-all duration-200 group relative border',
             overviewActive
-              ? 'bg-gradient-to-r from-[#967705]/15 to-transparent text-[#c9a70a] border-[#967705]/25 shadow-[inset_0_1px_0_rgba(150,119,5,0.15)]'
-              : 'text-white/55 hover:text-white hover:bg-white/[0.05] border-transparent'
+              ? 'bg-[#2a2a2a] text-[#d4af37] border-[#4d4635]/30 shadow-[inset_0_0_8px_rgba(212,175,55,0.1)] translate-x-0.5'
+              : 'text-[#d0c5af] hover:bg-[#2a2a2a] hover:text-[#f2ca50] border-transparent hover:translate-x-1'
           )}
         >
-          <DashboardNavIcon size={20} className="flex-shrink-0" />
+          <DashboardNavIcon size={17} className="flex-shrink-0" />
           <span className="flex-1">Overview</span>
+          {overviewActive && <span className="w-1 h-1 rounded-full bg-[#f2ca50] flex-shrink-0" />}
         </Link>
 
-        {/* Financials — standalone link */}
+        {/* Financials */}
         <Link
           href="/financials"
           onClick={onNavigate}
           className={cn(
-            'flex items-center gap-3 px-3 py-3 rounded-lg text-base transition-colors group relative border',
+            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-[15px] font-medium transition-all duration-200 group relative border',
             pathname.startsWith('/financials')
-              ? 'bg-gradient-to-r from-[#967705]/15 to-transparent text-[#c9a70a] border-[#967705]/25 shadow-[inset_0_1px_0_rgba(150,119,5,0.15)]'
-              : 'text-white/55 hover:text-white hover:bg-white/[0.05] border-transparent'
+              ? 'bg-[#2a2a2a] text-[#d4af37] border-[#4d4635]/30 shadow-[inset_0_0_8px_rgba(212,175,55,0.1)] translate-x-0.5'
+              : 'text-[#d0c5af] hover:bg-[#2a2a2a] hover:text-[#f2ca50] border-transparent hover:translate-x-1'
           )}
         >
-          <PoundSterling size={20} className="flex-shrink-0" />
+          <PoundSterling size={17} className="flex-shrink-0" />
           <span className="flex-1">Financials</span>
         </Link>
 
@@ -181,15 +185,13 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onN
         <Accordion
           type="multiple"
           defaultValue={defaultOpenGroups.length > 0 ? defaultOpenGroups : ['content']}
-          className="w-full -space-y-px"
+          className="w-full space-y-1"
         >
           {navGroups.map((group, idx) => {
             const GroupIcon = group.icon
             const groupHasActive = group.items.some(({ href }) =>
               href === '/' ? pathname === '/' : pathname.startsWith(href)
             )
-            const isFirst = idx === 0
-            const isLast = idx === navGroups.length - 1
             const isContentGroup = group.value === 'content'
 
             return (
@@ -197,39 +199,40 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onN
                 key={group.value}
                 value={group.value}
                 className={cn(
-                  'border border-white/[0.08] bg-[#161616]',
-                  isFirst && 'rounded-t-lg',
-                  isLast && 'rounded-b-lg border-b',
+                  'border border-[#4d4635]/15 bg-[#1c1b1b] rounded-lg overflow-hidden',
                   isContentGroup && 'hidden md:block',
                 )}
               >
                 <AccordionTrigger
                   className={cn(
-                    'px-3 hover:no-underline hover:bg-white/[0.03] rounded-[inherit] transition-colors',
-                    groupHasActive && 'text-[#c9a70a]'
+                    'px-3 py-2.5 hover:no-underline hover:bg-[#2a2a2a] transition-all duration-200 rounded-t-lg',
+                    groupHasActive && 'text-[#d4af37]'
                   )}
                 >
                   <div className="flex items-center gap-3">
                     <div
                       className={cn(
-                        'p-2.5 rounded-xl',
+                        'p-2 rounded-lg',
                         groupHasActive
-                          ? 'bg-[#967705]/20 text-[#c9a70a]'
-                          : 'bg-[#967705]/10 text-[#967705]'
+                          ? 'bg-[#d4af37]/20 text-[#f2ca50]'
+                          : 'bg-[#d4af37]/8 text-[#d0c5af]'
                       )}
                     >
-                      <GroupIcon size={19} />
+                      <GroupIcon size={15} />
                     </div>
                     <div className="flex flex-col items-start text-left">
-                      <span className={cn('text-[17px] font-semibold', groupHasActive ? 'text-[#c9a70a]' : 'text-white/80')}>
+                      <span className={cn(
+                        'text-[15px] font-semibold',
+                        groupHasActive ? 'text-[#d4af37]' : 'text-[#e5e2e1]'
+                      )}>
                         {group.label}
                       </span>
-                      <span className="text-[13px] text-white/35">{group.subtitle}</span>
+                      <span className="text-[11px] text-[#d0c5af]/45">{group.subtitle}</span>
                     </div>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="px-3 pb-3 pt-0">
-                  <div className="space-y-0.5">
+                <AccordionContent className="px-2 pb-2 pt-0">
+                  <div className="space-y-0.5 mt-0.5">
                     {group.items.map(({ label, href, icon: Icon, badge }) => {
                       const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
                       const showBadge = badge === 'contacts' && unreadCount > 0
@@ -239,17 +242,18 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onN
                           href={href}
                           onClick={onNavigate}
                           className={cn(
-                            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-[17px] transition-colors group relative border',
+                            'flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] font-medium transition-all duration-200 group relative border',
                             active
-                              ? 'bg-gradient-to-r from-[#967705]/15 to-transparent text-[#c9a70a] border-[#967705]/25 shadow-[inset_0_1px_0_rgba(150,119,5,0.15)]'
-                              : 'text-white/45 hover:text-white/80 hover:bg-white/[0.05] border-transparent'
+                              ? 'bg-[#2a2a2a] text-[#d4af37] border-[#4d4635]/30 shadow-[inset_0_0_8px_rgba(212,175,55,0.1)] translate-x-0.5'
+                              : 'text-[#d0c5af]/70 hover:text-[#f2ca50] hover:bg-[#2a2a2a] border-transparent hover:translate-x-1'
                           )}
                         >
-                          <Icon size={17} className="flex-shrink-0" />
+                          <Icon size={15} className="flex-shrink-0" />
                           <span className="flex-1">{label}</span>
                           {showBadge && (
                             <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
                           )}
+                          {active && <span className="w-1 h-1 rounded-full bg-[#f2ca50]/60 flex-shrink-0" />}
                         </Link>
                       )
                     })}
@@ -261,23 +265,26 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onN
         </Accordion>
       </nav>
 
-      {/* Footer */}
-      <div className="px-4 py-4 border-t border-white/[0.08]">
+      {/* ── User card footer ───────────────────────────────── */}
+      <div className="px-3 py-3 border-t border-[#4d4635]/20">
         {userEmail && (
-          <div className="flex items-center gap-2.5 px-1 mb-3">
-            <div className="w-10 h-10 rounded-full bg-[#967705]/20 border border-[#967705]/30 flex items-center justify-center flex-shrink-0">
-              <span className="text-base font-semibold text-[#c9a70a]">
+          <div className="flex items-center gap-2.5 p-3 bg-[#2a2a2a] rounded-xl mb-2 border border-[#4d4635]/15">
+            <div className="w-9 h-9 rounded-full bg-[#d4af37]/15 border border-[#d4af37]/25 flex items-center justify-center flex-shrink-0">
+              <span className="text-sm font-bold text-[#f2ca50]">
                 {userEmail[0]?.toUpperCase()}
               </span>
             </div>
-            <p className="text-sm text-white/40 truncate">{userEmail}</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-bold text-[#e5e2e1] truncate">{userEmail.split('@')[0]}</p>
+              <p className="text-[10px] text-[#d0c5af]/50 uppercase tracking-wider">Admin</p>
+            </div>
           </div>
         )}
         <button
           onClick={handleSignOut}
-          className="w-full flex items-center gap-2.5 px-3 py-3 rounded-lg text-[17px] text-white/40 hover:text-white/75 hover:bg-white/[0.05] transition-colors"
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[14px] text-[#d0c5af]/50 hover:text-[#f2ca50] hover:bg-[#2a2a2a] transition-all duration-200 hover:translate-x-0.5"
         >
-          <LogOutNavIcon size={17} className="flex-shrink-0" />
+          <LogOutNavIcon size={15} className="flex-shrink-0" />
           Sign out
         </button>
       </div>

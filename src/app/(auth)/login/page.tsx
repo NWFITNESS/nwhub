@@ -33,8 +33,8 @@ function Logo({ url, className = '' }: { url: string | null; className?: string 
     return <img src={url} alt="Northern Warrior" className={`object-contain ${className}`} />
   }
   return (
-    <div className={`bg-[#967705] flex items-center justify-center ${className}`}>
-      <span className="text-black font-bold text-2xl tracking-widest">NW</span>
+    <div className={`bg-[#d4af37] flex items-center justify-center ${className}`}>
+      <span className="text-[#3c2f00] font-bold text-2xl tracking-widest">NW</span>
     </div>
   )
 }
@@ -133,62 +133,72 @@ function LoginForm() {
   const isLocked = lockoutRemaining > 0
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex">
+    <div className="min-h-screen bg-[#131313] flex">
       {/* ── Left panel — branding ─────────────────────────────────── */}
-      <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] relative flex-col justify-between p-12 overflow-hidden">
-        {/* Decorative background */}
+      <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] relative flex-col justify-between p-12 overflow-hidden bg-[#1c1b1b] border-r border-[#4d4635]/20">
+        {/* Warm radial glow */}
         <div
-          className="absolute inset-0"
-          style={{
-            background: 'radial-gradient(ellipse 80% 60% at 30% 50%, rgba(150,119,5,0.12) 0%, transparent 70%)',
-          }}
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse 70% 55% at 35% 55%, rgba(212,175,55,0.10) 0%, transparent 70%)' }}
         />
-        {/* Grid lines */}
+        {/* Subtle grid */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            backgroundImage: `linear-gradient(rgba(150,119,5,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(150,119,5,0.06) 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(rgba(77,70,53,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(77,70,53,0.12) 1px, transparent 1px)`,
             backgroundSize: '80px 80px',
           }}
         />
-        {/* Decorative diagonal lines */}
+        {/* Decorative lines */}
         <svg
-          className="absolute right-0 top-0 h-full w-1/2 opacity-10"
+          className="absolute right-0 top-0 h-full w-1/2 opacity-[0.07]"
           viewBox="0 0 400 800"
           fill="none"
           preserveAspectRatio="xMidYMid slice"
         >
-          <line x1="400" y1="0" x2="0" y2="400" stroke="#c9a70a" strokeWidth="0.5" />
-          <line x1="400" y1="100" x2="100" y2="400" stroke="#c9a70a" strokeWidth="0.5" />
-          <line x1="400" y1="200" x2="200" y2="400" stroke="#c9a70a" strokeWidth="0.5" />
-          <line x1="400" y1="300" x2="0" y2="700" stroke="#c9a70a" strokeWidth="0.5" />
-          <line x1="400" y1="400" x2="0" y2="800" stroke="#c9a70a" strokeWidth="0.5" />
-          <line x1="300" y1="0" x2="0" y2="300" stroke="#c9a70a" strokeWidth="0.5" />
-          <line x1="200" y1="0" x2="0" y2="200" stroke="#c9a70a" strokeWidth="0.5" />
-          <circle cx="200" cy="400" r="120" stroke="#c9a70a" strokeWidth="0.5" fill="none" />
-          <circle cx="200" cy="400" r="200" stroke="#c9a70a" strokeWidth="0.3" fill="none" />
+          <line x1="400" y1="0" x2="0" y2="400" stroke="#d4af37" strokeWidth="0.8" />
+          <line x1="400" y1="150" x2="150" y2="400" stroke="#d4af37" strokeWidth="0.8" />
+          <line x1="400" y1="300" x2="0" y2="700" stroke="#d4af37" strokeWidth="0.8" />
+          <line x1="300" y1="0" x2="0" y2="300" stroke="#d4af37" strokeWidth="0.8" />
+          <circle cx="200" cy="420" r="130" stroke="#d4af37" strokeWidth="0.6" fill="none" />
+          <circle cx="200" cy="420" r="210" stroke="#d4af37" strokeWidth="0.4" fill="none" />
         </svg>
 
         {/* Logo */}
-        <div className="relative">
-          <Logo url={logoUrl} className="h-20 w-auto" />
+        <div className="relative flex items-center gap-4">
+          <div className="relative">
+            <div
+              className="absolute -inset-3 rounded-full pointer-events-none"
+              style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.2), transparent 70%)' }}
+            />
+            <Logo url={logoUrl} className="h-14 w-auto relative" />
+          </div>
+          <div>
+            <p
+              className="text-[#d4af37] font-bold uppercase tracking-widest text-lg leading-tight"
+              style={{ fontFamily: 'var(--font-league-spartan), system-ui, sans-serif' }}
+            >
+              Northern Warrior
+            </p>
+            <p className="text-[10px] text-[#d0c5af]/50 uppercase tracking-[0.2em] font-medium">Admin Panel</p>
+          </div>
         </div>
 
         {/* Centre content */}
         <div className="relative">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#967705]/40 bg-[#967705]/10 mb-6">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#c9a70a] animate-pulse" />
-            <span className="text-[#c9a70a] text-xs font-medium tracking-wide">Secure Admin Access</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#d4af37]/30 bg-[#d4af37]/8 mb-6">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#f2ca50] animate-pulse" />
+            <span className="text-[#f2ca50] text-xs font-medium tracking-wide">Secure Admin Access</span>
           </div>
           <h1
-            className="text-4xl xl:text-5xl font-bold text-white leading-tight mb-4"
+            className="text-4xl xl:text-5xl font-bold text-[#e5e2e1] leading-tight mb-4"
             style={{ fontFamily: 'var(--font-league-spartan), system-ui, sans-serif' }}
           >
             Manage your
             <br />
-            <span style={{ color: '#c9a70a' }}>gym operations</span>
+            <span className="text-[#f2ca50]">gym operations</span>
           </h1>
-          <p className="text-white/40 text-base leading-relaxed max-w-sm">
+          <p className="text-[#d0c5af]/45 text-base leading-relaxed max-w-sm font-body">
             Members, finances, communications and settings — all in one place. Built for Northern Warrior.
           </p>
         </div>
@@ -201,42 +211,53 @@ function LoginForm() {
             { label: 'Security', value: 'End-to-end' },
           ].map((item) => (
             <div key={item.label}>
-              <p className="text-[#c9a70a] text-sm font-semibold">{item.value}</p>
-              <p className="text-white/30 text-xs mt-0.5">{item.label}</p>
+              <p className="text-[#f2ca50] text-sm font-semibold">{item.value}</p>
+              <p className="text-[#d0c5af]/35 text-xs mt-0.5">{item.label}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* ── Right panel — form ────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-10">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-10 bg-[#131313]">
         {/* Mobile logo */}
-        <div className="lg:hidden mb-10">
-          <Logo url={logoUrl} className="h-16 w-auto" />
+        <div className="lg:hidden mb-10 flex items-center gap-3">
+          <Logo url={logoUrl} className="h-12 w-auto" />
+          <p
+            className="text-[#d4af37] font-bold uppercase tracking-widest text-lg"
+            style={{ fontFamily: 'var(--font-league-spartan), system-ui, sans-serif' }}
+          >
+            Northern Warrior
+          </p>
         </div>
 
         <div className="w-full max-w-sm">
           {/* Reset success banner */}
           {resetSuccess && (
-            <div className="flex items-center gap-3 mb-6 px-4 py-3 rounded-xl bg-green-500/10 border border-green-500/25 text-green-400 text-sm">
+            <div className="flex items-center gap-3 mb-6 px-4 py-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm">
               <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
               Password reset successfully. Please sign in.
             </div>
           )}
 
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-white mb-1.5">Welcome back</h2>
-            <p className="text-white/40 text-sm">Sign in to your admin account</p>
+            <h2
+              className="text-2xl font-bold text-[#e5e2e1] mb-1.5"
+              style={{ fontFamily: 'var(--font-league-spartan), system-ui, sans-serif' }}
+            >
+              Welcome back
+            </h2>
+            <p className="text-[#d0c5af]/45 text-sm font-body">Sign in to your admin account</p>
           </div>
 
           {/* Lockout state */}
           {isLocked ? (
-            <div className="bg-[#161616] border border-white/8 rounded-2xl p-6 text-center">
-              <div className="w-12 h-12 rounded-full bg-red-500/15 border border-red-500/25 flex items-center justify-center mx-auto mb-4">
+            <div className="bg-[#1c1b1b] border border-[#4d4635]/25 rounded-2xl p-6 text-center">
+              <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
                 <ShieldAlert className="w-5 h-5 text-red-400" />
               </div>
-              <p className="text-white font-semibold mb-1">Too many attempts</p>
-              <p className="text-white/40 text-sm mb-4">Please wait before trying again.</p>
+              <p className="text-[#e5e2e1] font-semibold mb-1">Too many attempts</p>
+              <p className="text-[#d0c5af]/40 text-sm mb-4 font-body">Please wait before trying again.</p>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/20">
                 <Lock className="w-3.5 h-3.5 text-red-400" />
                 <span className="text-red-400 font-mono text-sm font-semibold tabular-nums">
@@ -274,7 +295,7 @@ function LoginForm() {
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#d0c5af]/30 hover:text-[#d0c5af]/70 transition-colors"
                       tabIndex={-1}
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
@@ -285,7 +306,7 @@ function LoginForm() {
                 <div className="flex justify-end mt-1.5">
                   <Link
                     href="/forgot-password"
-                    className="text-xs text-white/35 hover:text-[#c9a70a] transition-colors"
+                    className="text-xs text-[#d0c5af]/35 hover:text-[#f2ca50] transition-colors"
                   >
                     Forgot password?
                   </Link>
@@ -293,7 +314,7 @@ function LoginForm() {
               </div>
 
               {error && (
-                <p className="text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">
+                <p className="text-sm text-red-400 bg-red-400/8 border border-red-400/20 rounded-lg px-3 py-2">
                   {error}
                 </p>
               )}
@@ -304,7 +325,7 @@ function LoginForm() {
             </form>
           )}
 
-          <p className="text-center text-xs text-white/20 mt-8">
+          <p className="text-center text-xs text-[#d0c5af]/20 mt-8">
             Northern Warrior Hub &mdash; Internal use only
           </p>
         </div>

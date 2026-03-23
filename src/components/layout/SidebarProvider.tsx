@@ -57,7 +57,7 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
 
       {/* ── Particle background ── */}
       <div className="fixed inset-0" style={{ zIndex: -1 }}>
-        <NeuralBackground color="#967705" trailOpacity={0.08} particleCount={450} speed={0.5} />
+        <NeuralBackground color="#d4af37" trailOpacity={0.06} particleCount={380} speed={0.4} />
       </div>
 
       {/* ── Desktop: invisible hover trigger zone on left edge ── */}
@@ -70,7 +70,7 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
       <aside
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`fixed top-0 left-0 h-full z-50 w-[var(--sidebar-w)] hidden md:block bg-gradient-to-b from-[#131313] to-[#0d0d0d] border-r border-white/[0.06] shadow-[4px_0_40px_rgba(0,0,0,0.6)] transition-transform duration-300 ease-in-out ${desktopOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed top-0 left-0 h-full z-50 w-[var(--sidebar-w)] hidden md:block bg-[#1c1b1b] border-r border-[#4d4635]/20 shadow-[4px_0_40px_rgba(0,0,0,0.5)] transition-transform duration-300 ease-in-out ${desktopOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <Sidebar
           open={true}
@@ -86,7 +86,7 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
       )}
 
       {/* ── Mobile drawer — always in DOM, CSS slide animation ── */}
-      <div className={`fixed inset-y-0 left-0 w-[280px] z-50 md:hidden bg-gradient-to-b from-[#131313] to-[#0d0d0d] border-r border-white/[0.06] shadow-2xl transition-transform duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`fixed inset-y-0 left-0 w-[280px] z-50 md:hidden bg-[#1c1b1b] border-r border-[#4d4635]/20 shadow-2xl transition-transform duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <Sidebar
           open={true}
           onToggle={() => setMobileMenuOpen(false)}
@@ -111,7 +111,7 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
 
           {/* Mobile topbar (hidden on desktop) */}
-          <div className="flex md:hidden items-center justify-between px-4 h-14 flex-shrink-0 bg-[#0d0d0d] border-b border-white/[0.06]">
+          <div className="flex md:hidden items-center justify-between px-4 h-14 flex-shrink-0 bg-[#131313] border-b border-[#4d4635]/20">
             <button
               onClick={() => setMobileMenuOpen((v) => !v)}
               className="w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/[0.06] transition-all"
