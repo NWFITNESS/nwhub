@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
   const supabase = createAdminClient()
   const now = new Date()
-  const results = { sent: 0, skipped: 0, errors: 0 }
+  const results: { sent: number; skipped: number; errors: number; lastError?: string } = { sent: 0, skipped: 0, errors: 0 }
 
   // Load settings
   const { data: settingsRow } = await supabase
@@ -87,10 +87,13 @@ export async function POST(req: NextRequest) {
     const sid = shouldSendFollowUp ? followupSid : templateSid
     if (!sid) { results.errors++; continue }
 
+    const fromWa = WHATSAPP_FROM?.startsWith('whatsapp:') ? WHATSAPP_FROM : `whatsapp:${WHATSAPP_FROM}`
+    const toWa   = contact.phone?.startsWith('whatsapp:') ? contact.phone : `whatsapp:${contact.phone}`
+
     try {
       await twilioClient.messages.create({
-        from: WHATSAPP_FROM,
-        to: `whatsapp:${contact.phone}`,
+        from: fromWa,
+        to: toWa,
         contentSid: sid,
         contentVariables: JSON.stringify({ '1': contact.first_name ?? '', '2': review_link }),
       })
@@ -109,8 +112,11 @@ export async function POST(req: NextRequest) {
 
       results.sent++
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e)
-      console.error('[reviews/automation] Send failed for', contact.id, msg)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const err = e as any
+      const detail = `code=${err?.code ?? '?'} ${err?.message ?? String(e)}${err?.moreInfo ? ' — ' + err.moreInfo : ''}`
+      console.error('[reviews/automation] Send failed for', contact.id, { to: toWa, from: fromWa, sid, detail })
+      results.lastError = detail
       results.errors++
     }
   }
