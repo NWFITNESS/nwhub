@@ -40,7 +40,6 @@ export default async function ReviewsPage() {
     supabase
       .from('contacts')
       .select('id, first_name, last_name, phone, created_at')
-      .eq('status', 'active')
       .not('phone', 'is', null)
       .order('created_at', { ascending: false }),
   ])

@@ -171,23 +171,26 @@ export function ReviewsDashboard({ initialRequests, initialSettings, initialCont
     setSendingId(null)
     if (res.ok) {
       const { type } = await res.json()
-      setQueue((prev) => prev.map((c) => {
-        if (c.id !== contact.id) return c
-        const newCount = (c.request?.messages_sent ?? 0) + 1
-        return {
-          ...c,
-          request: {
-            id: c.request?.id ?? '',
-            contact_id: c.id,
-            phone_number: c.phone,
-            messages_sent: newCount,
-            last_sent_at: new Date().toISOString(),
-            review_detected: c.request?.review_detected ?? false,
-            opted_out: false,
-            created_at: c.request?.created_at ?? new Date().toISOString(),
-          } as ReviewRequest,
-        }
-      }))
+      const newCount = (contact.request?.messages_sent ?? 0) + 1
+      const updatedRequest: ReviewRequest = {
+        id: contact.request?.id ?? '',
+        contact_id: contact.id,
+        phone_number: contact.phone,
+        messages_sent: newCount,
+        last_sent_at: new Date().toISOString(),
+        review_detected: contact.request?.review_detected ?? false,
+        opted_out: false,
+        created_at: contact.request?.created_at ?? new Date().toISOString(),
+      }
+      setQueue((prev) => prev.map((c) =>
+        c.id !== contact.id ? c : { ...c, request: updatedRequest }
+      ))
+      setRequests((prev) => {
+        const exists = prev.find((r) => r.contact_id === contact.id)
+        return exists
+          ? prev.map((r) => r.contact_id === contact.id ? updatedRequest : r)
+          : [...prev, updatedRequest]
+      })
       showToast(`${type === 'followup' ? 'Follow-up' : 'Review request'} sent to ${contact.first_name}`)
     } else {
       const d = await res.json()
