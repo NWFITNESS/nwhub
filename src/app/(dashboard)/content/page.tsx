@@ -17,6 +17,7 @@ const PAGES = [
   { slug: 'results',          label: 'Results'          },
   { slug: 'contact',          label: 'Contact'          },
   { slug: 'timetable',        label: 'Timetable'        },
+  { slug: 'blog',             label: 'Blog'             },
   { slug: 'membership-terms', label: 'Membership Terms' },
   { slug: 'global',           label: 'Global Settings'  },
 ]

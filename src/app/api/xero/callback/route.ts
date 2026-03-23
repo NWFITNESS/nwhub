@@ -1,5 +1,5 @@
 import { xero } from '@/lib/xero'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(req: NextRequest) {
@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     await xero.updateTenants()
     const tenantId = xero.tenants?.[0]?.tenantId ?? ''
 
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     await supabase.from('global_settings').upsert(
       { key: 'xero_tokens', value: JSON.stringify(tokenSet), updated_at: new Date().toISOString() },

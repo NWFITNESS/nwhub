@@ -15,8 +15,8 @@ description: >
 # NWHub & Northern Warrior — Design System & UX Standards
 
 This skill defines the complete design language for two connected projects:
-- **NWHub** — the admin panel (`nwhub` repo, runs on localhost:3000)
-- **Northern Warrior website** — the public site (`northernwarrior-v2` repo, runs on localhost:3001)
+- **NWHub** — the admin panel (`nwhub` repo, runs on localhost:3001)
+- **Northern Warrior website** — the public site (`northernwarrior-v2` repo, runs on localhost:3000)
 
 Always read this before touching any UI file. Follow every rule here unless the user explicitly overrides it.
 
@@ -76,20 +76,19 @@ The website uses the same gold tokens but on lighter section backgrounds where n
 
 ### Font Stack
 ```
-Primary:  'Inter', system-ui, sans-serif       (body, UI, labels)
-Display:  'Rajdhani', sans-serif               (NWHub headings, stats, section titles)
-Mono:     'JetBrains Mono', monospace          (code, API keys, env vars)
+Primary:  'League Spartan', system-ui, sans-serif  (body, UI, labels, headings, stats — everything)
+Mono:     'JetBrains Mono', monospace              (code, API keys, env vars)
 ```
 
 ### NWHub Type Scale
 ```
-Page title (h1):      Rajdhani, 700, 2rem,   #F0F0F0, tracking-wide uppercase
-Section heading (h2): Rajdhani, 600, 1.25rem, --gold-dim, tracking-wide uppercase
-Card heading (h3):    Inter,    600, 0.95rem, #F0F0F0
-Label / caption:      Inter,    500, 0.75rem, --text-muted, uppercase, tracking-wider
-Body:                 Inter,    400, 0.875rem, --text-muted
-Stat number:          Rajdhani, 700, 3rem,    #F0F0F0  (dashboard big numbers)
-Stat sub:             Inter,    400, 0.8rem,  --text-subtle
+Page title (h1):      League Spartan, 700, 2rem,   #F0F0F0, tracking-wide uppercase
+Section heading (h2): League Spartan, 600, 1.25rem, --gold-dim, tracking-wide uppercase
+Card heading (h3):    League Spartan, 600, 0.95rem, #F0F0F0
+Label / caption:      League Spartan, 500, 0.75rem, --text-muted, uppercase, tracking-wider
+Body:                 League Spartan, 400, 0.875rem, --text-muted
+Stat number:          League Spartan, 700, 3rem,    #F0F0F0  (dashboard big numbers)
+Stat sub:             League Spartan, 400, 0.8rem,  --text-subtle
 ```
 
 ### Rules
@@ -145,7 +144,7 @@ Used on Overview dashboard and section headers.
     </div>
   </div>
   <div>
-    <p className="text-5xl font-bold text-white" style={{ fontFamily: 'Rajdhani' }}>
+    <p className="text-5xl font-bold text-white" style={{ fontFamily: 'League Spartan' }}>
       {value}
     </p>
     {trend && (
@@ -421,7 +420,7 @@ export default function PageName() {
         <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.15em] mb-1">
           NORTHERN WARRIOR HUB
         </p>
-        <h1 className="text-3xl font-bold text-white" style={{ fontFamily: 'Rajdhani' }}>
+        <h1 className="text-3xl font-bold text-white" style={{ fontFamily: 'League Spartan' }}>
           Page Title
         </h1>
         <p className="text-sm text-white/40 mt-1">Page description</p>
@@ -462,7 +461,7 @@ The Overview page must include exactly:
 ```tsx
 <div>
   <p className="text-xs text-white/30 uppercase tracking-[0.15em]">ADMIN PANEL</p>
-  <h1 style={{ fontFamily: 'Rajdhani' }}>
+  <h1 style={{ fontFamily: 'League Spartan' }}>
     <span className="text-white font-bold text-4xl">Northern Warrior </span>
     <span className="text-[#C9A70A] font-bold text-4xl">Hub</span>
   </h1>
@@ -589,7 +588,6 @@ Success:         text-green-400 bg-green-500/10 border-green-500/20
 Warning:         text-amber-400 bg-amber-500/10 border-amber-500/20
 Danger:          text-red-400 bg-red-500/10 border-red-500/20
 Info:            text-blue-400 bg-blue-500/10 border-blue-500/20
-Font display:    fontFamily: 'Rajdhani'
-Font body:       fontFamily: 'Inter'
+Font (all):      fontFamily: 'League Spartan'
 Transition:      transition-all duration-200
 ```

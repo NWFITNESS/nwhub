@@ -19,6 +19,7 @@ const PAGE_LABELS: Record<string, string> = {
   team: 'The Team',
   contact: 'Contact',
   timetable: 'Timetable',
+  blog: 'Blog',
   'membership-terms': 'Membership Terms',
   global: 'Global Settings',
 }

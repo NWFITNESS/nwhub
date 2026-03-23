@@ -5,6 +5,12 @@
  */
 
 export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string, unknown>>> = {
+  blog: {
+    hero: {
+      heading: 'Northern Warrior Blog',
+      subtext: 'Training tips, nutrition advice, and community stories to help you reach your fitness goals',
+    },
+  },
   home: {
     hero: {
       kicker: 'Northern Warrior',
