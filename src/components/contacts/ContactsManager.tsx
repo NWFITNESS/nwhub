@@ -407,8 +407,10 @@ export function ContactsManager({ initialContacts }: Props) {
   async function handleDelete() {
     if (!deleteTarget) return
     setDeleting(true)
-    await fetch(`/api/contacts/${deleteTarget.id}`, { method: 'DELETE' })
-    setContacts((prev) => prev.filter((c) => c.id !== deleteTarget.id))
+    const res = await fetch(`/api/contacts/${deleteTarget.id}`, { method: 'DELETE' })
+    if (res.ok || res.status === 204) {
+      setContacts((prev) => prev.filter((c) => c.id !== deleteTarget.id))
+    }
     setDeleteTarget(null); setDeleting(false)
   }
 
