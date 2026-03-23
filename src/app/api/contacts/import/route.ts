@@ -49,7 +49,7 @@ function buildRows(input: InputRow[]) {
     const last_name  = c.last_name?.trim()  ?? ''
     const email      = c.email?.trim()      || null
     const rawPhone   = c.phone?.trim()      ?? ''
-    const groups     = c.groups ?? []
+    const groups     = (c.groups && c.groups.length > 0) ? c.groups : ['lead']
     const notes      = c.notes?.trim()      || null
 
     if (!first_name && !email && !rawPhone) {

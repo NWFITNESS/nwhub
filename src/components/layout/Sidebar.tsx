@@ -62,6 +62,7 @@ const navGroups: NavGroup[] = [
     icon: Users,
     items: [
       { label: 'Contacts', href: '/contacts', icon: UsersNavIcon },
+      { label: 'Leads', href: '/leads', icon: UsersNavIcon },
       { label: 'Enquiries', href: '/enquiries', icon: MailNavIcon, badge: 'contacts' as const },
       { label: 'Kids & Teens', href: '/kids', icon: BabyNavIcon },
       { label: 'Subscribers', href: '/email', icon: UsersNavIcon },

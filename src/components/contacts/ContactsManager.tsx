@@ -83,6 +83,27 @@ function autoMap(headers: string[]): Record<string, string> {
 }
 
 // ---------------------------------------------------------------------------
+// Membership status
+// ---------------------------------------------------------------------------
+function getMembershipStatus(groups: string[]): 'green' | 'amber' | 'red' {
+  const nonLead = groups.filter((g) => g.toLowerCase() !== 'lead')
+  if (nonLead.length === 0) return 'red'
+  const lower = nonLead.map((g) => g.toLowerCase())
+  const greenPatterns = ['unlimited', 'coach', 'out of hours', '2 sessions', '2x sessions', '2 sessions a week']
+  const amberPatterns = ['class pack', 'pack', 'drop in', 'drop-in', 'taster']
+  if (lower.some((g) => greenPatterns.some((p) => g.includes(p)))) return 'green'
+  if (lower.some((g) => amberPatterns.some((p) => g.includes(p)))) return 'amber'
+  return 'red'
+}
+
+function MembershipDot({ groups }: { groups: string[] }) {
+  const status = getMembershipStatus(groups)
+  const colourClass = status === 'green' ? 'bg-green-500' : status === 'amber' ? 'bg-amber-400' : 'bg-red-500'
+  const title = status === 'green' ? 'Active membership' : status === 'amber' ? 'Class pack' : 'No membership'
+  return <span className={`w-2.5 h-2.5 rounded-full inline-block ${colourClass}`} title={title} />
+}
+
+// ---------------------------------------------------------------------------
 // Source badge colours
 // ---------------------------------------------------------------------------
 const sourceBadge: Record<string, string> = {
@@ -544,14 +565,14 @@ export function ContactsManager({ initialContacts }: Props) {
                     className="accent-[#967705] w-4 h-4 cursor-pointer rounded"
                   />
                 </th>
-                {['Name', 'Email', 'Phone', 'Groups', 'Source', 'Added', ''].map((h) => (
+                {['Name', 'Email', 'Phone', 'Groups', 'Source', 'Added', 'Status', ''].map((h) => (
                   <th key={h} className="px-6 py-4 text-left text-xs font-medium text-white/40 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={8} className="px-6 py-12 text-center text-white/30">No contacts match your search</td></tr>
+                <tr><td colSpan={9} className="px-6 py-12 text-center text-white/30">No contacts match your search</td></tr>
               ) : filtered.map((c) => (
                 <tr key={c.id} className={`border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors ${selectedIds.has(c.id) ? 'bg-[#967705]/5' : ''}`}>
                   <td className="pl-6 pr-2 py-4">
@@ -581,6 +602,7 @@ export function ContactsManager({ initialContacts }: Props) {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-white/40 text-xs">{format(new Date(c.created_at), 'dd MMM yyyy')}</td>
+                  <td className="px-6 py-4"><MembershipDot groups={c.groups} /></td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-1">
                       <button onClick={() => openEdit(c)} className="p-1.5 rounded-md text-white/30 hover:text-white hover:bg-white/[0.07] transition-colors" aria-label="Edit">
