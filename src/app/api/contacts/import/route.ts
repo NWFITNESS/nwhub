@@ -114,7 +114,37 @@ export async function POST(req: NextRequest) {
 
   if (rows.length === 0) return NextResponse.json({ inserted: 0, errors })
 
-  const { data, error } = await supabase.from('contacts').insert(rows).select()
+  // Fetch existing emails and phones to deduplicate
+  const { data: existing } = await supabase
+    .from('contacts')
+    .select('email, phone')
+
+  const existingEmails = new Set(
+    (existing ?? []).map((c) => c.email?.toLowerCase()).filter(Boolean)
+  )
+  const existingPhones = new Set(
+    (existing ?? []).map((c) => c.phone).filter(Boolean)
+  )
+
+  const deduped: typeof rows = []
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i]
+    const email = (row.email as string | null)?.toLowerCase()
+    const phone = row.phone as string | null
+    if (email && existingEmails.has(email)) {
+      errors.push({ row: i + 2, reason: `Duplicate email "${row.email}" — skipped` })
+      continue
+    }
+    if (phone && existingPhones.has(phone)) {
+      errors.push({ row: i + 2, reason: `Duplicate phone "${phone}" — skipped` })
+      continue
+    }
+    deduped.push(row)
+  }
+
+  if (deduped.length === 0) return NextResponse.json({ inserted: 0, errors })
+
+  const { data, error } = await supabase.from('contacts').insert(deduped).select()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   // Sync phone numbers to sms_subscribers
