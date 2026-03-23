@@ -58,10 +58,7 @@ function buildRows(input: InputRow[]) {
     }
 
     const phone = rawPhone ? normaliseUKPhone(rawPhone) : null
-    if (rawPhone && !phone) {
-      errors.push({ row: rowNum, reason: `Invalid UK phone "${rawPhone}"` })
-      continue
-    }
+    // Non-UK numbers are silently dropped — contact still imported via email
 
     rows.push({ first_name, last_name, email, phone, groups, notes, source: 'import', status: 'active' })
   }
