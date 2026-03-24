@@ -1,34 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { TopBar } from '@/components/layout/TopBar'
-import { WebsiteVisitorsChart, type ChartDataPoint } from '@/components/dashboard/MemberGrowthChart'
-import Link from 'next/link'
-import {
-  Mail,
-  Users,
-  MessageSquare,
-  FileEdit,
-  CheckCircle2,
-  Circle,
-  LayoutTemplate,
-  Send,
-  Newspaper,
-  ArrowUpRight,
-  ArrowDownRight,
-} from 'lucide-react'
-import { XeroRevenueCard } from '@/components/dashboard/XeroRevenueCard'
+import { DashboardWidgetGrid, type DashboardData } from '@/components/widgets/DashboardWidgetGrid'
+import type { ChartDataPoint } from '@/components/dashboard/MemberGrowthChart'
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-function formatTimeAgo(dateStr: string) {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 60) return `${mins}m ago`
-  const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return `${hrs}h ago`
-  return `${Math.floor(hrs / 24)}d ago`
-}
 
 // Build hourly buckets for last 24 hours
 function buildHourlyVisitors(rows: Array<{ created_at: string }>): ChartDataPoint[] {
@@ -49,7 +26,6 @@ function buildHourlyVisitors(rows: Array<{ created_at: string }>): ChartDataPoin
   return buckets
 }
 
-// Build daily buckets for last N days
 function buildDailyVisitors(rows: Array<{ created_at: string }>, days: number): ChartDataPoint[] {
   const now = new Date()
   const buckets: ChartDataPoint[] = []
@@ -72,7 +48,6 @@ function buildDailyVisitors(rows: Array<{ created_at: string }>, days: number): 
   return buckets
 }
 
-// Build monthly buckets for last N months
 function buildMonthlyVisitors(rows: Array<{ created_at: string }>, months: number): ChartDataPoint[] {
   const now = new Date()
   const buckets: ChartDataPoint[] = []
@@ -89,44 +64,6 @@ function buildMonthlyVisitors(rows: Array<{ created_at: string }>, months: numbe
   }
   return buckets
 }
-
-// ---------------------------------------------------------------------------
-// Quick actions
-// ---------------------------------------------------------------------------
-
-const QUICK_ACTIONS: Array<{
-  icon: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>
-  title: string
-  desc: string
-  href: string
-  mobileHide?: boolean
-}> = [
-  {
-    icon: Mail,
-    title: 'Contacts & Enquiries',
-    desc: 'View inbound enquiries, track leads from the AI chat, and manage your contacts.',
-    href: '/contacts',
-  },
-  {
-    icon: LayoutTemplate,
-    title: 'Edit Website Content',
-    desc: 'Update page copy, hero sections, memberships, FAQs and more without touching code.',
-    href: '/content',
-    mobileHide: true,
-  },
-  {
-    icon: Newspaper,
-    title: 'Blog & Posts',
-    desc: 'Write and publish blog posts to keep members informed and improve SEO.',
-    href: '/blog',
-  },
-  {
-    icon: Send,
-    title: 'Email Campaigns',
-    desc: 'Send newsletters and campaigns to your subscriber list via Mailchimp.',
-    href: '/mailchimp',
-  },
-]
 
 // ---------------------------------------------------------------------------
 // Page
@@ -160,12 +97,14 @@ export default async function DashboardPage() {
     supabase.from('global_settings').select('*', { count: 'exact', head: true }),
     supabase.from('email_subscribers').select('*', { count: 'exact', head: true }),
     supabase.from('blog_posts').select('*', { count: 'exact', head: true }),
-    // Single query fetching last 12 months of page views — we slice client-side for 24h/7d/30d
     supabase
       .from('page_views')
       .select('created_at')
       .gte('created_at', new Date(new Date().setMonth(new Date().getMonth() - 11)).toISOString()),
   ])
+
+  // suppress unused variable warning — draftPosts is fetched but not displayed currently
+  void draftPosts
 
   const formattedDate = new Date().toLocaleDateString('en-GB', {
     weekday: 'long',
@@ -182,55 +121,30 @@ export default async function DashboardPage() {
     { label: 'Resend domain verified',                done: false },
     { label: 'WhatsApp number registered in Twilio',  done: false },
   ]
-  const doneCount = checklist.filter((i) => i.done).length
 
   const allVisitorRows = visitorRows1y ?? []
-  const data24h = buildHourlyVisitors(allVisitorRows)
-  const data7d  = buildDailyVisitors(allVisitorRows, 7)
-  const data30d = buildDailyVisitors(allVisitorRows, 30)
-  const data1y  = buildMonthlyVisitors(allVisitorRows, 12)
-
   const enquiriesAlert = (newContacts ?? 0) > 0
 
-  // Stat cards — exact order & icons from SKILL.md §9
-  const statCards = [
-    {
-      label:   'Total Members',
-      value:   membersTotal ?? 0,
-      icon:    Users,
-      iconBg:  'rgba(201,167,10,0.15)',
-      trend:   null as number | null,
-      alert:   false,
-      isCurrency: false,
-    },
-    {
-      label:   'Email Subscribers',
-      value:   subscribers ?? 0,
-      icon:    Mail,
-      iconBg:  'rgba(59,130,246,0.15)',
-      trend:   null as number | null,
-      alert:   false,
-      isCurrency: false,
-    },
-    {
-      label:   'Unread Enquiries',
-      value:   newContacts ?? 0,
-      icon:    MessageSquare,
-      iconBg:  enquiriesAlert ? 'rgba(239,68,68,0.15)' : 'rgba(201,167,10,0.15)',
-      trend:   null as number | null,
-      alert:   enquiriesAlert,
-      isCurrency: false,
-    },
-  ]
+  const data: DashboardData = {
+    membersTotal:    membersTotal    ?? 0,
+    subscribers:     subscribers    ?? 0,
+    newContacts:     newContacts     ?? 0,
+    enquiriesAlert,
+    data24h: buildHourlyVisitors(allVisitorRows),
+    data7d:  buildDailyVisitors(allVisitorRows, 7),
+    data30d: buildDailyVisitors(allVisitorRows, 30),
+    data1y:  buildMonthlyVisitors(allVisitorRows, 12),
+    recentEnquiries: (recentEnquiries ?? []) as DashboardData['recentEnquiries'],
+    checklist,
+  }
 
   return (
     <>
       <TopBar title="Overview" />
 
-      {/* SKILL.md §8 — page layout wrapper */}
       <div className="page-pad flex flex-col gap-4 @md/page:gap-6 py-4 @md/page:py-8 min-h-[calc(100vh-5rem)]">
 
-        {/* ── Section 1 — Greeting (SKILL.md §9) ── */}
+        {/* Greeting */}
         <div>
           <p className="text-xs text-white/30 uppercase tracking-[0.15em]">ADMIN PANEL</p>
           <h1 style={{ fontFamily: 'League Spartan' }} className="leading-tight mt-0.5">
@@ -240,212 +154,8 @@ export default async function DashboardPage() {
           <p className="text-white/30 text-sm mt-1">{formattedDate}</p>
         </div>
 
-        {/* ── Section 2 — Stat Cards (SKILL.md §4.1 + §9) ── */}
-        <div className="grid grid-cols-2 @md/page:grid-cols-4 gap-3 @md/page:gap-5">
-          {statCards.map((card) => {
-            const Icon = card.icon
-            return (
-              <div
-                key={card.label}
-                className="bg-[#161616] border border-white/[0.06] rounded-xl p-3 @md/page:p-6 min-h-[110px] @md/page:min-h-[130px] flex flex-col justify-between hover:border-[#967705]/30 transition-colors duration-200"
-              >
-                {/* Top row: label + icon */}
-                <div className="flex items-center justify-between gap-1">
-                  <p className="text-[10px] @md/page:text-xs font-semibold text-white/40 uppercase tracking-[0.08em] leading-tight">
-                    {card.label}
-                  </p>
-                  <div
-                    className="w-7 h-7 @md/page:w-9 @md/page:h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: card.iconBg }}
-                  >
-                    <Icon size={16} className="text-white/70" strokeWidth={1.75} />
-                  </div>
-                </div>
-
-                {/* Bottom: number + trend */}
-                <div>
-                  <p
-                    className="text-3xl @md/page:text-5xl font-bold text-[#F0F0F0]"
-                    style={{ fontFamily: 'League Spartan' }}
-                  >
-                    {card.isCurrency ? `£${card.value.toLocaleString()}` : card.value.toLocaleString()}
-                  </p>
-
-                  {card.alert ? (
-                    <p className="text-[10px] @md/page:text-xs mt-1 flex items-center gap-0.5 text-red-400">
-                      <ArrowUpRight size={10} />
-                      Needs attention
-                    </p>
-                  ) : card.trend !== null ? (
-                    <p className="text-[10px] @md/page:text-xs text-white/40 mt-1 flex items-center gap-0.5">
-                      {card.trend >= 0
-                        ? <ArrowUpRight size={10} className="text-green-500" />
-                        : <ArrowDownRight size={10} className="text-red-500" />}
-                      {Math.abs(card.trend)}% vs last month
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-            )
-          })}
-          {/* Xero revenue — client component, fetches from /api/xero/financials */}
-          <XeroRevenueCard />
-        </div>
-
-        {/* ── Section 3 — Website Visitors Chart (SKILL.md §5.1) ── */}
-        <WebsiteVisitorsChart data24h={data24h} data7d={data7d} data30d={data30d} data1y={data1y} />
-
-        {/* ── Section 4 — Two Columns (SKILL.md §8 — grid-cols-3) ── */}
-        <div className="grid grid-cols-1 @md/page:grid-cols-3 gap-5">
-
-          {/* Left col-span-2 — Recent Enquiries */}
-          <div className="@md/page:col-span-2 bg-[#161616] border border-white/[0.06] rounded-xl overflow-hidden flex flex-col">
-
-            {/* Section header (SKILL.md §4.3) */}
-            <div className="flex items-center justify-between px-4 @md/page:px-6 py-4 @md/page:py-5 border-b border-white/[0.06]">
-              <div>
-                <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.15em] mb-0.5">
-                  Inbound
-                </p>
-                <h3 className="text-[#F0F0F0] font-semibold">Recent Enquiries</h3>
-              </div>
-              <Link
-                href="/contacts"
-                className="text-xs font-semibold text-white/40 hover:text-[#C9A70A] transition-colors duration-200"
-              >
-                View all →
-              </Link>
-            </div>
-
-            {/* Content or empty state (SKILL.md §6) */}
-            {!recentEnquiries || recentEnquiries.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 gap-3 flex-1">
-                <div className="w-12 h-12 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
-                  <MessageSquare size={20} className="text-white/20" />
-                </div>
-                <p className="text-sm font-medium text-white/40">No enquiries yet</p>
-                <p className="text-xs text-white/20 text-center max-w-[240px]">
-                  New enquiries from the website will appear here
-                </p>
-              </div>
-            ) : (
-              <ul className="divide-y divide-white/[0.04] flex-1">
-                {recentEnquiries.map((e) => {
-                  const initials = e.name
-                    .split(' ')
-                    .map((n: string) => n[0])
-                    .slice(0, 2)
-                    .join('')
-                    .toUpperCase()
-                  const preview = e.message
-                    ? String(e.message).slice(0, 70) + (String(e.message).length > 70 ? '…' : '')
-                    : e.enquiry_type
-                  return (
-                    <li
-                      key={e.id}
-                      className="px-4 @md/page:px-6 py-3 @md/page:py-4 flex items-center gap-3 @md/page:gap-4 hover:bg-white/[0.02] transition-colors duration-200"
-                    >
-                      {/* Avatar */}
-                      <div className="w-9 h-9 rounded-full bg-[#967705]/15 border border-[#967705]/25 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-bold text-[#C9A70A]">{initials}</span>
-                      </div>
-
-                      {/* Name + preview */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[#F0F0F0] truncate">{e.name}</p>
-                        <p className="text-xs text-white/30 truncate mt-0.5">{preview}</p>
-                      </div>
-
-                      {/* Timestamp */}
-                      <span className="text-xs text-white/20 flex-shrink-0">
-                        {formatTimeAgo(e.created_at)}
-                      </span>
-                    </li>
-                  )
-                })}
-              </ul>
-            )}
-          </div>
-
-          {/* Right col-span-1 — Setup Checklist */}
-          <div className="bg-[#161616] border border-white/[0.06] rounded-xl p-4 @md/page:p-6 flex flex-col">
-
-            {/* Section header */}
-            <div className="flex items-center justify-between mb-1">
-              <div>
-                <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.15em] mb-0.5">
-                  Onboarding
-                </p>
-                <h3 className="text-[#F0F0F0] font-semibold">Setup Checklist</h3>
-              </div>
-              <span className="text-sm font-semibold text-[#C9A70A]">
-                {doneCount}/{checklist.length}
-              </span>
-            </div>
-            <p className="text-xs text-white/30 mb-5">Complete these to get NWHub fully running.</p>
-
-            {/* Gold progress bar */}
-            <div className="h-1.5 bg-white/[0.06] rounded-full mb-6 overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-[#967705] to-[#C9A70A] rounded-full transition-all duration-700"
-                style={{ width: `${(doneCount / checklist.length) * 100}%` }}
-              />
-            </div>
-
-            {/* Checklist */}
-            <ul className="space-y-3 flex-1">
-              {checklist.map((item) => (
-                <li key={item.label} className="flex items-center gap-3">
-                  {item.done ? (
-                    <CheckCircle2 size={17} className="text-[#C9A70A] flex-shrink-0" />
-                  ) : (
-                    <Circle size={17} className="text-white/20 flex-shrink-0" />
-                  )}
-                  <span className={`text-sm flex-1 ${item.done ? 'text-white/50' : 'text-white/40'}`}>
-                    {item.label}
-                  </span>
-                  {item.done && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#967705]/15 text-[#C9A70A] border border-[#967705]/25 uppercase tracking-wider">
-                      done
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* ── Section 5 — Quick Actions 2×2 (SKILL.md §9) ── */}
-        <div>
-          <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.15em] mb-4">
-            Quick Actions
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {QUICK_ACTIONS.map((action) => {
-              const Icon = action.icon
-              return (
-                <Link
-                  key={action.title}
-                  href={action.href}
-                  className={`group bg-[#161616] border border-white/[0.06] rounded-xl p-4 @md/page:p-6 min-h-[100px] @md/page:min-h-[120px] flex items-start gap-4 @md/page:gap-5 hover:border-[#967705]/40 hover:bg-[#1a1a1a] transition-all duration-200 cursor-pointer ${action.mobileHide ? 'hidden md:flex' : ''}`}
-                >
-                  {/* Icon */}
-                  <div className="w-11 h-11 rounded-lg bg-[#967705]/10 border border-[#967705]/20 flex items-center justify-center flex-shrink-0 group-hover:border-[#967705]/40 transition-colors duration-200">
-                    <Icon size={20} className="text-[#C9A70A]" strokeWidth={1.75} />
-                  </div>
-
-                  {/* Text */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[#F0F0F0] group-hover:text-[#C9A70A] transition-colors duration-200 leading-tight">
-                      {action.title}
-                    </p>
-                    <p className="text-xs text-white/40 mt-1.5 leading-relaxed">{action.desc}</p>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        </div>
+        {/* Widget Grid — client boundary */}
+        <DashboardWidgetGrid data={data} />
 
       </div>
     </>

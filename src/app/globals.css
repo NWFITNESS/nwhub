@@ -133,6 +133,14 @@ body {
 
 .gold-glow { box-shadow: 0 0 28px rgba(212, 175, 55, 0.4); }
 
+/* ─── react-grid-layout placeholder override ─── */
+.react-grid-placeholder {
+  background: rgba(212,175,55,0.08) !important;
+  border: 1px dashed rgba(212,175,55,0.3) !important;
+  border-radius: 12px !important;
+  opacity: 1 !important;
+}
+
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 @keyframes shimmer {

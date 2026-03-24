@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter, League_Spartan, Manrope, Oswald, Roboto_Slab } from 'next/font/google'
 import './globals.css'
+import 'react-grid-layout/css/styles.css'
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
