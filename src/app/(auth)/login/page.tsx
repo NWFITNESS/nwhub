@@ -141,7 +141,7 @@ function LoginForm() {
       <div className="relative z-10 w-full max-w-[400px] px-4 py-10 flex flex-col items-center">
 
         {/* App icon */}
-        <div className="relative mb-14 flex-shrink-0">
+        <div className="relative flex-shrink-0" style={{ marginBottom: '14mm' }}>
           <NWHubIcon size={88} className="drop-shadow-2xl" />
         </div>
 
