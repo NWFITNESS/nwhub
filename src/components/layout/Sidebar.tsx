@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/accordion'
 import { cn } from '@/lib/utils'
 import { FileText, Users, Settings, PoundSterling, RefreshCw, Zap, Sparkles } from 'lucide-react'
+import { SidebarInstallBox } from './SidebarInstallBox'
 
 interface NavItem {
   label: string
@@ -264,6 +265,9 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onN
           })}
         </Accordion>
       </nav>
+
+      {/* ── Install box ────────────────────────────────────── */}
+      <SidebarInstallBox />
 
       {/* ── User card footer ───────────────────────────────── */}
       <div className="px-3 py-3 border-t border-[#4d4635]/20">

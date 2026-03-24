@@ -4,7 +4,6 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { GlobalSettingsEditor } from '@/components/content/GlobalSettingsEditor'
 import { AccountSecuritySettings } from '@/components/content/AccountSecuritySettings'
 import { SocialConnections } from '@/components/settings/SocialConnections'
-import { AppInstallSetting } from '@/components/AppInstallSetting'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -33,14 +32,6 @@ export default async function SettingsPage() {
           />
         </div>
         <SocialConnections />
-
-        <div className="mt-4">
-          <PageHeader
-            title="App"
-            description="Install NWHub to your desktop for faster, native-like access."
-          />
-        </div>
-        <AppInstallSetting />
 
         <div className="mt-4">
           <PageHeader
