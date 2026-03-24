@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter, League_Spartan, Manrope, Oswald, Roboto_Slab } from 'next/font/google'
 import './globals.css'
+import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const leagueSpartan = League_Spartan({ subsets: ['latin'], variable: '--font-league-spartan', weight: ['400', '500', '600', '700', '800', '900'] })
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body suppressHydrationWarning className={`${inter.variable} ${leagueSpartan.variable} ${manrope.variable} ${oswald.variable} ${robotoSlab.variable} font-sans antialiased`}>
+        <ServiceWorkerRegistration />
         {children}
       </body>
     </html>
