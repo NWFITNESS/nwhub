@@ -60,57 +60,61 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
         <NeuralBackground color="#d4af37" trailOpacity={0.06} particleCount={380} speed={0.4} />
       </div>
 
-      {/* ── Desktop: invisible hover trigger zone on left edge ── */}
-      <div
-        className="fixed top-0 left-0 w-5 h-full z-40 hidden md:block"
-        onMouseEnter={handleMouseEnter}
-      />
-
-      {/* ── Desktop: hover-triggered overlay sidebar ── */}
-      <aside
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        className={`fixed top-0 left-0 h-full z-50 w-[var(--sidebar-w)] hidden md:block bg-[#1c1b1b] border-r border-[#4d4635]/20 shadow-[4px_0_40px_rgba(0,0,0,0.5)] transition-transform duration-300 ease-in-out ${desktopOpen ? 'translate-x-0' : '-translate-x-full'}`}
-      >
-        <Sidebar
-          open={true}
-          unreadCount={unreadCount}
-          userEmail={userEmail}
-          onNavigate={() => setDesktopOpen(false)}
-        />
-      </aside>
-
-      {/* ── Desktop: subtle backdrop when sidebar open (non-blocking) ── */}
-      {desktopOpen && (
-        <div className="fixed inset-0 z-40 bg-black/20 pointer-events-none transition-opacity duration-300 hidden md:block" />
-      )}
-
-      {/* ── Mobile drawer — always in DOM, CSS slide animation ── */}
-      <div className={`fixed inset-y-0 left-0 w-[280px] z-50 md:hidden bg-[#1c1b1b] border-r border-[#4d4635]/20 shadow-2xl transition-transform duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <Sidebar
-          open={true}
-          onToggle={() => setMobileMenuOpen(false)}
-          unreadCount={unreadCount}
-          userEmail={userEmail}
-          onNavigate={() => setMobileMenuOpen(false)}
-        />
-      </div>
-
-      {/* ── Mobile backdrop ── */}
-      {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 z-40 md:hidden"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* ── App shell — full width, sidebar overlays on top ── */}
+      {/* ── App shell ── */}
       <div className="flex h-screen overflow-hidden">
 
-        {/* Main column — always full width on desktop, sidebar never affects layout */}
+        {/* ── Desktop sidebar — in document flow, pushes content right ── */}
+        <div
+          className="hidden md:block flex-shrink-0 overflow-hidden transition-[width] duration-300 ease-in-out"
+          style={{ width: desktopOpen ? 'var(--sidebar-w)' : '0' }}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {/* Inner div is always full sidebar width so content doesn't squash during animation */}
+          <div
+            className="h-full bg-[#1c1b1b] border-r border-[#4d4635]/20 shadow-[4px_0_40px_rgba(0,0,0,0.4)]"
+            style={{ width: 'var(--sidebar-w)' }}
+          >
+            <Sidebar
+              open={true}
+              unreadCount={unreadCount}
+              userEmail={userEmail}
+              onNavigate={() => setDesktopOpen(false)}
+            />
+          </div>
+        </div>
+
+        {/* ── Hover trigger strip — catches mouse when sidebar is closed ── */}
+        {!desktopOpen && (
+          <div
+            className="fixed top-0 left-0 w-4 h-full z-10 hidden md:block"
+            onMouseEnter={handleMouseEnter}
+          />
+        )}
+
+        {/* ── Mobile drawer ── */}
+        <div className={`fixed inset-y-0 left-0 w-[280px] z-50 md:hidden bg-[#1c1b1b] border-r border-[#4d4635]/20 shadow-2xl transition-transform duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <Sidebar
+            open={true}
+            onToggle={() => setMobileMenuOpen(false)}
+            unreadCount={unreadCount}
+            userEmail={userEmail}
+            onNavigate={() => setMobileMenuOpen(false)}
+          />
+        </div>
+
+        {/* ── Mobile backdrop ── */}
+        {mobileMenuOpen && (
+          <div
+            className="fixed inset-0 bg-black/60 z-40 md:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        )}
+
+        {/* ── Main content column ── */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
 
-          {/* Mobile topbar (hidden on desktop) */}
+          {/* Mobile topbar */}
           <div className="flex md:hidden items-center justify-between px-4 h-14 flex-shrink-0 bg-[#131313] border-b border-[#4d4635]/20">
             <button
               onClick={() => setMobileMenuOpen((v) => !v)}

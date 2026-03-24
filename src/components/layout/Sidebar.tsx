@@ -114,7 +114,7 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onN
   return (
     <aside className="h-full flex flex-col overflow-hidden bg-[#1c1b1b]">
       {/* ── Header ──────────────────────────────────────────── */}
-      <div className="relative px-5 pt-6 pb-5 border-b border-[#4d4635]/20">
+      <div className="relative pl-8 pr-5 pt-6 pb-5 border-b border-[#4d4635]/20">
         {onToggle && (
           <button
             onClick={onToggle}
@@ -150,7 +150,7 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onN
       </div>
 
       {/* ── Navigation ──────────────────────────────────────── */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-1.5">
+      <nav className="flex-1 pl-5 pr-3 py-4 overflow-y-auto space-y-1.5">
         {/* Overview */}
         <Link
           href="/"
@@ -270,7 +270,7 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onN
       <SidebarInstallBox />
 
       {/* ── User card footer ───────────────────────────────── */}
-      <div className="px-3 py-3 border-t border-[#4d4635]/20">
+      <div className="pl-5 pr-3 py-3 border-t border-[#4d4635]/20">
         {userEmail && (
           <div className="flex items-center gap-2.5 p-3 bg-[#2a2a2a] rounded-xl mb-2 border border-[#4d4635]/15">
             <div className="w-9 h-9 rounded-full bg-[#d4af37]/15 border border-[#d4af37]/25 flex items-center justify-center flex-shrink-0">
