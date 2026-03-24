@@ -123,7 +123,7 @@ function LoginForm() {
         loop
         playsInline
         className="absolute inset-0 w-full h-full object-cover"
-        src="/compass loop.mp4"
+        src="/compass-loop.mp4"
       />
 
       {/* ── Overlays ─────────────────────────────────────────────────── */}
