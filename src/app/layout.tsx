@@ -12,7 +12,6 @@ const robotoSlab = Roboto_Slab({ subsets: ['latin'], variable: '--font-roboto-sl
 export const metadata: Metadata = {
   title: 'NWHub',
   description: 'Northern Warrior Business Hub',
-  manifest: '/manifest.json',
   icons: {
     icon: [
       { url: '/icons/favicon-32.png', sizes: '32x32', type: 'image/png' },
