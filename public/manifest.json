@@ -1,7 +1,7 @@
 {
-  "name": "NWHub — Northern Warrior",
+  "name": "NWHub - Northern Warrior",
   "short_name": "NWHub",
-  "description": "Northern Warrior Business Hub — CRM, Marketing & Management",
+  "description": "Northern Warrior Business Hub - CRM, Marketing & Management",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#06080f",
