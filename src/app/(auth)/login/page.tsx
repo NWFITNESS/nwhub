@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input, Field } from '@/components/ui/Input'
+import { PWAInstallPrompt } from '@/components/PWAInstallPrompt'
 import { Eye, EyeOff, CheckCircle2, Lock, ShieldAlert } from 'lucide-react'
 
 const MAX_ATTEMPTS = 5
@@ -338,6 +339,7 @@ export default function LoginPage() {
   return (
     <Suspense>
       <LoginForm />
+      <PWAInstallPrompt />
     </Suspense>
   )
 }

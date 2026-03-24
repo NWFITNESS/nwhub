@@ -110,6 +110,27 @@ body {
 #editor-canvas::-webkit-scrollbar-thumb:hover,
 .editor-scroll-container::-webkit-scrollbar-thumb:hover { background: #b08e06; }
 
+/* NWHub Compass — needle rests at NW, spins one full rotation on hover, lands back on NW */
+.nwhub-needle {
+  transform-origin: 50px 46px;
+  transform: rotate(-45deg);
+}
+
+.nwhub-compass:hover .nwhub-needle {
+  animation: nwhub-spin-to-nw 1s cubic-bezier(0.25, 0.1, 0.2, 1) forwards;
+}
+
+@keyframes nwhub-spin-to-nw {
+  0%   { transform: rotate(-45deg); }
+  100% { transform: rotate(315deg); }
+}
+
+/* PWA install popup slide-up */
+@keyframes nwhub-slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .gold-glow { box-shadow: 0 0 28px rgba(212, 175, 55, 0.4); }
 
 :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
