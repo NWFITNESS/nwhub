@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
+import { NWHubIcon } from '@/components/NWHubIcon'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input, Field } from '@/components/ui/Input'
@@ -129,13 +129,6 @@ function LoginForm() {
       {/* ── Overlays ─────────────────────────────────────────────────── */}
       {/* Primary dark veil */}
       <div className="absolute inset-0 bg-black/65" />
-      {/* Gold radial warmth centred */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse 70% 60% at 50% 48%, rgba(212,175,55,0.07) 0%, transparent 65%)',
-        }}
-      />
       {/* Subtle vignette */}
       <div
         className="absolute inset-0 pointer-events-none"
@@ -148,20 +141,8 @@ function LoginForm() {
       <div className="relative z-10 w-full max-w-[400px] px-4 py-10 flex flex-col items-center">
 
         {/* App icon */}
-        <div className="relative mb-9 flex-shrink-0">
-          {/* Gold halo behind icon */}
-          <div
-            className="absolute -inset-5 rounded-full pointer-events-none"
-            style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%)' }}
-          />
-          <Image
-            src="/icons/NWHub-Icon.svg"
-            alt="NWHub"
-            width={88}
-            height={88}
-            className="relative drop-shadow-2xl"
-            priority
-          />
+        <div className="relative mb-14 flex-shrink-0">
+          <NWHubIcon size={88} className="drop-shadow-2xl" />
         </div>
 
         {/* Brand name */}
@@ -185,8 +166,7 @@ function LoginForm() {
             backdropFilter: 'blur(28px)',
             WebkitBackdropFilter: 'blur(28px)',
             borderColor: 'rgba(212,175,55,0.14)',
-            boxShadow:
-              '0 0 0 1px rgba(212,175,55,0.06) inset, 0 32px 80px rgba(0,0,0,0.55), 0 0 60px rgba(212,175,55,0.04)',
+            boxShadow: '0 0 0 1px rgba(212,175,55,0.06) inset, 0 32px 80px rgba(0,0,0,0.55)',
           }}
         >
           {/* Reset success banner */}
