@@ -34,13 +34,6 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <head>
-        <meta name="theme-color" content="#06080f" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="NWHub" />
-        <link rel="manifest" href="/manifest.json" />
-      </head>
       <body suppressHydrationWarning className={`${inter.variable} ${leagueSpartan.variable} ${manrope.variable} ${oswald.variable} ${robotoSlab.variable} font-sans antialiased`}>
         <ServiceWorkerRegistration />
         {children}
