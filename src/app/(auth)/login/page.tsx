@@ -8,7 +8,8 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input, Field } from '@/components/ui/Input'
-import { Eye, EyeOff, CheckCircle2, Lock, ShieldAlert } from 'lucide-react'
+import { Eye, EyeOff, CheckCircle2, Lock, ShieldAlert, Download } from 'lucide-react'
+import { NWHubIcon } from '@/components/NWHubIcon'
 
 const MAX_ATTEMPTS = 5
 const LOCKOUT_SECONDS = 30
@@ -325,7 +326,15 @@ function LoginForm() {
             </form>
           )}
 
-          <p className="text-center text-xs text-[#d0c5af]/20 mt-8">
+          <div className="mt-8 p-3 rounded-xl border border-[#d4af37]/15 bg-[#d4af37]/5 flex items-center gap-3">
+            <NWHubIcon size={32} animated={false} />
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] font-semibold text-[#e5e2e1] leading-tight">Install NWHub</p>
+              <p className="text-[11px] text-[#d0c5af]/45 leading-tight">Click the <Download size={10} className="inline mb-0.5" /> icon in your address bar to add to desktop</p>
+            </div>
+          </div>
+
+          <p className="text-center text-xs text-[#d0c5af]/20 mt-4">
             Northern Warrior Hub &mdash; Internal use only
           </p>
         </div>
