@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, createContext, useContext } from 'react'
+import { useState, useRef, useEffect, createContext, useContext } from 'react'
 import { Menu, Bell } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import NeuralBackground from '@/components/ui/flow-field-background'
@@ -34,8 +34,21 @@ interface SidebarProviderProps {
 }
 
 export function SidebarProvider({ children, unreadCount = 0, userEmail }: SidebarProviderProps) {
+  const [desktopOpen, setDesktopOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobileView, setIsMobileView] = useState(false)
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  function handleMouseEnter() {
+    clearTimeout(closeTimer.current)
+    setDesktopOpen(true)
+  }
+
+  function handleMouseLeave() {
+    closeTimer.current = setTimeout(() => setDesktopOpen(false), 200)
+  }
+
+  useEffect(() => () => clearTimeout(closeTimer.current), [])
 
   return (
     <SidebarCtx.Provider value={{ mobileMenuOpen, setMobileMenuOpen, isMobileView, setIsMobileView }}>
@@ -48,17 +61,28 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
       {/* ── App shell ── */}
       <div className="flex h-screen overflow-hidden">
 
-        {/* ── Desktop sidebar — always in document flow, self-manages width ── */}
-        <div className="hidden md:block flex-shrink-0">
-          <Sidebar
-            unreadCount={unreadCount}
-            userEmail={userEmail}
-          />
+        {/* ── Desktop sidebar ──
+            Outer div clips and transitions width.
+            Inner div is always full 256 px so content never squashes. ── */}
+        <div
+          className="hidden md:flex flex-shrink-0 h-full overflow-hidden transition-[width] duration-300 ease-in-out"
+          style={{ width: desktopOpen ? '256px' : '64px' }}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          <div className="h-full w-64 flex-shrink-0">
+            <Sidebar
+              open={desktopOpen}
+              unreadCount={unreadCount}
+              userEmail={userEmail}
+            />
+          </div>
         </div>
 
         {/* ── Mobile drawer ── */}
         <div className={`fixed inset-y-0 left-0 z-50 md:hidden transition-transform duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <Sidebar
+            open={true}
             onToggle={() => setMobileMenuOpen(false)}
             unreadCount={unreadCount}
             userEmail={userEmail}
@@ -74,7 +98,7 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
           />
         )}
 
-        {/* ── Main content column ── */}
+        {/* ── Main content ── */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
 
           {/* Mobile topbar */}
@@ -85,14 +109,12 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
             >
               <Menu size={20} />
             </button>
-
             <div className="flex items-center gap-2">
               <img src="/nw-logo.svg" alt="NW" className="w-7 h-7 object-contain" />
               <span className="text-sm font-bold text-white" style={{ fontFamily: 'Rajdhani' }}>
                 Northern Warrior
               </span>
             </div>
-
             <button className="w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/[0.06]">
               <Bell size={18} />
             </button>
@@ -110,7 +132,6 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
               children
             )}
           </div>
-
         </div>
       </div>
 
