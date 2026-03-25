@@ -208,9 +208,9 @@ export function Sidebar({ open = false, onToggle, unreadCount = 0, userEmail, on
                   {group.label}
                 </span>
                 <ChevronDown
-                  size={15}
+                  size={16}
                   className={cn(
-                    'flex-shrink-0 text-white/50 group-hover:text-white/75 transition-all duration-200',
+                    'flex-shrink-0 text-[#C9A70A] transition-transform duration-200',
                     isCollapsed ? '-rotate-90' : 'rotate-0'
                   )}
                 />
