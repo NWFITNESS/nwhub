@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
   DashboardNavIcon,
@@ -17,14 +18,18 @@ import {
   LogOutNavIcon,
   PanelCloseNavIcon,
 } from '@/components/ui/animated-nav-icons'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
 import { cn } from '@/lib/utils'
-import { FileText, Users, Settings, PoundSterling, RefreshCw, Zap, Sparkles, CheckSquare2 } from 'lucide-react'
+import {
+  FileText,
+  Users,
+  Settings,
+  PoundSterling,
+  RefreshCw,
+  Zap,
+  Sparkles,
+  CheckSquare2,
+  ChevronDown,
+} from 'lucide-react'
 import { SidebarInstallBox } from './SidebarInstallBox'
 
 interface NavItem {
@@ -32,51 +37,51 @@ interface NavItem {
   href: string
   icon: React.ComponentType<{ size?: number; className?: string }>
   badge?: 'contacts'
+  tag?: string
 }
 
 interface NavGroup {
-  value: string
+  key: string
   label: string
-  subtitle: string
-  icon: React.ComponentType<{ size?: number; className?: string }>
   items: NavItem[]
+  hideOnMobile?: boolean
 }
+
+const topItems: NavItem[] = [
+  { label: 'Overview', href: '/', icon: DashboardNavIcon },
+  { label: 'Financials', href: '/financials', icon: PoundSterling },
+]
 
 const navGroups: NavGroup[] = [
   {
-    value: 'content',
-    label: 'Content',
-    subtitle: 'Manage site content',
-    icon: FileText,
-    items: [
-      { label: 'Content', href: '/content', icon: FileNavIcon },
-      { label: 'Blog', href: '/blog/manage', icon: PenNavIcon },
-      { label: 'Media', href: '/media', icon: ImageNavIcon },
-    ],
-  },
-  {
-    value: 'engagement',
+    key: 'engagement',
     label: 'Engagement',
-    subtitle: 'Connect with your audience',
-    icon: Users,
     items: [
       { label: 'To Do', href: '/todo', icon: CheckSquare2 },
       { label: 'Contacts', href: '/contacts', icon: UsersNavIcon },
       { label: 'Leads', href: '/leads', icon: UsersNavIcon },
-      { label: 'Enquiries', href: '/enquiries', icon: MailNavIcon, badge: 'contacts' as const },
+      { label: 'Enquiries', href: '/enquiries', icon: MailNavIcon, badge: 'contacts' },
       { label: 'Kids & Teens', href: '/kids', icon: BabyNavIcon },
       { label: 'Subscribers', href: '/email', icon: UsersNavIcon },
-      { label: 'Branding Studio', href: '/branding', icon: Sparkles },
-      { label: 'Workflows', href: '/workflows', icon: Zap },
-      { label: 'Email Campaigns', href: '/mailchimp', icon: MailchimpNavIcon },
-      { label: 'AI Chat', href: '/ai-chat', icon: BotNavIcon },
+      { label: 'AI Chat', href: '/ai-chat', icon: BotNavIcon, tag: 'AI' },
     ],
   },
   {
-    value: 'system',
+    key: 'content',
+    label: 'Content',
+    hideOnMobile: true,
+    items: [
+      { label: 'Content', href: '/content', icon: FileNavIcon },
+      { label: 'Blog', href: '/blog/manage', icon: PenNavIcon },
+      { label: 'Media', href: '/media', icon: ImageNavIcon },
+      { label: 'Branding Studio', href: '/branding', icon: Sparkles },
+      { label: 'Email Campaigns', href: '/mailchimp', icon: MailchimpNavIcon },
+      { label: 'Workflows', href: '/workflows', icon: Zap },
+    ],
+  },
+  {
+    key: 'system',
     label: 'System',
-    subtitle: 'Configuration & preferences',
-    icon: Settings,
     items: [
       { label: 'WodBoard Sync', href: '/sync', icon: RefreshCw },
       { label: 'Settings', href: '/settings', icon: SettingsNavIcon },
@@ -97,201 +102,171 @@ export function Sidebar({ open = true, onToggle, unreadCount = 0, userEmail, onN
   const router = useRouter()
   const supabase = createClient()
 
+  // Default open: any group that contains the active route
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    const state: Record<string, boolean> = {}
+    for (const group of navGroups) {
+      const hasActive = group.items.some(({ href }) =>
+        href === '/' ? pathname === '/' : pathname.startsWith(href)
+      )
+      state[group.key] = !hasActive
+    }
+    return state
+  })
+
+  function toggleGroup(key: string) {
+    setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
   async function handleSignOut() {
     await supabase.auth.signOut()
     router.push('/login')
   }
 
-  const defaultOpenGroups = navGroups
-    .filter((group) =>
-      group.items.some(({ href }) =>
-        href === '/' ? pathname === '/' : pathname.startsWith(href)
-      )
-    )
-    .map((g) => g.value)
-
-  const overviewActive = pathname === '/'
+  function isActive(href: string) {
+    return href === '/' ? pathname === '/' : pathname.startsWith(href)
+  }
 
   return (
-    <aside className="h-full flex flex-col overflow-hidden bg-[#1c1b1b]">
+    <aside className="h-full flex flex-col overflow-hidden bg-[#111110]">
+
       {/* ── Header ──────────────────────────────────────────── */}
-      <div className="relative pl-8 pr-5 pt-6 pb-5 border-b border-[#4d4635]/20">
+      <div className="relative flex items-center gap-3 px-4 py-5 border-b border-white/[0.06]">
+        <img src="/nw-logo.svg" alt="NW" className="w-8 h-8 object-contain flex-shrink-0" />
+        <div className="min-w-0 flex-1">
+          <p
+            className="text-[#d4af37] font-bold uppercase tracking-wider text-[13px] leading-tight"
+            style={{ fontFamily: 'var(--font-league-spartan), system-ui, sans-serif' }}
+          >
+            Northern Warrior
+          </p>
+          <p className="text-white/30 text-[11px] leading-tight">Admin Dashboard</p>
+        </div>
         {onToggle && (
           <button
             onClick={onToggle}
             aria-label="Close sidebar"
-            className="absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-md text-[#d0c5af]/40 hover:text-[#f2ca50] hover:bg-[#2a2a2a] transition-all"
+            className="w-6 h-6 flex items-center justify-center rounded text-white/25 hover:text-white/60 transition-colors flex-shrink-0"
           >
             <PanelCloseNavIcon size={14} />
           </button>
         )}
-        <div className="flex items-center gap-3 mb-2">
-          <div className="relative flex-shrink-0">
-            <div
-              className="absolute -inset-2 rounded-full pointer-events-none"
-              style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.18), transparent 70%)' }}
-            />
-            <img src="/nw-logo.svg" alt="NW" className="w-10 h-10 object-contain relative" />
-          </div>
-          <div className="min-w-0">
-            <p
-              className="text-[#d4af37] font-bold uppercase tracking-widest text-base leading-tight"
-              style={{ fontFamily: 'var(--font-league-spartan), system-ui, sans-serif' }}
-            >
-              Northern Warrior
-            </p>
-            <p className="text-[#f2ca50] text-sm font-semibold leading-tight" style={{ fontFamily: 'var(--font-league-spartan), system-ui, sans-serif' }}>
-              Hub
-            </p>
-          </div>
-        </div>
-        <span className="inline-block text-[10px] uppercase tracking-[0.22em] text-[#d0c5af]/50 font-medium">
-          Admin Panel
-        </span>
       </div>
 
       {/* ── Navigation ──────────────────────────────────────── */}
-      <nav className="flex-1 pl-8 pr-3 py-4 overflow-y-auto space-y-1.5">
-        {/* Overview */}
-        <Link
-          href="/"
-          onClick={onNavigate}
-          className={cn(
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-[15px] font-medium transition-all duration-200 group relative border',
-            overviewActive
-              ? 'bg-[#2a2a2a] text-[#d4af37] border-[#4d4635]/30 shadow-[inset_0_0_8px_rgba(212,175,55,0.1)] translate-x-0.5'
-              : 'text-[#d0c5af] hover:bg-[#2a2a2a] hover:text-[#f2ca50] border-transparent hover:translate-x-1'
-          )}
-        >
-          <DashboardNavIcon size={17} className="flex-shrink-0" />
-          <span className="flex-1">Overview</span>
-          {overviewActive && <span className="w-1 h-1 rounded-full bg-[#f2ca50] flex-shrink-0" />}
-        </Link>
+      <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5">
 
-        {/* Financials */}
-        <Link
-          href="/financials"
-          onClick={onNavigate}
-          className={cn(
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-[15px] font-medium transition-all duration-200 group relative border',
-            pathname.startsWith('/financials')
-              ? 'bg-[#2a2a2a] text-[#d4af37] border-[#4d4635]/30 shadow-[inset_0_0_8px_rgba(212,175,55,0.1)] translate-x-0.5'
-              : 'text-[#d0c5af] hover:bg-[#2a2a2a] hover:text-[#f2ca50] border-transparent hover:translate-x-1'
-          )}
-        >
-          <PoundSterling size={17} className="flex-shrink-0" />
-          <span className="flex-1">Financials</span>
-        </Link>
+        {/* Top-level items (Overview, Financials) */}
+        {topItems.map(({ label, href, icon: Icon }) => {
+          const active = isActive(href)
+          return (
+            <Link
+              key={href}
+              href={href}
+              onClick={onNavigate}
+              className={cn(
+                'flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium transition-colors duration-150',
+                active
+                  ? 'bg-[#967705]/25 text-[#f2ca50]'
+                  : 'text-white/55 hover:text-white/80 hover:bg-white/[0.05]'
+              )}
+            >
+              <Icon size={16} className="flex-shrink-0" />
+              <span>{label}</span>
+            </Link>
+          )
+        })}
 
-        {/* Accordion groups */}
-        <Accordion
-          type="multiple"
-          defaultValue={defaultOpenGroups.length > 0 ? defaultOpenGroups : ['content']}
-          className="w-full space-y-1"
-        >
-          {navGroups.map((group, idx) => {
-            const GroupIcon = group.icon
-            const groupHasActive = group.items.some(({ href }) =>
-              href === '/' ? pathname === '/' : pathname.startsWith(href)
-            )
-            const isContentGroup = group.value === 'content'
-
-            return (
-              <AccordionItem
-                key={group.value}
-                value={group.value}
-                className={cn(
-                  'border border-[#4d4635]/15 bg-[#1c1b1b] rounded-lg overflow-hidden',
-                  isContentGroup && 'hidden md:block',
-                )}
+        {/* Grouped sections */}
+        {navGroups.map((group) => {
+          const isCollapsed = collapsed[group.key]
+          return (
+            <div
+              key={group.key}
+              className={cn('pt-3', group.hideOnMobile && 'hidden md:block')}
+            >
+              {/* Section header */}
+              <button
+                onClick={() => toggleGroup(group.key)}
+                className="w-full flex items-center justify-between px-3 pb-1 group"
               >
-                <AccordionTrigger
+                <span className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/25 group-hover:text-white/40 transition-colors">
+                  {group.label}
+                </span>
+                <ChevronDown
+                  size={12}
                   className={cn(
-                    'px-3 py-2.5 hover:no-underline hover:bg-[#2a2a2a] transition-all duration-200 rounded-t-lg',
-                    groupHasActive && 'text-[#d4af37]'
+                    'text-white/20 group-hover:text-white/40 transition-all duration-200',
+                    isCollapsed && '-rotate-90'
                   )}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={cn(
-                        'p-2 rounded-lg',
-                        groupHasActive
-                          ? 'bg-[#d4af37]/20 text-[#f2ca50]'
-                          : 'bg-[#d4af37]/8 text-[#d0c5af]'
-                      )}
-                    >
-                      <GroupIcon size={15} />
-                    </div>
-                    <div className="flex flex-col items-start text-left">
-                      <span className={cn(
-                        'text-[15px] font-semibold',
-                        groupHasActive ? 'text-[#d4af37]' : 'text-[#e5e2e1]'
-                      )}>
-                        {group.label}
-                      </span>
-                      <span className="text-[11px] text-[#d0c5af]/45">{group.subtitle}</span>
-                    </div>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-2 pb-2 pt-0">
-                  <div className="space-y-0.5 mt-0.5">
-                    {group.items.map(({ label, href, icon: Icon, badge }) => {
-                      const active = href === '/' ? pathname === '/' : pathname.startsWith(href)
-                      const showBadge = badge === 'contacts' && unreadCount > 0
-                      return (
-                        <Link
-                          key={href}
-                          href={href}
-                          onClick={onNavigate}
-                          className={cn(
-                            'flex items-center gap-3 px-3 py-2 rounded-lg text-[14px] font-medium transition-all duration-200 group relative border',
-                            active
-                              ? 'bg-[#2a2a2a] text-[#d4af37] border-[#4d4635]/30 shadow-[inset_0_0_8px_rgba(212,175,55,0.1)] translate-x-0.5'
-                              : 'text-[#d0c5af]/70 hover:text-[#f2ca50] hover:bg-[#2a2a2a] border-transparent hover:translate-x-1'
-                          )}
-                        >
-                          <Icon size={15} className="flex-shrink-0" />
-                          <span className="flex-1">{label}</span>
-                          {showBadge && (
-                            <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
-                          )}
-                          {active && <span className="w-1 h-1 rounded-full bg-[#f2ca50]/60 flex-shrink-0" />}
-                        </Link>
-                      )
-                    })}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            )
-          })}
-        </Accordion>
+                />
+              </button>
+
+              {/* Items */}
+              {!isCollapsed && (
+                <div className="space-y-0.5 mt-0.5">
+                  {group.items.map(({ label, href, icon: Icon, badge, tag }) => {
+                    const active = isActive(href)
+                    const showBadge = badge === 'contacts' && unreadCount > 0
+                    return (
+                      <Link
+                        key={href}
+                        href={href}
+                        onClick={onNavigate}
+                        className={cn(
+                          'flex items-center gap-3 px-3 py-2 rounded-lg text-[13.5px] font-medium transition-colors duration-150',
+                          active
+                            ? 'bg-[#967705]/25 text-[#f2ca50]'
+                            : 'text-white/55 hover:text-white/80 hover:bg-white/[0.05]'
+                        )}
+                      >
+                        <Icon size={16} className="flex-shrink-0" />
+                        <span className="flex-1">{label}</span>
+                        {tag && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#967705]/30 text-[#f2ca50] uppercase tracking-wide">
+                            {tag}
+                          </span>
+                        )}
+                        {showBadge && (
+                          <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
+                        )}
+                      </Link>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )
+        })}
       </nav>
 
       {/* ── Install box ────────────────────────────────────── */}
       <SidebarInstallBox />
 
-      {/* ── User card footer ───────────────────────────────── */}
-      <div className="pl-8 pr-3 py-3 border-t border-[#4d4635]/20">
+      {/* ── User footer ─────────────────────────────────────── */}
+      <div className="border-t border-white/[0.06] p-3">
         {userEmail && (
-          <div className="flex items-center gap-2.5 p-3 bg-[#2a2a2a] rounded-xl mb-2 border border-[#4d4635]/15">
-            <div className="w-9 h-9 rounded-full bg-[#d4af37]/15 border border-[#d4af37]/25 flex items-center justify-center flex-shrink-0">
-              <span className="text-sm font-bold text-[#f2ca50]">
+          <div className="flex items-center gap-2.5 px-2 py-2">
+            <div className="w-8 h-8 rounded-full bg-[#967705]/30 flex items-center justify-center flex-shrink-0">
+              <span className="text-[13px] font-bold text-[#f2ca50]">
                 {userEmail[0]?.toUpperCase()}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-bold text-[#e5e2e1] truncate">{userEmail.split('@')[0]}</p>
-              <p className="text-[10px] text-[#d0c5af]/50 uppercase tracking-wider">Admin</p>
+              <p className="text-[13px] font-semibold text-white/80 truncate leading-tight">
+                {userEmail.split('@')[0]}
+              </p>
+              <p className="text-[10px] text-white/30 leading-tight">Admin</p>
             </div>
+            <button
+              onClick={handleSignOut}
+              aria-label="Sign out"
+              className="p-1.5 rounded text-white/20 hover:text-white/50 hover:bg-white/[0.05] transition-colors flex-shrink-0"
+            >
+              <LogOutNavIcon size={14} />
+            </button>
           </div>
         )}
-        <button
-          onClick={handleSignOut}
-          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[14px] text-[#d0c5af]/50 hover:text-[#f2ca50] hover:bg-[#2a2a2a] transition-all duration-200 hover:translate-x-0.5"
-        >
-          <LogOutNavIcon size={15} className="flex-shrink-0" />
-          Sign out
-        </button>
       </div>
     </aside>
   )
