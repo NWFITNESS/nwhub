@@ -10,8 +10,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL('/todo?error=gmail_denied', req.url))
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL
+    ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3001')
 
   const redirectUri = `${baseUrl}/api/gmail/callback`
 
