@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { EmailPanel } from '@/components/inbox/EmailPanel'
 import { TaskBoard } from '@/components/inbox/TaskBoard'
-import { Zap, RefreshCw, Mail, AlertCircle } from 'lucide-react'
+import { Zap, RefreshCw, Mail, AlertCircle, Send } from 'lucide-react'
 
 interface Email {
   id: string
@@ -44,6 +44,7 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [processing, setProcessing] = useState(false)
   const [bulkSorting, setBulkSorting] = useState(false)
+  const [sendingDigest, setSendingDigest] = useState(false)
   const [lastResult, setLastResult] = useState<string | null>(null)
 
   const needsActionCount = emails.filter(e => e.flagged && !e.archived).length
@@ -119,6 +120,19 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
     }
   }
 
+  async function handleSendDigest() {
+    setSendingDigest(true)
+    setLastResult(null)
+    try {
+      const res = await fetch('/api/digest/send', { method: 'POST' })
+      const data = await res.json()
+      if (data.sent) setLastResult('Digest sent to info@northernwarrior.co.uk')
+      else setLastResult(`Digest failed: ${data.error}`)
+    } finally {
+      setSendingDigest(false)
+    }
+  }
+
   async function handleDeleteTask(id: string) {
     await fetch(`/api/tasks/${id}`, { method: 'DELETE' })
     setTasks(prev => prev.filter(t => t.id !== id))
@@ -180,6 +194,14 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
           >
             <Zap size={13} className={bulkSorting ? 'animate-pulse' : ''} />
             {bulkSorting ? 'Sorting…' : 'Run Full Sort'}
+          </button>
+          <button
+            onClick={handleSendDigest}
+            disabled={sendingDigest}
+            className="flex items-center gap-1.5 h-8 px-3 rounded-lg bg-white/[0.05] border border-white/[0.08] text-white/50 text-[12px] font-medium hover:bg-white/[0.08] disabled:opacity-40 transition-colors"
+          >
+            <Send size={13} className={sendingDigest ? 'animate-pulse' : ''} />
+            {sendingDigest ? 'Sending…' : 'Test Digest'}
           </button>
         </div>
       </div>
