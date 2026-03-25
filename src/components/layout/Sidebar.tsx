@@ -199,29 +199,38 @@ export function Sidebar({ open = false, onToggle, unreadCount = 0, userEmail, on
               {/* Section header */}
               <button
                 onClick={() => toggleSection(group.key)}
-                className="w-full flex items-center gap-3 pl-2 pr-2 h-10 rounded-lg transition-colors duration-150 text-white/50 hover:text-white/75 hover:bg-white/[0.05]"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  width: '100%',
+                  height: 40,
+                  borderRadius: 8,
+                  padding: '0 8px',
+                  gap: 12,
+                  border: 'none',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  color: 'rgba(255,255,255,0.5)',
+                  boxSizing: 'border-box',
+                }}
               >
-                <span className="w-9 flex-shrink-0 flex items-center justify-center">
+                <span style={{ width: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <GroupIcon size={16} />
                 </span>
-                <span className="flex-1 text-[13.5px] font-semibold truncate text-left">
+                <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
                   {group.label}
                 </span>
-                <span
-                  style={{
-                    flexShrink: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 20,
-                    height: 20,
-                    borderRadius: 4,
-                    background: '#f2ca50',
-                    transition: 'transform 0.2s',
-                    transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
-                  }}
-                >
-                  <ChevronDown size={14} style={{ color: '#000' }} />
+                <span style={{
+                  color: '#f2ca50',
+                  fontSize: 18,
+                  lineHeight: 1,
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  transition: 'transform 0.2s',
+                  transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+                }}>
+                  ▾
                 </span>
               </button>
 
