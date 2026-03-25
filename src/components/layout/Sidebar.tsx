@@ -207,14 +207,22 @@ export function Sidebar({ open = false, onToggle, unreadCount = 0, userEmail, on
                 <span className="flex-1 text-[13.5px] font-semibold truncate text-left">
                   {group.label}
                 </span>
-                <ChevronDown
-                  size={18}
-                  style={{ color: '#f2ca50' }}
-                  className={cn(
-                    'flex-shrink-0 transition-transform duration-200',
-                    isCollapsed ? '-rotate-90' : 'rotate-0'
-                  )}
-                />
+                <span
+                  style={{
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 20,
+                    height: 20,
+                    borderRadius: 4,
+                    background: '#f2ca50',
+                    transition: 'transform 0.2s',
+                    transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+                  }}
+                >
+                  <ChevronDown size={14} style={{ color: '#000' }} />
+                </span>
               </button>
 
               {/* Items */}
