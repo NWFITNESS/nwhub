@@ -209,9 +209,10 @@ export function Sidebar({ open = false, onToggle, unreadCount = 0, userEmail, on
                 </span>
                 {/* Absolute-positioned chevron so it's always visible at right edge */}
                 <ChevronDown
-                  size={16}
+                  size={18}
+                  style={{ color: '#f2ca50' }}
                   className={cn(
-                    'absolute right-2 top-1/2 -translate-y-1/2 text-[#f2ca50] transition-transform duration-200',
+                    'absolute right-2 top-1/2 -translate-y-1/2 flex-shrink-0 transition-transform duration-200',
                     isCollapsed ? '-rotate-90' : 'rotate-0'
                   )}
                 />
