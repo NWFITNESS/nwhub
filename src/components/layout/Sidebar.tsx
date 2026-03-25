@@ -140,8 +140,8 @@ export function Sidebar({ open = false, onToggle, unreadCount = 0, userEmail, on
   }
 
   return (
-    // Width is always w-64 — the parent container clips it to 64px when collapsed
-    <nav className="h-full w-64 flex flex-col border-r border-white/[0.06] bg-[#111110]">
+    // Width is always w-72 — the parent container clips it to 0px when collapsed
+    <nav className="h-full w-72 flex flex-col border-r border-white/[0.06] bg-[#111110]">
 
       {/* ── Header ─────────────────────────────────────────── */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-white/[0.06] flex-shrink-0">
