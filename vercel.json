@@ -3,6 +3,10 @@
     {
       "path": "/api/digest/send",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/inbox/process",
+      "schedule": "*/5 * * * *"
     }
   ]
 }
