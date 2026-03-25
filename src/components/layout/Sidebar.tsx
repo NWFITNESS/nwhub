@@ -196,21 +196,22 @@ export function Sidebar({ open = false, onToggle, unreadCount = 0, userEmail, on
           return (
             <div key={group.key} className={cn('pt-1', group.hideOnMobile && 'hidden md:block')}>
 
-              {/* Section header — same size/height as nav items, with icon */}
+              {/* Section header */}
               <button
                 onClick={() => toggleSection(group.key)}
-                className="w-full flex items-center gap-3 pl-2 pr-2 h-10 rounded-lg transition-colors duration-150 text-white/40 hover:text-white/65 hover:bg-white/[0.04] group"
+                className="relative w-full flex items-center gap-3 pl-2 pr-9 h-10 rounded-lg transition-colors duration-150 text-white/50 hover:text-white/75 hover:bg-white/[0.05]"
               >
                 <span className="w-9 flex-shrink-0 flex items-center justify-center">
                   <GroupIcon size={16} />
                 </span>
-                <span className="flex-1 text-[13.5px] font-semibold whitespace-nowrap text-left">
+                <span className="text-[13.5px] font-semibold whitespace-nowrap text-left">
                   {group.label}
                 </span>
+                {/* Absolute-positioned chevron so it's always visible at right edge */}
                 <ChevronDown
                   size={16}
                   className={cn(
-                    'flex-shrink-0 text-[#C9A70A] transition-transform duration-200',
+                    'absolute right-2 top-1/2 -translate-y-1/2 text-[#f2ca50] transition-transform duration-200',
                     isCollapsed ? '-rotate-90' : 'rotate-0'
                   )}
                 />
@@ -249,31 +250,34 @@ export function Sidebar({ open = false, onToggle, unreadCount = 0, userEmail, on
       {/* ── Install box ─────────────────────────────────────── */}
       {open && <SidebarInstallBox />}
 
-      {/* ── User footer ─────────────────────────────────────── */}
-      {userEmail && (
-        <div className="border-t border-white/[0.06] flex-shrink-0 px-3 py-3">
-          <div className="flex items-center gap-3">
+      {/* ── Footer ──────────────────────────────────────────── */}
+      <div className="flex-shrink-0 border-t border-white/[0.06] px-3 py-3 space-y-2">
+        {/* User row */}
+        {userEmail && (
+          <div className="flex items-center gap-3 px-1">
             <div className="w-8 h-8 rounded-full bg-[#967705]/30 flex items-center justify-center flex-shrink-0">
               <span className="text-[13px] font-bold text-[#f2ca50]">
                 {userEmail[0]?.toUpperCase()}
               </span>
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0">
               <p className="text-[13px] font-semibold text-white/80 truncate leading-tight whitespace-nowrap">
                 {userEmail.split('@')[0]}
               </p>
               <p className="text-[10px] text-white/30 leading-tight whitespace-nowrap">Admin</p>
             </div>
-            <button
-              onClick={handleSignOut}
-              aria-label="Sign out"
-              className="p-1.5 rounded text-white/20 hover:text-white/50 hover:bg-white/[0.05] transition-colors flex-shrink-0"
-            >
-              <LogOutNavIcon size={14} />
-            </button>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Logout button — large, prominent */}
+        <button
+          onClick={handleSignOut}
+          className="w-full flex items-center justify-center gap-2.5 h-11 rounded-lg bg-red-500/15 border border-red-500/30 text-red-400 hover:bg-red-500/25 hover:border-red-500/50 hover:text-red-300 transition-all duration-150 font-semibold text-[14px]"
+        >
+          <LogOutNavIcon size={16} />
+          <span className="whitespace-nowrap">Sign Out</span>
+        </button>
+      </div>
     </nav>
   )
 }
