@@ -140,8 +140,8 @@ export function Sidebar({ open = false, onToggle, unreadCount = 0, userEmail, on
   }
 
   return (
-    // Width is always w-72 — the parent container clips it to 0px when collapsed
-    <nav className="h-full w-72 flex flex-col border-r border-white/[0.06] bg-[#111110]">
+    // Width is always w-64 — the parent container clips it to 0px when collapsed
+    <nav className="h-full w-64 flex flex-col border-r border-white/[0.06] bg-[#111110]">
 
       {/* ── Header ─────────────────────────────────────────── */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-white/[0.06] flex-shrink-0">
@@ -175,7 +175,10 @@ export function Sidebar({ open = false, onToggle, unreadCount = 0, userEmail, on
           → text label starts exactly at the clipping boundary ✓
           → icon left edge sits 16px from sidebar edge ≈ 4mm ✓
       */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2 space-y-0.5">
+      <div
+        className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5"
+        style={{ scrollbarWidth: 'none' }}
+      >
 
         {/* Top-level items */}
         {topItems.map(({ label, href, icon: Icon }) => (

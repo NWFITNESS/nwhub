@@ -66,11 +66,11 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
             Inner div is always full 256 px so content never squashes. ── */}
         <div
           className="hidden md:flex flex-shrink-0 h-full overflow-hidden transition-[width] duration-300 ease-in-out"
-          style={{ width: desktopOpen ? '288px' : '0px' }}
+          style={{ width: desktopOpen ? '256px' : '0px' }}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          <div className="h-full w-72 flex-shrink-0">
+          <div className="h-full w-64 flex-shrink-0">
             <Sidebar
               open={desktopOpen}
               unreadCount={unreadCount}
