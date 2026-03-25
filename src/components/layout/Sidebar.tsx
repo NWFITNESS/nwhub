@@ -52,6 +52,7 @@ interface NavGroup {
 
 const topItems: NavItem[] = [
   { label: 'Overview', href: '/', icon: DashboardNavIcon },
+  { label: 'Inbox Intelligence', href: '/inbox', icon: Zap },
   { label: 'Financials', href: '/financials', icon: PoundSterling },
 ]
 
@@ -61,7 +62,6 @@ const navGroups: NavGroup[] = [
     label: 'Engagement',
     icon: Users,
     items: [
-      { label: 'To Do', href: '/todo', icon: CheckSquare2 },
       { label: 'Contacts', href: '/contacts', icon: UsersNavIcon },
       { label: 'Leads', href: '/leads', icon: UsersNavIcon },
       { label: 'Enquiries', href: '/enquiries', icon: MailNavIcon, badge: 'contacts' },
