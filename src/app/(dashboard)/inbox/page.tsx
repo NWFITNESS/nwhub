@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { InboxClient } from './InboxClient'
+import { TopBar } from '@/components/layout/TopBar'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,7 +10,7 @@ export default async function InboxPage() {
   const [{ data: emails }, { data: tasks }, { data: gmailStatus }] = await Promise.all([
     supabase
       .from('email_classifications')
-      .select('*, tasks(id, title, due_date, completed)')
+      .select('*')
       .eq('archived', false)
       .order('received_at', { ascending: false })
       .limit(100),
@@ -27,10 +28,15 @@ export default async function InboxPage() {
   const gmailConnected = !!(gmailStatus?.value)
 
   return (
-    <InboxClient
-      initialEmails={emails ?? []}
-      initialTasks={tasks ?? []}
-      gmailConnected={gmailConnected}
-    />
+    <>
+      <TopBar title="Inbox Intelligence" />
+      <main className="page-pad flex flex-col gap-5 py-6 lg:py-8">
+        <InboxClient
+          initialEmails={emails ?? []}
+          initialTasks={tasks ?? []}
+          gmailConnected={gmailConnected}
+        />
+      </main>
+    </>
   )
 }

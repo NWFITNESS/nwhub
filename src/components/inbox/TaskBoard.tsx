@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { TaskItem } from './TaskItem'
-import { Plus, CheckSquare } from 'lucide-react'
+import { Plus } from 'lucide-react'
 
 interface Task {
   id: string
@@ -29,11 +29,7 @@ function groupTasks(tasks: Task[]) {
   const todayEnd = new Date(now); todayEnd.setDate(todayEnd.getDate() + 1)
   const weekEnd = new Date(now); weekEnd.setDate(weekEnd.getDate() + 7)
 
-  const overdue: Task[] = []
-  const today: Task[] = []
-  const thisWeek: Task[] = []
-  const later: Task[] = []
-  const noDueDate: Task[] = []
+  const overdue: Task[] = [], today: Task[] = [], thisWeek: Task[] = [], later: Task[] = [], noDueDate: Task[] = []
 
   for (const t of tasks) {
     if (t.completed) continue
@@ -61,12 +57,12 @@ export function TaskBoard({ tasks, onToggle, onAdd, onDelete }: Props) {
     setNewDue('')
   }
 
-  function Section({ label, items, accent }: { label: string; items: Task[]; accent?: string }) {
+  const Section = ({ label, items, accent }: { label: string; items: Task[]; accent?: string }) => {
     if (items.length === 0) return null
     return (
       <div className="mb-4">
-        <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${accent ?? 'text-white/35'}`}>{label}</p>
-        <div className="space-y-1.5">
+        <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${accent ?? 'text-white/30'}`}>{label}</p>
+        <div className="space-y-1">
           {items.map(t => (
             <TaskItem key={t.id} task={t} onToggle={onToggle} onDelete={onDelete} />
           ))}
@@ -76,39 +72,52 @@ export function TaskBoard({ tasks, onToggle, onAdd, onDelete }: Props) {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
-        <div className="flex items-center gap-2">
-          <CheckSquare size={14} className="text-[#f2ca50]" />
-          <span className="text-[13px] font-semibold text-white">Tasks</span>
-          {overdue.length > 0 && (
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">{overdue.length} overdue</span>
-          )}
-        </div>
-        <div className="flex items-center gap-1">
-          {(['active', 'all', 'done'] as const).map(f => (
-            <button key={f} onClick={() => setFilter(f)} className={`text-[11px] px-2 py-0.5 rounded transition-colors capitalize ${filter === f ? 'text-[#f2ca50] bg-[#967705]/20' : 'text-white/40 hover:text-white/60'}`}>
-              {f}
-            </button>
-          ))}
+    <div className="flex flex-col">
+      {/* Panel header */}
+      <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-semibold text-[#d4af37]/70 uppercase tracking-[0.2em]">
+              To Do
+            </p>
+            {overdue.length > 0 && (
+              <span className="inline-flex items-center gap-1 mt-1 text-[11px] font-semibold text-red-400">
+                {overdue.length} overdue
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            {(['active', 'all', 'done'] as const).map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`text-[11px] px-2.5 py-1 rounded-lg transition-colors capitalize ${
+                  filter === f
+                    ? 'bg-[#967705]/20 border border-[#967705]/40 text-[#f2ca50]'
+                    : 'text-white/40 hover:text-white/60'
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Quick add */}
-      <div className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.06]">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06]">
         <input
           value={newTitle}
           onChange={e => setNewTitle(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleAdd()}
           placeholder="Add a task…"
-          className="flex-1 bg-transparent text-[13px] text-white placeholder-white/25 outline-none min-w-0"
+          className="flex-1 bg-transparent text-[13px] text-white placeholder-white/20 outline-none min-w-0"
         />
         <input
           type="date"
           value={newDue}
           onChange={e => setNewDue(e.target.value)}
-          className="bg-white/[0.04] border border-white/[0.08] rounded px-2 py-1 text-[11px] text-white/50 outline-none"
+          className="bg-[#1c1b1b] border border-white/[0.08] rounded-lg px-2 py-1 text-[11px] text-white/50 outline-none focus:border-[#d4af37]/40"
         />
         <button
           onClick={handleAdd}
@@ -119,32 +128,27 @@ export function TaskBoard({ tasks, onToggle, onAdd, onDelete }: Props) {
       </div>
 
       {/* Task list */}
-      <div className="flex-1 overflow-y-auto px-4 py-3">
+      <div className="p-4">
         {filter === 'done' ? (
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             {doneTasks.length === 0 ? (
-              <p className="text-[13px] text-white/30 text-center py-8">No completed tasks</p>
+              <p className="text-[13px] text-white/25 text-center py-10">No completed tasks</p>
             ) : doneTasks.map(t => (
               <TaskItem key={t.id} task={t} onToggle={onToggle} onDelete={onDelete} />
             ))}
           </div>
-        ) : filter === 'all' ? (
-          <>
-            <Section label="Overdue" items={overdue} accent="text-red-400" />
-            <Section label="Today" items={today} accent="text-orange-400" />
-            <Section label="This Week" items={thisWeek} accent="text-[#f2ca50]" />
-            <Section label="Later" items={later} />
-            {doneTasks.slice(0, 5).map(t => <TaskItem key={t.id} task={t} onToggle={onToggle} onDelete={onDelete} />)}
-          </>
         ) : (
           <>
             <Section label="Overdue" items={overdue} accent="text-red-400" />
             <Section label="Today" items={today} accent="text-orange-400" />
             <Section label="This Week" items={thisWeek} accent="text-[#f2ca50]" />
             <Section label="Later" items={later} />
-            {overdue.length === 0 && today.length === 0 && thisWeek.length === 0 && later.length === 0 && (
-              <p className="text-[13px] text-white/30 text-center py-8">All caught up</p>
+            {filter === 'active' && overdue.length === 0 && today.length === 0 && thisWeek.length === 0 && later.length === 0 && (
+              <p className="text-[13px] text-white/25 text-center py-10">All caught up ✓</p>
             )}
+            {filter === 'all' && doneTasks.slice(0, 5).map(t => (
+              <TaskItem key={t.id} task={t} onToggle={onToggle} onDelete={onDelete} />
+            ))}
           </>
         )}
       </div>
