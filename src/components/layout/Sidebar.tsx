@@ -26,6 +26,9 @@ import {
   Sparkles,
   CheckSquare2,
   ChevronDown,
+  Users,
+  FileText,
+  Settings,
 } from 'lucide-react'
 import { SidebarInstallBox } from './SidebarInstallBox'
 
@@ -42,6 +45,7 @@ interface NavItem {
 interface NavGroup {
   key: string
   label: string
+  icon: React.ComponentType<{ size?: number; className?: string }>
   items: NavItem[]
   hideOnMobile?: boolean
 }
@@ -55,6 +59,7 @@ const navGroups: NavGroup[] = [
   {
     key: 'engagement',
     label: 'Engagement',
+    icon: Users,
     items: [
       { label: 'To Do', href: '/todo', icon: CheckSquare2 },
       { label: 'Contacts', href: '/contacts', icon: UsersNavIcon },
@@ -68,6 +73,7 @@ const navGroups: NavGroup[] = [
   {
     key: 'content',
     label: 'Content',
+    icon: FileText,
     hideOnMobile: true,
     items: [
       { label: 'Content', href: '/content', icon: FileNavIcon },
@@ -81,6 +87,7 @@ const navGroups: NavGroup[] = [
   {
     key: 'system',
     label: 'System',
+    icon: Settings,
     items: [
       { label: 'WodBoard Sync', href: '/sync', icon: RefreshCw },
       { label: 'Settings', href: '/settings', icon: SettingsNavIcon },
@@ -185,32 +192,32 @@ export function Sidebar({ open = false, onToggle, unreadCount = 0, userEmail, on
         {/* Grouped sections */}
         {navGroups.map((group) => {
           const isCollapsed = sectionsCollapsed[group.key]
+          const GroupIcon = group.icon
           return (
-            <div key={group.key} className={cn('pt-3', group.hideOnMobile && 'hidden md:block')}>
+            <div key={group.key} className={cn('pt-1', group.hideOnMobile && 'hidden md:block')}>
 
-              {/* Section header — only shown when open (would look broken if clipped) */}
-              {open ? (
-                <button
-                  onClick={() => toggleSection(group.key)}
-                  className="w-full flex items-center justify-between pl-2 pr-1 pb-1.5 group"
-                >
-                  <span className="text-[10px] uppercase tracking-[0.15em] font-semibold text-white/25 group-hover:text-white/45 transition-colors whitespace-nowrap">
-                    {group.label}
-                  </span>
-                  <ChevronDown
-                    size={11}
-                    className={cn(
-                      'text-white/20 group-hover:text-white/40 transition-all duration-200 flex-shrink-0',
-                      isCollapsed && '-rotate-90'
-                    )}
-                  />
-                </button>
-              ) : (
-                <div className="mx-1 mb-1.5 h-px bg-white/[0.06]" />
-              )}
+              {/* Section header — same size/height as nav items, with icon */}
+              <button
+                onClick={() => toggleSection(group.key)}
+                className="w-full flex items-center gap-3 pl-2 pr-2 h-10 rounded-lg transition-colors duration-150 text-white/40 hover:text-white/65 hover:bg-white/[0.04] group"
+              >
+                <span className="w-9 flex-shrink-0 flex items-center justify-center">
+                  <GroupIcon size={16} />
+                </span>
+                <span className="flex-1 text-[13.5px] font-semibold whitespace-nowrap text-left">
+                  {group.label}
+                </span>
+                <ChevronDown
+                  size={13}
+                  className={cn(
+                    'flex-shrink-0 transition-transform duration-200',
+                    isCollapsed && '-rotate-90'
+                  )}
+                />
+              </button>
 
-              {/* Items — always rendered; when section is collapsed + open, hide them */}
-              {(!isCollapsed || !open) && (
+              {/* Items */}
+              {!isCollapsed && (
                 <div className="space-y-0.5">
                   {group.items.map(({ label, href, icon: Icon, badge, tag }) => {
                     const active = isActive(href)

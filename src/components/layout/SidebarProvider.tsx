@@ -66,7 +66,7 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
             Inner div is always full 256 px so content never squashes. ── */}
         <div
           className="hidden md:flex flex-shrink-0 h-full overflow-hidden transition-[width] duration-300 ease-in-out"
-          style={{ width: desktopOpen ? '256px' : '64px' }}
+          style={{ width: desktopOpen ? '256px' : '0px' }}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
@@ -78,6 +78,14 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
             />
           </div>
         </div>
+
+        {/* ── Hover trigger strip — catches mouse when sidebar is fully hidden ── */}
+        {!desktopOpen && (
+          <div
+            className="fixed top-0 left-0 w-4 h-full z-10 hidden md:block"
+            onMouseEnter={handleMouseEnter}
+          />
+        )}
 
         {/* ── Mobile drawer ── */}
         <div className={`fixed inset-y-0 left-0 z-50 md:hidden transition-transform duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
