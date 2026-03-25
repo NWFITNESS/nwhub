@@ -1,0 +1,31 @@
+import { NextResponse } from 'next/server'
+
+const SCOPES = [
+  'https://www.googleapis.com/auth/gmail.modify',
+  'https://www.googleapis.com/auth/gmail.labels',
+  'https://www.googleapis.com/auth/gmail.readonly',
+  'https://www.googleapis.com/auth/userinfo.email',
+].join(' ')
+
+export async function GET() {
+  const clientId = process.env.GOOGLE_CLIENT_ID
+  if (!clientId) {
+    return NextResponse.json({ error: 'GOOGLE_CLIENT_ID not configured' }, { status: 500 })
+  }
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : 'http://localhost:3000'
+
+  const redirectUri = `${baseUrl}/api/gmail/callback`
+
+  const url = new URL('https://accounts.google.com/o/oauth2/v2/auth')
+  url.searchParams.set('client_id', clientId)
+  url.searchParams.set('redirect_uri', redirectUri)
+  url.searchParams.set('response_type', 'code')
+  url.searchParams.set('scope', SCOPES)
+  url.searchParams.set('access_type', 'offline')
+  url.searchParams.set('prompt', 'consent') // Force consent to get refresh_token
+
+  return NextResponse.redirect(url.toString())
+}

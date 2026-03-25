@@ -24,7 +24,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { cn } from '@/lib/utils'
-import { FileText, Users, Settings, PoundSterling, RefreshCw, Zap, Sparkles } from 'lucide-react'
+import { FileText, Users, Settings, PoundSterling, RefreshCw, Zap, Sparkles, CheckSquare2 } from 'lucide-react'
 import { SidebarInstallBox } from './SidebarInstallBox'
 
 interface NavItem {
@@ -60,6 +60,7 @@ const navGroups: NavGroup[] = [
     subtitle: 'Connect with your audience',
     icon: Users,
     items: [
+      { label: 'To Do', href: '/todo', icon: CheckSquare2 },
       { label: 'Contacts', href: '/contacts', icon: UsersNavIcon },
       { label: 'Leads', href: '/leads', icon: UsersNavIcon },
       { label: 'Enquiries', href: '/enquiries', icon: MailNavIcon, badge: 'contacts' as const },
