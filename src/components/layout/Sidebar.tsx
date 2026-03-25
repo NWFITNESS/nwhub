@@ -199,20 +199,19 @@ export function Sidebar({ open = false, onToggle, unreadCount = 0, userEmail, on
               {/* Section header */}
               <button
                 onClick={() => toggleSection(group.key)}
-                className="relative w-full flex items-center gap-3 pl-2 pr-9 h-10 rounded-lg transition-colors duration-150 text-white/50 hover:text-white/75 hover:bg-white/[0.05]"
+                className="w-full flex items-center gap-3 pl-2 pr-2 h-10 rounded-lg transition-colors duration-150 text-white/50 hover:text-white/75 hover:bg-white/[0.05]"
               >
                 <span className="w-9 flex-shrink-0 flex items-center justify-center">
                   <GroupIcon size={16} />
                 </span>
-                <span className="text-[13.5px] font-semibold whitespace-nowrap text-left">
+                <span className="flex-1 text-[13.5px] font-semibold truncate text-left">
                   {group.label}
                 </span>
-                {/* Absolute-positioned chevron so it's always visible at right edge */}
                 <ChevronDown
                   size={18}
                   style={{ color: '#f2ca50' }}
                   className={cn(
-                    'absolute right-2 top-1/2 -translate-y-1/2 flex-shrink-0 transition-transform duration-200',
+                    'flex-shrink-0 transition-transform duration-200',
                     isCollapsed ? '-rotate-90' : 'rotate-0'
                   )}
                 />
