@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { GlobalSettingsEditor } from '@/components/content/GlobalSettingsEditor'
 import { AccountSecuritySettings } from '@/components/content/AccountSecuritySettings'
 import { SocialConnections } from '@/components/settings/SocialConnections'
+import { DigestPreferences } from '@/components/settings/DigestPreferences'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -32,6 +33,17 @@ export default async function SettingsPage() {
           />
         </div>
         <SocialConnections />
+
+        <div id="digest-preferences" className="mt-4 scroll-mt-24">
+          <PageHeader
+            title="Digest Preferences"
+            description="Configure your daily morning digest email — who receives it and whether it's enabled."
+          />
+        </div>
+        <DigestPreferences
+          initialRecipient={settingsMap['digest_recipient'] ?? 'info@northernwarrior.co.uk'}
+          initialEnabled={settingsMap['digest_enabled'] !== 'false'}
+        />
 
         <div className="mt-4">
           <PageHeader

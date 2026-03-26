@@ -15,16 +15,27 @@ export async function POST() {
   const todayStart = new Date(now)
   todayStart.setHours(0, 0, 0, 0)
 
-  const { data: emails } = await supabase
-    .from('email_classifications')
-    .select('*')
-    .gte('processed_at', yesterday.toISOString())
-    .lt('processed_at', todayStart.toISOString())
+  const [{ data: emails }, { data: openTasks }, { data: digestSettings }] = await Promise.all([
+    supabase
+      .from('email_classifications')
+      .select('*')
+      .gte('processed_at', yesterday.toISOString())
+      .lt('processed_at', todayStart.toISOString()),
+    supabase
+      .from('tasks')
+      .select('*')
+      .eq('completed', false),
+    supabase
+      .from('global_settings')
+      .select('key, value')
+      .in('key', ['digest_recipient', 'digest_enabled']),
+  ])
 
-  const { data: openTasks } = await supabase
-    .from('tasks')
-    .select('*')
-    .eq('completed', false)
+  const settingsMap = Object.fromEntries((digestSettings ?? []).map(s => [s.key, s.value]))
+  const digestEnabled = settingsMap['digest_enabled'] !== 'false'
+  const recipient = settingsMap['digest_recipient'] ?? 'info@northernwarrior.co.uk'
+
+  if (!digestEnabled) return NextResponse.json({ sent: false, reason: 'Digest disabled in preferences' })
 
   const allEmails = emails ?? []
   const flagged = allEmails.filter((e: { flagged: boolean }) => e.flagged)
@@ -39,70 +50,110 @@ export async function POST() {
   const html = `
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"><style>
-  body { background: #111110; color: #e5e2e1; font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; }
-  .container { max-width: 600px; margin: 0 auto; padding: 32px 24px; }
-  .header { border-bottom: 1px solid #2a2a28; padding-bottom: 24px; margin-bottom: 24px; }
-  .logo { color: #d4af37; font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; }
-  .subtitle { color: rgba(255,255,255,0.4); font-size: 13px; margin-top: 4px; }
-  .stats { background: #1a1a19; border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 20px; margin-bottom: 24px; }
-  .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: rgba(255,255,255,0.6); }
-  .stat-row span { color: #f2ca50; font-weight: 700; }
-  .section-title { color: #d4af37; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 8px; margin: 24px 0 16px; }
-  .email-card { background: #1a1a19; border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
-  .email-from { font-size: 13px; font-weight: 600; color: #f2ca50; }
-  .email-subject { font-size: 14px; color: #e5e2e1; margin: 4px 0; }
-  .email-summary { font-size: 13px; color: rgba(255,255,255,0.55); }
-  .footer { border-top: 1px solid rgba(255,255,255,0.06); padding-top: 20px; margin-top: 32px; font-size: 12px; color: rgba(255,255,255,0.3); }
-  .cta { display: inline-block; background: #d4af37; color: #3c2f00; font-weight: 700; font-size: 13px; padding: 10px 20px; border-radius: 6px; text-decoration: none; margin-top: 16px; }
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+  * { box-sizing: border-box; }
+  body { background: #0e0e0d; color: #e5e2e1; font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 600px; margin: 0 auto; padding: 32px 16px; }
+  /* Hero header */
+  .hero { position: relative; background: linear-gradient(150deg, #0e1628 0%, #060a12 60%, #080c10 100%); border-radius: 16px; padding: 52px 32px 44px; text-align: center; overflow: hidden; margin-bottom: 28px; border: 1px solid rgba(201,168,76,0.12); }
+  .hero-bg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -54%); width: 280px; height: 280px; opacity: 0.09; pointer-events: none; }
+  .hero-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -54%); width: 340px; height: 340px; border-radius: 50%; border: 1px solid rgba(201,168,76,0.08); pointer-events: none; }
+  .hero-content { position: relative; z-index: 1; }
+  .hero-eyebrow { color: rgba(201,168,76,0.6); font-size: 10px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; margin: 0 0 12px; }
+  .hero-title { color: #f2ca50; font-size: 32px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin: 0; line-height: 1; }
+  .hero-sub { color: rgba(255,255,255,0.45); font-size: 13px; margin: 10px 0 0; letter-spacing: 0.5px; }
+  .hero-date { display: inline-block; margin-top: 16px; background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.2); border-radius: 20px; padding: 5px 16px; color: #d4af37; font-size: 12px; font-weight: 600; }
+  /* Stats grid */
+  .stats { display: table; width: 100%; border-collapse: separate; border-spacing: 0; background: #141413; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; margin-bottom: 28px; overflow: hidden; }
+  .stat-cell { display: table-cell; padding: 18px 20px; border-right: 1px solid rgba(255,255,255,0.05); width: 25%; text-align: center; vertical-align: middle; }
+  .stat-cell:last-child { border-right: none; }
+  .stat-num { color: #f2ca50; font-size: 26px; font-weight: 800; line-height: 1; margin: 0 0 4px; }
+  .stat-label { color: rgba(255,255,255,0.35); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
+  /* Section */
+  .section-title { color: #d4af37; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; margin: 0 0 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(212,175,55,0.15); }
+  .email-card { background: #141413; border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+  .email-from { font-size: 12px; font-weight: 700; color: #f2ca50; margin: 0 0 3px; }
+  .email-subject { font-size: 14px; color: #e5e2e1; font-weight: 500; margin: 0 0 5px; }
+  .email-summary { font-size: 12px; color: rgba(255,255,255,0.45); margin: 0; line-height: 1.5; }
+  /* CTA */
+  .cta-wrap { text-align: center; margin: 28px 0; }
+  .cta { display: inline-block; background: linear-gradient(135deg, #c9980c, #e8b830); color: #1a0f00; font-weight: 800; font-size: 13px; padding: 13px 28px; border-radius: 8px; text-decoration: none; letter-spacing: 0.5px; }
+  /* Footer */
+  .footer { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; margin-top: 8px; font-size: 11px; color: rgba(255,255,255,0.25); text-align: center; line-height: 1.8; }
+  .footer a { color: rgba(201,168,76,0.5); text-decoration: none; }
+  .footer a:hover { color: #d4af37; }
 </style></head>
 <body>
-<div class="container">
-  <div class="header">
-    <div class="logo">Northern Warrior</div>
-    <div class="subtitle">NWHub Morning Digest — ${dayName} ${dateStr}</div>
+<div class="wrap">
+
+  <!-- Hero Header -->
+  <div class="hero">
+    <img class="hero-bg" src="https://nwhub.vercel.app/icons/NWHub-Icon.svg" alt="" />
+    <div class="hero-ring"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">Northern Warrior</p>
+      <h1 class="hero-title">NWHub</h1>
+      <p class="hero-sub">Morning Digest</p>
+      <span class="hero-date">${dayName} · ${dateStr}</span>
+    </div>
   </div>
 
+  <!-- Stats -->
   <div class="stats">
-    <div class="stat-row">Total emails processed <span>${allEmails.length}</span></div>
-    <div class="stat-row">Spam/newsletters archived <span>${archivedCount}</span></div>
-    <div class="stat-row">Needs your attention <span>${flagged.length}</span></div>
-    <div class="stat-row">Categorised (no action) <span>${categorised}</span></div>
+    <div class="stat-cell">
+      <p class="stat-num">${allEmails.length}</p>
+      <p class="stat-label">Processed</p>
+    </div>
+    <div class="stat-cell">
+      <p class="stat-num" style="color:${flagged.length > 0 ? '#f87171' : '#f2ca50'}">${flagged.length}</p>
+      <p class="stat-label">Action needed</p>
+    </div>
+    <div class="stat-cell">
+      <p class="stat-num" style="color:${newLeads.length > 0 ? '#34d399' : '#f2ca50'}">${newLeads.length}</p>
+      <p class="stat-label">New leads</p>
+    </div>
+    <div class="stat-cell">
+      <p class="stat-num">${openTaskCount}</p>
+      <p class="stat-label">Open tasks</p>
+    </div>
   </div>
 
   ${flagged.length > 0 ? `
-  <div class="section-title">Needs Your Attention</div>
+  <p class="section-title">Needs Your Attention</p>
   ${flagged.map((e: { sender_name: string | null; sender: string; subject: string; ai_summary: string | null }) => `
   <div class="email-card">
-    <div class="email-from">${e.sender_name ?? e.sender}</div>
-    <div class="email-subject">${e.subject}</div>
-    ${e.ai_summary ? `<div class="email-summary">${e.ai_summary}</div>` : ''}
+    <p class="email-from">${e.sender_name ?? e.sender}</p>
+    <p class="email-subject">${e.subject}</p>
+    ${e.ai_summary ? `<p class="email-summary">${e.ai_summary}</p>` : ''}
   </div>`).join('')}` : ''}
 
   ${newLeads.length > 0 ? `
-  <div class="section-title">New Leads (${newLeads.length})</div>
+  <p class="section-title" style="margin-top:24px">New Leads (${newLeads.length})</p>
   ${newLeads.map((e: { sender_name: string | null; sender: string; subject: string; ai_summary: string | null }) => `
   <div class="email-card">
-    <div class="email-from">${e.sender_name ?? e.sender}</div>
-    <div class="email-subject">${e.subject}</div>
-    ${e.ai_summary ? `<div class="email-summary">${e.ai_summary}</div>` : ''}
+    <p class="email-from">${e.sender_name ?? e.sender}</p>
+    <p class="email-subject">${e.subject}</p>
+    ${e.ai_summary ? `<p class="email-summary">${e.ai_summary}</p>` : ''}
   </div>`).join('')}` : ''}
 
-  ${openTaskCount > 0 ? `
-  <div class="section-title">Open Tasks: ${openTaskCount}</div>
-  <a href="https://nwhub.vercel.app/inbox" class="cta">View Inbox Intelligence →</a>` : ''}
-
-  <div class="footer">
-    This digest is sent daily at 8am.<br>
-    Manage preferences in NWHub → Settings.
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <a href="https://nwhub.vercel.app/inbox" class="cta">Open Inbox Intelligence →</a>
   </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    Sent daily at 8am · NWHub Morning Digest<br>
+    <a href="https://nwhub.vercel.app/settings#digest-preferences">Manage digest preferences</a>
+  </div>
+
 </div>
 </body>
 </html>`
 
   const { error } = await resend.emails.send({
     from: 'NWHub <noreply@northernwarrior.co.uk>',
-    to: 'info@northernwarrior.co.uk',
+    to: recipient,
     subject: `NWHub Morning Digest — ${dayName} ${dateStr}`,
     html,
   })
