@@ -87,7 +87,8 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
     try {
       const res = await fetch('/api/inbox/bulk-sort', { method: 'POST' })
       const data = await res.json()
-      setLastResult(`Sorted ${data.processed} of ${data.total} emails · archived ${data.archived} · ${data.tasks_created} tasks created`)
+      const errSuffix = data.errors?.length ? ` · Errors: ${data.errors[0]}` : ''
+      setLastResult(`Sorted ${data.processed} of ${data.total} emails · archived ${data.archived} · ${data.tasks_created} tasks created${errSuffix}`)
       await refreshEmails()
       await refreshTasks()
     } finally {

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { gmailFetch, extractEmailBody } from '@/lib/gmail'
+import { getValidAccessToken, extractEmailBody } from '@/lib/gmail'
 import Anthropic from '@anthropic-ai/sdk'
 
 const anthropic = new Anthropic()
@@ -25,14 +25,27 @@ const CLASSIFY_TOOL = {
 export async function POST() {
   const supabase = createAdminClient()
 
+  // Fetch token ONCE and reuse — avoids 500+ DB reads
+  const tokenData = await getValidAccessToken()
+  if (!tokenData) return NextResponse.json({ error: 'Gmail not connected or token invalid' }, { status: 401 })
+
+  const gFetch = (path: string, options: RequestInit = {}) =>
+    fetch(`https://gmail.googleapis.com/gmail/v1${path}`, {
+      ...options,
+      headers: { Authorization: `Bearer ${tokenData.accessToken}`, 'Content-Type': 'application/json', ...(options.headers ?? {}) },
+    })
+
   // Get all unread message IDs (paginate up to 500)
   const allMessages: Array<{ id: string }> = []
   let pageToken: string | undefined
 
   do {
-    const url = `/users/me/messages?maxResults=500&q=is:unread+in:inbox${pageToken ? `&pageToken=${pageToken}` : ''}`
-    const res = await gmailFetch(url)
-    if (!res.ok) break
+    const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=500&q=in:inbox${pageToken ? `&pageToken=${pageToken}` : ''}`
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${tokenData.accessToken}` } })
+    if (!res.ok) {
+      const err = await res.text()
+      return NextResponse.json({ error: `Gmail list failed (${res.status}): ${err}` }, { status: 502 })
+    }
     const data = await res.json()
     allMessages.push(...(data.messages ?? []))
     pageToken = data.nextPageToken
@@ -44,15 +57,19 @@ export async function POST() {
 
   const total = toProcess.length
   let processed = 0, tasks_created = 0, archived = 0
+  const errors: string[] = []
 
-  // Process in batches of 20 (parallel within batch)
-  const BATCH = 20
+  // Process in batches of 5 — larger batches hit Claude + Gmail rate limits
+  const BATCH = 5
   for (let i = 0; i < toProcess.length; i += BATCH) {
     const batch = toProcess.slice(i, i + BATCH)
     await Promise.allSettled(batch.map(async (msg) => {
       try {
-        const detailRes = await gmailFetch(`/users/me/messages/${msg.id}?format=full`)
-        if (!detailRes.ok) return
+        const detailRes = await gFetch(`/users/me/messages/${msg.id}?format=full`)
+        if (!detailRes.ok) {
+          errors.push(`Detail fetch ${msg.id}: ${detailRes.status} ${await detailRes.text().catch(() => '')}`)
+          return
+        }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const detail: any = await detailRes.json()
         const headers: Array<{ name: string; value: string }> = detail.payload?.headers ?? []
@@ -116,21 +133,22 @@ export async function POST() {
         }, { onConflict: 'gmail_message_id' })
 
         if (shouldArchive) {
-          await gmailFetch(`/users/me/messages/${msg.id}/modify`, { method: 'POST', body: JSON.stringify({ removeLabelIds: ['INBOX', 'UNREAD'] }) })
+          await gFetch(`/users/me/messages/${msg.id}/modify`, { method: 'POST', body: JSON.stringify({ removeLabelIds: ['INBOX', 'UNREAD'] }) })
           archived++
         } else {
-          await gmailFetch(`/users/me/messages/${msg.id}/modify`, { method: 'POST', body: JSON.stringify({ removeLabelIds: ['UNREAD'] }) })
+          await gFetch(`/users/me/messages/${msg.id}/modify`, { method: 'POST', body: JSON.stringify({ removeLabelIds: ['UNREAD'] }) })
         }
 
         processed++
-        // Update progress in Supabase so UI can poll
         await supabase.from('global_settings').upsert({ key: 'bulk_sort_progress', value: JSON.stringify({ processed, total, done: false }) })
       } catch (e) {
+        const msg_err = e instanceof Error ? e.message : String(e)
+        errors.push(msg_err)
         console.error('[bulk-sort] error on', msg.id, e)
       }
     }))
   }
 
   await supabase.from('global_settings').upsert({ key: 'bulk_sort_progress', value: JSON.stringify({ processed, total, done: true, tasks_created, archived }) })
-  return NextResponse.json({ processed, total, tasks_created, archived })
+  return NextResponse.json({ processed, total, tasks_created, archived, errors: errors.slice(0, 5) })
 }
