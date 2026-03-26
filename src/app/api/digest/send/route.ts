@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function POST(request: Request) {
+  const resend = new Resend(process.env.RESEND_API_KEY)
   const supabase = createAdminClient()
 
   // Get yesterday's date range
