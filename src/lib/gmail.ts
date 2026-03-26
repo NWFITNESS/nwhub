@@ -90,6 +90,56 @@ export async function storeGmailTokens(params: {
   await saveTokens(tokens)
 }
 
+/** Build a Gmail API fetcher using a pre-fetched access token (avoids repeated DB reads) */
+export function makeGmailFetcher(accessToken: string) {
+  return (path: string, options: RequestInit = {}) =>
+    fetch(`https://gmail.googleapis.com/gmail/v1${path}`, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        ...(options.headers ?? {}),
+      },
+    })
+}
+
+/**
+ * Ensure NWHub labels exist in Gmail and return a map of name → labelId.
+ * Creates any missing labels on the fly.
+ */
+export async function ensureGmailLabels(
+  gFetch: (path: string, options?: RequestInit) => Promise<Response>
+): Promise<Record<string, string>> {
+  const wanted = [
+    { name: 'NWHub/Action Required', color: { backgroundColor: '#cc3a21', textColor: '#ffffff' } },
+    { name: 'NWHub/New Lead',         color: { backgroundColor: '#16a766', textColor: '#ffffff' } },
+    { name: 'NWHub/Newsletter',       color: { backgroundColor: '#8e63ce', textColor: '#ffffff' } },
+    { name: 'NWHub/Receipts',         color: { backgroundColor: '#4986e7', textColor: '#ffffff' } },
+  ]
+
+  const listRes = await gFetch('/users/me/labels')
+  const listData = listRes.ok ? await listRes.json() : { labels: [] }
+  const existing: Array<{ id: string; name: string }> = listData.labels ?? []
+
+  const labelMap: Record<string, string> = {}
+  for (const w of wanted) {
+    const found = existing.find(l => l.name === w.name)
+    if (found) {
+      labelMap[w.name] = found.id
+    } else {
+      const createRes = await gFetch('/users/me/labels', {
+        method: 'POST',
+        body: JSON.stringify({ name: w.name, labelListVisibility: 'labelShow', messageListVisibility: 'show', color: w.color }),
+      })
+      if (createRes.ok) {
+        const created = await createRes.json()
+        labelMap[w.name] = created.id
+      }
+    }
+  }
+  return labelMap
+}
+
 /** Fetch from Gmail API with automatic token management */
 export async function gmailFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const tokenData = await getValidAccessToken()

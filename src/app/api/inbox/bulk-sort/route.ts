@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getValidAccessToken, extractEmailBody } from '@/lib/gmail'
+import { getValidAccessToken, extractEmailBody, ensureGmailLabels } from '@/lib/gmail'
 import Anthropic from '@anthropic-ai/sdk'
 
 const anthropic = new Anthropic()
@@ -34,6 +34,9 @@ export async function POST() {
       ...options,
       headers: { Authorization: `Bearer ${tokenData.accessToken}`, 'Content-Type': 'application/json', ...(options.headers ?? {}) },
     })
+
+  // Ensure NWHub labels exist and get their IDs
+  const labelMap = await ensureGmailLabels(gFetch)
 
   // Get all unread message IDs (paginate up to 500)
   const allMessages: Array<{ id: string }> = []
@@ -106,7 +109,6 @@ export async function POST() {
           task_due_date?: string
         }
         const category = result.category
-        const shouldArchive = category === 'spam' || category === 'newsletter' || category === 'receipt_notification'
 
         let task_id: string | undefined
         if (result.create_task && result.task_title) {
@@ -119,6 +121,31 @@ export async function POST() {
           if (task) { task_id = task.id; tasks_created++ }
         }
 
+        // Determine Gmail action based on category
+        let gmailModify: { addLabelIds?: string[]; removeLabelIds?: string[] }
+        let isArchived = false
+
+        if (category === 'spam') {
+          gmailModify = { addLabelIds: ['SPAM'], removeLabelIds: ['INBOX', 'UNREAD'] }
+          isArchived = true; archived++
+        } else if (category === 'newsletter') {
+          const labelId = labelMap['NWHub/Newsletter']
+          gmailModify = { addLabelIds: labelId ? [labelId] : [], removeLabelIds: ['INBOX', 'UNREAD'] }
+          isArchived = true; archived++
+        } else if (category === 'receipt_notification') {
+          const labelId = labelMap['NWHub/Receipts']
+          gmailModify = { addLabelIds: labelId ? [labelId] : [], removeLabelIds: ['INBOX', 'UNREAD'] }
+          isArchived = true; archived++
+        } else if (category === 'needs_attention') {
+          const labelId = labelMap['NWHub/Action Required']
+          gmailModify = { addLabelIds: labelId ? [labelId] : [], removeLabelIds: ['UNREAD'] }
+        } else if (category === 'new_lead') {
+          const labelId = labelMap['NWHub/New Lead']
+          gmailModify = { addLabelIds: labelId ? [labelId] : [], removeLabelIds: ['UNREAD'] }
+        } else {
+          gmailModify = { removeLabelIds: ['UNREAD'] }
+        }
+
         await supabase.from('email_classifications').upsert({
           gmail_message_id: msg.id,
           thread_id: detail.threadId,
@@ -127,17 +154,15 @@ export async function POST() {
           received_at, category,
           ai_summary: result.ai_summary || null,
           flagged: result.flagged ?? false,
-          archived: shouldArchive,
+          archived: isArchived,
           task_created: !!task_id,
           task_id: task_id ?? null,
         }, { onConflict: 'gmail_message_id' })
 
-        if (shouldArchive) {
-          await gFetch(`/users/me/messages/${msg.id}/modify`, { method: 'POST', body: JSON.stringify({ removeLabelIds: ['INBOX', 'UNREAD'] }) })
-          archived++
-        } else {
-          await gFetch(`/users/me/messages/${msg.id}/modify`, { method: 'POST', body: JSON.stringify({ removeLabelIds: ['UNREAD'] }) })
-        }
+        await gFetch(`/users/me/messages/${msg.id}/modify`, {
+          method: 'POST',
+          body: JSON.stringify(gmailModify),
+        })
 
         processed++
         await supabase.from('global_settings').upsert({ key: 'bulk_sort_progress', value: JSON.stringify({ processed, total, done: false }) })
