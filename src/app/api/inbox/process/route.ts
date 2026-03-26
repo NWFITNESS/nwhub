@@ -1,30 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { gmailFetch, extractEmailBody, ensureGmailLabels } from '@/lib/gmail'
-import Anthropic from '@anthropic-ai/sdk'
-
-const anthropic = new Anthropic()
-
-const CLASSIFY_TOOL = {
-  name: 'classify_email',
-  description: 'Classify a gym business email for Northern Warrior fitness gym',
-  input_schema: {
-    type: 'object' as const,
-    properties: {
-      category: {
-        type: 'string',
-        enum: ['needs_attention', 'new_lead', 'newsletter', 'receipt_notification', 'spam'],
-        description: 'needs_attention=reply needed or decision required; new_lead=gym enquiry or membership question; newsletter=marketing/informational; receipt_notification=automated receipts; spam=irrelevant',
-      },
-      ai_summary: { type: 'string', description: '1-2 sentence summary for needs_attention and new_lead emails only, empty string otherwise' },
-      flagged: { type: 'boolean', description: 'true for needs_attention and new_lead only' },
-      create_task: { type: 'boolean', description: 'true if an action task should be created' },
-      task_title: { type: 'string', description: 'Short action task title if create_task is true' },
-      task_due_date: { type: 'string', description: 'ISO date YYYY-MM-DD for task due date, or empty string' },
-    },
-    required: ['category', 'ai_summary', 'flagged', 'create_task'],
-  },
-}
+import { classifyEmail } from '@/lib/email-classifier'
 
 export async function POST(request: Request) {
   const supabase = createAdminClient()
@@ -94,32 +71,11 @@ export async function POST(request: Request) {
       const sender = fromMatch ? fromMatch[2] : from
 
       const body = extractEmailBody(detail.payload)
-      const preview = (body || detail.snippet || '').slice(0, 300)
+      const preview = (body || detail.snippet || '').slice(0, 500)
 
-      // Claude classification
-      const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 512,
-        tools: [CLASSIFY_TOOL],
-        tool_choice: { type: 'any' },
-        messages: [{
-          role: 'user',
-          content: `Classify this email for Northern Warrior fitness gym admin dashboard.\n\nFrom: ${from}\nSubject: ${subject}\nPreview: ${preview}`,
-        }],
-      })
+      const result = await classifyEmail({ from, subject, preview })
+      if (!result) continue
 
-      const toolUse = response.content.find((b) => b.type === 'tool_use')
-      if (!toolUse) continue
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = (toolUse as any).input as {
-        category: string
-        ai_summary: string
-        flagged: boolean
-        create_task: boolean
-        task_title?: string
-        task_due_date?: string
-      }
       const category = result.category
 
       // Create task if needed
@@ -129,9 +85,11 @@ export async function POST(request: Request) {
           .from('tasks')
           .insert({
             title: result.task_title,
+            notes: result.task_detail || null,
             source: 'email',
+            email_id: msg.id,
             due_date: result.task_due_date || null,
-            priority: category === 'needs_attention' ? 'high' : 'medium',
+            priority: result.task_priority ?? (category === 'needs_attention' ? 'high' : 'medium'),
           })
           .select('id')
           .single()

@@ -1,26 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getValidAccessToken, extractEmailBody, ensureGmailLabels } from '@/lib/gmail'
-import Anthropic from '@anthropic-ai/sdk'
-
-const anthropic = new Anthropic()
-
-const CLASSIFY_TOOL = {
-  name: 'classify_email',
-  description: 'Classify a gym business email for Northern Warrior fitness gym',
-  input_schema: {
-    type: 'object' as const,
-    properties: {
-      category: { type: 'string', enum: ['needs_attention', 'new_lead', 'newsletter', 'receipt_notification', 'spam'] },
-      ai_summary: { type: 'string' },
-      flagged: { type: 'boolean' },
-      create_task: { type: 'boolean' },
-      task_title: { type: 'string' },
-      task_due_date: { type: 'string' },
-    },
-    required: ['category', 'ai_summary', 'flagged', 'create_task'],
-  },
-}
+import { classifyEmail } from '@/lib/email-classifier'
 
 export async function POST() {
   const supabase = createAdminClient()
@@ -86,37 +67,22 @@ export async function POST() {
         const sender_name = fromMatch ? fromMatch[1].trim().replace(/^"|"$/g, '') : from
         const sender = fromMatch ? fromMatch[2] : from
         const body = extractEmailBody(detail.payload)
-        const preview = (body || detail.snippet || '').slice(0, 300)
+        const preview = (body || detail.snippet || '').slice(0, 500)
 
-        const response = await anthropic.messages.create({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 256,
-          tools: [CLASSIFY_TOOL],
-          tool_choice: { type: 'any' },
-          messages: [{ role: 'user', content: `Classify: From: ${from}\nSubject: ${subject}\nPreview: ${preview.slice(0, 150)}` }],
-        })
+        const result = await classifyEmail({ from, subject, preview })
+        if (!result) return
 
-        const toolUse = response.content.find((b) => b.type === 'tool_use')
-        if (!toolUse) return
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const result = (toolUse as any).input as {
-          category: string
-          ai_summary: string
-          flagged: boolean
-          create_task: boolean
-          task_title?: string
-          task_due_date?: string
-        }
         const category = result.category
 
         let task_id: string | undefined
         if (result.create_task && result.task_title) {
           const { data: task } = await supabase.from('tasks').insert({
             title: result.task_title,
+            notes: result.task_detail || null,
             source: 'email',
+            email_id: msg.id,
             due_date: result.task_due_date || null,
-            priority: category === 'needs_attention' ? 'high' : 'medium',
+            priority: result.task_priority ?? (category === 'needs_attention' ? 'high' : 'medium'),
           }).select('id').single()
           if (task) { task_id = task.id; tasks_created++ }
         }
