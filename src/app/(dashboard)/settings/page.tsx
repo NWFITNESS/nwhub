@@ -43,6 +43,8 @@ export default async function SettingsPage() {
         <DigestPreferences
           initialRecipient={settingsMap['digest_recipient'] ?? 'info@northernwarrior.co.uk'}
           initialEnabled={settingsMap['digest_enabled'] !== 'false'}
+          initialSendHour={parseInt(settingsMap['digest_send_hour'] ?? '8', 10)}
+          initialProcessInterval={parseInt(settingsMap['inbox_process_interval'] ?? '5', 10)}
         />
 
         <div className="mt-4">

@@ -67,7 +67,7 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
     setProcessing(true)
     setLastResult(null)
     try {
-      const res = await fetch('/api/inbox/process', { method: 'POST' })
+      const res = await fetch('/api/inbox/process?force=true', { method: 'POST' })
       const data = await res.json()
       setLastResult(`Processed ${data.processed} emails · archived ${data.archived} · ${data.tasks_created} tasks created`)
       await refreshEmails()
@@ -100,9 +100,9 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
     setSendingDigest(true)
     setLastResult(null)
     try {
-      const res = await fetch('/api/digest/send', { method: 'POST' })
+      const res = await fetch('/api/digest/send?force=true', { method: 'POST' })
       const data = await res.json()
-      setLastResult(data.sent ? 'Digest sent to info@northernwarrior.co.uk' : `Digest failed: ${data.error}`)
+      setLastResult(data.sent ? 'Digest sent ✓' : `Digest failed: ${data.error ?? data.reason}`)
     } finally {
       setSendingDigest(false)
     }

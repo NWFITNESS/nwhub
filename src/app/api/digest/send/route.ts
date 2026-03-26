@@ -4,7 +4,7 @@ import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-export async function POST() {
+export async function POST(request: Request) {
   const supabase = createAdminClient()
 
   // Get yesterday's date range
@@ -28,14 +28,22 @@ export async function POST() {
     supabase
       .from('global_settings')
       .select('key, value')
-      .in('key', ['digest_recipient', 'digest_enabled']),
+      .in('key', ['digest_recipient', 'digest_enabled', 'digest_send_hour']),
   ])
 
   const settingsMap = Object.fromEntries((digestSettings ?? []).map(s => [s.key, s.value]))
   const digestEnabled = settingsMap['digest_enabled'] !== 'false'
   const recipient = settingsMap['digest_recipient'] ?? 'info@northernwarrior.co.uk'
+  const sendHour = parseInt(settingsMap['digest_send_hour'] ?? '8', 10)
+  const currentHour = new Date().getUTCHours()
 
   if (!digestEnabled) return NextResponse.json({ sent: false, reason: 'Digest disabled in preferences' })
+  // Cron runs every hour — only send at the configured hour unless ?force=true (UI test button)
+  const url = new URL(request.url)
+  const force = url.searchParams.get('force') === 'true'
+  if (!force && currentHour !== sendHour) {
+    return NextResponse.json({ sent: false, reason: `Not send time (current ${currentHour}:00 UTC, configured ${sendHour}:00 UTC)` })
+  }
 
   const allEmails = emails ?? []
   const flagged = allEmails.filter((e: { flagged: boolean }) => e.flagged)

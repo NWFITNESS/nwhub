@@ -26,8 +26,25 @@ const CLASSIFY_TOOL = {
   },
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   const supabase = createAdminClient()
+
+  // Check interval throttle (skip if called too soon, unless ?force=true)
+  const url = new URL(request.url)
+  const force = url.searchParams.get('force') === 'true'
+  if (!force) {
+    const [{ data: intervalSetting }, { data: lastRunSetting }] = await Promise.all([
+      supabase.from('global_settings').select('value').eq('key', 'inbox_process_interval').single(),
+      supabase.from('global_settings').select('value').eq('key', 'inbox_last_processed').single(),
+    ])
+    const intervalMins = parseInt(intervalSetting?.value ?? '5', 10)
+    const lastRun = lastRunSetting?.value ? new Date(lastRunSetting.value) : null
+    if (lastRun && (Date.now() - lastRun.getTime()) < intervalMins * 60 * 1000) {
+      return NextResponse.json({ skipped: true, reason: `Last ran ${Math.round((Date.now() - lastRun.getTime()) / 60000)}m ago, interval is ${intervalMins}m` })
+    }
+  }
+  // Record this run
+  await supabase.from('global_settings').upsert({ key: 'inbox_last_processed', value: new Date().toISOString() }, { onConflict: 'key' })
 
   // Fetch unread emails from Gmail
   let listData: { messages?: Array<{ id: string }> }
