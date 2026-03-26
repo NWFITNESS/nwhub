@@ -54,15 +54,12 @@ export async function POST() {
   * { box-sizing: border-box; }
   body { background: #0e0e0d; color: #e5e2e1; font-family: 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
   .wrap { max-width: 600px; margin: 0 auto; padding: 32px 16px; }
-  /* Hero header */
-  .hero { position: relative; background: linear-gradient(150deg, #0e1628 0%, #060a12 60%, #080c10 100%); border-radius: 16px; padding: 52px 32px 44px; text-align: center; overflow: hidden; margin-bottom: 28px; border: 1px solid rgba(201,168,76,0.12); }
-  .hero-bg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -54%); width: 280px; height: 280px; opacity: 0.09; pointer-events: none; }
-  .hero-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -54%); width: 340px; height: 340px; border-radius: 50%; border: 1px solid rgba(201,168,76,0.08); pointer-events: none; }
-  .hero-content { position: relative; z-index: 1; }
-  .hero-eyebrow { color: rgba(201,168,76,0.6); font-size: 10px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; margin: 0 0 12px; }
-  .hero-title { color: #f2ca50; font-size: 32px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin: 0; line-height: 1; }
-  .hero-sub { color: rgba(255,255,255,0.45); font-size: 13px; margin: 10px 0 0; letter-spacing: 0.5px; }
-  .hero-date { display: inline-block; margin-top: 16px; background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.2); border-radius: 20px; padding: 5px 16px; color: #d4af37; font-size: 12px; font-weight: 600; }
+  /* Hero header — SVG as CSS background so text is always on top */
+  .hero { background: linear-gradient(150deg, #0e1628 0%, #060a12 60%, #080c10 100%), url(https://nwhub.vercel.app/icons/NWHub-Icon.svg) no-repeat center center / 160px 160px; border-radius: 14px; padding: 32px 32px 28px; text-align: center; margin-bottom: 24px; border: 1px solid rgba(201,168,76,0.12); }
+  .hero-eyebrow { color: rgba(201,168,76,0.55); font-size: 10px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; margin: 0 0 8px; }
+  .hero-title { color: #f2ca50; font-size: 26px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin: 0; line-height: 1; }
+  .hero-sub { color: rgba(255,255,255,0.4); font-size: 12px; margin: 6px 0 0; }
+  .hero-date { display: inline-block; margin-top: 12px; background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.2); border-radius: 20px; padding: 4px 14px; color: #d4af37; font-size: 11px; font-weight: 600; }
   /* Stats grid */
   .stats { display: table; width: 100%; border-collapse: separate; border-spacing: 0; background: #141413; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; margin-bottom: 28px; overflow: hidden; }
   .stat-cell { display: table-cell; padding: 18px 20px; border-right: 1px solid rgba(255,255,255,0.05); width: 25%; text-align: center; vertical-align: middle; }
@@ -76,8 +73,7 @@ export async function POST() {
   .email-subject { font-size: 14px; color: #e5e2e1; font-weight: 500; margin: 0 0 5px; }
   .email-summary { font-size: 12px; color: rgba(255,255,255,0.45); margin: 0; line-height: 1.5; }
   /* CTA */
-  .cta-wrap { text-align: center; margin: 28px 0; }
-  .cta { display: inline-block; background: linear-gradient(135deg, #c9980c, #e8b830); color: #1a0f00; font-weight: 800; font-size: 13px; padding: 13px 28px; border-radius: 8px; text-decoration: none; letter-spacing: 0.5px; }
+  .cta { display: inline-block; background: #c9980c; color: #1a0f00 !important; font-weight: 800; font-size: 13px; padding: 12px 28px; border-radius: 8px; text-decoration: none; letter-spacing: 0.5px; mso-padding-alt: 0; }
   /* Footer */
   .footer { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; margin-top: 8px; font-size: 11px; color: rgba(255,255,255,0.25); text-align: center; line-height: 1.8; }
   .footer a { color: rgba(201,168,76,0.5); text-decoration: none; }
@@ -88,14 +84,10 @@ export async function POST() {
 
   <!-- Hero Header -->
   <div class="hero">
-    <img class="hero-bg" src="https://nwhub.vercel.app/icons/NWHub-Icon.svg" alt="" />
-    <div class="hero-ring"></div>
-    <div class="hero-content">
-      <p class="hero-eyebrow">Northern Warrior</p>
-      <h1 class="hero-title">NWHub</h1>
-      <p class="hero-sub">Morning Digest</p>
-      <span class="hero-date">${dayName} · ${dateStr}</span>
-    </div>
+    <p class="hero-eyebrow">Northern Warrior</p>
+    <h1 class="hero-title">NWHub</h1>
+    <p class="hero-sub">Morning Digest</p>
+    <span class="hero-date">${dayName} · ${dateStr}</span>
   </div>
 
   <!-- Stats -->
@@ -136,10 +128,14 @@ export async function POST() {
     ${e.ai_summary ? `<p class="email-summary">${e.ai_summary}</p>` : ''}
   </div>`).join('')}` : ''}
 
-  <!-- CTA -->
-  <div class="cta-wrap">
-    <a href="https://nwhub.vercel.app/inbox" class="cta">Open Inbox Intelligence →</a>
-  </div>
+  <!-- CTA — table layout for desktop email client compatibility -->
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 24px 0;">
+    <tr>
+      <td align="center">
+        <a href="https://nwhub.vercel.app/inbox" class="cta">Open Inbox Intelligence →</a>
+      </td>
+    </tr>
+  </table>
 
   <!-- Footer -->
   <div class="footer">
