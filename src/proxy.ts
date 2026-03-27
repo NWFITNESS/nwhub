@@ -38,12 +38,20 @@ export async function proxy(request: NextRequest) {
     pathname === '/blog' ||
     (pathname.startsWith('/blog/') && !pathname.startsWith('/blog/manage'))
 
+  // Vercel cron / internal routes — protected by CRON_SECRET header, no session needed
+  const cronSecret = process.env.CRON_SECRET
+  const isCronRequest =
+    (pathname === '/api/digest/send' || pathname === '/api/inbox/process') &&
+    cronSecret &&
+    request.headers.get('authorization') === `Bearer ${cronSecret}`
+
   // Public API routes — no auth required
   const isPublicApi =
     pathname === '/api/chat' ||
     pathname.startsWith('/api/chat/') ||
     pathname === '/api/analytics/track' ||  // public tracking beacon from public website
-    pathname === '/api/email/unsubscribe'   // token-based unsubscribe, no session needed
+    pathname === '/api/email/unsubscribe' || // token-based unsubscribe, no session needed
+    !!isCronRequest                          // internal cron routes with valid secret
 
   if (!user && !isLoginPage && !isAuthPage && !isPublicBlog && !isPublicApi) {
     // API consumers must receive 401 JSON — never redirect them to /login
