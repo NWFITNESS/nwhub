@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, createContext, useContext } from 'react'
 import { Menu, Bell } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import NeuralBackground from '@/components/ui/flow-field-background'
+import { BottomTabBar } from '@/components/mobile/BottomTabBar'
 
 // ── Shared context ─────────────────────────────────────────────────────────────
 
@@ -65,7 +66,7 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
             Outer div clips and transitions width.
             Inner div is always full 256 px so content never squashes. ── */}
         <div
-          className="hidden md:flex flex-shrink-0 h-full overflow-hidden transition-[width] duration-300 ease-in-out"
+          className="hidden lg:flex flex-shrink-0 h-full overflow-hidden transition-[width] duration-300 ease-in-out"
           style={{ width: desktopOpen ? '256px' : '0px' }}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
@@ -82,13 +83,13 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
         {/* ── Hover trigger strip — catches mouse when sidebar is fully hidden ── */}
         {!desktopOpen && (
           <div
-            className="fixed top-0 left-0 w-4 h-full z-10 hidden md:block"
+            className="fixed top-0 left-0 w-4 h-full z-10 hidden lg:block"
             onMouseEnter={handleMouseEnter}
           />
         )}
 
         {/* ── Mobile drawer ── */}
-        <div className={`fixed inset-y-0 left-0 z-50 md:hidden transition-transform duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className={`fixed inset-y-0 left-0 z-50 lg:hidden transition-transform duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <Sidebar
             open={true}
             onToggle={() => setMobileMenuOpen(false)}
@@ -101,7 +102,7 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
         {/* ── Mobile backdrop ── */}
         {mobileMenuOpen && (
           <div
-            className="fixed inset-0 bg-black/60 z-40 md:hidden"
+            className="fixed inset-0 bg-black/60 z-40 lg:hidden"
             onClick={() => setMobileMenuOpen(false)}
           />
         )}
@@ -109,8 +110,8 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
         {/* ── Main content ── */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
 
-          {/* Mobile topbar */}
-          <div className="flex md:hidden items-center justify-between px-4 h-14 flex-shrink-0 bg-[#131313] border-b border-white/[0.06]">
+          {/* Mobile topbar — shown below lg, hidden when page provides its own MobileAppBar */}
+          <div className="flex lg:hidden items-center justify-between px-4 h-14 flex-shrink-0 bg-[#131313] border-b border-white/[0.06]">
             <button
               onClick={() => setMobileMenuOpen((v) => !v)}
               className="w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/[0.06] transition-all"
@@ -129,7 +130,7 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
           </div>
 
           {/* Scrollable page content */}
-          <div className="flex-1 overflow-y-auto @container/page">
+          <div className="flex-1 overflow-y-auto @container/page pb-[calc(56px+env(safe-area-inset-bottom))] lg:pb-0">
             {isMobileView ? (
               <div className="flex justify-center bg-[#050505] min-h-full pt-6 px-4">
                 <div className="w-[390px] bg-[#080808] min-h-[844px] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl">
@@ -142,6 +143,9 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
           </div>
         </div>
       </div>
+
+      {/* Bottom tab bar — mobile only */}
+      <BottomTabBar />
 
     </SidebarCtx.Provider>
   )

@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { ContactsManager } from '@/components/contacts/ContactsManager'
 import { TopBar } from '@/components/layout/TopBar'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { MobileContactsList } from '@/components/mobile/MobileContactsList'
 import type { Contact } from '@/lib/types'
 
 export default async function ContactsPage() {
@@ -14,11 +15,17 @@ export default async function ContactsPage() {
 
   return (
     <>
-      <TopBar title="Contacts" />
-      <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
-        <PageHeader title="Contacts" description={`${contacts.length} contacts`} />
-        <ContactsManager initialContacts={contacts} />
-      </main>
+      {/* Mobile layout */}
+      <MobileContactsList contacts={contacts} title="Members" />
+
+      {/* Desktop layout */}
+      <div className="hidden lg:block">
+        <TopBar title="Contacts" />
+        <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
+          <PageHeader title="Contacts" description={`${contacts.length} contacts`} />
+          <ContactsManager initialContacts={contacts} />
+        </main>
+      </div>
     </>
   )
 }

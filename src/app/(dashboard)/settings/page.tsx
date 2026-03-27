@@ -5,6 +5,7 @@ import { GlobalSettingsEditor } from '@/components/content/GlobalSettingsEditor'
 import { AccountSecuritySettings } from '@/components/content/AccountSecuritySettings'
 import { SocialConnections } from '@/components/settings/SocialConnections'
 import { DigestPreferences } from '@/components/settings/DigestPreferences'
+import { MobileSettings } from '@/components/mobile/MobileSettings'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -18,6 +19,11 @@ export default async function SettingsPage() {
 
   return (
     <>
+      {/* Mobile layout */}
+      <MobileSettings />
+
+      {/* Desktop layout */}
+      <div className="hidden lg:block">
       <TopBar title="Settings" />
       <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
@@ -55,6 +61,7 @@ export default async function SettingsPage() {
         </div>
         <AccountSecuritySettings />
       </main>
+      </div>
     </>
   )
 }

@@ -3,6 +3,7 @@ import { TopBar } from '@/components/layout/TopBar'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { MobileEmailCampaigns } from '@/components/mobile/MobileEmailCampaigns'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { format } from 'date-fns'
@@ -16,6 +17,11 @@ export default async function EmailCampaignsPage() {
 
   return (
     <>
+      {/* Mobile layout */}
+      <MobileEmailCampaigns campaigns={campaigns ?? []} />
+
+      {/* Desktop layout */}
+      <div className="hidden lg:block">
       <TopBar title="Email Campaigns" />
       <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
@@ -65,6 +71,7 @@ export default async function EmailCampaignsPage() {
           </div>
         </div>
       </main>
+      </div>
     </>
   )
 }
