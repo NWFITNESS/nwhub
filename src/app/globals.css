@@ -63,6 +63,29 @@
   --gold-inset-glow: inset 0 0 8px rgba(212, 175, 55, 0.12);
   --card-inset: inset 0 1px 0 rgba(212, 175, 55, 0.06);
   --sidebar-w: 17rem;
+
+  /* ── Redesign tokens (slate/gold palette) ───────────────────── */
+  --slate-950: #0b0e14;
+  --slate-900: #111520;
+  --slate-850: #161c2a;
+  --slate-800: #1c2333;
+  --slate-750: #22293d;
+  --slate-700: #293248;
+  --slate-600: #374059;
+  --slate-500: #607080;
+  --slate-400: #8296b4;
+  --slate-300: #aabdd8;
+  --slate-200: #d2deee;
+  --slate-100: #edf3fb;
+  --r-gold-600: #b8870f;
+  --r-gold-500: #d4a017;
+  --r-gold-400: #e8b933;
+  --r-gold-300: #f2cb55;
+  --r-gold-200: #f8df8a;
+  --r-green: #4ade80;
+  --r-amber: #f59e0b;
+  --r-panel-bg: rgba(255, 255, 255, 0.04);
+  --r-panel-border: rgba(255, 255, 255, 0.09);
 }
 
 * {

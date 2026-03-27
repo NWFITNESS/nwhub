@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useSidebarCtx } from './SidebarProvider'
+import { usePathname } from 'next/navigation'
 
 type SearchResult = { id: string; label: string; sub: string; href: string }
 type SearchResults = Record<string, SearchResult[]>
@@ -16,30 +17,73 @@ const CATEGORY_META: Record<string, {
   label: string
   icon: React.ComponentType<{ size?: number; className?: string }>
 }> = {
-  contacts:          { label: 'Contacts',            icon: Users },
-  enquiries:         { label: 'Enquiries',           icon: Mail },
-  blog:              { label: 'Blog Posts',          icon: PenSquare },
-  blog_categories:   { label: 'Blog Categories',    icon: Tag },
-  media:             { label: 'Media',               icon: Image },
-  kids:              { label: 'Kids & Teens',        icon: Baby },
-  email_subscribers: { label: 'Email Subscribers',  icon: AtSign },
-  sms_subscribers:   { label: 'WhatsApp Subscribers', icon: Phone },
-  email_campaigns:   { label: 'Email Campaigns',    icon: Send },
-  sms_campaigns:     { label: 'WhatsApp Campaigns',  icon: MessageSquare },
+  contacts:          { label: 'Contacts',              icon: Users },
+  enquiries:         { label: 'Enquiries',             icon: Mail },
+  blog:              { label: 'Blog Posts',            icon: PenSquare },
+  blog_categories:   { label: 'Blog Categories',       icon: Tag },
+  media:             { label: 'Media',                 icon: Image },
+  kids:              { label: 'Kids & Teens',          icon: Baby },
+  email_subscribers: { label: 'Email Subscribers',     icon: AtSign },
+  sms_subscribers:   { label: 'WhatsApp Subscribers',  icon: Phone },
+  email_campaigns:   { label: 'Email Campaigns',       icon: Send },
+  sms_campaigns:     { label: 'WhatsApp Campaigns',    icon: MessageSquare },
+}
+
+const PATH_LABELS: Record<string, string> = {
+  inbox: 'Inbox Intelligence',
+  financials: 'Financials',
+  contacts: 'Contacts',
+  leads: 'Leads',
+  enquiries: 'Enquiries',
+  kids: 'Kids & Teens',
+  email: 'Email',
+  campaigns: 'Campaigns',
+  mailchimp: 'Email Campaigns',
+  content: 'Website Editor',
+  blog: 'Blog',
+  manage: 'Manage',
+  media: 'Media',
+  settings: 'Settings',
+  sync: 'Integrations',
+  branding: 'Branding Studio',
+  workflows: 'Workflows',
+  'ai-chat': 'AI Chat',
+  todo: 'To Do',
+  'email-campaigns': 'Email Campaigns',
+}
+
+function getBreadcrumb(pathname: string) {
+  const parts = pathname.split('/').filter(Boolean)
+  if (parts.length === 0) return { segments: [] as string[], current: 'Overview' }
+  const current = PATH_LABELS[parts[parts.length - 1]] ?? parts[parts.length - 1]
+  const segments = parts.slice(0, -1).map(p => PATH_LABELS[p] ?? p)
+  return { segments, current }
 }
 
 interface TopBarProps {
-  title: string
+  title?: string
   actions?: React.ReactNode
 }
 
+const Chevron = () => (
+  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.7" style={{ opacity: 0.4 }}>
+    <path d="M3 2l3.5 3L3 8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
 export function TopBar({ title, actions }: TopBarProps) {
   const { isMobileView, setIsMobileView } = useSidebarCtx()
-  const [query, setQuery]     = useState('')
-  const [results, setResults] = useState<SearchResults | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [open, setOpen]       = useState(false)
+  const pathname = usePathname()
+  const [query, setQuery]           = useState('')
+  const [results, setResults]       = useState<SearchResults | null>(null)
+  const [loading, setLoading]       = useState(false)
+  const [open, setOpen]             = useState(false)
+  const [searchVisible, setSearchVisible] = useState(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
+  const inputRef   = useRef<HTMLInputElement>(null)
+
+  const { segments, current } = getBreadcrumb(pathname)
+  const pageLabel = title ?? current
 
   useEffect(() => {
     if (query.length < 2) { setResults(null); setOpen(false); return }
@@ -59,112 +103,195 @@ export function TopBar({ title, actions }: TopBarProps) {
 
   useEffect(() => {
     function handler(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) setOpen(false)
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setOpen(false); setSearchVisible(false); setQuery('')
+      }
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
+  useEffect(() => {
+    if (searchVisible) inputRef.current?.focus()
+  }, [searchVisible])
+
   const categories = Object.entries(results ?? {}).filter(([, items]) => items?.length > 0)
   const totalResults = categories.reduce((n, [, items]) => n + items.length, 0)
 
-  return (
-    <header className="hidden md:flex sticky top-0 z-30 h-16 border-b border-[#4d4635]/20 bg-[#131313]/95 backdrop-blur-sm items-center gap-5 relative page-pad">
-      {/* Page title */}
-      <h1
-        className="text-sm font-semibold text-[#d0c5af]/50 whitespace-nowrap uppercase tracking-widest shrink-0"
-        style={{ fontFamily: 'var(--font-league-spartan), system-ui, sans-serif' }}
-      >
-        {title}
-      </h1>
+  const btnBase: React.CSSProperties = {
+    background: 'var(--r-panel-bg)',
+    border: '1px solid var(--r-panel-border)',
+    borderRadius: 7, padding: '5px 12px',
+    fontSize: 12, color: 'var(--slate-300)',
+    cursor: 'pointer', fontFamily: 'inherit',
+    display: 'flex', alignItems: 'center', gap: 6,
+    transition: 'background 0.15s, color 0.15s, border-color 0.15s',
+    whiteSpace: 'nowrap',
+  }
 
-      {/* Global search */}
-      <div ref={wrapperRef} className="flex-1 relative">
-        <div className="relative">
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => { if (results && query.length >= 2) setOpen(true) }}
-            onKeyDown={(e) => { if (e.key === 'Escape') { setOpen(false); setQuery('') } }}
-            placeholder="Search everything — contacts, blog, media, campaigns…"
-            style={{ paddingLeft: '2.5rem' }}
-            className="w-full pr-8 py-2 rounded-lg bg-[#1c1b1b] border border-[#4d4635]/25 text-[15px] text-[#e5e2e1] placeholder:text-[#d0c5af]/25 focus:outline-none focus:border-[#d4af37]/50 focus:bg-[#1c1b1b] transition-all"
-          />
-          <Search
-            size={15}
-            className="absolute top-1/2 -translate-y-1/2 text-[#d0c5af]/30 pointer-events-none z-10"
-            style={{ left: '0.75rem' }}
-          />
-          {query && (
-            <button
-              onClick={() => { setQuery(''); setOpen(false) }}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#d0c5af]/30 hover:text-[#f2ca50] transition-colors z-10"
-            >
-              <X size={13} />
+  return (
+    <header
+      className="hidden lg:flex sticky top-0 z-30 flex-shrink-0 items-center gap-3"
+      style={{
+        height: 54,
+        background: 'var(--slate-950)',
+        borderBottom: '1px solid var(--r-panel-border)',
+        padding: '0 22px',
+      }}
+    >
+      {/* Brand */}
+      <span style={{
+        fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif',
+        fontWeight: 700, fontSize: 14,
+        letterSpacing: '2px', textTransform: 'uppercase',
+        color: 'var(--slate-300)', whiteSpace: 'nowrap',
+      }}>NW HUB</span>
+
+      {/* Divider */}
+      <div style={{ width: 1, height: 18, background: 'var(--r-panel-border)', flexShrink: 0 }} />
+
+      {/* Breadcrumb */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--slate-500)' }}>
+        {segments.map((seg, i) => (
+          <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {seg} <Chevron />
+          </span>
+        ))}
+        <span style={{ color: 'var(--slate-200)' }}>{pageLabel}</span>
+      </div>
+
+      {/* Right side */}
+      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+
+        {/* Search */}
+        <div ref={wrapperRef} style={{ position: 'relative' }}>
+          {searchVisible ? (
+            <div style={{ position: 'relative' }}>
+              <input
+                ref={inputRef}
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                onFocus={() => { if (results && query.length >= 2) setOpen(true) }}
+                onKeyDown={e => {
+                  if (e.key === 'Escape') { setOpen(false); setSearchVisible(false); setQuery('') }
+                }}
+                placeholder="Search everything…"
+                style={{
+                  paddingLeft: '2rem', paddingRight: '2rem',
+                  paddingTop: '5px', paddingBottom: '5px',
+                  borderRadius: 7,
+                  background: 'var(--r-panel-bg)',
+                  border: '1px solid rgba(212,160,23,0.3)',
+                  color: 'var(--slate-200)', fontSize: 12, outline: 'none',
+                  width: 220,
+                }}
+              />
+              <Search size={12} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: 'var(--slate-500)', pointerEvents: 'none' }} />
+              {query && (
+                <button
+                  onClick={() => { setQuery(''); setOpen(false) }}
+                  style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-500)', display: 'flex', padding: 0 }}
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+          ) : (
+            <button onClick={() => setSearchVisible(true)} style={btnBase}>
+              <Search size={13} /> Search
             </button>
+          )}
+
+          {/* Dropdown */}
+          {open && (
+            <div style={{
+              position: 'absolute', top: '100%', marginTop: 6, right: 0,
+              background: 'var(--slate-800)', border: '1px solid var(--slate-600)',
+              borderRadius: 8, boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+              zIndex: 50, maxHeight: 400, overflowY: 'auto', width: 280,
+            }}>
+              {loading ? (
+                <p style={{ padding: '10px 14px', fontSize: 12, color: 'var(--slate-500)' }}>Searching…</p>
+              ) : totalResults === 0 ? (
+                <p style={{ padding: '10px 14px', fontSize: 12, color: 'var(--slate-500)' }}>No results for &ldquo;{query}&rdquo;</p>
+              ) : (
+                categories.map(([cat, items]) => {
+                  const meta = CATEGORY_META[cat]
+                  if (!meta) return null
+                  const Icon = meta.icon
+                  return (
+                    <div key={cat}>
+                      <div style={{ padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid var(--r-panel-border)', background: 'rgba(255,255,255,0.02)' }}>
+                        <Icon size={10} className="text-[#e8b933]" />
+                        <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '1.2px' }}>{meta.label}</span>
+                      </div>
+                      {items.map(r => (
+                        <Link
+                          key={r.id}
+                          href={r.href}
+                          onClick={() => { setOpen(false); setQuery(''); setSearchVisible(false) }}
+                          style={{ display: 'flex', alignItems: 'center', padding: '8px 14px', borderBottom: '1px solid var(--r-panel-border)', textDecoration: 'none' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--r-panel-bg)' }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+                        >
+                          <div>
+                            <p style={{ fontSize: 12, color: 'var(--slate-200)' }}>{r.label}</p>
+                            {r.sub && <p style={{ fontSize: 11, color: 'var(--slate-500)', marginTop: 1 }}>{r.sub}</p>}
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  )
+                })
+              )}
+            </div>
           )}
         </div>
 
-        {/* Dropdown */}
-        {open && (
-          <div className="absolute top-full mt-1.5 left-0 right-0 bg-[#1c1b1b] border border-[#4d4635]/30 rounded-xl shadow-2xl z-50 max-h-[480px] overflow-y-auto">
-            {loading ? (
-              <p className="px-4 py-3 text-sm text-[#d0c5af]/40 animate-pulse">Searching…</p>
-            ) : totalResults === 0 ? (
-              <p className="px-4 py-3 text-sm text-[#d0c5af]/40">No results for &ldquo;{query}&rdquo;</p>
-            ) : (
-              categories.map(([cat, items]) => {
-                const meta = CATEGORY_META[cat]
-                if (!meta) return null
-                const Icon = meta.icon
-                return (
-                  <div key={cat}>
-                    <div className="px-4 py-1.5 flex items-center gap-1.5 bg-[#4d4635]/8 border-b border-t border-[#4d4635]/20">
-                      <Icon size={10} className="text-[#d4af37]/50" />
-                      <span className="text-[10px] font-semibold text-[#d0c5af]/40 uppercase tracking-widest">{meta.label}</span>
-                    </div>
-                    {items.map((r) => (
-                      <Link
-                        key={r.id}
-                        href={r.href}
-                        onClick={() => { setOpen(false); setQuery('') }}
-                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-[#2a2a2a] border-b border-[#4d4635]/15 last:border-0 transition-colors group"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[15px] text-[#d0c5af]/70 group-hover:text-[#f2ca50] truncate transition-colors">{r.label}</p>
-                          {r.sub && <p className="text-sm text-[#d0c5af]/35 truncate mt-0.5">{r.sub}</p>}
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                )
-              })
-            )}
-          </div>
-        )}
+        {/* Mobile view toggle */}
+        <button
+          onClick={() => setIsMobileView(!isMobileView)}
+          title="Toggle mobile view"
+          style={{
+            ...btnBase,
+            ...(isMobileView ? {
+              background: 'rgba(212,160,23,0.12)',
+              borderColor: 'rgba(212,160,23,0.28)',
+              color: 'var(--r-gold-300)',
+            } : {}),
+          }}
+          onMouseEnter={e => {
+            if (!isMobileView) {
+              (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)'
+              ;(e.currentTarget as HTMLElement).style.color = 'var(--slate-100)'
+            }
+          }}
+          onMouseLeave={e => {
+            if (!isMobileView) {
+              (e.currentTarget as HTMLElement).style.background = 'var(--r-panel-bg)'
+              ;(e.currentTarget as HTMLElement).style.color = 'var(--slate-300)'
+            }
+          }}
+        >
+          <Smartphone size={13} />
+        </button>
+
+        {/* Customise — gold */}
+        <button
+          style={{
+            ...btnBase,
+            background: 'rgba(212,160,23,0.12)',
+            borderColor: 'rgba(212,160,23,0.28)',
+            color: 'var(--r-gold-300)',
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(212,160,23,0.22)' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(212,160,23,0.12)' }}
+        >
+          Customise
+        </button>
+
+        {actions && <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{actions}</div>}
       </div>
-
-      {/* Mobile view toggle */}
-      <button
-        onClick={() => setIsMobileView(!isMobileView)}
-        title="Toggle mobile view"
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium
-                    transition-all duration-200 border shrink-0
-                    ${isMobileView
-                      ? 'text-[#f2ca50] border-[#d4af37]/40 bg-[#d4af37]/10'
-                      : 'text-[#d0c5af]/40 border-[#4d4635]/25 hover:text-[#d0c5af]/70 hover:border-[#4d4635]/50'
-                    }`}
-      >
-        <Smartphone size={14} />
-        <span className="hidden lg:inline">Mobile</span>
-      </button>
-
-      {actions && <div className="flex items-center gap-3 shrink-0">{actions}</div>}
-
-      <div
-        className="absolute bottom-0 inset-x-0 h-px pointer-events-none"
-        style={{ background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.25) 40%, rgba(212,175,55,0.25) 60%, transparent)' }}
-      />
     </header>
   )
 }

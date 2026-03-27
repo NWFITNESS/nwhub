@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter, League_Spartan, Manrope, Oswald, Roboto_Slab } from 'next/font/google'
+import { Inter, League_Spartan, Manrope, Oswald, Roboto_Slab, Rajdhani } from 'next/font/google'
 import './globals.css'
 import 'react-grid-layout/css/styles.css'
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration'
@@ -9,6 +9,7 @@ const leagueSpartan = League_Spartan({ subsets: ['latin'], variable: '--font-lea
 const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope', weight: ['300', '400', '500', '600', '700'] })
 const oswald = Oswald({ subsets: ['latin'], variable: '--font-oswald' })
 const robotoSlab = Roboto_Slab({ subsets: ['latin'], variable: '--font-roboto-slab' })
+const rajdhani = Rajdhani({ subsets: ['latin'], variable: '--font-rajdhani', weight: ['500', '600', '700'] })
 
 export const metadata: Metadata = {
   title: 'NWHub',
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body suppressHydrationWarning className={`${inter.variable} ${leagueSpartan.variable} ${manrope.variable} ${oswald.variable} ${robotoSlab.variable} font-sans antialiased`}>
+      <body suppressHydrationWarning className={`${inter.variable} ${leagueSpartan.variable} ${manrope.variable} ${oswald.variable} ${robotoSlab.variable} ${rajdhani.variable} font-sans antialiased`}>
         <ServiceWorkerRegistration />
         {children}
       </body>

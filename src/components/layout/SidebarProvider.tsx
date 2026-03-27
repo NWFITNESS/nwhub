@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, createContext, useContext } from 'react'
+import { useState, createContext, useContext } from 'react'
 import { Menu, Bell } from 'lucide-react'
 import { Sidebar } from './Sidebar'
 import NeuralBackground from '@/components/ui/flow-field-background'
@@ -35,21 +35,8 @@ interface SidebarProviderProps {
 }
 
 export function SidebarProvider({ children, unreadCount = 0, userEmail }: SidebarProviderProps) {
-  const [desktopOpen, setDesktopOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobileView, setIsMobileView] = useState(false)
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-
-  function handleMouseEnter() {
-    clearTimeout(closeTimer.current)
-    setDesktopOpen(true)
-  }
-
-  function handleMouseLeave() {
-    closeTimer.current = setTimeout(() => setDesktopOpen(false), 200)
-  }
-
-  useEffect(() => () => clearTimeout(closeTimer.current), [])
 
   return (
     <SidebarCtx.Provider value={{ mobileMenuOpen, setMobileMenuOpen, isMobileView, setIsMobileView }}>
@@ -62,36 +49,14 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
       {/* ── App shell ── */}
       <div className="flex h-screen overflow-hidden">
 
-        {/* ── Desktop sidebar ──
-            Outer div clips and transitions width.
-            Inner div is always full 256 px so content never squashes. ── */}
-        <div
-          className="hidden lg:flex flex-shrink-0 h-full overflow-hidden transition-[width] duration-300 ease-in-out"
-          style={{ width: desktopOpen ? '256px' : '0px' }}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-          <div className="h-full w-64 flex-shrink-0">
-            <Sidebar
-              open={desktopOpen}
-              unreadCount={unreadCount}
-              userEmail={userEmail}
-            />
-          </div>
+        {/* ── Desktop sidebar — self-contained hover expand ── */}
+        <div className="hidden lg:block flex-shrink-0 h-full">
+          <Sidebar unreadCount={unreadCount} userEmail={userEmail} />
         </div>
-
-        {/* ── Hover trigger strip — catches mouse when sidebar is fully hidden ── */}
-        {!desktopOpen && (
-          <div
-            className="fixed top-0 left-0 w-4 h-full z-10 hidden lg:block"
-            onMouseEnter={handleMouseEnter}
-          />
-        )}
 
         {/* ── Mobile drawer ── */}
         <div className={`fixed inset-y-0 left-0 z-50 lg:hidden transition-transform duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <Sidebar
-            open={true}
             onToggle={() => setMobileMenuOpen(false)}
             unreadCount={unreadCount}
             userEmail={userEmail}
@@ -110,21 +75,37 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
         {/* ── Main content ── */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
 
-          {/* Mobile topbar — shown below lg, hidden when page provides its own MobileAppBar */}
-          <div className="flex lg:hidden items-center justify-between px-4 h-14 flex-shrink-0 bg-[#131313] border-b border-white/[0.06]">
+          {/* Mobile topbar */}
+          <div
+            className="flex lg:hidden items-center justify-between px-4 h-14 flex-shrink-0 border-b"
+            style={{ background: 'var(--slate-950)', borderColor: 'var(--r-panel-border)' }}
+          >
             <button
-              onClick={() => setMobileMenuOpen((v) => !v)}
-              className="w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/[0.06] transition-all"
+              onClick={() => setMobileMenuOpen(v => !v)}
+              className="w-9 h-9 flex items-center justify-center rounded-lg transition-all"
+              style={{ color: 'var(--slate-400)' }}
             >
               <Menu size={20} />
             </button>
             <div className="flex items-center gap-2">
-              <img src="/nw-logo.svg" alt="NW" className="w-7 h-7 object-contain" />
-              <span className="text-sm font-bold text-white" style={{ fontFamily: 'Rajdhani' }}>
-                Northern Warrior
-              </span>
+              <div style={{
+                width: 26, height: 26,
+                background: 'linear-gradient(140deg, var(--r-gold-500), var(--r-gold-300))',
+                borderRadius: 6,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif',
+                fontWeight: 700, fontSize: 11, color: 'var(--slate-950)',
+              }}>NW</div>
+              <span style={{
+                fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif',
+                fontSize: 14, fontWeight: 700, letterSpacing: '1.5px',
+                textTransform: 'uppercase', color: 'var(--slate-300)',
+              }}>NW HUB</span>
             </div>
-            <button className="w-9 h-9 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/[0.06]">
+            <button
+              className="w-9 h-9 flex items-center justify-center rounded-lg"
+              style={{ color: 'var(--slate-400)' }}
+            >
               <Bell size={18} />
             </button>
           </div>

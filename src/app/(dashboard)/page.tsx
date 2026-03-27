@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { TopBar } from '@/components/layout/TopBar'
-import { DashboardWidgetGrid, type DashboardData } from '@/components/widgets/DashboardWidgetGrid'
+import { type DashboardData } from '@/components/widgets/DashboardWidgetGrid'
 import { MobileDashboard } from '@/components/mobile/MobileDashboard'
+import { OverviewContent } from '@/components/dashboard/OverviewContent'
 import type { ChartDataPoint } from '@/components/dashboard/MemberGrowthChart'
 
 // ---------------------------------------------------------------------------
@@ -145,26 +145,7 @@ export default async function DashboardPage() {
       <MobileDashboard data={data} />
 
       {/* Desktop layout */}
-      <div className="hidden lg:block">
-        <TopBar title="Overview" />
-
-        <div className="page-pad flex flex-col gap-4 @md/page:gap-6 py-4 @md/page:py-8 min-h-[calc(100vh-5rem)]">
-
-          {/* Greeting */}
-          <div>
-            <p className="text-xs text-white/30 uppercase tracking-[0.15em]">ADMIN PANEL</p>
-            <h1 style={{ fontFamily: 'League Spartan' }} className="leading-tight mt-0.5">
-              <span className="text-[#F0F0F0] font-bold text-4xl">Northern Warrior </span>
-              <span className="text-[#C9A70A] font-bold text-4xl">Hub</span>
-            </h1>
-            <p className="text-white/30 text-sm mt-1">{formattedDate}</p>
-          </div>
-
-          {/* Widget Grid — client boundary */}
-          <DashboardWidgetGrid data={data} />
-
-        </div>
-      </div>
+      <OverviewContent data={data} formattedDate={formattedDate} />
     </>
   )
 }
