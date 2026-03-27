@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { TopBar } from '@/components/layout/TopBar'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { Panel, PanelHeader } from '@/components/ui/Card'
 import { GlobalSettingsEditor } from '@/components/content/GlobalSettingsEditor'
 import { AccountSecuritySettings } from '@/components/content/AccountSecuritySettings'
 import { SocialConnections } from '@/components/settings/SocialConnections'
@@ -24,43 +25,50 @@ export default async function SettingsPage() {
 
       {/* Desktop layout */}
       <div className="hidden lg:block">
-      <TopBar title="Settings" />
-      <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
-        <PageHeader
-          title="Global Settings"
-          description="Navigation, footer, contact info, and social links used across the site."
-        />
-        <GlobalSettingsEditor initialSettings={settingsMap} />
-
-        <div className="mt-4">
+        <TopBar title="Settings" />
+        <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
           <PageHeader
-            title="Social Media"
-            description="Connect Facebook, Instagram, and LinkedIn to publish branded posts directly from the Branding Studio."
+            eyebrow="Config"
+            title="Settings"
           />
-        </div>
-        <SocialConnections />
 
-        <div id="digest-preferences" className="mt-4 scroll-mt-24">
-          <PageHeader
-            title="Digest Preferences"
-            description="Configure your daily morning digest email — who receives it and whether it's enabled."
-          />
-        </div>
-        <DigestPreferences
-          initialRecipient={settingsMap['digest_recipient'] ?? 'info@northernwarrior.co.uk'}
-          initialEnabled={settingsMap['digest_enabled'] !== 'false'}
-          initialSendHour={parseInt(settingsMap['digest_send_hour'] ?? '8', 10)}
-          initialProcessInterval={parseInt(settingsMap['inbox_process_interval'] ?? '5', 10)}
-        />
+          <Panel>
+            <PanelHeader eyebrow="CMS" title="Global Settings" />
+            <div className="p-4">
+              <p className="text-xs text-nw-500 mb-4">Navigation, footer, contact info, and social links used across the site.</p>
+              <GlobalSettingsEditor initialSettings={settingsMap} />
+            </div>
+          </Panel>
 
-        <div className="mt-4">
-          <PageHeader
-            title="Account & Security"
-            description="Manage your password, email address, and active sessions."
-          />
-        </div>
-        <AccountSecuritySettings />
-      </main>
+          <Panel>
+            <PanelHeader eyebrow="Integrations" title="Social Media" />
+            <div className="p-4">
+              <p className="text-xs text-nw-500 mb-4">Connect Facebook, Instagram, and LinkedIn to publish branded posts directly from the Branding Studio.</p>
+              <SocialConnections />
+            </div>
+          </Panel>
+
+          <Panel id="digest-preferences" className="scroll-mt-24">
+            <PanelHeader eyebrow="Automation" title="Digest Preferences" />
+            <div className="p-4">
+              <p className="text-xs text-nw-500 mb-4">Configure your daily morning digest email — who receives it and whether it&apos;s enabled.</p>
+              <DigestPreferences
+                initialRecipient={settingsMap['digest_recipient'] ?? 'info@northernwarrior.co.uk'}
+                initialEnabled={settingsMap['digest_enabled'] !== 'false'}
+                initialSendHour={parseInt(settingsMap['digest_send_hour'] ?? '8', 10)}
+                initialProcessInterval={parseInt(settingsMap['inbox_process_interval'] ?? '5', 10)}
+              />
+            </div>
+          </Panel>
+
+          <Panel>
+            <PanelHeader eyebrow="Auth" title="Account &amp; Security" />
+            <div className="p-4">
+              <p className="text-xs text-nw-500 mb-4">Manage your password, email address, and active sessions.</p>
+              <AccountSecuritySettings />
+            </div>
+          </Panel>
+        </main>
       </div>
     </>
   )

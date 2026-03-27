@@ -22,7 +22,7 @@ export default async function ContactsPage() {
       <div className="hidden lg:block">
         <TopBar title="Contacts" />
         <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
-          <PageHeader title="Contacts" description={`${contacts.length} contacts`} />
+          <PageHeader eyebrow="CRM" title="Contacts" description={`${contacts.length} contacts`} />
           <ContactsManager initialContacts={contacts} />
         </main>
       </div>

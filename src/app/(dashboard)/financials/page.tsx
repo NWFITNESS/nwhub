@@ -11,18 +11,18 @@ import { FinancialsWidgetGrid, type FinancialsData } from '@/components/widgets/
 function NotConnected() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[500px] gap-4">
-      <div className="w-16 h-16 rounded-2xl bg-[#967705]/10 border border-[#967705]/20 flex items-center justify-center">
-        <DollarSign size={28} className="text-[#C9A70A]" />
+      <div className="w-16 h-16 rounded-2xl bg-gold-600/10 border border-gold-600/20 flex items-center justify-center">
+        <DollarSign size={28} className="text-gold-400" />
       </div>
-      <h3 className="text-xl font-bold text-[#F0F0F0]" style={{ fontFamily: 'Rajdhani' }}>
+      <h3 className="font-brand text-xl font-bold text-nw-100">
         Connect Xero to get started
       </h3>
-      <p className="text-sm text-white/40 text-center max-w-[320px]">
+      <p className="text-sm text-nw-500 text-center max-w-[320px]">
         Connect your Xero account to see revenue, expenses, and financial insights
       </p>
       <a
         href="/api/xero/connect"
-        className="flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold text-black bg-gradient-to-r from-[#967705] to-[#C9A70A] hover:opacity-90 transition-opacity mt-2"
+        className="flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold text-black bg-gradient-to-r from-gold-600 to-gold-400 hover:opacity-90 transition-opacity mt-2"
       >
         Connect Xero
       </a>
@@ -139,6 +139,7 @@ export default function FinancialsPage() {
 
         {/* ── Page Header ── */}
         <PageHeader
+          eyebrow="Finance"
           title="Financials"
           description={
             notConnected
@@ -151,15 +152,7 @@ export default function FinancialsPage() {
             !notConnected && !loading ? (
               <button
                 onClick={load}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '6px 14px', borderRadius: 7, fontSize: 13,
-                  color: 'var(--slate-400)', background: 'var(--r-panel-bg)',
-                  border: '1px solid var(--r-panel-border)', cursor: 'pointer',
-                  fontFamily: 'inherit', transition: 'all 0.15s',
-                }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--slate-100)'; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.08)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--slate-400)'; (e.currentTarget as HTMLButtonElement).style.background = 'var(--r-panel-bg)' }}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] text-nw-400 bg-nw-800 border border-[rgba(255,255,255,0.08)] hover:text-nw-100 hover:bg-nw-700 transition-colors cursor-pointer"
               >
                 <RefreshCw size={13} />
                 Refresh
@@ -178,10 +171,10 @@ export default function FinancialsPage() {
               <Receipt size={22} className="text-red-400" strokeWidth={1.75} />
             </div>
             <p className="text-sm font-semibold text-red-400">Failed to load Xero data</p>
-            <p className="text-xs text-white/40 text-center max-w-[360px]">{apiError}</p>
+            <p className="text-xs text-nw-500 text-center max-w-[360px]">{apiError}</p>
             <button
               onClick={load}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium text-white/60 border border-white/[0.1] bg-white/[0.03] hover:text-white hover:border-white/20 transition-all mt-1"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium text-nw-400 border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.03)] hover:text-nw-100 hover:border-[rgba(255,255,255,0.2)] transition-all mt-1"
             >
               <RefreshCw size={12} /> Retry
             </button>

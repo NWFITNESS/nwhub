@@ -3,9 +3,9 @@
 import { Ripple } from '@/components/ui/material-design-3-ripple'
 
 // Panel — surface card used across all pages
-export function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
+export function Panel({ children, className, id }: { children: React.ReactNode; className?: string; id?: string }) {
   return (
-    <div className={`overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 ${className ?? ''}`}>
+    <div id={id} className={`overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 ${className ?? ''}`}>
       {children}
     </div>
   )

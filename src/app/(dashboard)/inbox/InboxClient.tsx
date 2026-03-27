@@ -5,7 +5,7 @@ import { EmailPanel } from '@/components/inbox/EmailPanel'
 import { TaskBoard } from '@/components/inbox/TaskBoard'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
+import { Panel } from '@/components/ui/Card'
 import { Zap, RefreshCw, Send } from 'lucide-react'
 
 interface Email {
@@ -138,14 +138,15 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
+        eyebrow="Comms"
         title="Inbox Intelligence"
         description={`${totalCount} emails processed${needsActionCount > 0 ? ` · ${needsActionCount} need action` : ''}`}
         actions={
           <>
             {/* Gmail status pill */}
-            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/[0.04] border border-white/[0.06]">
-              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${gmailConnected ? 'bg-green-400 animate-pulse' : 'bg-white/20'}`} />
-              <span className="text-[11px] text-white/50 whitespace-nowrap">
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-nw-800 border border-[rgba(255,255,255,0.07)]">
+              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${gmailConnected ? 'bg-green-400 animate-pulse' : 'bg-nw-600'}`} />
+              <span className="text-[11px] text-nw-500 whitespace-nowrap">
                 {gmailConnected ? 'Gmail live' : 'Not connected'}
               </span>
             </div>
@@ -192,29 +193,29 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
       />
 
       {lastResult && (
-        <p className="text-[12px] text-[#d0c5af]/50">{lastResult}</p>
+        <p className="text-[12px] text-nw-500">{lastResult}</p>
       )}
 
       {/* Two-panel grid */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
         <div className="lg:col-span-3">
-          <Card padding={false} className="flex flex-col">
+          <Panel className="flex flex-col">
             <EmailPanel
               emails={emails}
               onAddTask={handleAddTask}
               onRefresh={refreshEmails}
             />
-          </Card>
+          </Panel>
         </div>
         <div className="lg:col-span-2">
-          <Card padding={false} className="flex flex-col">
+          <Panel className="flex flex-col">
             <TaskBoard
               tasks={tasks}
               onToggle={handleToggleTask}
               onAdd={handleAddTask}
               onDelete={handleDeleteTask}
             />
-          </Card>
+          </Panel>
         </div>
       </div>
     </div>

@@ -103,6 +103,7 @@ export default async function MailchimpPage() {
         <TopBar title="Mailchimp" />
         <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
           <PageHeader
+            eyebrow="Marketing"
             title="Mailchimp"
             description="Manage your email audience, sync subscribers, and send campaigns"
             actions={

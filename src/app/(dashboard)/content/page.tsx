@@ -41,6 +41,7 @@ export default async function ContentPage() {
       <TopBar title="Content" />
       <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
+          eyebrow="CMS"
           title="Site Content"
           description="Edit content for each page. Changes are reflected on the live site immediately."
           actions={
@@ -48,7 +49,7 @@ export default async function ContentPage() {
               href={process.env.NEXT_PUBLIC_SITE_URL ?? '#'}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-black bg-gradient-to-r from-[#967705] to-[#C9A70A] hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(201,167,10,0.25)]"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-black bg-gradient-to-r from-gold-600 to-gold-400 hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(201,167,10,0.25)]"
             >
               <Globe size={15} />
               View Live Site

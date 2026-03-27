@@ -20,7 +20,7 @@ export default async function EnquiriesPage() {
       <div className="hidden lg:block">
         <TopBar title="Enquiries" />
         <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
-          <PageHeader title="Contact Enquiries" description={`${enquiries?.length ?? 0} enquiries`} />
+          <PageHeader eyebrow="CRM" title="Contact Enquiries" description={`${enquiries?.length ?? 0} enquiries`} />
           <ContactsTable initialEnquiries={enquiries ?? []} />
         </main>
       </div>
