@@ -5,6 +5,7 @@ import {
   Search, X, Smartphone,
   Users, Mail, PenSquare, Baby, Image, AtSign,
   MessageSquare, Send, Tag, Phone,
+  SlidersHorizontal, Monitor, Zap, LayoutGrid, ChevronRight,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useSidebarCtx } from './SidebarProvider'
@@ -79,8 +80,22 @@ export function TopBar({ title, actions }: TopBarProps) {
   const [loading, setLoading]       = useState(false)
   const [open, setOpen]             = useState(false)
   const [searchVisible, setSearchVisible] = useState(false)
+  const [customiseOpen, setCustomiseOpen] = useState(false)
+  const [compactMode, setCompactMode]     = useState(false)
+  const [showGridLines, setShowGridLines] = useState(false)
+  const [focusMode, setFocusMode]         = useState(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const inputRef   = useRef<HTMLInputElement>(null)
+
+  // persist customise settings
+  useEffect(() => {
+    setCompactMode(localStorage.getItem('nw-compact') === '1')
+    setShowGridLines(localStorage.getItem('nw-gridlines') === '1')
+    setFocusMode(localStorage.getItem('nw-focus') === '1')
+  }, [])
+  useEffect(() => { localStorage.setItem('nw-compact', compactMode ? '1' : '0') }, [compactMode])
+  useEffect(() => { localStorage.setItem('nw-gridlines', showGridLines ? '1' : '0') }, [showGridLines])
+  useEffect(() => { localStorage.setItem('nw-focus', focusMode ? '1' : '0') }, [focusMode])
 
   const { segments, current } = getBreadcrumb(pathname)
   const pageLabel = title ?? current
@@ -130,6 +145,7 @@ export function TopBar({ title, actions }: TopBarProps) {
   }
 
   return (
+    <>
     <header
       className="hidden lg:flex sticky top-0 z-30 flex-shrink-0 items-center gap-3"
       style={{
@@ -278,20 +294,137 @@ export function TopBar({ title, actions }: TopBarProps) {
 
         {/* Customise — gold */}
         <button
+          onClick={() => setCustomiseOpen(v => !v)}
           style={{
             ...btnBase,
-            background: 'rgba(212,160,23,0.12)',
-            borderColor: 'rgba(212,160,23,0.28)',
+            background: customiseOpen ? 'rgba(212,160,23,0.20)' : 'rgba(212,160,23,0.12)',
+            borderColor: customiseOpen ? 'rgba(212,160,23,0.45)' : 'rgba(212,160,23,0.28)',
             color: 'var(--r-gold-300)',
+            display: 'flex', alignItems: 'center', gap: 6,
           }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(212,160,23,0.22)' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(212,160,23,0.12)' }}
+          onMouseEnter={e => { if (!customiseOpen) (e.currentTarget as HTMLElement).style.background = 'rgba(212,160,23,0.22)' }}
+          onMouseLeave={e => { if (!customiseOpen) (e.currentTarget as HTMLElement).style.background = 'rgba(212,160,23,0.12)' }}
         >
-          Customise
+          <SlidersHorizontal size={13} /> Customise
         </button>
 
         {actions && <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{actions}</div>}
       </div>
     </header>
+
+    {/* Customise Drawer */}
+    {customiseOpen && (
+      <>
+        {/* backdrop */}
+        <div
+          onClick={() => setCustomiseOpen(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 29 }}
+        />
+        <aside style={{
+          position: 'fixed', top: 54, right: 0, bottom: 0,
+          width: 280, zIndex: 30,
+          background: 'var(--slate-900)',
+          borderLeft: '1px solid var(--r-panel-border)',
+          display: 'flex', flexDirection: 'column',
+          boxShadow: '-8px 0 32px rgba(0,0,0,0.4)',
+          animation: 'slideInRight 0.2s ease',
+        }}>
+          {/* Header */}
+          <div style={{ padding: '16px 18px 14px', borderBottom: '1px solid var(--r-panel-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <SlidersHorizontal size={14} style={{ color: 'var(--r-gold-400)' }} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--slate-100)', fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif', letterSpacing: '0.5px' }}>CUSTOMISE</span>
+            </div>
+            <button onClick={() => setCustomiseOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-500)', display: 'flex', padding: 2 }}>
+              <X size={14} />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '14px 0' }}>
+
+            {/* Display */}
+            <div style={{ padding: '0 18px 8px' }}>
+              <p style={{ fontSize: 9, fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 10 }}>Display</p>
+
+              {[
+                { label: 'Compact Mode', sub: 'Reduce padding & spacing', icon: LayoutGrid, value: compactMode, set: setCompactMode },
+                { label: 'Focus Mode', sub: 'Hide non-essential UI', icon: Zap, value: focusMode, set: setFocusMode },
+                { label: 'Show Grid Lines', sub: 'Visual grid on panels', icon: Monitor, value: showGridLines, set: setShowGridLines },
+              ].map(({ label, sub, icon: Icon, value, set }) => (
+                <div
+                  key={label}
+                  onClick={() => set(v => !v)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '9px 10px', borderRadius: 7, cursor: 'pointer',
+                    background: value ? 'rgba(212,160,23,0.07)' : 'transparent',
+                    border: `1px solid ${value ? 'rgba(212,160,23,0.2)' : 'transparent'}`,
+                    marginBottom: 4, transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => { if (!value) (e.currentTarget as HTMLElement).style.background = 'var(--r-panel-bg)' }}
+                  onMouseLeave={e => { if (!value) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+                >
+                  <div style={{ width: 28, height: 28, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: value ? 'rgba(212,160,23,0.12)' : 'rgba(255,255,255,0.04)', flexShrink: 0 }}>
+                    <Icon size={13} style={{ color: value ? 'var(--r-gold-400)' : 'var(--slate-500)' }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 12, color: value ? 'var(--r-gold-300)' : 'var(--slate-200)', fontWeight: 500 }}>{label}</p>
+                    <p style={{ fontSize: 10, color: 'var(--slate-500)', marginTop: 1 }}>{sub}</p>
+                  </div>
+                  {/* Toggle */}
+                  <div style={{
+                    width: 32, height: 18, borderRadius: 9, flexShrink: 0,
+                    background: value ? 'rgba(212,160,23,0.5)' : 'rgba(255,255,255,0.1)',
+                    position: 'relative', transition: 'background 0.2s',
+                  }}>
+                    <div style={{
+                      position: 'absolute', top: 3, left: value ? 17 : 3,
+                      width: 12, height: 12, borderRadius: '50%',
+                      background: value ? 'var(--r-gold-300)' : 'var(--slate-500)',
+                      transition: 'left 0.2s, background 0.2s',
+                    }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ height: 1, background: 'var(--r-panel-border)', margin: '8px 18px 14px' }} />
+
+            {/* Page */}
+            <div style={{ padding: '0 18px' }}>
+              <p style={{ fontSize: 9, fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 10 }}>Current Page</p>
+              <div style={{ padding: '10px 12px', borderRadius: 7, background: 'var(--r-panel-bg)', border: '1px solid var(--r-panel-border)' }}>
+                <p style={{ fontSize: 12, color: 'var(--slate-300)', marginBottom: 2 }}>{pageLabel}</p>
+                <p style={{ fontSize: 10, color: 'var(--slate-500)' }}>{pathname}</p>
+              </div>
+            </div>
+
+            <div style={{ height: 1, background: 'var(--r-panel-border)', margin: '14px 18px 14px' }} />
+
+            {/* Keyboard shortcuts */}
+            <div style={{ padding: '0 18px' }}>
+              <p style={{ fontSize: 9, fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 10 }}>Quick Actions</p>
+              {[
+                { key: 'M', label: 'Toggle mobile view' },
+                { key: '/', label: 'Open search' },
+                { key: 'Esc', label: 'Close panels' },
+              ].map(({ key, label }) => (
+                <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <span style={{ fontSize: 11, color: 'var(--slate-400)' }}>{label}</span>
+                  <kbd style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--slate-500)', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--r-panel-border)', borderRadius: 4, padding: '2px 6px' }}>{key}</kbd>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div style={{ padding: '12px 18px', borderTop: '1px solid var(--r-panel-border)' }}>
+            <p style={{ fontSize: 10, color: 'var(--slate-600)', textAlign: 'center' }}>NW HUB v2 — Settings persist locally</p>
+          </div>
+        </aside>
+      </>
+    )}
+    </>
   )
 }

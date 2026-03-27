@@ -27,25 +27,28 @@ export function WidgetShell({
 
   return (
     <div
-      className="bg-[#161616] border border-white/[0.06] rounded-xl flex flex-col h-full overflow-hidden"
-      style={isCustomising ? { outline: '1px dashed rgba(212,175,55,0.15)' } : undefined}
+      className="rounded-xl flex flex-col h-full overflow-hidden"
+      style={{
+        background: 'var(--slate-750)', border: '1px solid var(--r-panel-border)',
+        ...(isCustomising ? { outline: '1px dashed rgba(212,175,55,0.15)' } : {}),
+      }}
     >
       {hasHeader && (
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06] flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 flex-shrink-0" style={{ borderBottom: '1px solid var(--r-panel-border)' }}>
           <div className="flex items-center gap-3 min-w-0">
             {isCustomising && (
-              <div className="widget-drag-handle cursor-grab active:cursor-grabbing text-white/20 hover:text-white/50 transition-colors flex-shrink-0">
+              <div className="widget-drag-handle cursor-grab active:cursor-grabbing flex-shrink-0" style={{ color: 'var(--slate-600)' }}>
                 <GripVertical size={16} />
               </div>
             )}
             <div className="min-w-0">
               {subtitle && (
-                <p className="text-[10px] font-semibold text-[#967705] uppercase tracking-[0.15em] mb-0.5">
+                <p style={{ fontSize: 9, fontWeight: 600, color: 'var(--r-gold-500)', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 2 }}>
                   {subtitle}
                 </p>
               )}
               {title && (
-                <h3 className="text-[#F0F0F0] font-semibold truncate">{title}</h3>
+                <h3 className="truncate" style={{ fontSize: 14, fontWeight: 600, color: 'var(--slate-100)' }}>{title}</h3>
               )}
             </div>
           </div>

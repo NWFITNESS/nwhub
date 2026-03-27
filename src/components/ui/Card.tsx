@@ -12,7 +12,8 @@ interface CardProps {
 export function Card({ children, className = '', padding = true, ripple = false }: CardProps) {
   return (
     <div
-      className={`relative bg-[#161616] border border-white/[0.08] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] overflow-hidden ${padding ? 'p-8' : ''} ${className}`}
+      className={`relative rounded-2xl overflow-hidden ${padding ? 'p-8' : ''} ${className}`}
+      style={{ background: 'var(--slate-750)', border: '1px solid var(--r-panel-border)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)' }}
     >
       {children}
       {ripple && <Ripple color="text-white" opacity={0.08} />}
@@ -68,7 +69,7 @@ export function StatCard({
   }[accent ?? 'gold']
 
   return (
-    <div className="relative bg-[#161616] border border-white/[0.08] rounded-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] cursor-pointer">
+    <div className="relative rounded-2xl cursor-pointer" style={{ background: 'var(--slate-750)', border: '1px solid var(--r-panel-border)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)' }}>
       {/* Decorative layer — clipped independently so it never cuts content */}
       <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
         <div

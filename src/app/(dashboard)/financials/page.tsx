@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { TopBar } from '@/components/layout/TopBar'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { DollarSign, Receipt, RefreshCw } from 'lucide-react'
 import { FinancialsWidgetGrid, type FinancialsData } from '@/components/widgets/FinancialsWidgetGrid'
 
@@ -31,7 +32,7 @@ function NotConnected() {
 
 function SkeletonCard() {
   return (
-    <div className="bg-[#161616] border border-white/[0.06] rounded-xl p-6 min-h-[130px]">
+    <div className="rounded-xl p-6 min-h-[130px]" style={{ background: 'var(--slate-750)', border: '1px solid var(--r-panel-border)' }}>
       <div className="skeleton h-3 w-24 rounded mb-4" />
       <div className="skeleton h-10 w-20 rounded mb-2" />
       <div className="skeleton h-2 w-32 rounded" />
@@ -137,32 +138,35 @@ export default function FinancialsPage() {
       <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
 
         {/* ── Page Header ── */}
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.15em] mb-1">
-              NORTHERN WARRIOR HUB
-            </p>
-            <h1 className="text-4xl font-bold text-[#F0F0F0]" style={{ fontFamily: 'Rajdhani' }}>
-              Financials
-            </h1>
-            <p className="text-sm text-white/40 mt-1">
-              {notConnected
-                ? 'Connect Xero to view your financial data'
-                : lastSynced
-                  ? `Connected to Xero — last synced ${lastSynced}`
-                  : 'Loading Xero data…'}
-            </p>
-          </div>
-          {!notConnected && !loading && (
-            <button
-              onClick={load}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium text-white/60 border border-white/[0.1] bg-white/[0.03] hover:text-white hover:border-white/20 hover:bg-white/[0.06] transition-all duration-200"
-            >
-              <RefreshCw size={14} />
-              Refresh
-            </button>
-          )}
-        </div>
+        <PageHeader
+          title="Financials"
+          description={
+            notConnected
+              ? 'Connect Xero to view your financial data'
+              : lastSynced
+                ? `Connected to Xero — last synced ${lastSynced}`
+                : 'Loading Xero data…'
+          }
+          actions={
+            !notConnected && !loading ? (
+              <button
+                onClick={load}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '6px 14px', borderRadius: 7, fontSize: 13,
+                  color: 'var(--slate-400)', background: 'var(--r-panel-bg)',
+                  border: '1px solid var(--r-panel-border)', cursor: 'pointer',
+                  fontFamily: 'inherit', transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--slate-100)'; (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.08)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--slate-400)'; (e.currentTarget as HTMLButtonElement).style.background = 'var(--r-panel-bg)' }}
+              >
+                <RefreshCw size={13} />
+                Refresh
+              </button>
+            ) : undefined
+          }
+        />
 
         {/* ── Not Connected ── */}
         {notConnected && <NotConnected />}
@@ -190,7 +194,7 @@ export default function FinancialsPage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
               {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
             </div>
-            <div className="bg-[#161616] border border-white/[0.06] rounded-xl p-6 min-h-[320px]">
+            <div className="rounded-xl p-6 min-h-[320px]" style={{ background: 'var(--slate-750)', border: '1px solid var(--r-panel-border)' }}>
               <div className="skeleton h-4 w-40 rounded mb-6" />
               <div className="skeleton w-full h-[280px] rounded" />
             </div>

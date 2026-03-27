@@ -172,7 +172,10 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
                   key={slug}
                   variants={cardVariants}
                   whileHover={{ y: -4, transition: { duration: 0.2, ease: 'easeOut' } }}
-                  className="relative bg-[#161616] border border-white/[0.06] rounded-xl overflow-hidden hover:border-[#967705]/35 transition-colors duration-200 group"
+                  className="relative rounded-xl overflow-hidden transition-colors duration-200 group"
+                  style={{ background: 'var(--slate-750)', border: '1px solid var(--r-panel-border)' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(150,119,5,0.35)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--r-panel-border)' }}
                 >
                   {/* Top-right corner accent line */}
                   <div className="absolute top-0 right-0 w-16 h-16 pointer-events-none">

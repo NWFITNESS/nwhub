@@ -31,10 +31,10 @@ export function Table<T extends Record<string, unknown>>({
   loading = false,
 }: TableProps<T>) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-white/[0.08]">
+    <div className="overflow-x-auto rounded-xl" style={{ border: '1px solid var(--r-panel-border)' }}>
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-white/[0.08]">
+          <tr style={{ borderBottom: '1px solid var(--r-panel-border)' }}>
             {columns.map((col) => (
               <th
                 key={col.key}
@@ -63,11 +63,14 @@ export function Table<T extends Record<string, unknown>>({
               <tr
                 key={String(row[keyField]) || i}
                 onClick={() => onRowClick?.(row)}
-                className={`border-b border-white/[0.04] last:border-0 transition-colors border-l-2 border-l-transparent ${
+                className={`transition-colors border-l-2 border-l-transparent last:border-b-0 ${
                   onRowClick
-                    ? 'cursor-pointer hover:bg-white/[0.03] hover:border-l-[#967705]/30'
+                    ? 'cursor-pointer hover:border-l-[#967705]/30'
                     : 'hover:border-l-[#967705]/20'
                 }`}
+              style={{ borderBottom: '1px solid var(--r-panel-border)', ...(onRowClick ? {} : {}) }}
+              onMouseEnter={onRowClick ? (e) => { (e.currentTarget as HTMLElement).style.background = 'var(--r-panel-bg)' } : undefined}
+              onMouseLeave={onRowClick ? (e) => { (e.currentTarget as HTMLElement).style.background = '' } : undefined}
               >
                 {columns.map((col) => (
                   <td key={col.key} className={`px-4 py-3 text-white/80 ${col.className ?? ''}`}>

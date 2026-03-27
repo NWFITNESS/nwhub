@@ -63,11 +63,15 @@ export function EmailCard({ email, onAddTask }: Props) {
   const isImportant = email.flagged
 
   return (
-    <div className={`rounded-xl border p-3.5 transition-colors ${
-      isImportant
-        ? 'bg-[#1c1a14] border-[#967705]/25 hover:border-[#967705]/40'
-        : 'bg-[#161616] border-white/[0.06] hover:border-white/[0.10]'
-    }`}>
+    <div
+      className="rounded-xl border p-3.5 transition-colors"
+      style={{
+        background: isImportant ? 'rgba(212,160,23,0.05)' : 'var(--slate-750)',
+        borderColor: isImportant ? 'rgba(150,119,5,0.25)' : 'var(--r-panel-border)',
+      }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = isImportant ? 'rgba(150,119,5,0.4)' : 'rgba(255,255,255,0.12)' }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = isImportant ? 'rgba(150,119,5,0.25)' : 'var(--r-panel-border)' }}
+    >
       <div className="flex items-start gap-3">
         {/* Avatar */}
         <div

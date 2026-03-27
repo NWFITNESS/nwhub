@@ -77,14 +77,14 @@ export function WebsiteVisitorsChart({ data24h, data7d, data30d, data1y }: Props
   const tickInterval = range === '30D' ? 4 : range === '24H' ? 2 : 0
 
   return (
-    <div className="bg-[#161616] border border-white/[0.06] rounded-xl p-6">
+    <div className="rounded-xl p-6" style={{ background: 'var(--slate-750)', border: '1px solid var(--r-panel-border)' }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.15em] mb-1">
+          <p style={{ fontSize: 9, fontWeight: 600, color: 'var(--r-gold-500)', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 4 }}>
             Analytics
           </p>
-          <h3 className="text-[#F0F0F0] font-semibold">
+          <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--slate-100)' }}>
             Website Visitors
             <span className="text-white/30 font-normal text-sm ml-2">— {RANGE_LABELS[range]}</span>
           </h3>
