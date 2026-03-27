@@ -2,24 +2,23 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
 
-export async function POST(request: Request) {
+// Vercel crons fire GET — UI test button fires POST — both use the same handler
+export async function GET(request: Request) { return handler(request) }
+export async function POST(request: Request) { return handler(request) }
+
+async function handler(request: Request) {
   const resend = new Resend(process.env.RESEND_API_KEY)
   const supabase = createAdminClient()
 
-  // Get yesterday's date range
+  // Get emails from the last 24 hours
   const now = new Date()
-  const yesterday = new Date(now)
-  yesterday.setDate(yesterday.getDate() - 1)
-  yesterday.setHours(0, 0, 0, 0)
-  const todayStart = new Date(now)
-  todayStart.setHours(0, 0, 0, 0)
+  const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 
   const [{ data: emails }, { data: openTasks }, { data: digestSettings }] = await Promise.all([
     supabase
       .from('email_classifications')
       .select('*')
-      .gte('processed_at', yesterday.toISOString())
-      .lt('processed_at', todayStart.toISOString()),
+      .gte('received_at', yesterday.toISOString()),
     supabase
       .from('tasks')
       .select('*')
@@ -51,8 +50,8 @@ export async function POST(request: Request) {
   const categorised = allEmails.filter((e: { flagged: boolean; archived: boolean }) => !e.flagged && !e.archived).length
   const openTaskCount = (openTasks ?? []).length
 
-  const dayName = yesterday.toLocaleDateString('en-GB', { weekday: 'long' })
-  const dateStr = yesterday.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  const dayName = now.toLocaleDateString('en-GB', { weekday: 'long' })
+  const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
 
   const html = `
 <!DOCTYPE html>

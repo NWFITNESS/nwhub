@@ -3,7 +3,11 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { gmailFetch, extractEmailBody, ensureGmailLabels } from '@/lib/gmail'
 import { classifyEmail } from '@/lib/email-classifier'
 
-export async function POST(request: Request) {
+// Vercel crons fire GET — UI button fires POST — both use the same handler
+export async function GET(request: Request) { return handler(request) }
+export async function POST(request: Request) { return handler(request) }
+
+async function handler(request: Request) {
   const supabase = createAdminClient()
 
   // Check interval throttle (skip if called too soon, unless ?force=true)
