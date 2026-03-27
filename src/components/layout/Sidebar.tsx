@@ -249,8 +249,6 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
     : 'NW'
   const displayName = userEmail ? userEmail.split('@')[0] : 'Admin'
 
-  const brand = 'var(--font-rajdhani), Rajdhani, sans-serif'
-
   return (
     <>
       {/* Floating tooltip */}
@@ -276,52 +274,14 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
         />
       )}
 
-      <nav
+      <aside
         onMouseEnter={isMobile ? undefined : handleMouseEnter}
         onMouseLeave={isMobile ? undefined : handleMouseLeave}
-        style={{
-          width: isMobile ? 228 : (isOpen ? 228 : 58),
-          transition: isMobile ? 'none' : `width ${SPEED} ${EASE}`,
-          background: 'var(--slate-950)',
-          borderRight: '1px solid rgba(212, 160, 23, 0.18)',
-          boxShadow: '4px 0 32px rgba(212, 160, 23, 0.08), 2px 0 8px rgba(212, 160, 23, 0.05)',
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%',
-          overflow: 'hidden',
-          flexShrink: 0,
-          position: 'relative',
-          zIndex: 20,
-        }}
+        className={`relative z-20 flex flex-shrink-0 flex-col bg-nw-950 border-r border-[rgba(212,160,23,0.18)] shadow-sidebar overflow-hidden transition-[width] duration-[260ms] ease-[cubic-bezier(0.4,0,0.2,1)] h-full ${isOpen ? 'w-[228px]' : 'w-[58px]'}`}
       >
         {/* Pull hint */}
         {!isMobile && (
-          <div
-            style={{
-              position: 'absolute',
-              right: -22,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'rgba(212,160,23,0.13)',
-              border: '1px solid rgba(212,160,23,0.28)',
-              borderLeft: 'none',
-              borderRadius: '0 7px 7px 0',
-              padding: '10px 7px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 5,
-              color: 'var(--r-gold-400)',
-              fontSize: 9,
-              fontWeight: 600,
-              letterSpacing: '0.8px',
-              textTransform: 'uppercase',
-              writingMode: 'vertical-rl',
-              pointerEvents: 'none',
-              opacity: pullGone || isOpen ? 0 : 1,
-              transition: 'opacity 0.3s',
-            }}
-          >
+          <div className={`pointer-events-none absolute right-[-22px] top-1/2 flex -translate-y-1/2 flex-col items-center gap-[5px] rounded-r-[7px] border border-l-0 border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.13)] px-[7px] py-[10px] text-[9px] font-semibold uppercase tracking-[0.8px] text-gold-400 transition-opacity duration-300 [writing-mode:vertical-rl] ${isOpen || pullGone ? 'opacity-0' : 'opacity-100'}`}>
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 2l4 3-4 3" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -330,45 +290,21 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
         )}
 
         {/* Logo row */}
-        <div style={{
-          height: 54, minHeight: 54,
-          borderBottom: '1px solid var(--r-panel-border)',
-          display: 'flex', alignItems: 'center',
-          padding: '0 13px', gap: 11,
-          overflow: 'hidden', whiteSpace: 'nowrap', flexShrink: 0,
-        }}>
-          <div style={{
-            width: 32, minWidth: 32, height: 32,
-            background: 'linear-gradient(140deg, var(--r-gold-500) 0%, var(--r-gold-300) 100%)',
-            borderRadius: 8,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: brand, fontWeight: 700, fontSize: 14,
-            color: 'var(--slate-950)', letterSpacing: '0.5px', flexShrink: 0,
-          }}>NW</div>
+        <div className="flex h-[54px] min-h-[54px] items-center gap-[11px] overflow-hidden whitespace-nowrap border-b border-[rgba(255,255,255,0.09)] px-[13px] flex-shrink-0">
+          <div className="flex h-8 w-8 min-w-[32px] items-center justify-center rounded-lg bg-gradient-to-br from-gold-500 to-gold-300 font-brand text-sm font-bold tracking-[0.5px] text-nw-950">
+            NW
+          </div>
 
-          <div style={{
-            opacity: isOpen ? 1 : 0,
-            transition: `opacity ${SPEED} ${EASE}`,
-            pointerEvents: 'none', lineHeight: 1.15,
-          }}>
-            <span style={{
-              fontFamily: brand, fontWeight: 700, fontSize: 12.5,
-              letterSpacing: '1.8px', color: '#fff',
-              textTransform: 'uppercase', display: 'block',
-            }}>Northern Warrior</span>
-            <span style={{ fontSize: 9.5, color: 'var(--slate-500)', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
-              Admin Dashboard
-            </span>
+          <div className={`transition-opacity duration-[260ms] ${isOpen ? 'opacity-100' : 'opacity-0'} pointer-events-none leading-[1.15]`}>
+            <span className="block font-brand text-[12.5px] font-bold uppercase tracking-[1.8px] text-white">Northern Warrior</span>
+            <span className="text-[9.5px] uppercase tracking-[0.6px] text-nw-500">Admin Dashboard</span>
           </div>
 
           {onToggle && (
             <button
               onClick={onToggle}
-              style={{
-                marginLeft: 'auto', background: 'none', border: 'none',
-                color: 'var(--slate-400)', cursor: 'pointer', padding: 4,
-                borderRadius: 5, display: 'flex', alignItems: 'center',
-              }}
+              className="ml-auto flex items-center rounded-[5px] p-1 text-nw-400 hover:text-nw-200"
+              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
             >
               {Icons.close}
             </button>
@@ -376,12 +312,10 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
         </div>
 
         {/* Nav scroll area */}
-        <div style={{
-          flex: 1, overflowY: 'auto', overflowX: 'hidden',
-          padding: '10px 0 6px',
-          scrollbarWidth: 'thin',
-          scrollbarColor: 'var(--slate-700) transparent',
-        }}>
+        <div
+          className="flex-1 overflow-y-auto overflow-x-hidden py-[10px] pb-[6px]"
+          style={{ scrollbarWidth: 'thin', scrollbarColor: 'var(--slate-700) transparent' }}
+        >
           <SectionLabel label="Main" isOpen={isOpen} />
 
           {MAIN_ITEMS.map(item => (
@@ -418,49 +352,33 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
         </div>
 
         {/* Footer */}
-        <div style={{
-          borderTop: '1px solid var(--r-panel-border)',
-          padding: '10px 11px',
-          display: 'flex', alignItems: 'center', gap: 9,
-          overflow: 'hidden', whiteSpace: 'nowrap', flexShrink: 0,
-        }}>
-          <div style={{
-            width: 30, minWidth: 30, height: 30,
-            background: 'linear-gradient(140deg, var(--r-gold-500), var(--r-gold-300))',
-            borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: brand, fontSize: 11, fontWeight: 700,
-            color: 'var(--slate-950)', flexShrink: 0,
-          }}>{initials}</div>
+        <div className="flex flex-shrink-0 items-center gap-[9px] overflow-hidden whitespace-nowrap border-t border-[rgba(255,255,255,0.09)] px-[11px] py-[10px]">
+          <div className="flex h-[30px] w-[30px] min-w-[30px] items-center justify-center rounded-full bg-gradient-to-br from-gold-500 to-gold-300 font-brand text-[11px] font-bold text-nw-950">
+            {initials}
+          </div>
 
-          <div style={{
-            flex: 1, minWidth: 0,
-            opacity: isOpen ? 1 : 0,
-            transition: `opacity ${SPEED} ${EASE}`,
-          }}>
-            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--slate-200)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {displayName}
-            </div>
-            <div style={{ fontSize: 10, color: 'var(--slate-500)' }}>Administrator</div>
+          <div
+            className="flex-1 min-w-0"
+            style={{ opacity: isOpen ? 1 : 0, transition: `opacity ${SPEED} ${EASE}` }}
+          >
+            <div className="overflow-hidden text-ellipsis text-[12px] font-medium text-nw-200">{displayName}</div>
+            <div className="text-[10px] text-nw-500">Administrator</div>
           </div>
 
           <button
             onClick={handleSignOut}
             title="Sign out"
+            className="flex flex-shrink-0 items-center rounded-[5px] p-1 text-nw-600 hover:text-nw-300 transition-colors"
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--slate-600)', display: 'flex', alignItems: 'center',
-              padding: 4, borderRadius: 5, flexShrink: 0,
               opacity: isOpen ? 1 : 0,
               transition: `opacity ${SPEED} ${EASE}, color 0.15s`,
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--slate-300)' }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--slate-600)' }}
           >
             {Icons.signout}
           </button>
         </div>
-      </nav>
+      </aside>
     </>
   )
 }
@@ -469,14 +387,9 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
 
 function SectionLabel({ label, isOpen }: { label: string; isOpen: boolean }) {
   return (
-    <div style={{
-      fontSize: 9, fontWeight: 600, letterSpacing: '1.6px',
-      textTransform: 'uppercase', color: 'var(--slate-600)',
-      padding: '12px 18px 5px', whiteSpace: 'nowrap', overflow: 'hidden',
-      opacity: isOpen ? 1 : 0,
-      maxHeight: isOpen ? 32 : 0,
-      transition: `opacity ${SPEED} ${EASE}, max-height ${SPEED} ${EASE}`,
-    }}>{label}</div>
+    <div className={`overflow-hidden whitespace-nowrap px-[18px] text-[9px] font-semibold uppercase tracking-[1.6px] text-nw-600 transition-[opacity,max-height] duration-[260ms] ${isOpen ? 'max-h-8 pt-3 pb-1 opacity-100' : 'max-h-0 opacity-0'}`}>
+      {label}
+    </div>
   )
 }
 
@@ -495,62 +408,36 @@ interface NavRowProps {
 }
 
 function NavRow({ item, isOpen, isActive, isSubOpen, isSubActive, onToggleSub, onNavigate, onShowTooltip, onHideTooltip }: NavRowProps) {
-  const [hovered, setHovered] = useState(false)
   const hasSub = !!(item.sub?.length)
 
-  const rowStyle: React.CSSProperties = {
-    display: 'flex', alignItems: 'center',
-    gap: 10, padding: '0 11px', height: 38,
-    margin: '1px 7px', borderRadius: 7,
-    cursor: 'pointer', fontSize: 13,
-    whiteSpace: 'nowrap', overflow: 'hidden',
-    position: 'relative', textDecoration: 'none',
-    transition: 'background 0.15s, color 0.15s',
-    background: isActive
-      ? 'rgba(212, 160, 23, 0.11)'
-      : hovered ? 'var(--r-panel-bg)' : 'transparent',
-    color: isActive
-      ? 'var(--r-gold-300)'
-      : hovered ? 'var(--slate-200)' : 'var(--slate-400)',
-    fontWeight: isActive ? 500 : 400,
-  }
+  const rowClass = `relative mx-[7px] my-px flex h-[38px] cursor-pointer items-center gap-[10px] overflow-hidden whitespace-nowrap rounded-[7px] px-[11px] text-[13px] transition-colors duration-150 select-none ${isActive ? 'bg-[rgba(212,160,23,0.11)] font-medium text-gold-300' : 'text-nw-400 hover:bg-[rgba(255,255,255,0.04)] hover:text-nw-200'}`
 
   const inner = (
     <>
       {isActive && (
-        <div style={{
-          position: 'absolute', left: 0, top: '22%', height: '56%',
-          width: 2.5, background: 'var(--r-gold-400)', borderRadius: '0 2px 2px 0',
-        }} />
+        <div className="absolute left-0 top-[22%] h-[56%] w-[2.5px] rounded-r-sm bg-gold-400" />
       )}
-      <div style={{
-        width: 16, minWidth: 16, height: 16,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-        color: isActive ? 'var(--r-gold-400)' : 'inherit',
-      }}>
+      <div className="flex h-4 w-4 min-w-[16px] items-center justify-center flex-shrink-0">
         {item.icon}
       </div>
-      <div style={{
-        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        opacity: isOpen ? 1 : 0,
-        transition: `opacity ${SPEED} ${EASE}`,
-        minWidth: 0, overflow: 'hidden',
-      }}>
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.label}</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+      <div
+        className={`flex flex-1 items-center justify-between transition-opacity duration-[260ms] min-w-0 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
+      >
+        <span className="overflow-hidden text-ellipsis">{item.label}</span>
+        <div className="flex items-center gap-[5px] flex-shrink-0">
           {item.badge != null && item.badge > 0 && (
-            <span style={{
-              background: 'rgba(212,160,23,0.18)', color: 'var(--r-gold-300)',
-              fontSize: 9, fontWeight: 600, padding: '1px 6px', borderRadius: 9,
-            }}>{item.badge}</span>
+            <span className="rounded-[9px] bg-[rgba(212,160,23,0.18)] px-1.5 py-px text-[9px] font-semibold text-gold-300">
+              {item.badge}
+            </span>
           )}
           {hasSub && (
-            <span style={{
-              color: 'var(--slate-600)',
-              transition: 'transform 0.2s',
-              transform: isSubOpen && isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
-              display: 'flex', alignItems: 'center',
-            }}>
+            <span
+              className="flex items-center text-nw-600"
+              style={{
+                transition: 'transform 0.2s',
+                transform: isSubOpen && isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+              }}
+            >
               {Icons.chevron}
             </span>
           )}
@@ -560,32 +447,28 @@ function NavRow({ item, isOpen, isActive, isSubOpen, isSubActive, onToggleSub, o
   )
 
   const events = {
-    onMouseEnter: (e: React.MouseEvent) => { setHovered(true); onShowTooltip(e, item.label) },
-    onMouseLeave: () => { setHovered(false); onHideTooltip() },
+    onMouseEnter: (e: React.MouseEvent) => { onShowTooltip(e, item.label) },
+    onMouseLeave: () => { onHideTooltip() },
   }
 
   return (
     <div>
       {item.href && !hasSub ? (
-        <Link href={item.href} onClick={onNavigate} style={rowStyle} {...events}>
+        <Link href={item.href} onClick={onNavigate} className={rowClass} style={{ textDecoration: 'none' }} {...events}>
           {inner}
         </Link>
       ) : item.href && hasSub ? (
-        <div onClick={() => { onToggleSub() }} style={rowStyle} {...events}>
+        <div onClick={() => { onToggleSub() }} className={rowClass} {...events}>
           {inner}
         </div>
       ) : (
-        <div onClick={onToggleSub} style={rowStyle} {...events}>
+        <div onClick={onToggleSub} className={rowClass} {...events}>
           {inner}
         </div>
       )}
 
       {hasSub && (
-        <div style={{
-          overflow: 'hidden',
-          maxHeight: isSubOpen && isOpen ? `${item.sub!.length * 32}px` : 0,
-          transition: `max-height 0.25s ${EASE}`,
-        }}>
+        <div className={`overflow-hidden transition-[max-height] duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] ${isSubOpen && isOpen ? 'max-h-56' : 'max-h-0'}`}>
           {item.sub!.map(sub => (
             <SubRow
               key={sub.label}
@@ -606,31 +489,13 @@ function NavRow({ item, isOpen, isActive, isSubOpen, isSubActive, onToggleSub, o
 function SubRow({ sub, active, isOpen, onNavigate }: {
   sub: SubItem; active: boolean; isOpen: boolean; onNavigate?: () => void
 }) {
-  const [hovered, setHovered] = useState(false)
   return (
     <Link
       href={sub.href}
       onClick={onNavigate}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: 'flex', alignItems: 'center',
-        padding: '0 11px 0 40px', height: 30,
-        margin: '0 7px', borderRadius: 6,
-        cursor: 'pointer', fontSize: 12,
-        whiteSpace: 'nowrap', overflow: 'hidden',
-        position: 'relative', textDecoration: 'none',
-        transition: 'background 0.15s, color 0.15s',
-        color: active ? 'var(--r-gold-300)' : hovered ? 'var(--slate-300)' : 'var(--slate-500)',
-        background: hovered ? 'var(--r-panel-bg)' : 'transparent',
-      }}
+      className={`relative mx-[7px] flex h-[30px] cursor-pointer items-center overflow-hidden whitespace-nowrap rounded-[6px] pl-10 pr-[11px] text-xs transition-colors duration-150 before:absolute before:left-6 before:top-1/2 before:h-px before:w-[7px] before:bg-nw-700 ${active ? 'text-gold-300 before:bg-gold-600' : 'text-nw-500 hover:bg-[rgba(255,255,255,0.04)] hover:text-nw-300'}`}
+      style={{ textDecoration: 'none' }}
     >
-      <div style={{
-        position: 'absolute', left: 24, top: '50%',
-        width: 7, height: 1,
-        background: active ? 'var(--r-gold-600)' : hovered ? 'var(--slate-500)' : 'var(--slate-700)',
-        transition: 'background 0.15s',
-      }} />
       <span style={{ opacity: isOpen ? 1 : 0, transition: `opacity ${SPEED} ${EASE}` }}>
         {sub.label}
       </span>

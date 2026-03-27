@@ -2,7 +2,7 @@
 
 import { ButtonHTMLAttributes, forwardRef } from 'react'
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'destructive'
+type Variant = 'primary' | 'secondary' | 'ghost' | 'destructive' | 'default' | 'gold' | 'danger'
 type Size = 'sm' | 'md' | 'lg'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -16,10 +16,13 @@ const variantStyles: Record<Variant, string> = {
   secondary: 'bg-[#2a2a2a] hover:bg-[#353534] text-[#e5e2e1] border border-[#4d4635]/30 hover:border-[#4d4635]/60 active:scale-[0.98]',
   ghost: 'hover:bg-[#2a2a2a] text-[#d0c5af]/60 hover:text-[#e5e2e1] active:scale-[0.98]',
   destructive: 'bg-red-600/15 hover:bg-red-600/25 text-red-400 border border-red-600/25 active:scale-[0.98]',
+  default: 'border border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] text-nw-300 hover:bg-[rgba(255,255,255,0.08)] hover:text-nw-100 hover:border-[rgba(255,255,255,0.14)]',
+  gold:    'border border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-gold-300 hover:bg-[rgba(212,160,23,0.22)]',
+  danger:  'border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-red-400 hover:bg-[rgba(239,68,68,0.18)]',
 }
 
 const sizeStyles: Record<Size, string> = {
-  sm: 'px-3 py-1.5 text-sm rounded-md',
+  sm: 'px-3 py-[5px] text-xs rounded-[7px]',
   md: 'px-4 py-2.5 text-[15px] rounded-lg',
   lg: 'px-6 py-3 text-base rounded-lg',
 }

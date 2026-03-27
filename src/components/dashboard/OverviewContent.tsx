@@ -33,7 +33,7 @@ function StatCard({ label, value, sub, gold, icon }: {
           {icon}
         </div>
       </div>
-      <div style={{ fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif', fontSize: 32, fontWeight: 700, lineHeight: 1, letterSpacing: '-0.5px', color: gold ? 'var(--r-gold-300)' : '#fff' }}>
+      <div className="font-brand" style={{ fontSize: 32, fontWeight: 700, lineHeight: 1, letterSpacing: '-0.5px', color: gold ? 'var(--r-gold-300)' : '#fff' }}>
         {value}
       </div>
       <div style={{ fontSize: 11, color: 'var(--slate-500)' }}>{sub}</div>
@@ -137,7 +137,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
           <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.8px', textTransform: 'uppercase', color: 'var(--slate-500)' }}>
             ADMIN PANEL
           </p>
-          <h1 style={{ fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif', fontSize: 28, fontWeight: 700, letterSpacing: '0.3px', lineHeight: 1 }}>
+          <h1 className="font-brand" style={{ fontSize: 28, fontWeight: 700, letterSpacing: '0.3px', lineHeight: 1 }}>
             <span style={{ color: '#fff' }}>Northern Warrior </span>
             <span style={{ color: 'var(--r-gold-400)' }}>Hub</span>
           </h1>
@@ -255,7 +255,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
               <div style={{ padding: '13px 17px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 9 }}>
                   <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--slate-200)' }}>Setup Checklist</span>
-                  <span style={{ fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif', fontSize: 16, fontWeight: 700, color: 'var(--r-gold-300)' }}>
+                  <span className="font-brand" style={{ fontSize: 16, fontWeight: 700, color: 'var(--r-gold-300)' }}>
                     {doneCount} / {data.checklist.length}
                   </span>
                 </div>

@@ -134,56 +134,34 @@ export function TopBar({ title, actions }: TopBarProps) {
   const categories = Object.entries(results ?? {}).filter(([, items]) => items?.length > 0)
   const totalResults = categories.reduce((n, [, items]) => n + items.length, 0)
 
-  const btnBase: React.CSSProperties = {
-    background: 'var(--r-panel-bg)',
-    border: '1px solid var(--r-panel-border)',
-    borderRadius: 7, padding: '5px 12px',
-    fontSize: 12, color: 'var(--slate-300)',
-    cursor: 'pointer', fontFamily: 'inherit',
-    display: 'flex', alignItems: 'center', gap: 6,
-    transition: 'background 0.15s, color 0.15s, border-color 0.15s',
-    whiteSpace: 'nowrap',
-  }
-
   return (
     <>
     <header
-      className="hidden lg:flex sticky top-0 z-30 flex-shrink-0 items-center gap-3"
-      style={{
-        height: 54,
-        background: 'var(--slate-950)',
-        borderBottom: '1px solid var(--r-panel-border)',
-        padding: '0 22px',
-      }}
+      className="hidden lg:flex h-[54px] min-h-[54px] flex-shrink-0 items-center gap-[14px] border-b border-[rgba(255,255,255,0.09)] bg-nw-950 px-[22px] sticky top-0 z-30"
     >
       {/* Brand */}
-      <span style={{
-        fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif',
-        fontWeight: 700, fontSize: 14,
-        letterSpacing: '2px', textTransform: 'uppercase',
-        color: 'var(--slate-300)', whiteSpace: 'nowrap',
-      }}>NW HUB</span>
+      <span className="font-brand text-sm font-bold uppercase tracking-[2px] text-nw-300 whitespace-nowrap">NW HUB</span>
 
       {/* Divider */}
-      <div style={{ width: 1, height: 18, background: 'var(--r-panel-border)', flexShrink: 0 }} />
+      <div className="h-[18px] w-px flex-shrink-0 bg-[rgba(255,255,255,0.09)]" />
 
       {/* Breadcrumb */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--slate-500)' }}>
+      <div className="flex items-center gap-[6px] text-xs text-nw-500">
         {segments.map((seg, i) => (
-          <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span key={i} className="flex items-center gap-[6px]">
             {seg} <Chevron />
           </span>
         ))}
-        <span style={{ color: 'var(--slate-200)' }}>{pageLabel}</span>
+        <span className="text-nw-200">{pageLabel}</span>
       </div>
 
       {/* Right side */}
-      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div className="ml-auto flex items-center gap-2">
 
         {/* Search */}
-        <div ref={wrapperRef} style={{ position: 'relative' }}>
+        <div ref={wrapperRef} className="relative">
           {searchVisible ? (
-            <div style={{ position: 'relative' }}>
+            <div className="relative">
               <input
                 ref={inputRef}
                 value={query}
@@ -214,7 +192,10 @@ export function TopBar({ title, actions }: TopBarProps) {
               )}
             </div>
           ) : (
-            <button onClick={() => setSearchVisible(true)} style={btnBase}>
+            <button
+              onClick={() => setSearchVisible(true)}
+              className="flex items-center gap-1.5 rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] px-3 py-[5px] text-xs text-nw-300 transition-colors hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.08)] hover:text-nw-100"
+            >
               <Search size={13} /> Search
             </button>
           )}
@@ -269,26 +250,7 @@ export function TopBar({ title, actions }: TopBarProps) {
         <button
           onClick={() => setIsMobileView(!isMobileView)}
           title="Toggle mobile view"
-          style={{
-            ...btnBase,
-            ...(isMobileView ? {
-              background: 'rgba(212,160,23,0.12)',
-              borderColor: 'rgba(212,160,23,0.28)',
-              color: 'var(--r-gold-300)',
-            } : {}),
-          }}
-          onMouseEnter={e => {
-            if (!isMobileView) {
-              (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)'
-              ;(e.currentTarget as HTMLElement).style.color = 'var(--slate-100)'
-            }
-          }}
-          onMouseLeave={e => {
-            if (!isMobileView) {
-              (e.currentTarget as HTMLElement).style.background = 'var(--r-panel-bg)'
-              ;(e.currentTarget as HTMLElement).style.color = 'var(--slate-300)'
-            }
-          }}
+          className={`flex items-center gap-1.5 rounded-[7px] border px-3 py-[5px] text-xs transition-colors ${isMobileView ? 'border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-gold-300' : 'border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] text-nw-300 hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.08)] hover:text-nw-100'}`}
         >
           <Smartphone size={13} />
         </button>
@@ -296,20 +258,12 @@ export function TopBar({ title, actions }: TopBarProps) {
         {/* Customise — gold */}
         <button
           onClick={() => setCustomiseOpen(v => !v)}
-          style={{
-            ...btnBase,
-            background: customiseOpen ? 'rgba(212,160,23,0.20)' : 'rgba(212,160,23,0.12)',
-            borderColor: customiseOpen ? 'rgba(212,160,23,0.45)' : 'rgba(212,160,23,0.28)',
-            color: 'var(--r-gold-300)',
-            display: 'flex', alignItems: 'center', gap: 6,
-          }}
-          onMouseEnter={e => { if (!customiseOpen) (e.currentTarget as HTMLElement).style.background = 'rgba(212,160,23,0.22)' }}
-          onMouseLeave={e => { if (!customiseOpen) (e.currentTarget as HTMLElement).style.background = 'rgba(212,160,23,0.12)' }}
+          className="flex items-center gap-1.5 rounded-[7px] border border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] px-3 py-[5px] text-xs text-gold-300 transition-colors hover:bg-[rgba(212,160,23,0.22)]"
         >
           <SlidersHorizontal size={13} /> Customise
         </button>
 
-        {actions && <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{actions}</div>}
+        {actions && <div className="flex items-center gap-2">{actions}</div>}
       </div>
     </header>
 

@@ -8,6 +8,36 @@
   --font-body: var(--font-manrope), system-ui, sans-serif;
 }
 
+@theme {
+  /* NWHub slate palette — becomes bg-nw-*, text-nw-*, border-nw-* */
+  --color-nw-950: #0b0e14;
+  --color-nw-900: #111520;
+  --color-nw-850: #161c2a;
+  --color-nw-800: #1c2333;
+  --color-nw-750: #22293d;
+  --color-nw-700: #293248;
+  --color-nw-600: #374059;
+  --color-nw-500: #607080;
+  --color-nw-400: #8296b4;
+  --color-nw-300: #aabdd8;
+  --color-nw-200: #d2deee;
+  --color-nw-100: #edf3fb;
+  /* NWHub gold palette */
+  --color-gold-600: #b8870f;
+  --color-gold-500: #d4a017;
+  --color-gold-400: #e8b933;
+  --color-gold-300: #f2cb55;
+  --color-gold-200: #f8df8a;
+  --color-gold-100: #fdf4d4;
+  /* Fonts */
+  --font-brand: var(--font-rajdhani), Rajdhani, sans-serif;
+  --font-ui: var(--font-inter), Inter, sans-serif;
+  /* Shadows */
+  --shadow-gold-sm: 0 4px 24px rgba(212,160,23,0.07), 0 1px 4px rgba(212,160,23,0.04);
+  --shadow-gold-md: 0 6px 32px rgba(212,160,23,0.13), 0 2px 8px rgba(212,160,23,0.07);
+  --shadow-sidebar: 4px 0 32px rgba(212,160,23,0.08), 2px 0 8px rgba(212,160,23,0.05);
+}
+
 @keyframes accordion-down {
   from { height: 0; }
   to { height: var(--radix-accordion-content-height); }

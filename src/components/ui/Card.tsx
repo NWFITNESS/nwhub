@@ -2,6 +2,27 @@
 
 import { Ripple } from '@/components/ui/material-design-3-ripple'
 
+// Panel — surface card used across all pages
+export function Panel({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 ${className ?? ''}`}>
+      {children}
+    </div>
+  )
+}
+
+// Panel header row
+export function PanelHeader({ eyebrow, title, children }: { eyebrow?: string; title: string; children?: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[11px]">
+      {eyebrow && <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">{eyebrow}</span>}
+      {eyebrow && <div className="h-3 w-px bg-[rgba(255,255,255,0.09)]" />}
+      <span className="text-[13px] font-medium text-nw-200">{title}</span>
+      {children && <div className="ml-auto">{children}</div>}
+    </div>
+  )
+}
+
 interface CardProps {
   children: React.ReactNode
   className?: string

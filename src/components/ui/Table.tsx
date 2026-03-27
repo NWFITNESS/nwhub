@@ -2,6 +2,18 @@ import { LucideIcon } from 'lucide-react'
 import { EmptyState } from './EmptyState'
 import { SkeletonTable } from './Skeleton'
 
+export function Th({ children }: { children: React.ReactNode }) {
+  return <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">{children}</th>
+}
+
+export function Td({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <td className={`border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-nw-300 ${className ?? ''}`}>{children}</td>
+}
+
+export function TrRow({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
+  return <tr onClick={onClick} className={`transition-colors hover:bg-[rgba(255,255,255,0.03)] ${onClick ? 'cursor-pointer' : ''}`}>{children}</tr>
+}
+
 interface Column<T> {
   key: string
   label: string

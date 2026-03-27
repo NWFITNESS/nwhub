@@ -1,4 +1,4 @@
-type BadgeVariant = 'new' | 'read' | 'replied' | 'draft' | 'published' | 'sent' | 'subscribed' | 'unsubscribed' | 'bounced' | 'active' | 'default'
+type BadgeVariant = 'new' | 'read' | 'replied' | 'draft' | 'published' | 'sent' | 'subscribed' | 'unsubscribed' | 'bounced' | 'active' | 'default' | 'done' | 'todo' | 'gold' | 'green' | 'amber'
 
 const variantStyles: Record<BadgeVariant, string> = {
   new: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
@@ -12,6 +12,11 @@ const variantStyles: Record<BadgeVariant, string> = {
   bounced: 'bg-red-500/15 text-red-400 border-red-500/30',
   active: 'bg-green-500/15 text-green-400 border-green-500/30',
   default: 'bg-white/5 text-white/60 border-white/10',
+  done:    'bg-[rgba(74,222,128,0.1)] text-[#4ade80] border border-[rgba(74,222,128,0.2)]',
+  todo:    'bg-[rgba(100,116,139,0.1)] text-nw-500 border border-[rgba(255,255,255,0.07)]',
+  gold:    'bg-[rgba(212,160,23,0.18)] text-gold-300 border border-[rgba(212,160,23,0.25)]',
+  green:   'bg-[rgba(74,222,128,0.1)] text-[#4ade80] border border-[rgba(74,222,128,0.2)]',
+  amber:   'bg-[rgba(245,158,11,0.1)] text-[#f59e0b] border border-[rgba(245,158,11,0.2)]',
 }
 
 interface BadgeProps {
@@ -22,9 +27,7 @@ interface BadgeProps {
 
 export function Badge({ variant = 'default', children, className = '' }: BadgeProps) {
   return (
-    <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${variantStyles[variant]} ${className}`}
-    >
+    <span className={`inline-flex items-center rounded-[8px] px-[7px] py-[2px] text-[9px] font-semibold uppercase tracking-[0.8px] ${variantStyles[variant]} ${className}`}>
       {children}
     </span>
   )

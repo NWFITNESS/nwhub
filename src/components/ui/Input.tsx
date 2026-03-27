@@ -1,7 +1,7 @@
 import { InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes, forwardRef } from 'react'
 import { ChevronDown } from 'lucide-react'
 
-const baseClass = 'w-full bg-[#1c1b1b] border border-[#4d4635]/30 rounded-lg px-3 py-2.5 text-[15px] text-[#e5e2e1] placeholder:text-[#d0c5af]/30 focus:outline-none focus:border-[#d4af37]/60 focus:bg-[#201f1f] transition-colors'
+const baseClass = 'h-9 w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 text-[13px] text-nw-200 placeholder:text-nw-500 outline-none transition-colors focus:border-[rgba(212,160,23,0.4)] focus:bg-nw-750'
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   ({ className = '', ...props }, ref) => (
