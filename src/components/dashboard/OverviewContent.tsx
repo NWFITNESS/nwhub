@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { TopBar } from '@/components/layout/TopBar'
 import type { DashboardData } from '@/components/widgets/DashboardWidgetGrid'
+import { MiniCalendar } from './MiniCalendar'
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 
@@ -295,6 +296,9 @@ export function OverviewContent({ data, formattedDate }: Props) {
                 ))}
               </div>
             </div>
+
+            {/* Mini Calendar */}
+            <MiniCalendar />
 
           </div>
         </div>

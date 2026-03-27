@@ -32,6 +32,7 @@ const CATEGORY_META: Record<string, {
 
 const PATH_LABELS: Record<string, string> = {
   inbox: 'Inbox Intelligence',
+  calendar: 'Calendar',
   financials: 'Financials',
   contacts: 'Contacts',
   leads: 'Leads',
