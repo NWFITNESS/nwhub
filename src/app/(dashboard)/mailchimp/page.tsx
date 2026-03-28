@@ -58,7 +58,7 @@ export default async function MailchimpPage() {
   return (
     <>
       {/* Mobile layout */}
-      <div className="lg:hidden flex flex-col bg-[#0f0f0f] min-h-[100dvh]">
+      <div className="lg:hidden flex flex-col bg-nw-950 min-h-[100dvh]">
         <MobileAppBar
           title="Marketing"
           actions={
@@ -84,12 +84,12 @@ export default async function MailchimpPage() {
           ) : (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
               <p className="text-[14px] text-[#888]">Configure Mailchimp in settings</p>
-              <Link href="/settings" className="text-[12px] text-[#e0c97f]">Go to Settings</Link>
+              <Link href="/settings" className="text-[12px] text-gold-300">Go to Settings</Link>
             </div>
           )}
           <Link
             href="/mailchimp/create-ai"
-            className="flex items-center justify-center gap-2 h-12 rounded-xl bg-[#e0c97f] text-[#0d0d0d] text-[13px] font-semibold mt-2"
+            className="flex items-center justify-center gap-2 h-12 rounded-xl bg-gradient-to-r from-gold-600 to-gold-400 text-nw-950 text-[13px] font-semibold mt-2"
             style={{ fontFamily: 'Rajdhani, sans-serif' }}
           >
             <Sparkles size={16} />
@@ -99,12 +99,13 @@ export default async function MailchimpPage() {
       </div>
 
       {/* Desktop layout */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block bg-nw-900 min-h-screen">
         <TopBar title="Mailchimp" />
         <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
           <PageHeader
-            eyebrow="Marketing"
-            title="Mailchimp"
+            eyebrow="Admin Panel"
+            title="Email"
+            titleGold="Marketing"
             description="Manage your email audience, sync subscribers, and send campaigns"
             actions={
               <Link href="/mailchimp/create-ai">

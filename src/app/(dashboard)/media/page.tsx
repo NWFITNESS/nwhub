@@ -11,12 +11,12 @@ export default async function MediaPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <>
+    <div className="bg-nw-900 min-h-screen">
       <TopBar title="Media" />
       <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
-        <PageHeader eyebrow="Assets" title="Media Library" description={`${media?.length ?? 0} files`} />
+        <PageHeader eyebrow="Admin Panel" title="Media" titleGold="Library" description={`${media?.length ?? 0} files`} />
         <MediaGrid initialMedia={media ?? []} />
       </main>
-    </>
+    </div>
   )
 }

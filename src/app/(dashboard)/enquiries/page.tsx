@@ -17,10 +17,10 @@ export default async function EnquiriesPage() {
       <MobileEnquiriesList enquiries={enquiries ?? []} />
 
       {/* Desktop layout */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block bg-nw-900 min-h-screen">
         <TopBar title="Enquiries" />
         <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
-          <PageHeader eyebrow="CRM" title="Contact Enquiries" description={`${enquiries?.length ?? 0} enquiries`} />
+          <PageHeader eyebrow="Admin Panel" title="Contact" titleGold="Enquiries" description={`${enquiries?.length ?? 0} enquiries`} />
           <ContactsTable initialEnquiries={enquiries ?? []} />
         </main>
       </div>

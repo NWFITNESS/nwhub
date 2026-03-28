@@ -24,11 +24,13 @@ export default async function BlogManagePage() {
   const totalPosts = posts?.length ?? 0
 
   return (
-    <>
+    <div className="bg-nw-900 min-h-screen">
       <TopBar title="Blog" />
       <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
-          title="Blog & Posts"
+          eyebrow="Admin Panel"
+          title="Blog"
+          titleGold="& Posts"
           description={`${totalPosts} post${totalPosts !== 1 ? 's' : ''}`}
           actions={
             <Link href="/blog/manage/new">
@@ -43,6 +45,6 @@ export default async function BlogManagePage() {
           categories={(categories ?? []) as BlogCategory[]}
         />
       </main>
-    </>
+    </div>
   )
 }

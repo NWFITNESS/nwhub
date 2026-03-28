@@ -38,7 +38,7 @@ export default async function InboxPage() {
       />
 
       {/* Desktop layout */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block bg-nw-900 min-h-screen">
         <TopBar title="Inbox Intelligence" />
         <main className="page-pad flex flex-col gap-5 py-6 lg:py-8">
           <InboxClient

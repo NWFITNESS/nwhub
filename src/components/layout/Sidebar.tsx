@@ -105,11 +105,6 @@ const MAIN_ITEMS: NavItem[] = [
     label: 'Inbox Intelligence',
     href: '/inbox',
     icon: Icons.inbox,
-    sub: [
-      { label: 'All Enquiries', href: '/enquiries' },
-      { label: 'AI Chat Logs', href: '/ai-chat' },
-      { label: 'Contacts', href: '/contacts' },
-    ],
   },
   {
     key: 'financials',

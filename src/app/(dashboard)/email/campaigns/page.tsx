@@ -21,11 +21,13 @@ export default async function EmailCampaignsPage() {
       <MobileEmailCampaigns campaigns={campaigns ?? []} />
 
       {/* Desktop layout */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block bg-nw-900 min-h-screen">
       <TopBar title="Email Campaigns" />
       <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
-          title="Email Campaigns"
+          eyebrow="Admin Panel"
+          title="Email"
+          titleGold="Campaigns"
           actions={
             <Link href="/email/campaigns/new">
               <Button variant="primary" size="sm"><Plus size={14} /> New Campaign</Button>

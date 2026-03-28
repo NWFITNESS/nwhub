@@ -132,15 +132,16 @@ export default function FinancialsPage() {
       </div>
 
       {/* Desktop layout */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block bg-nw-900 min-h-screen">
       <TopBar title="Financials" />
 
       <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
 
         {/* ── Page Header ── */}
         <PageHeader
-          eyebrow="Finance"
-          title="Financials"
+          eyebrow="Admin Panel"
+          title="Financial"
+          titleGold="Reports"
           description={
             notConnected
               ? 'Connect Xero to view your financial data'

@@ -37,12 +37,13 @@ export default async function ContentPage() {
   }, {})
 
   return (
-    <>
+    <div className="bg-nw-900 min-h-screen">
       <TopBar title="Content" />
       <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
-          eyebrow="CMS"
-          title="Site Content"
+          eyebrow="Admin Panel"
+          title="Site"
+          titleGold="Content"
           description="Edit content for each page. Changes are reflected on the live site immediately."
           actions={
             <a
@@ -64,6 +65,6 @@ export default async function ContentPage() {
           }))}
         />
       </main>
-    </>
+    </div>
   )
 }

@@ -20,12 +20,13 @@ export default async function LeadsPage() {
       <MobileContactsList contacts={contacts} title="Leads" />
 
       {/* Desktop layout */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block bg-nw-900 min-h-screen">
         <TopBar title="Leads" />
         <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
           <PageHeader
-            eyebrow="CRM"
-            title="Leads"
+            eyebrow="Admin Panel"
+            title="Lead"
+            titleGold="Pipeline"
             description={`${contacts.length} lead${contacts.length !== 1 ? 's' : ''} — contacts with no membership yet`}
           />
           <ContactsManager initialContacts={contacts} />
