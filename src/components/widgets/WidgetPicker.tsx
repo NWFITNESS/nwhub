@@ -29,7 +29,7 @@ export function WidgetPicker({ open, onClose, allWidgets, visibleIds, onAdd, onR
       <div className="space-y-5">
         {categories.map((cat) => (
           <div key={cat}>
-            <p className="text-[10px] font-semibold text-[#967705] uppercase tracking-[0.15em] mb-2">
+            <p className="text-[10px] font-semibold text-gold-500 uppercase tracking-[0.15em] mb-2">
               {CATEGORY_LABELS[cat]}
             </p>
             <div className="space-y-1.5">
@@ -47,8 +47,8 @@ export function WidgetPicker({ open, onClose, allWidgets, visibleIds, onAdd, onR
                         onClick={() => active ? onRemove(w.id) : onAdd(w.id)}
                         className={`px-3 py-1 rounded-md text-xs font-semibold transition-all duration-150 border ${
                           active
-                            ? 'bg-[#967705]/20 text-[#C9A70A] border-[#967705]/40 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30'
-                            : 'bg-white/[0.04] text-white/40 border-white/[0.08] hover:bg-[#967705]/10 hover:text-[#C9A70A] hover:border-[#967705]/30'
+                            ? 'bg-gold-600/20 text-gold-300 border-gold-600/40 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30'
+                            : 'bg-[rgba(255,255,255,0.04)] text-nw-400 border-[rgba(255,255,255,0.08)] hover:bg-gold-600/10 hover:text-gold-300 hover:border-gold-600/30'
                         }`}
                       >
                         {active ? 'Remove' : 'Add'}

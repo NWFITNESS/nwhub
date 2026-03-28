@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { type DashboardData } from '@/components/widgets/DashboardWidgetGrid'
+import { DashboardWidgetGrid, type DashboardData } from '@/components/widgets/DashboardWidgetGrid'
 import { MobileDashboard } from '@/components/mobile/MobileDashboard'
-import { OverviewContent } from '@/components/dashboard/OverviewContent'
+import { TopBar } from '@/components/layout/TopBar'
+import { PageHeader } from '@/components/layout/PageHeader'
 import type { ChartDataPoint } from '@/components/dashboard/MemberGrowthChart'
 
 // ---------------------------------------------------------------------------
@@ -145,7 +146,18 @@ export default async function DashboardPage() {
       <MobileDashboard data={data} />
 
       {/* Desktop layout */}
-      <OverviewContent data={data} formattedDate={formattedDate} />
+      <div className="hidden lg:flex flex-col bg-nw-900 min-h-screen">
+        <TopBar />
+        <main className="page-pad flex flex-col gap-5 py-6 lg:py-8">
+          <PageHeader
+            eyebrow="Admin Panel"
+            title="Northern Warrior"
+            titleGold="Hub"
+            description={formattedDate}
+          />
+          <DashboardWidgetGrid data={data} />
+        </main>
+      </div>
     </>
   )
 }

@@ -46,8 +46,8 @@ export function WidgetGrid({
           onClick={() => setIsCustomising(!isCustomising)}
           className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border ${
             isCustomising
-              ? 'text-[#C9A70A] border-[#967705]/50 bg-[#967705]/10'
-              : 'text-white/50 border-white/[0.1] hover:text-white/70 hover:border-white/20'
+              ? 'text-gold-300 border-gold-600/50 bg-gold-600/10'
+              : 'text-nw-400 border-[rgba(255,255,255,0.1)] hover:text-nw-200 hover:border-[rgba(255,255,255,0.2)]'
           }`}
         >
           {isCustomising ? <Check size={14} /> : <Settings2 size={14} />}
@@ -56,7 +56,7 @@ export function WidgetGrid({
         {isCustomising && (
           <button
             onClick={() => setPickerOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-white/50 border border-white/[0.1] hover:text-white/70 hover:border-white/20 transition-all duration-200"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-nw-400 border border-[rgba(255,255,255,0.1)] hover:text-nw-200 hover:border-[rgba(255,255,255,0.2)] transition-all duration-200"
           >
             <Plus size={14} />
             Add widgets
