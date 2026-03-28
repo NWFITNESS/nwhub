@@ -194,7 +194,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
   // Filter layouts to only visible widgets
   const filteredLayouts: Layouts = {}
   for (const [bp, items] of Object.entries(layouts)) {
-    filteredLayouts[bp] = (items as Array<{ i: string } & Record<string, unknown>>).filter((item) => visibleIds.includes(item.i))
+    filteredLayouts[bp] = items.filter((item) => visibleIds.includes(item.i))
   }
 
   function renderWidget(id: string) {
