@@ -9,7 +9,7 @@ export function MobileSettings() {
 
       <div className="flex-1 overflow-y-auto pb-[calc(56px+env(safe-area-inset-bottom))]">
         {/* Gym Profile */}
-        <div className="mx-3 mt-3 bg-[#111] rounded-xl border border-[#1e1e1e] overflow-hidden">
+        <div className="mx-3 mt-3 bg-nw-900 rounded-xl border border-[rgba(255,255,255,0.09)] overflow-hidden">
           <div className="px-4 py-3 border-b border-[#1a1a1a]">
             <p className="text-[10px] text-[#555] uppercase tracking-wider font-semibold mb-0.5">Gym Profile</p>
             <p className="text-[12px] text-[#888]">Name, address and contact details</p>
@@ -21,7 +21,7 @@ export function MobileSettings() {
         </div>
 
         {/* Integrations */}
-        <div className="mx-3 mt-3 bg-[#111] rounded-xl border border-[#1e1e1e] overflow-hidden">
+        <div className="mx-3 mt-3 bg-nw-900 rounded-xl border border-[rgba(255,255,255,0.09)] overflow-hidden">
           <div className="px-4 py-3 border-b border-[#1a1a1a]">
             <p className="text-[10px] text-[#555] uppercase tracking-wider font-semibold">Integrations</p>
           </div>
@@ -45,7 +45,7 @@ export function MobileSettings() {
         </div>
 
         {/* Digest Preferences */}
-        <div className="mx-3 mt-3 bg-[#111] rounded-xl border border-[#1e1e1e] overflow-hidden">
+        <div className="mx-3 mt-3 bg-nw-900 rounded-xl border border-[rgba(255,255,255,0.09)] overflow-hidden">
           <div className="px-4 py-3 border-b border-[#1a1a1a]">
             <p className="text-[10px] text-[#555] uppercase tracking-wider font-semibold">Digest Preferences</p>
           </div>
@@ -59,7 +59,7 @@ export function MobileSettings() {
         </div>
 
         {/* Account */}
-        <div className="mx-3 mt-3 mb-6 bg-[#111] rounded-xl border border-[#1e1e1e] overflow-hidden">
+        <div className="mx-3 mt-3 mb-6 bg-nw-900 rounded-xl border border-[rgba(255,255,255,0.09)] overflow-hidden">
           <div className="px-4 py-3 border-b border-[#1a1a1a]">
             <p className="text-[10px] text-[#555] uppercase tracking-wider font-semibold">Account</p>
           </div>

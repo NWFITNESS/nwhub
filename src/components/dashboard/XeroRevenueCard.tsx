@@ -16,7 +16,7 @@ export function XeroRevenueCard() {
   }, [])
 
   return (
-    <div className="bg-[#161616] border border-white/[0.06] rounded-xl p-3 @md/page:p-6 min-h-[110px] @md/page:min-h-[130px] flex flex-col justify-between hover:border-[#967705]/30 transition-colors duration-200">
+    <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl p-3 @md/page:p-6 min-h-[110px] @md/page:min-h-[130px] flex flex-col justify-between hover:border-[rgba(212,160,23,0.22)] shadow-gold-sm hover:shadow-gold-md transition-all duration-200">
       {/* Top row */}
       <div className="flex items-center justify-between gap-1">
         <p className="text-[10px] @md/page:text-xs font-semibold text-white/40 uppercase tracking-[0.08em] leading-tight">

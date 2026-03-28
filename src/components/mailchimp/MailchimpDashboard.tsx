@@ -21,7 +21,7 @@ interface EmailTemplate {
 // ---------------------------------------------------------------------------
 
 function inputCls(extra = '') {
-  return `w-full px-3 py-2.5 rounded-xl bg-[#111] border border-white/10 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#967705]/60 focus:bg-[#111] transition-colors ${extra}`
+  return `w-full px-3 py-2.5 rounded-xl bg-nw-900 border border-white/10 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#967705]/60 focus:bg-nw-900 transition-colors ${extra}`
 }
 
 function SectionHeader({
@@ -59,7 +59,7 @@ function StatCard({
   icon: React.ElementType
 }) {
   return (
-    <div className="relative rounded-2xl border border-white/[0.07] bg-[#0d0d0d] group transition-all duration-300 hover:border-[#967705]/30" style={{ minHeight: 120 }}>
+    <div className="relative rounded-2xl border border-white/[0.07] bg-nw-900 group transition-all duration-300 hover:border-[#967705]/30" style={{ minHeight: 120 }}>
       {/* Decorative layer — isolated so it never clips content */}
       <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#967705]/40 to-transparent" />
@@ -341,7 +341,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
         />
 
         {loadingCampaigns && campaigns.length === 0 ? (
-          <div className="rounded-2xl border border-white/[0.06] bg-[#0d0d0d] p-10 text-center text-white/20 text-sm">
+          <div className="rounded-2xl border border-white/[0.06] bg-nw-900 p-10 text-center text-white/20 text-sm">
             Loading campaigns…
           </div>
         ) : filteredCampaigns.length === 0 ? (
@@ -367,7 +367,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
                 <div
                   key={c.id}
                   onClick={isDraft ? () => router.push(`/mailchimp/edit/${c.id}`) : undefined}
-                  className={`group relative rounded-2xl border bg-[#0d0d0d] transition-all duration-200 ${
+                  className={`group relative rounded-2xl border bg-nw-900 transition-all duration-200 ${
                     isDraft
                       ? 'border-[#967705]/20 hover:border-[#967705]/40 cursor-pointer hover:bg-[#0f0f0f]'
                       : 'border-white/[0.07] hover:border-white/[0.12]'
@@ -485,7 +485,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
             {templates.map((t) => (
               <div
                 key={t.id}
-                className="group relative rounded-2xl border border-white/[0.07] bg-[#0d0d0d] p-6 hover:border-[#967705]/25 transition-all duration-200"
+                className="group relative rounded-2xl border border-white/[0.07] bg-nw-900 p-6 hover:border-[#967705]/25 transition-all duration-200"
               >
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent group-hover:via-[#967705]/30 transition-all" />
 
@@ -536,7 +536,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* API Key */}
-              <div className="rounded-2xl border border-white/[0.07] bg-[#0d0d0d] p-6 space-y-3">
+              <div className="rounded-2xl border border-white/[0.07] bg-nw-900 p-6 space-y-3">
                 <p className="text-[10px] font-bold text-white/35 uppercase tracking-widest">API Key</p>
                 <input
                   type="password"
@@ -548,7 +548,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
               </div>
 
               {/* Audience */}
-              <div className="rounded-2xl border border-white/[0.07] bg-[#0d0d0d] p-6 space-y-3">
+              <div className="rounded-2xl border border-white/[0.07] bg-nw-900 p-6 space-y-3">
                 <p className="text-[10px] font-bold text-white/35 uppercase tracking-widest">Audience</p>
                 <div className="flex gap-2">
                   <select
@@ -577,7 +577,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
               </div>
 
               {/* Sender */}
-              <div className="rounded-2xl border border-white/[0.07] bg-[#0d0d0d] p-6 space-y-3">
+              <div className="rounded-2xl border border-white/[0.07] bg-nw-900 p-6 space-y-3">
                 <p className="text-[10px] font-bold text-white/35 uppercase tracking-widest">Sender</p>
                 <input
                   type="text"

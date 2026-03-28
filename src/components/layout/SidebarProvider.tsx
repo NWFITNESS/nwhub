@@ -3,7 +3,6 @@
 import { useState, createContext, useContext } from 'react'
 import { Menu, Bell } from 'lucide-react'
 import { Sidebar } from './Sidebar'
-import NeuralBackground from '@/components/ui/flow-field-background'
 import { BottomTabBar } from '@/components/mobile/BottomTabBar'
 
 // ── Shared context ─────────────────────────────────────────────────────────────
@@ -41,11 +40,6 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
   return (
     <SidebarCtx.Provider value={{ mobileMenuOpen, setMobileMenuOpen, isMobileView, setIsMobileView }}>
 
-      {/* ── Particle background ── */}
-      <div className="fixed inset-0" style={{ zIndex: -1 }}>
-        <NeuralBackground color="#d4af37" trailOpacity={0.06} particleCount={380} speed={0.4} />
-      </div>
-
       {/* ── App shell ── */}
       <div className="flex h-screen overflow-hidden">
 
@@ -76,36 +70,22 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
 
           {/* Mobile topbar */}
-          <div
-            className="flex lg:hidden items-center justify-between px-4 h-14 flex-shrink-0 border-b"
-            style={{ background: 'var(--slate-950)', borderColor: 'var(--r-panel-border)' }}
-          >
+          <div className="flex lg:hidden items-center justify-between px-4 h-14 flex-shrink-0 bg-nw-950 border-b border-[rgba(255,255,255,0.09)]">
             <button
               onClick={() => setMobileMenuOpen(v => !v)}
-              className="w-9 h-9 flex items-center justify-center rounded-lg transition-all"
-              style={{ color: 'var(--slate-400)' }}
+              className="w-9 h-9 flex items-center justify-center rounded-lg text-nw-400 transition-colors hover:text-nw-200"
             >
               <Menu size={20} />
             </button>
             <div className="flex items-center gap-2">
-              <div style={{
-                width: 26, height: 26,
-                background: 'linear-gradient(140deg, var(--r-gold-500), var(--r-gold-300))',
-                borderRadius: 6,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif',
-                fontWeight: 700, fontSize: 11, color: 'var(--slate-950)',
-              }}>NW</div>
-              <span style={{
-                fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif',
-                fontSize: 14, fontWeight: 700, letterSpacing: '1.5px',
-                textTransform: 'uppercase', color: 'var(--slate-300)',
-              }}>NW HUB</span>
+              <div className="w-[26px] h-[26px] rounded-[6px] flex items-center justify-center bg-gradient-to-br from-gold-500 to-gold-300 font-brand text-[11px] font-bold text-nw-950">
+                NW
+              </div>
+              <span className="font-brand text-sm font-bold uppercase tracking-[1.5px] text-nw-300">
+                NW HUB
+              </span>
             </div>
-            <button
-              className="w-9 h-9 flex items-center justify-center rounded-lg"
-              style={{ color: 'var(--slate-400)' }}
-            >
+            <button className="w-9 h-9 flex items-center justify-center rounded-lg text-nw-400">
               <Bell size={18} />
             </button>
           </div>
@@ -113,8 +93,8 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
           {/* Scrollable page content */}
           <div className="flex-1 overflow-y-auto @container/page pb-[calc(56px+env(safe-area-inset-bottom))] lg:pb-0">
             {isMobileView ? (
-              <div className="flex justify-center bg-[#050505] min-h-full pt-6 px-4">
-                <div className="w-[390px] bg-[#080808] min-h-[844px] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl">
+              <div className="flex justify-center bg-nw-950 min-h-full pt-6 px-4">
+                <div className="w-[390px] bg-nw-900 min-h-[844px] rounded-[2rem] border border-[rgba(255,255,255,0.1)] overflow-hidden shadow-2xl">
                   {children}
                 </div>
               </div>

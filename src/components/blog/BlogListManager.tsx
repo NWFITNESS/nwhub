@@ -213,7 +213,7 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
       <div className="rounded-xl border border-white/[0.08] overflow-hidden">
         {/* Header */}
         <div
-          className="grid gap-4 px-5 py-3 bg-[#161616] border-b border-white/[0.06]"
+          className="grid gap-4 px-5 py-3 bg-nw-750 border-b border-white/[0.06]"
           style={{ gridTemplateColumns: gridTemplate }}
         >
           <button

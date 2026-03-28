@@ -37,7 +37,7 @@ export function BottomTabBar() {
   return (
     <>
       <div
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 flex items-stretch bg-[#0d0d0d] border-t border-[#1e1e1e]"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 flex items-stretch bg-nw-950 border-t border-[rgba(255,255,255,0.09)]"
         style={{ height: '56px', paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         {tabs.map((tab) => {
@@ -51,14 +51,8 @@ export function BottomTabBar() {
                 onClick={() => setMoreOpen(true)}
                 className="flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[44px]"
               >
-                <Icon
-                  size={20}
-                  className={isActive ? 'text-[#e0c97f]' : 'text-[#444]'}
-                />
-                <span
-                  className={`text-[10px] ${isActive ? 'text-[#e0c97f]' : 'text-[#444]'}`}
-                  style={{ fontFamily: 'Rajdhani, League Spartan, sans-serif' }}
-                >
+                <Icon size={20} className={isActive ? 'text-gold-300' : 'text-nw-600'} />
+                <span className={`text-[10px] font-brand ${isActive ? 'text-gold-300' : 'text-nw-600'}`}>
                   {tab.label}
                 </span>
               </button>
@@ -71,14 +65,8 @@ export function BottomTabBar() {
               href={tab.href}
               className="flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[44px]"
             >
-              <Icon
-                size={20}
-                className={isActive ? 'text-[#e0c97f]' : 'text-[#444]'}
-              />
-              <span
-                className={`text-[10px] ${isActive ? 'text-[#e0c97f]' : 'text-[#444]'}`}
-                style={{ fontFamily: 'Rajdhani, League Spartan, sans-serif' }}
-              >
+              <Icon size={20} className={isActive ? 'text-gold-300' : 'text-nw-600'} />
+              <span className={`text-[10px] font-brand ${isActive ? 'text-gold-300' : 'text-nw-600'}`}>
                 {tab.label}
               </span>
             </Link>
@@ -95,10 +83,10 @@ export function BottomTabBar() {
               key={item.href}
               href={item.href}
               onClick={() => setMoreOpen(false)}
-              className="flex items-center gap-4 px-5 py-4 border-b border-[#1e1e1e] last:border-0 active:bg-[#1e1e1e]"
+              className="flex items-center gap-4 px-5 py-4 border-b border-[rgba(255,255,255,0.07)] last:border-0 active:bg-nw-800"
             >
-              <Icon size={18} className="text-[#e0c97f] flex-shrink-0" />
-              <span className="text-[14px] text-white">{item.label}</span>
+              <Icon size={18} className="text-gold-300 flex-shrink-0" />
+              <span className="text-[14px] text-nw-200">{item.label}</span>
             </Link>
           )
         })}

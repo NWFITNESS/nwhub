@@ -52,7 +52,7 @@ function StatCard({
   label: string; value: number; icon: React.ElementType; iconBg: string
 }) {
   return (
-    <div className="bg-[#161616] border border-white/[0.06] rounded-xl p-6 min-h-[130px] flex flex-col justify-between hover:border-[#967705]/30 transition-colors">
+    <div className="bg-nw-750 border border-white/[0.06] rounded-xl p-6 min-h-[130px] flex flex-col justify-between hover:border-[#967705]/30 transition-colors">
       <div className="flex items-center justify-between">
         <p className="text-xs font-semibold text-white/40 uppercase tracking-[0.1em]">{label}</p>
         <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: iconBg }}>
@@ -94,7 +94,7 @@ function WorkflowCard({
   const { id, title, description, icon: Icon, iconColor, iconBg, trigger, steps, stats } = workflow
 
   return (
-    <div className={`bg-[#161616] border rounded-xl overflow-hidden transition-all duration-200 ${
+    <div className={`bg-nw-750 border rounded-xl overflow-hidden transition-all duration-200 ${
       enabled ? 'border-white/[0.08] hover:border-white/[0.12]' : 'border-white/[0.04] opacity-70 hover:opacity-90'
     }`}>
 
@@ -154,7 +154,7 @@ function WorkflowCard({
           {/* Trigger */}
           <div>
             <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.1em] mb-2">TRIGGER</p>
-            <div className="flex items-center gap-2.5 bg-[#1a1a1a] border border-white/[0.06] rounded-lg px-4 py-3">
+            <div className="flex items-center gap-2.5 bg-nw-800 border border-white/[0.06] rounded-lg px-4 py-3">
               <Zap size={13} className="text-[#C9A70A] flex-shrink-0" />
               <p className="text-sm text-white/60">{trigger}</p>
             </div>
@@ -168,10 +168,10 @@ function WorkflowCard({
               <div className="space-y-3">
                 {steps.map((step, i) => (
                   <div key={i} className="flex items-center gap-4">
-                    <div className="w-9 h-9 rounded-full bg-[#1a1a1a] border border-white/[0.08] flex items-center justify-center flex-shrink-0 z-10">
+                    <div className="w-9 h-9 rounded-full bg-nw-800 border border-white/[0.08] flex items-center justify-center flex-shrink-0 z-10">
                       <span className="text-[10px] font-bold text-[#C9A70A]">D{step.day}</span>
                     </div>
-                    <div className="flex items-center gap-3 flex-1 bg-[#1a1a1a] border border-white/[0.06] rounded-lg px-4 py-2.5">
+                    <div className="flex items-center gap-3 flex-1 bg-nw-800 border border-white/[0.06] rounded-lg px-4 py-2.5">
                       <ChannelBadge channel={step.channel} />
                       <span className="text-sm text-white/60">{step.label}</span>
                     </div>

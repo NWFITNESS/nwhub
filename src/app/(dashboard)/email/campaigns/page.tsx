@@ -32,7 +32,7 @@ export default async function EmailCampaignsPage() {
             </Link>
           }
         />
-        <div className="bg-[#161616] border border-white/[0.06] rounded-xl overflow-hidden">
+        <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

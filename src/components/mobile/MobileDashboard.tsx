@@ -30,7 +30,7 @@ export function MobileDashboard({ data, userName }: Props) {
   })()
 
   return (
-    <div className="lg:hidden flex flex-col bg-[#0f0f0f] min-h-[100dvh]">
+    <div className="lg:hidden flex flex-col bg-nw-950 min-h-[100dvh]">
       <MobileAppBar
         title="Overview"
         actions={
@@ -42,7 +42,7 @@ export function MobileDashboard({ data, userName }: Props) {
 
       <div className="flex-1 overflow-y-auto pb-4">
         {/* Hero card */}
-        <div className="mx-3 mt-3 rounded-2xl p-4 bg-[#1a1500] border border-[#3a2e00]">
+        <div className="mx-3 mt-3 rounded-2xl p-4 bg-[rgba(212,160,23,0.08)] border border-[rgba(212,160,23,0.2)]">
           <p className="text-[10px] font-bold text-[#e0c97f]/60 uppercase tracking-widest mb-1"
              style={{ fontFamily: 'Rajdhani, sans-serif' }}>
             Northern Warrior Hub
@@ -56,7 +56,7 @@ export function MobileDashboard({ data, userName }: Props) {
 
         {/* Stat cards — 2×2 */}
         <div className="grid grid-cols-2 mx-3 mt-2 gap-2">
-          <div className="bg-[#111] rounded-xl p-3 border border-[#1e1e1e]">
+          <div className="bg-nw-900 rounded-xl p-3 border border-[rgba(255,255,255,0.09)]">
             <div className="flex items-center gap-2 mb-1">
               <Users size={14} className="text-[#e0c97f]" />
               <p className="text-[10px] text-[#555] uppercase tracking-wide">Members</p>
@@ -66,7 +66,7 @@ export function MobileDashboard({ data, userName }: Props) {
             </p>
           </div>
 
-          <div className="bg-[#111] rounded-xl p-3 border border-[#1e1e1e]">
+          <div className="bg-nw-900 rounded-xl p-3 border border-[rgba(255,255,255,0.09)]">
             <div className="flex items-center gap-2 mb-1">
               <MessageSquare size={14} className={data.enquiriesAlert ? 'text-red-400' : 'text-[#e0c97f]'} />
               <p className="text-[10px] text-[#555] uppercase tracking-wide">Enquiries</p>
@@ -77,7 +77,7 @@ export function MobileDashboard({ data, userName }: Props) {
             </p>
           </div>
 
-          <div className="bg-[#111] rounded-xl p-3 border border-[#1e1e1e]">
+          <div className="bg-nw-900 rounded-xl p-3 border border-[rgba(255,255,255,0.09)]">
             <div className="flex items-center gap-2 mb-1">
               <Mail size={14} className="text-[#e0c97f]" />
               <p className="text-[10px] text-[#555] uppercase tracking-wide">Subscribers</p>
@@ -87,7 +87,7 @@ export function MobileDashboard({ data, userName }: Props) {
             </p>
           </div>
 
-          <div className="bg-[#111] rounded-xl p-3 border border-[#1e1e1e]">
+          <div className="bg-nw-900 rounded-xl p-3 border border-[rgba(255,255,255,0.09)]">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[14px]">🏋️</span>
               <p className="text-[10px] text-[#555] uppercase tracking-wide">Open Tasks</p>
@@ -104,7 +104,7 @@ export function MobileDashboard({ data, userName }: Props) {
             <Link
               key={a.href}
               href={a.href}
-              className="bg-[#111] rounded-xl p-4 border border-[#1e1e1e] min-h-[80px] flex flex-col justify-between active:bg-[#1a1a1a]"
+              className="bg-nw-900 rounded-xl p-4 border border-[rgba(255,255,255,0.09)] min-h-[80px] flex flex-col justify-between active:bg-nw-800"
             >
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center"
@@ -128,12 +128,12 @@ export function MobileDashboard({ data, userName }: Props) {
             <p className="text-[10px] text-[#555] uppercase tracking-wider font-semibold mb-2">
               Recent Enquiries
             </p>
-            <div className="bg-[#111] rounded-xl border border-[#1e1e1e] overflow-hidden">
+            <div className="bg-nw-900 rounded-xl border border-[rgba(255,255,255,0.09)] overflow-hidden">
               {data.recentEnquiries.slice(0, 5).map((e, i) => (
                 <Link
                   key={e.id}
                   href="/enquiries"
-                  className={`flex items-start gap-3 px-4 py-3 active:bg-[#1a1a1a] ${i < data.recentEnquiries.length - 1 ? 'border-b border-[#1a1a1a]' : ''}`}
+                  className={`flex items-start gap-3 px-4 py-3 active:bg-nw-800 ${i < data.recentEnquiries.length - 1 ? 'border-b border-[rgba(255,255,255,0.07)]' : ''}`}
                 >
                   <div className="w-8 h-8 rounded-full bg-[#1e2a3a] flex items-center justify-center flex-shrink-0 text-[11px] font-semibold text-white/70">
                     {e.name.slice(0, 2).toUpperCase()}

@@ -130,7 +130,7 @@ export function ContactsTable({ initialEnquiries }: Props) {
             </div>
             <div>
               <p className="text-white/40 text-xs mb-2">Message</p>
-              <p className="text-sm text-white/80 bg-[#111] rounded-lg p-3 whitespace-pre-wrap">{selected.message}</p>
+              <p className="text-sm text-white/80 bg-nw-800 rounded-lg p-3 whitespace-pre-wrap">{selected.message}</p>
             </div>
             <div className="flex items-center gap-2 pt-2 border-t border-white/10">
               <span className="text-xs text-white/40 mr-2">Mark as:</span>

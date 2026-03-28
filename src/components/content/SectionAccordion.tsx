@@ -17,7 +17,7 @@ export function SectionAccordion({ pageSlug, sectionKey, content, updatedAt, onS
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="bg-[#161616] border border-white/[0.08] rounded-xl overflow-hidden">
+    <div className="bg-nw-750 border border-white/[0.08] rounded-xl overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen(!open)}

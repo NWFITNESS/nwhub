@@ -78,8 +78,8 @@ export default function FinancialsPage() {
   return (
     <>
       {/* Mobile layout */}
-      <div className="lg:hidden flex flex-col bg-[#0f0f0f] min-h-[100dvh]">
-        <div className="sticky top-0 z-20 flex items-center h-14 bg-[#111] border-b border-[#1e1e1e] px-4 gap-2">
+      <div className="lg:hidden flex flex-col bg-nw-950 min-h-[100dvh]">
+        <div className="sticky top-0 z-20 flex items-center h-14 bg-nw-950 border-b border-[rgba(255,255,255,0.09)] px-4 gap-2">
           <span className="flex-1 text-[15px] font-medium text-white" style={{ fontFamily: 'Rajdhani, sans-serif' }}>Financials</span>
           {!notConnected && !loading && (
             <button onClick={load} className="w-9 h-9 flex items-center justify-center rounded-lg text-white/50 active:bg-white/[0.06]">
@@ -91,7 +91,7 @@ export default function FinancialsPage() {
           {notConnected && (
             <div className="flex flex-col items-center justify-center py-16 gap-4">
               <p className="text-[14px] text-[#888]">Connect Xero to view financials</p>
-              <a href="/api/xero/connect" className="px-5 py-2.5 rounded-xl bg-[#e0c97f] text-[#0d0d0d] text-[13px] font-semibold">
+              <a href="/api/xero/connect" className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-gold-600 to-gold-400 text-nw-950 text-[13px] font-semibold">
                 Connect Xero
               </a>
             </div>
@@ -99,7 +99,7 @@ export default function FinancialsPage() {
           {loading && !notConnected && (
             <div className="flex flex-col gap-3">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="bg-[#111] rounded-xl p-4 border border-[#1e1e1e] h-24 skeleton" />
+                <div key={i} className="bg-nw-900 rounded-xl p-4 border border-[rgba(255,255,255,0.09)] h-24 skeleton" />
               ))}
             </div>
           )}
@@ -120,7 +120,7 @@ export default function FinancialsPage() {
             return (
               <>
                 {stats.map((stat) => (
-                  <div key={stat.label} className="bg-[#111] rounded-xl p-4 border border-[#1e1e1e]">
+                  <div key={stat.label} className="bg-nw-900 rounded-xl p-4 border border-[rgba(255,255,255,0.09)]">
                     <p className="text-[10px] text-[#555] uppercase tracking-wider mb-1">{stat.label}</p>
                     <p className="text-[26px] font-bold text-white" style={{ fontFamily: 'Rajdhani, sans-serif' }}>{stat.value}</p>
                   </div>

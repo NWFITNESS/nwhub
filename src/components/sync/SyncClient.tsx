@@ -59,7 +59,7 @@ export function SyncClient() {
     <div className="flex flex-col gap-6">
 
       {/* How to */}
-      <div className="bg-[#161616] border border-white/[0.06] rounded-xl p-6">
+      <div className="bg-nw-750 border border-white/[0.06] rounded-xl p-6">
         <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.15em] mb-5">HOW TO SYNC</p>
         <div className="flex flex-col lg:flex-row gap-6">
           {[
@@ -86,7 +86,7 @@ export function SyncClient() {
         className={`border-2 border-dashed rounded-xl p-16 flex flex-col items-center justify-center gap-4 cursor-pointer transition-all duration-200 ${
           isDragOver
             ? 'border-[#C9A70A] bg-[#967705]/10'
-            : 'border-white/[0.1] bg-[#161616] hover:border-[#967705]/40 hover:bg-[#967705]/5'
+            : 'border-white/[0.1] bg-nw-750 hover:border-[#967705]/40 hover:bg-[#967705]/5'
         } ${status === 'processing' ? 'pointer-events-none opacity-60' : ''}`}
       >
         <input {...getInputProps()} />
@@ -149,7 +149,7 @@ export function SyncClient() {
               { label: 'Cancelled',   value: results.cancelled, icon: UserMinus,   bg: 'rgba(239,68,68,0.15)',  text: 'text-red-400' },
               { label: 'Errors',      value: results.errors,    icon: AlertCircle, bg: 'rgba(245,158,11,0.15)', text: 'text-amber-400' },
             ].map((stat) => (
-              <div key={stat.label} className="bg-[#161616] border border-white/[0.06] rounded-xl p-6 flex items-center gap-4">
+              <div key={stat.label} className="bg-nw-750 border border-white/[0.06] rounded-xl p-6 flex items-center gap-4">
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: stat.bg }}>
                   <stat.icon size={18} className={stat.text} />
                 </div>
@@ -162,7 +162,7 @@ export function SyncClient() {
           </div>
 
           {results.log.length > 0 && (
-            <div className="bg-[#161616] border border-white/[0.06] rounded-xl overflow-hidden">
+            <div className="bg-nw-750 border border-white/[0.06] rounded-xl overflow-hidden">
               <div className="px-6 py-4 border-b border-white/[0.06]">
                 <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.15em]">SYNC LOG</p>
               </div>
@@ -186,7 +186,7 @@ export function SyncClient() {
       )}
 
       {/* Footer hint */}
-      <div className="bg-[#161616] border border-white/[0.06] rounded-xl p-5">
+      <div className="bg-nw-750 border border-white/[0.06] rounded-xl p-5">
         <div className="flex items-center gap-3">
           <Clock size={15} className="text-white/30 flex-shrink-0" />
           <p className="text-xs text-white/30">

@@ -28,7 +28,7 @@ function SectionCard({ icon: Icon, title, description, children }: {
   children: React.ReactNode
 }) {
   return (
-    <div className="bg-[#161616] border border-white/8 rounded-xl p-6">
+    <div className="bg-nw-750 border border-white/8 rounded-xl p-6">
       <div className="flex items-start gap-4 mb-5">
         <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 mt-0.5">
           <Icon className="w-4 h-4 text-white/50" />
@@ -252,7 +252,7 @@ export function AccountSecuritySettings() {
       </SectionCard>
 
       {/* Danger Zone */}
-      <div className="bg-[#161616] border border-red-500/20 rounded-xl p-6">
+      <div className="bg-nw-750 border border-red-500/20 rounded-xl p-6">
         <div className="flex items-start gap-4 mb-5">
           <div className="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
             <ShieldAlert className="w-4 h-4 text-red-400" />

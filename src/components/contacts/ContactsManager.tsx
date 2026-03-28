@@ -134,7 +134,7 @@ function TagInput({
   }
 
   return (
-    <div className="flex flex-wrap gap-1.5 min-h-[38px] px-3 py-2 rounded-lg bg-[#111] border border-white/10 focus-within:border-[#967705]/60 transition-colors">
+    <div className="flex flex-wrap gap-1.5 min-h-[38px] px-3 py-2 rounded-lg bg-nw-900 border border-white/10 focus-within:border-[#967705]/60 transition-colors">
       {tags.map((t) => (
         <span key={t} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-[#967705]/20 text-[#c9a70a] border border-[#967705]/30">
           {t}
@@ -179,7 +179,7 @@ function TextInput({ value, onChange, placeholder, type = 'text' }: {
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full px-3 py-2 rounded-lg bg-[#111] border border-white/10 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#967705]/60 transition-colors"
+      className="w-full px-3 py-2 rounded-lg bg-nw-900 border border-white/10 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#967705]/60 transition-colors"
     />
   )
 }
@@ -506,7 +506,7 @@ export function ContactsManager({ initialContacts }: Props) {
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Quick search by name, email or phone…"
             style={{ paddingLeft: '2.25rem' }}
-            className="w-full pr-4 py-2 rounded-lg bg-[#111] border border-white/10 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#967705]/60 transition-colors"
+            className="w-full pr-4 py-2 rounded-lg bg-nw-900 border border-white/10 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#967705]/60 transition-colors"
           />
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none z-10" />
         </div>
@@ -557,7 +557,7 @@ export function ContactsManager({ initialContacts }: Props) {
                 }}
                 onBlur={() => { if (!newGroupInput.trim()) setShowNewGroupInput(false) }}
                 placeholder="Group name…"
-                className="px-2.5 py-1 rounded-lg bg-[#111] border border-[#967705]/40 text-xs text-white placeholder:text-white/25 focus:outline-none w-32"
+                className="px-2.5 py-1 rounded-lg bg-nw-900 border border-[#967705]/40 text-xs text-white placeholder:text-white/25 focus:outline-none w-32"
               />
               <Button variant="primary" size="sm" onClick={handleNewGroupSubmit} disabled={!newGroupInput.trim()}>Add</Button>
             </div>
@@ -603,7 +603,7 @@ export function ContactsManager({ initialContacts }: Props) {
                 ))}
               </tr>
               {/* Column filters */}
-              <tr className="border-b border-white/[0.08] bg-[#0d0d0d]">
+              <tr className="border-b border-white/[0.08] bg-nw-900">
                 <th className="pl-6 pr-2 py-2" />
                 {/* Name sort */}
                 <th className="px-3 py-2">
@@ -612,7 +612,7 @@ export function ContactsManager({ initialContacts }: Props) {
                     className={`flex items-center gap-1 px-2 py-1 rounded border text-xs transition-colors w-full justify-center ${
                       colFilters.nameSort
                         ? 'bg-[#967705]/15 border-[#967705]/40 text-[#c9a70a]'
-                        : 'bg-[#111] border-white/[0.07] text-white/30 hover:text-white/60'
+                        : 'bg-nw-900 border-white/[0.07] text-white/30 hover:text-white/60'
                     }`}
                   >
                     {colFilters.nameSort === 'asc' ? 'A → Z' : colFilters.nameSort === 'desc' ? 'Z → A' : 'A – Z'}
@@ -621,17 +621,17 @@ export function ContactsManager({ initialContacts }: Props) {
                 {/* Email */}
                 <th className="px-3 py-2">
                   <input value={colFilters.email} onChange={(e) => setCol('email', e.target.value)} placeholder="Filter…"
-                    className="w-full px-2 py-1 rounded bg-[#111] border border-white/[0.07] text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-[#967705]/40" />
+                    className="w-full px-2 py-1 rounded bg-nw-900 border border-white/[0.07] text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-[#967705]/40" />
                 </th>
                 {/* Phone */}
                 <th className="px-3 py-2">
                   <input value={colFilters.phone} onChange={(e) => setCol('phone', e.target.value)} placeholder="Filter…"
-                    className="w-full px-2 py-1 rounded bg-[#111] border border-white/[0.07] text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-[#967705]/40" />
+                    className="w-full px-2 py-1 rounded bg-nw-900 border border-white/[0.07] text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-[#967705]/40" />
                 </th>
                 {/* Groups */}
                 <th className="px-3 py-2">
                   <select value={colFilters.group} onChange={(e) => setCol('group', e.target.value)}
-                    className="w-full px-2 py-1 rounded bg-[#111] border border-white/[0.07] text-xs text-white focus:outline-none focus:border-[#967705]/40">
+                    className="w-full px-2 py-1 rounded bg-nw-900 border border-white/[0.07] text-xs text-white focus:outline-none focus:border-[#967705]/40">
                     <option value="all">All</option>
                     <option value="__none__">No group</option>
                     {allGroups.map((g) => <option key={g} value={g}>{g}</option>)}
@@ -640,7 +640,7 @@ export function ContactsManager({ initialContacts }: Props) {
                 {/* Source */}
                 <th className="px-3 py-2">
                   <select value={colFilters.source} onChange={(e) => setCol('source', e.target.value)}
-                    className="w-full px-2 py-1 rounded bg-[#111] border border-white/[0.07] text-xs text-white focus:outline-none focus:border-[#967705]/40">
+                    className="w-full px-2 py-1 rounded bg-nw-900 border border-white/[0.07] text-xs text-white focus:outline-none focus:border-[#967705]/40">
                     <option value="all">All</option>
                     {allSources.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
@@ -648,12 +648,12 @@ export function ContactsManager({ initialContacts }: Props) {
                 {/* Added (from date) */}
                 <th className="px-3 py-2">
                   <input type="date" value={colFilters.dateFrom} onChange={(e) => setCol('dateFrom', e.target.value)}
-                    className="w-full px-2 py-1 rounded bg-[#111] border border-white/[0.07] text-xs text-white focus:outline-none focus:border-[#967705]/40 [color-scheme:dark]" />
+                    className="w-full px-2 py-1 rounded bg-nw-900 border border-white/[0.07] text-xs text-white focus:outline-none focus:border-[#967705]/40 [color-scheme:dark]" />
                 </th>
                 {/* Status */}
                 <th className="px-3 py-2">
                   <select value={colFilters.status} onChange={(e) => setCol('status', e.target.value)}
-                    className="w-full px-2 py-1 rounded bg-[#111] border border-white/[0.07] text-xs text-white focus:outline-none focus:border-[#967705]/40">
+                    className="w-full px-2 py-1 rounded bg-nw-900 border border-white/[0.07] text-xs text-white focus:outline-none focus:border-[#967705]/40">
                     <option value="all">All</option>
                     <option value="green">Membership</option>
                     <option value="amber">Class pack</option>
@@ -740,7 +740,7 @@ export function ContactsManager({ initialContacts }: Props) {
               value={form.notes}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               rows={3} placeholder="Optional notes…"
-              className="w-full px-3 py-2 rounded-lg bg-[#111] border border-white/10 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#967705]/60 transition-colors resize-none"
+              className="w-full px-3 py-2 rounded-lg bg-nw-900 border border-white/10 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#967705]/60 transition-colors resize-none"
             />
           </Field>
           <div className="flex items-center justify-between">
@@ -778,7 +778,7 @@ export function ContactsManager({ initialContacts }: Props) {
         {/* Step 1 — Upload */}
         {importStep === 'upload' && (
           <div className="space-y-5">
-            <div className="rounded-lg bg-[#0d0d0d] border border-white/[0.07] p-4 text-sm text-white/50 space-y-1.5">
+            <div className="rounded-lg bg-nw-900 border border-white/[0.07] p-4 text-sm text-white/50 space-y-1.5">
               <p className="font-medium text-white/70">Any CSV format works</p>
               <p>Upload your file and we&apos;ll let you map the columns to the right fields on the next step.</p>
               <p className="text-white/35">Download the template if you&apos;re starting fresh.</p>
@@ -829,7 +829,7 @@ export function ContactsManager({ initialContacts }: Props) {
                         <select
                           value={fieldMap[f.key] ?? ''}
                           onChange={(e) => setFieldMap((m) => ({ ...m, [f.key]: e.target.value }))}
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-[#111] border border-white/10 text-sm text-white focus:outline-none focus:border-[#967705]/60 transition-colors"
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-nw-900 border border-white/10 text-sm text-white focus:outline-none focus:border-[#967705]/60 transition-colors"
                         >
                           <option value="">(skip)</option>
                           {csvHeaders.map((h) => <option key={h} value={h}>{h}</option>)}

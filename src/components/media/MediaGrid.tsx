@@ -52,7 +52,7 @@ function EditModal({ item, onSave, onClose }: {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="bg-[#111] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+      <div className="bg-nw-900 border border-white/10 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.08]">
           <p className="text-sm font-semibold text-white">Edit image details</p>
           <button onClick={onClose} className="text-white/30 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/[0.06]"><X size={15} /></button>
@@ -129,7 +129,7 @@ function BulkCategoryModal({ ids, onSave, onClose }: {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="bg-[#111] border border-white/10 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
+      <div className="bg-nw-900 border border-white/10 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.08]">
           <div>
             <p className="text-sm font-semibold text-white">Set category</p>
@@ -276,7 +276,7 @@ export function MediaGrid({ initialMedia }: Props) {
 
       {/* Pending uploads */}
       {pending.length > 0 && (
-        <div className="mb-6 bg-[#161616] border border-white/[0.06] rounded-xl overflow-hidden">
+        <div className="mb-6 bg-nw-750 border border-white/[0.06] rounded-xl overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
             <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.15em]">
               Ready to Upload — {pending.length} image{pending.length > 1 ? 's' : ''}
@@ -365,7 +365,7 @@ export function MediaGrid({ initialMedia }: Props) {
             <div
               key={item.id}
               onClick={() => toggleSelect(item.id)}
-              className={`group relative aspect-square bg-[#161616] rounded-lg overflow-hidden cursor-pointer transition-all ${
+              className={`group relative aspect-square bg-nw-750 rounded-lg overflow-hidden cursor-pointer transition-all ${
                 isSelected
                   ? 'ring-2 ring-[#C9A70A] border-transparent'
                   : 'border border-white/[0.08]'

@@ -99,7 +99,7 @@ export function KidsTable({ initialRegistrations }: Props) {
               <h4 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-2">Children ({Array.isArray(selected.children) ? selected.children.length : 0})</h4>
               <div className="space-y-2">
                 {Array.isArray(selected.children) && selected.children.map((child, i) => (
-                  <div key={i} className="bg-[#111] rounded-lg p-3 grid grid-cols-3 gap-2">
+                  <div key={i} className="bg-nw-800 rounded-lg p-3 grid grid-cols-3 gap-2">
                     <div><p className="text-white/40 text-xs">Name</p><p className="text-white">{child.name}</p></div>
                     <div><p className="text-white/40 text-xs">DOB</p><p className="text-white">{child.dob}</p></div>
                     <div><p className="text-white/40 text-xs">Group</p><p className="text-white">{child.group}</p></div>

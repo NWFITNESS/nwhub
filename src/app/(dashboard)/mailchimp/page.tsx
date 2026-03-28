@@ -75,7 +75,7 @@ export default async function MailchimpPage() {
                 { label: 'Open Rate',    value: `${(initialStats.audience.open_rate * 100).toFixed(1)}%` },
                 { label: 'Click Rate',   value: `${(initialStats.audience.click_rate * 100).toFixed(1)}%` },
               ].map((stat) => (
-                <div key={stat.label} className="bg-[#111] rounded-xl p-4 border border-[#1e1e1e]">
+                <div key={stat.label} className="bg-nw-900 rounded-xl p-4 border border-[rgba(255,255,255,0.09)]">
                   <p className="text-[10px] text-[#555] uppercase tracking-wider mb-1">{stat.label}</p>
                   <p className="text-[26px] font-bold text-white" style={{ fontFamily: 'Rajdhani, sans-serif' }}>{stat.value}</p>
                 </div>

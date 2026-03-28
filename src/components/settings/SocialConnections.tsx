@@ -112,7 +112,7 @@ function PlatformCard({
   const isInstagram = config.id === 'instagram'
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl bg-[#161616] border border-white/[0.08] p-4">
+    <div className="flex items-center justify-between gap-4 rounded-xl bg-nw-750 border border-white/[0.08] p-4">
       <div className="flex items-center gap-3 min-w-0">
         {/* Platform icon */}
         <div
@@ -231,7 +231,7 @@ export function SocialConnections() {
     return (
       <div className="space-y-3">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-[72px] rounded-xl bg-[#161616] border border-white/[0.08] animate-pulse" />
+          <div key={i} className="h-[72px] rounded-xl bg-nw-750 border border-white/[0.08] animate-pulse" />
         ))}
       </div>
     )
