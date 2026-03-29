@@ -5,6 +5,7 @@ const CHIP_STYLES: Record<EventType, { bg: string; color: string }> = {
   enquiry: { bg: 'rgba(212,160,23,0.12)',  color: 'var(--r-gold-300)' },
   renewal: { bg: 'rgba(74,222,128,0.1)',   color: 'var(--r-green)' },
   class:   { bg: 'rgba(167,139,250,0.12)', color: '#a78bfa' },
+  gcal:    { bg: 'rgba(66,133,244,0.14)',  color: '#6ba3f5' },
 }
 
 interface EventChipProps {

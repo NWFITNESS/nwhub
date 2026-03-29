@@ -1,4 +1,4 @@
-export type EventType = 'gmail' | 'enquiry' | 'renewal' | 'class'
+export type EventType = 'gmail' | 'enquiry' | 'renewal' | 'class' | 'gcal'
 
 export interface CalendarEvent {
   id: string
