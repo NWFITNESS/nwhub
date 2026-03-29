@@ -51,6 +51,8 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/api/chat/') ||
     pathname === '/api/analytics/track' ||  // public tracking beacon from public website
     pathname === '/api/email/unsubscribe' || // token-based unsubscribe, no session needed
+    pathname === '/api/gcal/connect' ||      // OAuth initiation — browser redirect, no body
+    pathname === '/api/gcal/callback' ||     // OAuth callback from Google — no session cookie sent back
     !!isCronRequest                          // internal cron routes with valid secret
 
   if (!user && !isLoginPage && !isAuthPage && !isPublicBlog && !isPublicApi) {
