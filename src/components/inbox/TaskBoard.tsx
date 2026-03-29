@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { TaskItem } from './TaskItem'
-import { Plus } from 'lucide-react'
+import { Plus, CheckSquare, Square, CheckCheck, Trash2, X } from 'lucide-react'
 
 interface Task {
   id: string
@@ -21,6 +21,8 @@ interface Props {
   onToggle: (id: string, completed: boolean) => void
   onAdd: (title: string, due_date?: string, priority?: string) => void
   onDelete: (id: string) => void
+  onBulkComplete: (ids: string[]) => Promise<void>
+  onBulkDelete: (ids: string[]) => Promise<void>
 }
 
 function groupTasks(tasks: Task[]) {
@@ -43,12 +45,67 @@ function groupTasks(tasks: Task[]) {
   return { overdue, today, thisWeek, later: [...later, ...noDueDate] }
 }
 
-export function TaskBoard({ tasks, onToggle, onAdd, onDelete }: Props) {
+export function TaskBoard({ tasks, onToggle, onAdd, onDelete, onBulkComplete, onBulkDelete }: Props) {
   const [newTitle, setNewTitle] = useState('')
   const [newDue, setNewDue] = useState('')
   const [filter, setFilter] = useState<'active' | 'all' | 'done'>('active')
+  const [selectMode, setSelectMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkLoading, setBulkLoading] = useState(false)
+
   const { overdue, today, thisWeek, later } = groupTasks(tasks)
   const doneTasks = tasks.filter(t => t.completed)
+
+  // All visible task IDs in current view (for select-all)
+  const visibleActiveTasks: Task[] = [...overdue, ...today, ...thisWeek, ...later]
+  const visibleTasks = filter === 'done' ? doneTasks : filter === 'all' ? [...visibleActiveTasks, ...doneTasks] : visibleActiveTasks
+  const allSelected = visibleTasks.length > 0 && visibleTasks.every(t => selectedIds.has(t.id))
+  const someSelected = selectedIds.size > 0
+
+  function toggleSelectMode() {
+    setSelectMode(v => !v)
+    setSelectedIds(new Set())
+  }
+
+  function toggleId(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  function toggleSelectAll() {
+    if (allSelected) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(visibleTasks.map(t => t.id)))
+    }
+  }
+
+  async function handleBulkComplete() {
+    if (selectedIds.size === 0) return
+    setBulkLoading(true)
+    try {
+      await onBulkComplete(Array.from(selectedIds))
+      setSelectedIds(new Set())
+      setSelectMode(false)
+    } finally {
+      setBulkLoading(false)
+    }
+  }
+
+  async function handleBulkDelete() {
+    if (selectedIds.size === 0) return
+    setBulkLoading(true)
+    try {
+      await onBulkDelete(Array.from(selectedIds))
+      setSelectedIds(new Set())
+      setSelectMode(false)
+    } finally {
+      setBulkLoading(false)
+    }
+  }
 
   function handleAdd() {
     if (!newTitle.trim()) return
@@ -64,7 +121,15 @@ export function TaskBoard({ tasks, onToggle, onAdd, onDelete }: Props) {
         <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${accent ?? 'text-white/30'}`}>{label}</p>
         <div className="space-y-1">
           {items.map(t => (
-            <TaskItem key={t.id} task={t} onToggle={onToggle} onDelete={onDelete} />
+            <TaskItem
+              key={t.id}
+              task={t}
+              onToggle={onToggle}
+              onDelete={onDelete}
+              selectable={selectMode}
+              selected={selectedIds.has(t.id)}
+              onSelect={toggleId}
+            />
           ))}
         </div>
       </div>
@@ -87,7 +152,8 @@ export function TaskBoard({ tasks, onToggle, onAdd, onDelete }: Props) {
             )}
           </div>
           <div className="flex items-center gap-1">
-            {(['active', 'all', 'done'] as const).map(f => (
+            {/* Filter tabs */}
+            {!selectMode && (['active', 'all', 'done'] as const).map(f => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
@@ -100,41 +166,92 @@ export function TaskBoard({ tasks, onToggle, onAdd, onDelete }: Props) {
                 {f}
               </button>
             ))}
+
+            {/* Select mode toggle */}
+            <button
+              onClick={toggleSelectMode}
+              className={`flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-lg border transition-all ml-1 ${
+                selectMode
+                  ? 'bg-gold-600/15 border-gold-600/40 text-gold-300'
+                  : 'border-white/[0.08] text-white/40 hover:text-white/60 hover:border-white/20'
+              }`}
+            >
+              {selectMode ? <CheckSquare size={12} /> : <Square size={12} />}
+              {selectMode ? 'Cancel' : 'Select'}
+            </button>
           </div>
         </div>
+
+        {/* Select-all bar — shown only in select mode */}
+        {selectMode && (
+          <div className="flex items-center gap-2.5 mt-3 pt-3 border-t border-white/[0.06]">
+            <button
+              onClick={toggleSelectAll}
+              className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-all ${
+                allSelected
+                  ? 'bg-gold-500 border-gold-500'
+                  : someSelected
+                  ? 'bg-gold-500/30 border-gold-500/60'
+                  : 'border-white/25 hover:border-gold-500/60'
+              }`}
+            >
+              {allSelected && (
+                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                  <path d="M1 4l3 3 5-6" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+              {!allSelected && someSelected && (
+                <div className="w-2 h-0.5 bg-gold-400 rounded-full" />
+              )}
+            </button>
+            <span className="text-[11px] text-white/40">
+              {someSelected ? `${selectedIds.size} selected` : 'Select all'}
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* Quick add */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06]">
-        <input
-          value={newTitle}
-          onChange={e => setNewTitle(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleAdd()}
-          placeholder="Add a task…"
-          className="flex-1 bg-transparent text-[13px] text-white placeholder-white/20 outline-none min-w-0"
-        />
-        <input
-          type="date"
-          value={newDue}
-          onChange={e => setNewDue(e.target.value)}
-          className="bg-[#1c1b1b] border border-white/[0.08] rounded-lg px-2 py-1 text-[11px] text-white/50 outline-none focus:border-[#d4af37]/40"
-        />
-        <button
-          onClick={handleAdd}
-          className="w-7 h-7 rounded-lg bg-[#967705]/20 border border-[#967705]/40 text-[#f2ca50] flex items-center justify-center hover:bg-[#967705]/30 transition-colors flex-shrink-0"
-        >
-          <Plus size={14} />
-        </button>
-      </div>
+      {/* Quick add — hidden in select mode */}
+      {!selectMode && (
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06]">
+          <input
+            value={newTitle}
+            onChange={e => setNewTitle(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleAdd()}
+            placeholder="Add a task…"
+            className="flex-1 bg-transparent text-[13px] text-white placeholder-white/20 outline-none min-w-0"
+          />
+          <input
+            type="date"
+            value={newDue}
+            onChange={e => setNewDue(e.target.value)}
+            className="bg-[#1c1b1b] border border-white/[0.08] rounded-lg px-2 py-1 text-[11px] text-white/50 outline-none focus:border-[#d4af37]/40"
+          />
+          <button
+            onClick={handleAdd}
+            className="w-7 h-7 rounded-lg bg-[#967705]/20 border border-[#967705]/40 text-[#f2ca50] flex items-center justify-center hover:bg-[#967705]/30 transition-colors flex-shrink-0"
+          >
+            <Plus size={14} />
+          </button>
+        </div>
+      )}
 
       {/* Task list */}
       <div className="p-4">
-        {filter === 'done' ? (
+        {filter === 'done' && !selectMode ? (
           <div className="space-y-1">
             {doneTasks.length === 0 ? (
               <p className="text-[13px] text-white/25 text-center py-10">No completed tasks</p>
             ) : doneTasks.map(t => (
-              <TaskItem key={t.id} task={t} onToggle={onToggle} onDelete={onDelete} />
+              <TaskItem
+                key={t.id}
+                task={t}
+                onToggle={onToggle}
+                onDelete={onDelete}
+                selectable={selectMode}
+                selected={selectedIds.has(t.id)}
+                onSelect={toggleId}
+              />
             ))}
           </div>
         ) : (
@@ -143,15 +260,57 @@ export function TaskBoard({ tasks, onToggle, onAdd, onDelete }: Props) {
             <Section label="Today" items={today} accent="text-orange-400" />
             <Section label="This Week" items={thisWeek} accent="text-[#f2ca50]" />
             <Section label="Later" items={later} />
-            {filter === 'active' && overdue.length === 0 && today.length === 0 && thisWeek.length === 0 && later.length === 0 && (
+            {!selectMode && filter === 'active' && overdue.length === 0 && today.length === 0 && thisWeek.length === 0 && later.length === 0 && (
               <p className="text-[13px] text-white/25 text-center py-10">All caught up ✓</p>
             )}
-            {filter === 'all' && doneTasks.slice(0, 5).map(t => (
+            {!selectMode && filter === 'all' && doneTasks.slice(0, 5).map(t => (
               <TaskItem key={t.id} task={t} onToggle={onToggle} onDelete={onDelete} />
+            ))}
+            {selectMode && filter === 'all' && doneTasks.map(t => (
+              <TaskItem
+                key={t.id}
+                task={t}
+                onToggle={onToggle}
+                onDelete={onDelete}
+                selectable
+                selected={selectedIds.has(t.id)}
+                onSelect={toggleId}
+              />
             ))}
           </>
         )}
       </div>
+
+      {/* Bulk action bar — floats inside the panel when items are selected */}
+      {selectMode && someSelected && (
+        <div className="mx-4 mb-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-nw-800 border border-gold-600/20 shadow-lg">
+          <span className="text-[12px] font-semibold text-gold-300 flex-1">
+            {selectedIds.size} task{selectedIds.size !== 1 ? 's' : ''} selected
+          </span>
+          <button
+            onClick={handleBulkComplete}
+            disabled={bulkLoading}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-gold-600/20 border border-gold-600/40 text-gold-300 hover:bg-gold-600/30 transition-all disabled:opacity-50"
+          >
+            <CheckCheck size={12} />
+            Mark done
+          </button>
+          <button
+            onClick={handleBulkDelete}
+            disabled={bulkLoading}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all disabled:opacity-50"
+          >
+            <Trash2 size={12} />
+            Delete
+          </button>
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="w-6 h-6 flex items-center justify-center rounded-md text-white/30 hover:text-white/60 transition-colors"
+          >
+            <X size={12} />
+          </button>
+        </div>
+      )}
     </div>
   )
 }

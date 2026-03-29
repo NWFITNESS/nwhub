@@ -16,6 +16,9 @@ interface Props {
   task: Task
   onToggle: (id: string, completed: boolean) => void
   onDelete: (id: string) => void
+  selectable?: boolean
+  selected?: boolean
+  onSelect?: (id: string) => void
 }
 
 function dueBadge(due_date: string | null, completed: boolean): { label: string; className: string } | null {
@@ -37,37 +40,60 @@ const PRIORITY_DOT: Record<string, string> = {
   low: 'bg-white/20',
 }
 
-export function TaskItem({ task, onToggle, onDelete }: Props) {
+export function TaskItem({ task, onToggle, onDelete, selectable, selected, onSelect }: Props) {
   const [hovered, setHovered] = useState(false)
   const badge = dueBadge(task.due_date, task.completed)
 
   return (
     <div
-      className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-white/[0.03] group transition-colors"
+      className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-colors cursor-pointer ${
+        selectable
+          ? selected
+            ? 'bg-gold-600/10 border border-gold-600/20'
+            : 'hover:bg-white/[0.03] border border-transparent'
+          : 'hover:bg-white/[0.03] border border-transparent'
+      }`}
+      onClick={() => selectable ? onSelect?.(task.id) : undefined}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Checkbox */}
-      <button
-        onClick={() => onToggle(task.id, !task.completed)}
-        className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${
-          task.completed
-            ? 'bg-[#C9A70A] border-[#C9A70A]'
-            : 'border-white/20 hover:border-[#C9A70A]'
-        }`}
-      >
-        {task.completed && (
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-            <path d="M1 4l3 3 5-6" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        )}
-      </button>
+      {/* Selection checkbox (select mode) or completion checkbox (normal mode) */}
+      {selectable ? (
+        <div
+          className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-all ${
+            selected
+              ? 'bg-gold-500 border-gold-500'
+              : 'border-white/20 hover:border-gold-500'
+          }`}
+        >
+          {selected && (
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+              <path d="M1 4l3 3 5-6" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </div>
+      ) : (
+        <button
+          onClick={e => { e.stopPropagation(); onToggle(task.id, !task.completed) }}
+          className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-colors ${
+            task.completed
+              ? 'bg-[#C9A70A] border-[#C9A70A]'
+              : 'border-white/20 hover:border-[#C9A70A]'
+          }`}
+        >
+          {task.completed && (
+            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+              <path d="M1 4l3 3 5-6" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </button>
+      )}
 
       {/* Priority dot */}
       <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${PRIORITY_DOT[task.priority] ?? 'bg-white/20'}`} />
 
       {/* Title */}
-      <span className={`flex-1 text-[13px] min-w-0 truncate ${task.completed ? 'line-through text-white/30' : 'text-white/80'}`}>
+      <span className={`flex-1 text-[13px] min-w-0 truncate ${task.completed ? 'line-through text-white/30' : selected ? 'text-white' : 'text-white/80'}`}>
         {task.title}
       </span>
 
@@ -83,10 +109,10 @@ export function TaskItem({ task, onToggle, onDelete }: Props) {
         </span>
       )}
 
-      {/* Delete */}
-      {hovered && (
+      {/* Delete — only in normal mode on hover */}
+      {!selectable && hovered && (
         <button
-          onClick={() => onDelete(task.id)}
+          onClick={e => { e.stopPropagation(); onDelete(task.id) }}
           className="text-white/20 hover:text-red-400 transition-colors flex-shrink-0"
         >
           <Trash2 size={12} />

@@ -135,6 +135,22 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
     setTasks(prev => prev.filter(t => t.id !== id))
   }
 
+  async function handleBulkComplete(ids: string[]) {
+    await Promise.all(ids.map(id =>
+      fetch(`/api/tasks/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completed: true }),
+      })
+    ))
+    setTasks(prev => prev.map(t => ids.includes(t.id) ? { ...t, completed: true } : t))
+  }
+
+  async function handleBulkDelete(ids: string[]) {
+    await Promise.all(ids.map(id => fetch(`/api/tasks/${id}`, { method: 'DELETE' })))
+    setTasks(prev => prev.filter(t => !ids.includes(t.id)))
+  }
+
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
@@ -214,6 +230,8 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
               onToggle={handleToggleTask}
               onAdd={handleAddTask}
               onDelete={handleDeleteTask}
+              onBulkComplete={handleBulkComplete}
+              onBulkDelete={handleBulkDelete}
             />
           </Panel>
         </div>
