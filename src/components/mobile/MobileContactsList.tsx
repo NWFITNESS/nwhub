@@ -66,7 +66,7 @@ export function MobileContactsList({ contacts, title }: Props) {
   const older = filtered.filter((c) => !recent.includes(c))
 
   return (
-    <div className="lg:hidden flex flex-col bg-[#0f0f0f] min-h-[100dvh]">
+    <div className="lg:hidden flex flex-col bg-nw-950 min-h-[100dvh]">
       <MobileAppBar title={title} count={contacts.length} />
       <MobileSearch placeholder="Search name or email…" value={search} onChange={setSearch} />
       <FilterChips filters={FILTERS} active={filter} onChange={setFilter} />
@@ -111,7 +111,7 @@ export function MobileContactsList({ contacts, title }: Props) {
 
         {filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 gap-2">
-            <p className="text-[14px] text-[#555]">No contacts found</p>
+            <p className="text-[14px] text-nw-500">No contacts found</p>
           </div>
         )}
 

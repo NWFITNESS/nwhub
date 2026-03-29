@@ -20,8 +20,8 @@ export function FilterChips({ filters, active, onChange }: FilterChipsProps) {
           onClick={() => onChange(f.id)}
           className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] border whitespace-nowrap transition-colors ${
             active === f.id
-              ? 'bg-[#2a2000] border-[#4a3800] text-[#e0c97f]'
-              : 'bg-[#1a1a1a] border-[#2a2a2a] text-[#888]'
+              ? 'bg-gold-600/10 border-gold-600/20 text-gold-300'
+              : 'bg-nw-900 border-[rgba(255,255,255,0.09)] text-nw-500'
           }`}
         >
           {f.label}
