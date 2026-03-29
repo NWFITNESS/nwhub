@@ -10,15 +10,11 @@ const SCOPES = [
 
 export async function GET() {
   const clientId = process.env.GOOGLE_CLIENT_ID
-  console.log('[gcal/connect] GOOGLE_CLIENT_ID present:', !!clientId, '| length:', clientId?.length ?? 0)
-  console.log('[gcal/connect] All GOOGLE_ vars:', Object.keys(process.env).filter(k => k.startsWith('GOOGLE')))
   if (!clientId) {
     return NextResponse.json({ error: 'GOOGLE_CLIENT_ID not configured' }, { status: 500 })
   }
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3001')
+  const baseUrl = 'https://nwhub.vercel.app'
 
   const redirectUri = `${baseUrl}/api/gcal/callback`
 

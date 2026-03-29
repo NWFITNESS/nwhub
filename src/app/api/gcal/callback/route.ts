@@ -8,9 +8,7 @@ export async function GET(req: NextRequest) {
   const code  = searchParams.get('code')
   const error = searchParams.get('error')
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3001')
+  const baseUrl = 'https://nwhub.vercel.app'
 
   if (error || !code) {
     return NextResponse.redirect(new URL('/calendar?error=gcal_denied', req.url))
