@@ -12,8 +12,10 @@ import { QuickActionsWidget } from './dashboard/QuickActionsWidget'
 import { XeroRevenueWidget } from './dashboard/XeroRevenueWidget'
 import type { ChartDataPoint } from '@/components/dashboard/MemberGrowthChart'
 
-interface ChecklistItem { label: string; done: boolean }
+export interface ChecklistItem { label: string; done: boolean; manual?: boolean }
 interface Enquiry { id: string; name: string; enquiry_type: string; message: string | null; created_at: string }
+export interface DashboardTask { id: string; title: string; due_date: string | null; completed: boolean; priority: string; source: string }
+export interface RecentPost { id: string; title: string; status: 'draft' | 'published'; created_at: string; published_at: string | null }
 
 export interface DashboardData {
   membersTotal: number
@@ -26,6 +28,8 @@ export interface DashboardData {
   data1y: ChartDataPoint[]
   recentEnquiries: Enquiry[]
   checklist: ChecklistItem[]
+  tasks: DashboardTask[]
+  recentPosts: RecentPost[]
 }
 
 const DASHBOARD_WIDGETS: WidgetDef[] = [

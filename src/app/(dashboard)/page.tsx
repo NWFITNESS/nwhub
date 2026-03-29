@@ -84,6 +84,8 @@ export default async function DashboardPage() {
     { count: subscribersTotal },
     { count: postsTotal },
     { data: visitorRows1y },
+    { data: tasks },
+    { data: recentPosts },
   ] = await Promise.all([
     supabase.from('contact_enquiries').select('*', { count: 'exact', head: true }).eq('status', 'new'),
     supabase.from('blog_posts').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
@@ -102,6 +104,17 @@ export default async function DashboardPage() {
       .from('page_views')
       .select('created_at')
       .gte('created_at', new Date(new Date().setMonth(new Date().getMonth() - 11)).toISOString()),
+    supabase
+      .from('tasks')
+      .select('id, title, due_date, completed, priority, source')
+      .eq('completed', false)
+      .order('due_date', { ascending: true, nullsFirst: false })
+      .limit(20),
+    supabase
+      .from('blog_posts')
+      .select('id, title, status, created_at, published_at')
+      .order('created_at', { ascending: false })
+      .limit(6),
   ])
 
   // suppress unused variable warning — draftPosts is fetched but not displayed currently
@@ -119,8 +132,8 @@ export default async function DashboardPage() {
     { label: 'Settings seeded',                       done: (settingsCount    ?? 0) > 0 },
     { label: 'First subscriber',                      done: (subscribersTotal ?? 0) > 0 },
     { label: 'First blog post',                       done: (postsTotal       ?? 0) > 0 },
-    { label: 'Resend domain verified',                done: false },
-    { label: 'WhatsApp number registered in Twilio',  done: false },
+    { label: 'Resend domain verified',                done: false, manual: true },
+    { label: 'WhatsApp number registered in Twilio',  done: false, manual: true },
   ]
 
   const allVisitorRows = visitorRows1y ?? []
@@ -137,6 +150,8 @@ export default async function DashboardPage() {
     data1y:  buildMonthlyVisitors(allVisitorRows, 12),
     recentEnquiries: (recentEnquiries ?? []) as DashboardData['recentEnquiries'],
     checklist,
+    tasks: (tasks ?? []) as DashboardData['tasks'],
+    recentPosts: (recentPosts ?? []) as DashboardData['recentPosts'],
   }
 
   return (
