@@ -44,7 +44,7 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
       <div className="flex h-screen overflow-hidden">
 
         {/* ── Desktop sidebar — self-contained hover expand ── */}
-        <div className="hidden lg:block flex-shrink-0 h-full">
+        <div className="nw-sidebar-desktop hidden lg:block flex-shrink-0 h-full">
           <Sidebar unreadCount={unreadCount} userEmail={userEmail} />
         </div>
 

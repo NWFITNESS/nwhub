@@ -88,15 +88,46 @@ export function TopBar({ title, actions }: TopBarProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const inputRef   = useRef<HTMLInputElement>(null)
 
-  // persist customise settings
+  // Init from localStorage and apply DOM classes
   useEffect(() => {
-    setCompactMode(localStorage.getItem('nw-compact') === '1')
-    setShowGridLines(localStorage.getItem('nw-gridlines') === '1')
-    setFocusMode(localStorage.getItem('nw-focus') === '1')
+    const compact   = localStorage.getItem('nw-compact')   === '1'
+    const grid      = localStorage.getItem('nw-gridlines') === '1'
+    const focus     = localStorage.getItem('nw-focus')     === '1'
+    setCompactMode(compact)
+    setShowGridLines(grid)
+    setFocusMode(focus)
+    document.documentElement.classList.toggle('nw-compact', compact)
+    document.documentElement.classList.toggle('nw-grid',    grid)
+    document.documentElement.classList.toggle('nw-focus',   focus)
   }, [])
-  useEffect(() => { localStorage.setItem('nw-compact', compactMode ? '1' : '0') }, [compactMode])
-  useEffect(() => { localStorage.setItem('nw-gridlines', showGridLines ? '1' : '0') }, [showGridLines])
-  useEffect(() => { localStorage.setItem('nw-focus', focusMode ? '1' : '0') }, [focusMode])
+
+  useEffect(() => {
+    localStorage.setItem('nw-compact', compactMode ? '1' : '0')
+    document.documentElement.classList.toggle('nw-compact', compactMode)
+  }, [compactMode])
+
+  useEffect(() => {
+    localStorage.setItem('nw-gridlines', showGridLines ? '1' : '0')
+    document.documentElement.classList.toggle('nw-grid', showGridLines)
+  }, [showGridLines])
+
+  useEffect(() => {
+    localStorage.setItem('nw-focus', focusMode ? '1' : '0')
+    document.documentElement.classList.toggle('nw-focus', focusMode)
+  }, [focusMode])
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return
+      if (e.key === 'm' || e.key === 'M') { setIsMobileView(!isMobileView); return }
+      if (e.key === '/') { e.preventDefault(); setSearchVisible(true); return }
+      if (e.key === 'Escape') { setCustomiseOpen(false); return }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [isMobileView, setIsMobileView])
 
   const { segments, current } = getBreadcrumb(pathname)
   const pageLabel = title ?? current
@@ -255,12 +286,12 @@ export function TopBar({ title, actions }: TopBarProps) {
           <Smartphone size={13} />
         </button>
 
-        {/* Customise — gold */}
+        {/* Page Settings — gold */}
         <button
           onClick={() => setCustomiseOpen(v => !v)}
           className="flex items-center gap-1.5 rounded-[7px] border border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] px-3 py-[5px] text-xs text-gold-300 transition-colors hover:bg-[rgba(212,160,23,0.22)]"
         >
-          <SlidersHorizontal size={13} /> Customise
+          <SlidersHorizontal size={13} /> Page Settings
         </button>
 
         {actions && <div className="flex items-center gap-2">{actions}</div>}
@@ -288,7 +319,7 @@ export function TopBar({ title, actions }: TopBarProps) {
           <div style={{ padding: '16px 18px 14px', borderBottom: '1px solid var(--r-panel-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <SlidersHorizontal size={14} style={{ color: 'var(--r-gold-400)' }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--slate-100)', fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif', letterSpacing: '0.5px' }}>CUSTOMISE</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--slate-100)', fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif', letterSpacing: '0.5px' }}>PAGE SETTINGS</span>
             </div>
             <button onClick={() => setCustomiseOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-500)', display: 'flex', padding: 2 }}>
               <X size={14} />
@@ -357,18 +388,47 @@ export function TopBar({ title, actions }: TopBarProps) {
 
             <div style={{ height: 1, background: 'var(--r-panel-border)', margin: '14px 18px 14px' }} />
 
-            {/* Keyboard shortcuts */}
+            {/* Quick Actions */}
             <div style={{ padding: '0 18px' }}>
               <p style={{ fontSize: 9, fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 10 }}>Quick Actions</p>
-              {[
-                { key: 'M', label: 'Toggle mobile view' },
-                { key: '/', label: 'Open search' },
-                { key: 'Esc', label: 'Close panels' },
-              ].map(({ key, label }) => (
-                <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span style={{ fontSize: 11, color: 'var(--slate-400)' }}>{label}</span>
+              {([
+                {
+                  key: 'M',
+                  label: 'Toggle mobile view',
+                  action: () => { setIsMobileView(!isMobileView); setCustomiseOpen(false) },
+                },
+                {
+                  key: '/',
+                  label: 'Open search',
+                  action: () => { setCustomiseOpen(false); setTimeout(() => setSearchVisible(true), 150) },
+                },
+                {
+                  key: 'Esc',
+                  label: 'Close panels',
+                  action: () => setCustomiseOpen(false),
+                },
+              ] as const).map(({ key, label, action }) => (
+                <button
+                  key={key}
+                  onClick={action}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    width: '100%', marginBottom: 6, padding: '7px 8px',
+                    background: 'transparent', border: '1px solid transparent',
+                    borderRadius: 6, cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLElement).style.background = 'var(--r-panel-bg)'
+                    ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--r-panel-border)'
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLElement).style.background = 'transparent'
+                    ;(e.currentTarget as HTMLElement).style.borderColor = 'transparent'
+                  }}
+                >
+                  <span style={{ fontSize: 11, color: 'var(--slate-300)' }}>{label}</span>
                   <kbd style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--slate-500)', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--r-panel-border)', borderRadius: 4, padding: '2px 6px' }}>{key}</kbd>
-                </div>
+                </button>
               ))}
             </div>
           </div>
