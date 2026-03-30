@@ -22,7 +22,7 @@ export function BrandingStudio({ placeId: _ }: BrandingStudioProps) {
       </div>
 
       {/* Right — Post Editor (70%) */}
-      <div className="w-[70%] overflow-y-auto bg-[#0d0d0d]">
+      <div className="w-[70%] overflow-y-auto bg-nw-900">
         <PostEditorPanel review={activeReview} onClearReview={() => setActiveReview(null)} />
       </div>
     </div>

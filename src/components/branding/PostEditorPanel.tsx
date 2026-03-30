@@ -154,7 +154,7 @@ function FocalPointPicker({
 
 function Section({ title, children, accent }: { title: string; children: React.ReactNode; accent?: boolean }) {
   return (
-    <div className={`rounded-xl border p-5 space-y-4 ${accent ? 'border-[#967705]/30 bg-[#967705]/5' : 'border-white/[0.07] bg-[#0a0a0a]'}`}>
+    <div className={`rounded-xl border p-5 space-y-4 ${accent ? 'border-[#967705]/30 bg-[#967705]/5' : 'border-white/[0.07] bg-white/[0.02]'}`}>
       <p className="text-[10px] text-white/40 uppercase tracking-widest font-semibold">{title}</p>
       {children}
     </div>

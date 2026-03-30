@@ -546,7 +546,7 @@ export function BrandPage({ identity: initial, media, placeId }: BrandPageProps)
   const editing = (s: string) => editSection === s
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Tab nav */}
       <div className="flex items-center gap-1 border-b border-white/[0.08] pb-0">
         {TABS.map(t => (
@@ -572,7 +572,7 @@ export function BrandPage({ identity: initial, media, placeId }: BrandPageProps)
 
       {/* Brand Guide tab */}
       {tab === 'guide' && (
-        <div className="space-y-4">
+        <div className="space-y-6">
 
           {/* Brand Identity */}
           <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6">
