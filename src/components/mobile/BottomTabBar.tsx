@@ -4,78 +4,67 @@ import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import {
-  LayoutDashboard, Users, PoundSterling, Menu,
-  Inbox, Mail, Megaphone, Baby, Calendar, Image, Settings, BookOpen,
+  LayoutDashboard, Users, PoundSterling, BookOpen,
+  Inbox, Mail, Megaphone, Baby, Calendar, Image, Settings, MoreHorizontal,
 } from 'lucide-react'
 import { BottomSheet } from './BottomSheet'
 
 const tabs = [
-  { id: 'overview',   label: 'Overview',   href: '/',            icon: LayoutDashboard },
-  { id: 'blog',       label: 'Blog',       href: '/blog/manage', icon: BookOpen },
-  { id: 'financials', label: 'Financials', href: '/financials',  icon: PoundSterling },
-  { id: 'clients',    label: 'Clients',    href: '/contacts',    icon: Users },
+  { id: 'overview',   label: 'Overview', href: '/',           icon: LayoutDashboard },
+  { id: 'members',    label: 'Members',  href: '/leads',      icon: Users },
+  { id: 'content',    label: 'Content',  href: '/content',    icon: BookOpen },
+  { id: 'revenue',    label: 'Revenue',  href: '/financials', icon: PoundSterling },
 ]
 
 const menuItems = [
   { label: 'Inbox Intelligence', href: '/inbox',           icon: Inbox },
-  { label: 'Email Campaigns',    href: '/email/campaigns', icon: Mail },
-  { label: 'Mailchimp',          href: '/mailchimp',       icon: Megaphone },
-  { label: 'Kids / Classes',     href: '/kids',            icon: Baby },
+  { label: 'Email Marketing',    href: '/mailchimp',       icon: Megaphone },
+  { label: 'Blog & Posts',       href: '/blog/manage',     icon: Mail },
   { label: 'Calendar',           href: '/calendar',        icon: Calendar },
-  { label: 'Media',              href: '/media',           icon: Image },
+  { label: 'Media Library',      href: '/media',           icon: Image },
+  { label: 'Kids & Teens',       href: '/kids',            icon: Baby },
   { label: 'Settings',           href: '/settings',        icon: Settings },
 ]
 
-function getActiveTab(pathname: string): string | null {
-  if (pathname === '/') return 'overview'
-  if (pathname.startsWith('/blog')) return 'blog'
-  if (pathname.startsWith('/financials')) return 'financials'
-  if (pathname.startsWith('/contacts')) return 'clients'
-  return null
+function isActive(pathname: string, href: string): boolean {
+  if (href === '/') return pathname === '/'
+  return pathname.startsWith(href)
 }
 
 export function BottomTabBar() {
   const pathname = usePathname()
-  const activeTab = getActiveTab(pathname)
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
     <>
-      <div
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 flex items-stretch bg-nw-950 border-t border-[rgba(255,255,255,0.09)]"
-        style={{ height: '56px', paddingBottom: 'env(safe-area-inset-bottom)' }}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-14 md:hidden items-center justify-around border-t border-[rgba(255,255,255,0.09)] bg-nw-950 px-2"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        {/* Burger / Menu */}
-        <button
-          onClick={() => setMenuOpen(true)}
-          className="flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[44px] relative"
-        >
-          <Menu size={20} className="text-nw-500" />
-          <span className="text-[10px] font-brand text-nw-500">Menu</span>
-        </button>
-
-        {/* 4 main tabs */}
         {tabs.map((tab) => {
           const Icon = tab.icon
-          const isActive = activeTab === tab.id
-
+          const active = isActive(pathname, tab.href)
           return (
             <Link
               key={tab.id}
               href={tab.href}
-              className="flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[44px] relative"
+              className={`relative flex flex-col items-center gap-0.5 rounded-[8px] px-3 py-1.5 transition-colors ${active ? 'text-gold-300' : 'text-nw-500'}`}
             >
-              <Icon size={20} className={isActive ? 'text-gold-300' : 'text-nw-500'} />
-              <span className={`text-[10px] font-brand ${isActive ? 'text-gold-300' : 'text-nw-500'}`}>
-                {tab.label}
-              </span>
-              {isActive && (
-                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-[3px] h-[3px] rounded-full bg-gold-300" />
-              )}
+              <Icon size={20} />
+              <span className="text-[10px] font-medium">{tab.label}</span>
+              {active && <span className="absolute bottom-1 h-1 w-1 rounded-full bg-gold-400" />}
             </Link>
           )
         })}
-      </div>
+
+        {/* More tab */}
+        <button
+          onClick={() => setMenuOpen(true)}
+          className="relative flex flex-col items-center gap-0.5 rounded-[8px] px-3 py-1.5 transition-colors text-nw-500"
+        >
+          <MoreHorizontal size={20} />
+          <span className="text-[10px] font-medium">More</span>
+        </button>
+      </nav>
 
       {/* Navigation bottom sheet */}
       <BottomSheet open={menuOpen} onClose={() => setMenuOpen(false)} title="Navigation">

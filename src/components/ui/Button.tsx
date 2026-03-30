@@ -2,7 +2,7 @@
 
 import { ButtonHTMLAttributes, forwardRef } from 'react'
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'destructive' | 'default' | 'gold' | 'danger'
+type Variant = 'default' | 'gold' | 'ghost' | 'danger' | 'primary' | 'secondary' | 'destructive'
 type Size = 'sm' | 'md' | 'lg'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -11,29 +11,32 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean
 }
 
-const variantStyles: Record<Variant, string> = {
-  primary: 'bg-gradient-to-br from-[#f2ca50] to-[#d4af37] hover:from-[#f5d060] hover:to-[#dbb93a] text-[#3c2f00] font-semibold tracking-wide hover:shadow-[0_0_24px_rgba(212,175,55,0.4)] active:scale-[0.98]',
-  secondary: 'bg-[#2a2a2a] hover:bg-[#353534] text-[#e5e2e1] border border-[#4d4635]/30 hover:border-[#4d4635]/60 active:scale-[0.98]',
-  ghost: 'hover:bg-[#2a2a2a] text-[#d0c5af]/60 hover:text-[#e5e2e1] active:scale-[0.98]',
-  destructive: 'bg-red-600/15 hover:bg-red-600/25 text-red-400 border border-red-600/25 active:scale-[0.98]',
-  default: 'border border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] text-nw-300 hover:bg-[rgba(255,255,255,0.08)] hover:text-nw-100 hover:border-[rgba(255,255,255,0.14)]',
-  gold:    'border border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-gold-300 hover:bg-[rgba(212,160,23,0.22)]',
-  danger:  'border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-red-400 hover:bg-[rgba(239,68,68,0.18)]',
+const base = 'inline-flex items-center justify-center gap-1.5 rounded-[7px] border font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
+
+const variantMap: Record<Variant, string> = {
+  default:     'border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] text-nw-300 hover:bg-[rgba(255,255,255,0.08)] hover:text-nw-100 hover:border-[rgba(255,255,255,0.14)]',
+  gold:        'border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-gold-300 hover:bg-[rgba(212,160,23,0.22)]',
+  ghost:       'border-transparent bg-transparent text-nw-400 hover:bg-[rgba(255,255,255,0.04)] hover:text-nw-200',
+  danger:      'border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-red-400 hover:bg-[rgba(239,68,68,0.18)]',
+  // Aliases for backward compat
+  primary:     'border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-gold-300 hover:bg-[rgba(212,160,23,0.22)]',
+  secondary:   'border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] text-nw-300 hover:bg-[rgba(255,255,255,0.08)] hover:text-nw-100 hover:border-[rgba(255,255,255,0.14)]',
+  destructive: 'border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-red-400 hover:bg-[rgba(239,68,68,0.18)]',
 }
 
-const sizeStyles: Record<Size, string> = {
-  sm: 'px-3 py-[5px] text-xs rounded-[7px]',
-  md: 'px-4 py-2.5 text-[15px] rounded-lg',
-  lg: 'px-6 py-3 text-base rounded-lg',
+const sizes: Record<Size, string> = {
+  sm: 'px-3 py-[5px] text-xs',
+  md: 'px-4 py-2 text-sm',
+  lg: 'px-5 py-2.5 text-sm',
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'secondary', size = 'md', loading, disabled, className = '', children, ...props }, ref) => {
+  ({ variant = 'default', size = 'md', loading, disabled, className = '', children, ...props }, ref) => {
     return (
       <button
         ref={ref}
         disabled={disabled || loading}
-        className={`inline-flex items-center justify-center gap-2 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+        className={`${base} ${variantMap[variant]} ${sizes[size]} ${className}`}
         {...props}
       >
         {loading && (

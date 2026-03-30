@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { NWHubIcon } from '@/components/NWHubIcon'
 
 // ── Nav structure ─────────────────────────────────────────────────────────────
 
@@ -95,35 +96,31 @@ const MAIN_ITEMS: NavItem[] = [
     icon: Icons.overview,
   },
   {
-    key: 'calendar',
-    label: 'Calendar',
-    href: '/calendar',
-    icon: Icons.calendar,
-  },
-  {
     key: 'inbox',
     label: 'Inbox Intelligence',
     href: '/inbox',
     icon: Icons.inbox,
+    sub: [
+      { label: 'Enquiries', href: '/enquiries' },
+      { label: 'AI Chat', href: '/ai-chat' },
+      { label: 'Contacts', href: '/contacts' },
+    ],
   },
   {
     key: 'financials',
     label: 'Financials',
     href: '/financials',
     icon: Icons.financials,
-    sub: [
-      { label: 'Revenue Overview', href: '/financials' },
-      { label: 'Membership Billing', href: '/kids' },
-    ],
   },
   {
     key: 'engagement',
     label: 'Engagement',
+    href: '/leads',
     icon: Icons.engagement,
     sub: [
-      { label: 'Members', href: '/contacts' },
-      { label: 'Subscribers', href: '/email' },
-      { label: 'Kids & Teens', href: '/kids' },
+      { label: 'Members', href: '/leads' },
+      { label: 'Calendar', href: '/calendar' },
+      { label: 'SMS', href: '/sms' },
     ],
   },
 ]
@@ -134,11 +131,10 @@ const PLATFORM_ITEMS: NavItem[] = [
     label: 'Content',
     icon: Icons.content,
     sub: [
-      { label: 'Blog & Posts', href: '/blog/manage' },
-      { label: 'Email Campaigns', href: '/mailchimp' },
-      { label: 'Website Editor', href: '/content' },
-      { label: 'Media Library', href: '/media' },
-      { label: 'Branding Studio', href: '/branding' },
+      { label: 'Blog', href: '/blog/manage' },
+      { label: 'Email', href: '/mailchimp' },
+      { label: 'Editor', href: '/content' },
+      { label: 'Media', href: '/media' },
     ],
   },
   {
@@ -148,6 +144,7 @@ const PLATFORM_ITEMS: NavItem[] = [
     sub: [
       { label: 'Integrations', href: '/sync' },
       { label: 'Settings', href: '/settings' },
+      { label: 'Branding', href: '/branding' },
       { label: 'Workflows', href: '/workflows' },
     ],
   },
@@ -252,9 +249,9 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
           ref={tooltipRef}
           style={{
             position: 'fixed',
-            background: 'var(--slate-750)',
-            border: '1px solid var(--slate-600)',
-            color: 'var(--slate-200)',
+            background: '#22293d',
+            border: '1px solid rgba(255,255,255,0.11)',
+            color: '#d2deee',
             fontSize: 12,
             padding: '5px 10px',
             borderRadius: 6,
@@ -272,7 +269,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
       <aside
         onMouseEnter={isMobile ? undefined : handleMouseEnter}
         onMouseLeave={isMobile ? undefined : handleMouseLeave}
-        className={`relative z-20 flex flex-shrink-0 flex-col bg-nw-950 border-r border-[rgba(212,160,23,0.18)] shadow-sidebar overflow-hidden transition-[width] duration-[260ms] ease-[cubic-bezier(0.4,0,0.2,1)] h-full ${isOpen ? 'w-[228px]' : 'w-[58px]'}`}
+        className={`relative z-20 flex-shrink-0 flex-col bg-nw-950 border-r border-[rgba(212,160,23,0.18)] shadow-sidebar overflow-hidden transition-[width] duration-[260ms] ease-[cubic-bezier(0.4,0,0.2,1)] h-full ${isMobile ? 'flex' : 'hidden md:flex'} ${isOpen ? 'w-[228px]' : 'w-[58px]'}`}
       >
         {/* Pull hint */}
         {!isMobile && (
@@ -286,8 +283,8 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
 
         {/* Logo row */}
         <div className="flex h-[54px] min-h-[54px] items-center gap-[11px] overflow-hidden whitespace-nowrap border-b border-[rgba(255,255,255,0.09)] px-[13px] flex-shrink-0">
-          <div className="flex h-8 w-8 min-w-[32px] items-center justify-center rounded-lg bg-gradient-to-br from-gold-500 to-gold-300 font-brand text-sm font-bold tracking-[0.5px] text-nw-950">
-            NW
+          <div className="flex h-8 w-8 min-w-[32px] flex-shrink-0 items-center justify-center">
+            <NWHubIcon size={28} />
           </div>
 
           <div className={`transition-opacity duration-[260ms] ${isOpen ? 'opacity-100' : 'opacity-0'} pointer-events-none leading-[1.15]`}>

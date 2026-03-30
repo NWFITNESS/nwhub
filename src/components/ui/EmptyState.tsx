@@ -10,16 +10,16 @@ interface EmptyStateProps {
 
 export function EmptyState({ icon: Icon, title, description, action }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-      <div className="w-12 h-12 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mb-4">
-        <Icon size={20} className="text-white/30" />
+    <div className="flex flex-1 flex-col items-center justify-center gap-2 p-7 text-center text-xs text-nw-600">
+      <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)]">
+        <Icon size={16} className="text-nw-500" />
       </div>
-      <p className="text-sm font-medium text-white/60 mb-1">{title}</p>
-      {description && <p className="text-xs text-white/30 max-w-xs mb-4">{description}</p>}
+      <p className="text-sm font-medium text-nw-400">{title}</p>
+      {description && <p className="text-xs text-nw-500 max-w-xs">{description}</p>}
       {action && (
         <Link
           href={action.href}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md bg-[#967705]/15 text-[#c9a70a] hover:bg-[#967705]/25 transition-colors"
+          className="mt-2 inline-flex items-center gap-1.5 rounded-[7px] border border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] px-3 py-[5px] text-xs font-medium text-gold-300 transition-colors hover:bg-[rgba(212,160,23,0.22)]"
         >
           {action.label}
         </Link>

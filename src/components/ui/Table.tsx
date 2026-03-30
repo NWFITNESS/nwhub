@@ -43,17 +43,14 @@ export function Table<T extends Record<string, unknown>>({
   loading = false,
 }: TableProps<T>) {
   return (
-    <div className="overflow-x-auto rounded-xl" style={{ border: '1px solid var(--r-panel-border)' }}>
-      <table className="w-full text-sm">
+    <div className="w-full overflow-x-auto">
+      <table className="w-full border-collapse text-[13px]">
         <thead>
-          <tr style={{ borderBottom: '1px solid var(--r-panel-border)' }}>
+          <tr>
             {columns.map((col) => (
-              <th
-                key={col.key}
-                className={`px-4 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider ${col.className ?? ''}`}
-              >
-                {col.label}
-              </th>
+              <Th key={col.key}>
+                <span className={col.className ?? ''}>{col.label}</span>
+              </Th>
             ))}
           </tr>
         </thead>
@@ -66,30 +63,22 @@ export function Table<T extends Record<string, unknown>>({
                 {emptyIcon ? (
                   <EmptyState icon={emptyIcon} title={emptyMessage} action={emptyAction} />
                 ) : (
-                  <p className="px-4 py-12 text-center text-white/30">{emptyMessage}</p>
+                  <p className="px-4 py-12 text-center text-nw-500">{emptyMessage}</p>
                 )}
               </td>
             </tr>
           ) : (
             data.map((row, i) => (
-              <tr
+              <TrRow
                 key={String(row[keyField]) || i}
-                onClick={() => onRowClick?.(row)}
-                className={`transition-colors border-l-2 border-l-transparent last:border-b-0 ${
-                  onRowClick
-                    ? 'cursor-pointer hover:border-l-[#967705]/30'
-                    : 'hover:border-l-[#967705]/20'
-                }`}
-              style={{ borderBottom: '1px solid var(--r-panel-border)', ...(onRowClick ? {} : {}) }}
-              onMouseEnter={onRowClick ? (e) => { (e.currentTarget as HTMLElement).style.background = 'var(--r-panel-bg)' } : undefined}
-              onMouseLeave={onRowClick ? (e) => { (e.currentTarget as HTMLElement).style.background = '' } : undefined}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
               >
                 {columns.map((col) => (
-                  <td key={col.key} className={`px-4 py-3 text-white/80 ${col.className ?? ''}`}>
+                  <Td key={col.key} className={col.className}>
                     {col.render ? col.render(row) : String(row[col.key] ?? '')}
-                  </td>
+                  </Td>
                 ))}
-              </tr>
+              </TrRow>
             ))
           )}
         </tbody>

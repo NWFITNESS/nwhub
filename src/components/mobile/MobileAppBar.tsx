@@ -1,7 +1,8 @@
 'use client'
 
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Bell } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { NWHubIcon } from '@/components/NWHubIcon'
 import type { ReactNode } from 'react'
 
 interface MobileAppBarProps {
@@ -15,18 +16,21 @@ export function MobileAppBar({ title, count, showBack, actions }: MobileAppBarPr
   const router = useRouter()
 
   return (
-    <div className="lg:hidden sticky top-0 z-20 flex items-center h-14 bg-nw-950 border-b border-[rgba(255,255,255,0.09)] px-3 gap-2 flex-shrink-0">
-      {showBack && (
+    <header className="flex md:hidden h-12 flex-shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.09)] bg-nw-950 px-4">
+      {showBack ? (
         <button
           onClick={() => router.back()}
           className="w-9 h-9 flex items-center justify-center rounded-lg text-nw-400 active:bg-nw-800 flex-shrink-0"
         >
           <ChevronLeft size={22} />
         </button>
+      ) : (
+        <div className="w-9" />
       )}
 
-      <div className="flex-1 flex items-center gap-2 min-w-0">
-        <span className="text-[15px] font-brand font-medium text-nw-200 truncate">
+      <div className="flex items-center gap-2">
+        <NWHubIcon size={22} />
+        <span className="font-brand text-sm font-bold uppercase tracking-[1.5px] text-white">
           {title}
         </span>
         {count != null && count > 0 && (
@@ -36,11 +40,13 @@ export function MobileAppBar({ title, count, showBack, actions }: MobileAppBarPr
         )}
       </div>
 
-      {actions && (
-        <div className="flex items-center gap-1 flex-shrink-0">
-          {actions}
-        </div>
-      )}
-    </div>
+      <div className="flex items-center gap-1 flex-shrink-0">
+        {actions ?? (
+          <button className="w-9 h-9 flex items-center justify-center rounded-lg text-nw-400">
+            <Bell size={18} />
+          </button>
+        )}
+      </div>
+    </header>
   )
 }
