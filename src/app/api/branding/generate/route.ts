@@ -5,7 +5,7 @@ import { requireAuth } from '@/lib/auth-guard'
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 const NW_BRAND = `
-NORTHERN WARRIOR FITNESS — BRAND GUIDELINES FOR INSTAGRAM
+NORTHERN WARRIOR FITNESS — BRAND GUIDELINES FOR SOCIAL MEDIA
 
 Colours:
 - Primary gold: #C9A70A
@@ -19,7 +19,7 @@ Business details:
 - Instagram: @northernwarriorfitness
 
 Brand aesthetic:
-- Dark, bold, premium — think gym culture meets Cumbrian grit
+- Dark, bold, premium — gym culture meets Cumbrian grit
 - Gold accents for emphasis
 - Community-first, authentic, never corporate
 - Celebrates real people and real results
@@ -30,8 +30,20 @@ export async function POST(req: NextRequest) {
   const unauth = await requireAuth()
   if (unauth) return unauth
 
-  const { review, style } = await req.json()
-  if (!review) return NextResponse.json({ error: 'Review is required' }, { status: 400 })
+  const { review, prompt, style } = await req.json()
+
+  if (!review && !prompt) {
+    return NextResponse.json({ error: 'review or prompt is required' }, { status: 400 })
+  }
+
+  const contextBlock = review
+    ? `A member has left a ${review.rating}-star Google review. Create social media post copy in the "${style}" style to showcase this review.
+
+Review author: ${review.author_name}
+Review text: "${review.text}"`
+    : `Create a social media post for Northern Warrior Fitness in the "${style}" style.
+
+Post brief: ${prompt}`
 
   const message = await anthropic.messages.create({
     model: 'claude-opus-4-6',
@@ -43,10 +55,7 @@ export async function POST(req: NextRequest) {
 
 ${NW_BRAND}
 
-A member has left a ${review.rating}-star Google review. Create Instagram post copy in the "${style}" style to showcase this review.
-
-Review author: ${review.author_name}
-Review text: "${review.text}"
+${contextBlock}
 
 Return ONLY valid JSON (no markdown, no code fences) with this exact shape:
 {
@@ -59,7 +68,7 @@ Return ONLY valid JSON (no markdown, no code fences) with this exact shape:
 Style guidance:
 - quote: poetic, emphasises the member's voice
 - bold: high-energy, gym culture, strong action words
-- minimal: clean, understated, lets the review speak`,
+- minimal: clean, understated, lets the result speak`,
       },
     ],
   })
@@ -70,7 +79,6 @@ Style guidance:
   try {
     data = JSON.parse(raw)
   } catch {
-    // Strip any accidental markdown fences and retry
     const cleaned = raw.replace(/^```[a-z]*\n?/, '').replace(/\n?```$/, '').trim()
     data = JSON.parse(cleaned)
   }
