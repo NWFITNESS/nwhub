@@ -4,10 +4,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { toPng } from 'html-to-image'
 import {
   Sparkles, Download, Copy, Check, X, Send, CheckCircle, AlertCircle,
-  Loader2, Clock, Trash2, Image as ImageIcon, Calendar, Move,
+  Loader2, Clock, Trash2, Image as ImageIcon, Calendar, Move, Images, Layers,
+  GripVertical, Plus,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { MediaPickerModal } from '@/components/media/MediaPicker'
+import { MediaPickerModal, MediaPickerMultiModal } from '@/components/media/MediaPicker'
 import type { Review } from './ReviewsPanel'
 import {
   type Style, type TextStyles, type TemplateRenderProps,
@@ -167,8 +168,26 @@ interface Props {
   onClearReview: () => void
 }
 
+type PostType = 'single' | 'carousel'
+
+// Platform carousel limits
+const CAROUSEL_LIMITS: Record<string, number> = {
+  instagram: 10,
+  facebook: 10,
+  linkedin: 9,
+}
+
 export function PostEditorPanel({ review, onClearReview }: Props) {
   const fullResRef = useRef<HTMLDivElement>(null)
+
+  // ── Post type ─────────────────────────────────────────────────────────────
+  const [postType, setPostType] = useState<PostType>('single')
+  const [carouselImages, setCarouselImages] = useState<string[]>([])
+  const [showMultiPicker, setShowMultiPicker] = useState(false)
+  const [dragIdx, setDragIdx] = useState<number | null>(null)
+
+  // Max images based on lowest connected platform limit
+  const carouselMax = Math.min(...Object.values(CAROUSEL_LIMITS))
 
   // ── Ratio state ───────────────────────────────────────────────────────────
   const [platformTab, setPlatformTab] = useState<PlatformTab>('instagram')
@@ -300,49 +319,73 @@ export function PostEditorPanel({ review, onClearReview }: Props) {
     } finally { setDownloading(false) }
   }, [hasContent, getImageDataUrl, ratio])
 
+  const canPublish = postType === 'carousel'
+    ? carouselImages.length >= 2 && selectedPlatforms.size > 0
+    : hasContent && selectedPlatforms.size > 0
+
   const publish = useCallback(async () => {
-    if (!hasContent || selectedPlatforms.size === 0) return
+    if (!canPublish) return
     setPublishing(true)
     setPublishResults(null)
     try {
-      const imageDataUrl = await getImageDataUrl()
-      const res = await fetch('/api/social/publish', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      let payload: Record<string, unknown>
+
+      if (postType === 'carousel') {
+        payload = {
+          imageUrls: carouselImages,
+          captions: Object.fromEntries(Array.from(selectedPlatforms).map((p) => [p, captions[p]])),
+          platforms: Array.from(selectedPlatforms),
+        }
+      } else {
+        const imageDataUrl = await getImageDataUrl()
+        payload = {
           imageDataUrl,
           captions: Object.fromEntries(Array.from(selectedPlatforms).map((p) => [p, captions[p]])),
           platforms: Array.from(selectedPlatforms),
-        }),
+        }
+      }
+
+      const res = await fetch('/api/social/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       })
       const data = await res.json()
       setPublishResults(data.results ?? {})
     } catch (err) {
       setPublishResults({ _error: { ok: false, error: err instanceof Error ? err.message : 'Publish failed' } })
     } finally { setPublishing(false) }
-  }, [hasContent, selectedPlatforms, captions, getImageDataUrl])
+  }, [canPublish, postType, carouselImages, selectedPlatforms, captions, getImageDataUrl])
+
+  const canSchedule = canPublish && !!scheduledAt
 
   const schedule = useCallback(async () => {
-    if (!hasContent || selectedPlatforms.size === 0 || !scheduledAt) return
+    if (!canSchedule) return
     setScheduling(true)
     try {
-      const imageDataUrl = await getImageDataUrl()
+      let payload: Record<string, unknown> = {
+        captions: Object.fromEntries(Array.from(selectedPlatforms).map((p) => [p, captions[p]])),
+        platforms: Array.from(selectedPlatforms),
+        scheduledAt: new Date(scheduledAt).toISOString(),
+      }
+
+      if (postType === 'carousel') {
+        payload.imageUrls = carouselImages
+      } else {
+        payload.imageDataUrl = await getImageDataUrl()
+      }
+
       const res = await fetch('/api/branding/schedule', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          imageDataUrl,
-          captions: Object.fromEntries(Array.from(selectedPlatforms).map((p) => [p, captions[p]])),
-          platforms: Array.from(selectedPlatforms),
-          scheduledAt: new Date(scheduledAt).toISOString(),
-        }),
+        body: JSON.stringify(payload),
       })
       if (res.ok) {
         setScheduledAt('')
         await loadQueue()
       }
     } finally { setScheduling(false) }
-  }, [hasContent, selectedPlatforms, captions, scheduledAt, getImageDataUrl, loadQueue])
+  }, [canSchedule, postType, carouselImages, selectedPlatforms, captions, scheduledAt, getImageDataUrl, loadQueue])
 
   const cancelScheduled = useCallback(async (id: string) => {
     await fetch(`/api/branding/schedule/${id}`, { method: 'DELETE' })
@@ -394,6 +437,102 @@ export function PostEditorPanel({ review, onClearReview }: Props) {
           </button>
         </div>
       )}
+
+      {/* Post type toggle */}
+      <div className="flex rounded-xl overflow-hidden border border-white/[0.08]">
+        <button
+          onClick={() => setPostType('single')}
+          className={`flex-1 py-2.5 text-xs font-medium flex items-center justify-center gap-2 transition-colors ${
+            postType === 'single' ? 'bg-[#967705]/20 text-[#c9a70a]' : 'bg-nw-750 text-white/40 hover:text-white/70'
+          }`}
+        >
+          <Layers size={13} /> Single Post
+        </button>
+        <button
+          onClick={() => setPostType('carousel')}
+          className={`flex-1 py-2.5 text-xs font-medium flex items-center justify-center gap-2 transition-colors ${
+            postType === 'carousel' ? 'bg-[#967705]/20 text-[#c9a70a]' : 'bg-nw-750 text-white/40 hover:text-white/70'
+          }`}
+        >
+          <Images size={13} /> Carousel ({carouselImages.length})
+        </button>
+      </div>
+
+      {/* ── Carousel mode ────────────────────────────────────────────────────── */}
+      {postType === 'carousel' && (
+        <Section title={`Carousel Images · ${carouselImages.length}/${carouselMax}`}>
+          {/* Image strip */}
+          {carouselImages.length > 0 && (
+            <div className="space-y-1.5">
+              {carouselImages.map((url, i) => (
+                <div
+                  key={`${url}-${i}`}
+                  draggable
+                  onDragStart={() => setDragIdx(i)}
+                  onDragOver={(e) => { e.preventDefault() }}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    if (dragIdx === null || dragIdx === i) return
+                    const imgs = [...carouselImages]
+                    const [moved] = imgs.splice(dragIdx, 1)
+                    imgs.splice(i, 0, moved)
+                    setCarouselImages(imgs)
+                    setDragIdx(null)
+                  }}
+                  onDragEnd={() => setDragIdx(null)}
+                  className={`flex items-center gap-2.5 p-2 rounded-lg border transition-all cursor-grab active:cursor-grabbing ${
+                    dragIdx === i ? 'border-[#967705] bg-[#967705]/10 opacity-60' : 'border-white/[0.07] bg-nw-750 hover:border-white/[0.14]'
+                  }`}
+                >
+                  <GripVertical size={14} className="text-white/20 flex-shrink-0" />
+                  <span className="text-[10px] text-white/30 font-mono w-4 flex-shrink-0">{i + 1}</span>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" className="w-11 h-11 rounded object-cover flex-shrink-0" />
+                  <p className="text-[11px] text-white/40 flex-1 truncate">{url.split('/').pop()}</p>
+                  <button
+                    onClick={() => setCarouselImages((prev) => prev.filter((_, j) => j !== i))}
+                    className="text-white/25 hover:text-red-400 transition-colors flex-shrink-0 p-1"
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add images button */}
+          <button
+            onClick={() => setShowMultiPicker(true)}
+            className="w-full flex items-center justify-center gap-2 p-3 rounded-lg border border-dashed border-white/[0.12] hover:border-[#967705]/50 bg-nw-750 hover:bg-[#967705]/5 transition-all text-white/40 hover:text-white/70"
+          >
+            <Plus size={14} />
+            <span className="text-xs font-medium">
+              {carouselImages.length === 0 ? 'Select images' : 'Add / change images'}
+            </span>
+          </button>
+
+          {carouselImages.length > 0 && carouselImages.length < 2 && (
+            <p className="text-[11px] text-amber-400/70">Minimum 2 images required for carousel</p>
+          )}
+
+          <div className="text-[10px] text-white/25 space-y-0.5">
+            <p>Instagram: max 10 · Facebook: max 10 · LinkedIn: max 9</p>
+            <p>You cannot mix video and images in a carousel</p>
+          </div>
+
+          {showMultiPicker && (
+            <MediaPickerMultiModal
+              selected={carouselImages}
+              onDone={(urls) => { setCarouselImages(urls); setShowMultiPicker(false) }}
+              onClose={() => setShowMultiPicker(false)}
+              max={carouselMax}
+            />
+          )}
+        </Section>
+      )}
+
+      {/* ── Single post mode sections ────────────────────────────────────────── */}
+      {postType === 'single' && <>
 
       {/* A — Template */}
       <Section title="Template">
@@ -649,7 +788,9 @@ export function PostEditorPanel({ review, onClearReview }: Props) {
         )}
       </Section>
 
-      {/* F — Platform captions */}
+      </>}{/* end single-post mode */}
+
+      {/* F — Platform captions (both modes) */}
       <Section title="Platform Captions">
         {connectedPlatforms.length === 0 ? (
           <div className="text-center py-4">
@@ -741,7 +882,7 @@ export function PostEditorPanel({ review, onClearReview }: Props) {
             variant="primary"
             onClick={schedule}
             loading={scheduling}
-            disabled={!hasContent || selectedPlatforms.size === 0 || !scheduledAt}
+            disabled={!canSchedule}
             className="w-full gap-2"
           >
             <Clock size={14} />
@@ -752,7 +893,7 @@ export function PostEditorPanel({ review, onClearReview }: Props) {
             variant="primary"
             onClick={publish}
             loading={publishing}
-            disabled={!hasContent || selectedPlatforms.size === 0}
+            disabled={!canPublish}
             className="w-full gap-2"
           >
             {publishing ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
