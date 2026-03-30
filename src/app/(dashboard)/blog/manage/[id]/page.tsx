@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { TopBar } from '@/components/layout/TopBar'
 import { BlogPostEditor } from '@/components/editor/BlogPostEditor'
 import { notFound } from 'next/navigation'
 import type { BlogPost, BlogCategory } from '@/lib/types'
@@ -28,7 +27,6 @@ export default async function EditBlogPostPage({ params }: Props) {
 
   return (
     <>
-      <TopBar title={`Blog — ${post.title}`} />
       <main className="p-10 page-pad">
         <BlogPostEditor
           initialPost={post as unknown as BlogPost & { category?: BlogCategory | null }}

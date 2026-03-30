@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { TopBar } from '@/components/layout/TopBar'
 import { VisualEditorPage } from '@/components/content/VisualEditorPage'
 import { saveDraftAction, publishPageAction, saveAndPublishAction } from './actions'
 import { PAGE_SECTION_DEFAULTS } from '@/lib/content-defaults'
@@ -55,7 +54,6 @@ export default async function ContentEditorPage({ params }: Props) {
 
   return (
     <>
-      <TopBar title={`Content — ${label}`} />
       <VisualEditorPage
         slug={slug}
         label={label}

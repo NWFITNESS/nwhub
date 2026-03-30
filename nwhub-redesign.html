@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NWHub — Northern Warrior Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --slate-950: #0b0e14;
+    --slate-900: #111520;
+    --slate-850: #161c2a;
+    --slate-800: #1c2333;
+    --slate-750: #22293d;
+    --slate-700: #293248;
+    --slate-600: #374059;
+    --slate-500: #607080;
+    --slate-400: #8296b4;
+    --slate-300: #aabdd8;
+    --slate-200: #d2deee;
+    --slate-100: #edf3fb;
+    --gold-600: #b8870f;
+    --gold-500: #d4a017;
+    --gold-400: #e8b933;
+    --gold-300: #f2cb55;
+    --gold-200: #f8df8a;
+    --gold-100: #fdf4d4;
+    --green:    #4ade80;
+    --amber:    #f59e0b;
+    --panel-bg:     rgba(255,255,255,0.04);
+    --panel-border: rgba(255,255,255,0.09);
+    --sidebar-collapsed: 58px;
+    --sidebar-expanded:  228px;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --speed: 0.26s;
+    --font-brand: 'Rajdhani', sans-serif;
+    --font-ui:    'Inter', sans-serif;
+  }
+
+  html, body {
+    height: 100%;
+    background: #090c12;
+    font-family: var(--font-ui);
+    font-size: 13px;
+    color: var(--slate-200);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══════════════════════════════════
+     APP SHELL
+  ═══════════════════════════════════ */
+  .app {
+    display: flex;
+    height: 100vh;
+    min-height: 600px;
+    background: var(--slate-900);
+    overflow: hidden;
+  }
+
+  /* ═══════════════════════════════════
+     SIDEBAR
+  ═══════════════════════════════════ */
+  .sidebar {
+    width: var(--sidebar-collapsed);
+    background: var(--slate-950);
+    border-right: 1px solid rgba(212,160,23,0.18);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+    transition: width var(--speed) var(--ease);
+    position: relative;
+    z-index: 20;
+    box-shadow: 4px 0 32px rgba(212,160,23,0.08), 2px 0 8px rgba(212,160,23,0.05);
+  }
+
+  .sidebar:hover,
+  .sidebar.pinned {
+    width: var(--sidebar-expanded);
+  }
+
+  /* Logo row */
+  .sidebar-logo {
+    height: 54px;
+    min-height: 54px;
+    border-bottom: 1px solid var(--panel-border);
+    display: flex;
+    align-items: center;
+    padding: 0 13px;
+    gap: 11px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .logo-mark {
+    width: 32px;
+    min-width: 32px;
+    height: 32px;
+    background: linear-gradient(140deg, var(--gold-500) 0%, var(--gold-300) 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-brand);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--slate-950);
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+
+  .logo-text {
+    opacity: 0;
+    transition: opacity var(--speed) var(--ease);
+    pointer-events: none;
+    line-height: 1.15;
+  }
+
+  .sidebar:hover .logo-text,
+  .sidebar.pinned .logo-text { opacity: 1; }
+
+  .logo-name {
+    font-family: var(--font-brand);
+    font-weight: 700;
+    font-size: 12.5px;
+    letter-spacing: 1.8px;
+    color: #fff;
+    text-transform: uppercase;
+    display: block;
+  }
+
+  .logo-sub {
+    font-size: 9.5px;
+    color: var(--slate-500);
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+
+  /* Nav scroll */
+  .nav-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px 0 6px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--slate-700) transparent;
+  }
+  .nav-scroll::-webkit-scrollbar { width: 3px; }
+  .nav-scroll::-webkit-scrollbar-track { background: transparent; }
+  .nav-scroll::-webkit-scrollbar-thumb { background: var(--slate-700); border-radius: 3px; }
+
+  /* Section label */
+  .nav-section-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--slate-600);
+    padding: 12px 18px 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    opacity: 0;
+    max-height: 0;
+    transition: opacity var(--speed) var(--ease), max-height var(--speed) var(--ease);
+  }
+  .sidebar:hover .nav-section-label,
+  .sidebar.pinned .nav-section-label {
+    opacity: 1;
+    max-height: 32px;
+  }
+
+  /* Nav item */
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 11px;
+    height: 38px;
+    margin: 1px 7px;
+    border-radius: 7px;
+    cursor: pointer;
+    color: var(--slate-400);
+    font-size: 13px;
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    position: relative;
+    transition: background 0.15s, color 0.15s;
+    user-select: none;
+  }
+
+  .nav-item:hover {
+    background: var(--panel-bg);
+    color: var(--slate-200);
+  }
+
+  .nav-item.active {
+    background: rgba(212, 160, 23, 0.11);
+    color: var(--gold-300);
+    font-weight: 500;
+  }
+
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 22%;
+    height: 56%;
+    width: 2.5px;
+    background: var(--gold-400);
+    border-radius: 0 2px 2px 0;
+  }
+
+  .nav-icon {
+    width: 16px;
+    min-width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .nav-item.active .nav-icon svg { stroke: var(--gold-400); }
+
+  .nav-label-text {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    opacity: 0;
+    transition: opacity var(--speed) var(--ease);
+    min-width: 0;
+  }
+  .sidebar:hover .nav-label-text,
+  .sidebar.pinned .nav-label-text { opacity: 1; }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
+  .nav-badge {
+    background: rgba(212,160,23,0.18);
+    color: var(--gold-300);
+    font-size: 9px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 9px;
+  }
+
+  .nav-chevron {
+    display: flex;
+    align-items: center;
+    color: var(--slate-600);
+    transition: transform 0.2s var(--ease);
+    flex-shrink: 0;
+  }
+  .nav-item.open .nav-chevron { transform: rotate(90deg); }
+
+  /* Collapsed tooltip */
+  .nav-tooltip {
+    position: fixed;
+    background: var(--slate-750);
+    border: 1px solid var(--slate-600);
+    color: var(--slate-200);
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 999;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    transition: opacity 0.12s;
+    transform: translateY(-50%);
+  }
+
+  /* Sub items */
+  .sub-items {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.25s var(--ease);
+  }
+  .sub-items.open { max-height: 220px; }
+
+  .sub-item {
+    display: flex;
+    align-items: center;
+    padding: 0 11px 0 40px;
+    height: 30px;
+    margin: 0 7px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--slate-500);
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    position: relative;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .sub-item::before {
+    content: '';
+    position: absolute;
+    left: 24px;
+    top: 50%;
+    width: 7px;
+    height: 1px;
+    background: var(--slate-700);
+    transition: background 0.15s;
+  }
+
+  .sub-item:hover {
+    background: var(--panel-bg);
+    color: var(--slate-300);
+  }
+
+  .sub-item:hover::before { background: var(--slate-500); }
+
+  .sub-item.active {
+    color: var(--gold-300);
+  }
+  .sub-item.active::before { background: var(--gold-600); }
+
+  .sub-item-text {
+    opacity: 0;
+    transition: opacity var(--speed) var(--ease);
+  }
+  .sidebar:hover .sub-item-text,
+  .sidebar.pinned .sub-item-text { opacity: 1; }
+
+  /* Sidebar footer */
+  .sidebar-footer {
+    border-top: 1px solid var(--panel-border);
+    padding: 10px 11px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    overflow: hidden;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .user-avatar {
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+    background: linear-gradient(140deg, var(--gold-500), var(--gold-300));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-brand);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--slate-950);
+    flex-shrink: 0;
+  }
+
+  .user-info {
+    flex: 1;
+    min-width: 0;
+    opacity: 0;
+    transition: opacity var(--speed) var(--ease);
+  }
+  .sidebar:hover .user-info,
+  .sidebar.pinned .user-info { opacity: 1; }
+
+  .user-name { font-size: 12px; font-weight: 500; color: var(--slate-200); }
+  .user-role { font-size: 10px; color: var(--slate-500); }
+
+  .signout-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--slate-600);
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    border-radius: 5px;
+    transition: color 0.15s;
+    opacity: 0;
+    transition: opacity var(--speed) var(--ease), color 0.15s;
+    flex-shrink: 0;
+  }
+  .sidebar:hover .signout-btn,
+  .sidebar.pinned .signout-btn { opacity: 1; }
+  .signout-btn:hover { color: var(--slate-300); }
+
+  /* Hint pull-tab */
+  .pull-hint {
+    position: absolute;
+    right: -22px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(212,160,23,0.13);
+    border: 1px solid rgba(212,160,23,0.28);
+    border-left: none;
+    border-radius: 0 7px 7px 0;
+    padding: 10px 7px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    color: var(--gold-400);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    cursor: default;
+    opacity: 1;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .pull-hint.gone { opacity: 0; }
+  .sidebar:hover .pull-hint { opacity: 0; }
+
+  /* ═══════════════════════════════════
+     MAIN AREA
+  ═══════════════════════════════════ */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* Topbar */
+  .topbar {
+    height: 54px;
+    min-height: 54px;
+    background: var(--slate-950);
+    border-bottom: 1px solid var(--panel-border);
+    display: flex;
+    align-items: center;
+    padding: 0 22px;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+
+  .topbar-brand {
+    font-family: var(--font-brand);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--slate-300);
+  }
+
+  .topbar-divider { width: 1px; height: 18px; background: var(--panel-border); }
+
+  .breadcrumb {
+    font-size: 12px;
+    color: var(--slate-500);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .breadcrumb-current { color: var(--slate-200); }
+
+  .topbar-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tb-btn {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 7px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--slate-300);
+    cursor: pointer;
+    font-family: var(--font-ui);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .tb-btn:hover { background: rgba(255,255,255,0.08); color: var(--slate-100); border-color: rgba(255,255,255,0.14); }
+  .tb-btn.gold {
+    background: rgba(212,160,23,0.12);
+    border-color: rgba(212,160,23,0.28);
+    color: var(--gold-300);
+  }
+  .tb-btn.gold:hover { background: rgba(212,160,23,0.22); }
+
+  /* Content scroll area */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--slate-700) transparent;
+  }
+
+  /* Page header */
+  .page-header { display: flex; flex-direction: column; gap: 3px; }
+  .page-eyebrow {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: var(--slate-500);
+  }
+  .page-title {
+    font-family: var(--font-brand);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    line-height: 1;
+    color: #fff;
+  }
+  .page-title span { color: var(--gold-400); }
+  .page-date { font-size: 12px; color: var(--slate-500); margin-top: 1px; }
+
+  /* ── STAT CARDS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .stat-card {
+    background: var(--slate-750);
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 10px;
+    padding: 15px 17px 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.18s, border-color 0.18s, box-shadow 0.18s;
+    cursor: default;
+    box-shadow: 0 4px 24px rgba(212,160,23,0.07), 0 1px 4px rgba(212,160,23,0.04);
+  }
+  .stat-card:hover {
+    background: var(--slate-700);
+    border-color: rgba(212,160,23,0.22);
+    box-shadow: 0 6px 32px rgba(212,160,23,0.13), 0 2px 8px rgba(212,160,23,0.07);
+  }
+
+  .stat-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .stat-card-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    color: var(--slate-400);
+  }
+
+  .stat-card-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .stat-card-value {
+    font-family: var(--font-brand);
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -0.5px;
+  }
+  .stat-card-value.gold { color: var(--gold-300); }
+
+  .stat-card-sub {
+    font-size: 11px;
+    color: var(--slate-500);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .stat-up { color: var(--green); }
+
+  .stat-accent {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 0;
+  }
+
+  /* ── LOWER GRID ── */
+  .lower-grid {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 12px;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* ── PANELS ── */
+  .panel {
+    background: var(--slate-750);
+    border: 1px solid rgba(255,255,255,0.11);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel-head {
+    padding: 11px 17px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .panel-eyebrow {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--slate-500);
+  }
+
+  .panel-divider { width: 1px; height: 12px; background: rgba(255,255,255,0.09); }
+
+  .panel-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--slate-200);
+  }
+
+  /* Quick actions 2×2 */
+  .quick-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: rgba(255,255,255,0.07);
+  }
+
+  .quick-item {
+    background: var(--slate-750);
+    padding: 15px 17px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: background 0.15s;
+  }
+  .quick-item:hover { background: var(--slate-700); }
+
+  .qi-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .qi-icon {
+    width: 33px;
+    height: 33px;
+    border-radius: 8px;
+    background: rgba(212,160,23,0.1);
+    border: 1px solid rgba(212,160,23,0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .qi-arrow {
+    font-size: 14px;
+    color: var(--slate-600);
+    display: inline-block;
+    transition: color 0.15s, transform 0.15s;
+  }
+  .quick-item:hover .qi-arrow { color: var(--gold-400); transform: translate(2px, -2px); }
+
+  .qi-title {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--slate-200);
+    transition: color 0.15s;
+  }
+  .quick-item:hover .qi-title { color: #fff; }
+
+  .qi-desc {
+    font-size: 11px;
+    color: var(--slate-500);
+    line-height: 1.5;
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--slate-600);
+    font-size: 12px;
+    text-align: center;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .empty-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2px;
+  }
+
+  /* ── RIGHT COLUMN ── */
+  .right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Checklist */
+  .checklist-panel {
+    background: var(--slate-750);
+    border: 1px solid rgba(255,255,255,0.11);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .checklist-head {
+    padding: 13px 17px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .checklist-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 9px;
+  }
+
+  .checklist-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--slate-200);
+  }
+
+  .checklist-fraction {
+    font-family: var(--font-brand);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gold-300);
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--slate-700);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-600), var(--gold-300));
+    border-radius: 3px;
+    width: 50%;
+    transition: width 0.6s var(--ease);
+  }
+
+  .checklist-body { padding: 4px 0; }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 17px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .check-item:hover { background: rgba(255,255,255,0.03); }
+
+  .check-circle {
+    width: 15px;
+    min-width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 1.5px solid var(--slate-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .check-circle.done {
+    background: var(--gold-500);
+    border-color: var(--gold-500);
+  }
+
+  .check-circle svg { display: none; }
+  .check-circle.done svg { display: block; }
+
+  .check-text {
+    flex: 1;
+    font-size: 12px;
+    color: var(--slate-300);
+  }
+  .check-text.crossed {
+    color: var(--slate-600);
+    text-decoration: line-through;
+  }
+
+  .check-tag {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+  .check-tag.done-tag {
+    background: rgba(74,222,128,0.1);
+    color: var(--green);
+    border: 1px solid rgba(74,222,128,0.2);
+  }
+  .check-tag.todo-tag {
+    background: rgba(100,116,139,0.1);
+    color: var(--slate-500);
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+
+  /* Status panel */
+  .status-panel {
+    background: var(--slate-750);
+    border: 1px solid rgba(255,255,255,0.11);
+    border-radius: 10px;
+    padding: 14px 17px;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+  }
+
+  .status-eyebrow {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--slate-500);
+  }
+
+  .status-rows { display: flex; flex-direction: column; gap: 8px; }
+
+  .status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+  }
+
+  .status-name { color: var(--slate-400); }
+
+  .status-val {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ═══════ SIDEBAR ═══════ -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- Logo -->
+    <div class="sidebar-logo">
+      <div class="logo-mark">NW</div>
+      <div class="logo-text">
+        <span class="logo-name">Northern Warrior</span>
+        <span class="logo-sub">Admin Dashboard</span>
+      </div>
+    </div>
+
+    <!-- Pull hint (disappears on first hover) -->
+    <div class="pull-hint" id="pullHint">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 2l4 3-4 3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Hover
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav-scroll">
+
+      <div class="nav-section-label">Main</div>
+
+      <!-- Overview -->
+      <div class="nav-item active" id="nav-overview" onclick="activateNav(this)">
+        <div class="nav-icon">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7">
+            <rect x="1" y="1" width="6" height="6" rx="1.5"/>
+            <rect x="9" y="1" width="6" height="6" rx="1.5"/>
+            <rect x="1" y="9" width="6" height="6" rx="1.5"/>
+            <rect x="9" y="9" width="6" height="6" rx="1.5"/>
+          </svg>
+        </div>
+        <div class="nav-label-text">Overview</div>
+        <div class="nav-tooltip" id="tip-overview">Overview</div>
+      </div>
+
+      <!-- Inbox Intelligence -->
+      <div class="nav-item" id="nav-inbox" onclick="activateNav(this); toggleSub('sub-inbox', this)">
+        <div class="nav-icon">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7">
+            <rect x="1" y="3" width="14" height="10" rx="2"/>
+            <path d="M1 5l7 5 7-5"/>
+          </svg>
+        </div>
+        <div class="nav-label-text">
+          Inbox Intelligence
+          <div class="nav-right">
+            <span class="nav-badge">3</span>
+            <span class="nav-chevron">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.9">
+                <path d="M3 2l3.5 3L3 8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+        <div class="nav-tooltip">Inbox Intelligence</div>
+      </div>
+      <div class="sub-items" id="sub-inbox">
+        <div class="sub-item" onclick="activateSub(this)"><span class="sub-item-text">All Enquiries</span></div>
+        <div class="sub-item" onclick="activateSub(this)"><span class="sub-item-text">AI Chat Logs</span></div>
+        <div class="sub-item" onclick="activateSub(this)"><span class="sub-item-text">Contacts</span></div>
+      </div>
+
+      <!-- Financials -->
+      <div class="nav-item" id="nav-finance" onclick="activateNav(this); toggleSub('sub-finance', this)">
+        <div class="nav-icon">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7">
+            <path d="M2 11l3.5-3.5L8 10l5.5-6" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="1" y="1" width="14" height="14" rx="2"/>
+          </svg>
+        </div>
+        <div class="nav-label-text">
+          Financials
+          <div class="nav-right">
+            <span class="nav-chevron">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.9">
+                <path d="M3 2l3.5 3L3 8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+        <div class="nav-tooltip">Financials</div>
+      </div>
+      <div class="sub-items" id="sub-finance">
+        <div class="sub-item" onclick="activateSub(this)"><span class="sub-item-text">Revenue Overview</span></div>
+        <div class="sub-item" onclick="activateSub(this)"><span class="sub-item-text">Xero P&amp;L</span></div>
+        <div class="sub-item" onclick="activateSub(this)"><span class="sub-item-text">Membership Billing</span></div>
+      </div>
+
+      <!-- Engagement -->
+      <div class="nav-item" id="nav-engage" onclick="activateNav(this); toggleSub('sub-engage', this)">
+        <div class="nav-icon">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7">
+            <circle cx="8" cy="5" r="3"/>
+            <path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5"/>
+          </svg>
+        </div>
+        <div class="nav-label-text">
+          Engagement
+          <div class="nav-right">
+            <span class="nav-chevron">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.9">
+                <path d="M3 2l3.5 3L3 8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+        <div class="nav-tooltip">Engagement</div>
+      </div>
+      <div class="sub-items" id="sub-engage">
+        <div class="sub-item" onclick="activateSub(this)"><span class="sub-item-text">Members</span></div>
+        <div class="sub-item" onclick="activateSub(this)"><span class="sub-item-text">Attendance</span></div>
+        <div class="sub-item" onclick="activateSub(this)"><span class="sub-item-text">SMS &amp; WhatsApp</span></div>
+      </div>
+
+      <div class="nav-section-label">Platform</div>
+
+      <!-- Content -->
+      <div class="nav-item" id="nav-content" onclick="activateNav(this); toggleSub('sub-content', this)">
+        <div class="nav-icon">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7">
+            <rect x="2" y="2" width="12" height="12" rx="2"/>
+            <path d="M5 6h6M5 9h4"/>
+          </svg>
+        </div>
+        <div class="nav-label-text">
+          Content
+          <div class="nav-right">
+            <span class="nav-chevron">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.9">
+                <path d="M3 2l3.5 3L3 8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+        <div class="nav-tooltip">Content</div>
+      </div>
+      <div class="sub-items" id="sub-content">
+        <div class="sub-item" onclick="activateSub(this)"><span class="sub-item-text">Blog &amp; Posts</span></div>
+        <div class="sub-item" onclick="activateSub(this)"><span class="sub-item-text">Email Campaigns</span></div>
+        <div class="sub-item" onclick="activateSub(this)"><span class="sub-item-text">Website Editor</span></div>
+        <div class="sub-item" onclick="activateSub(this)"><span class="sub-item-text">Media Library</span></div>
+      </div>
+
+      <!-- System -->
+      <div class="nav-item" id="nav-system" onclick="activateNav(this); toggleSub('sub-system', this)">
+        <div class="nav-icon">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7">
+            <circle cx="8" cy="8" r="2.5"/>
+            <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="nav-label-text">
+          System
+          <div class="nav-right">
+            <span class="nav-chevron">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.9">
+                <path d="M3 2l3.5 3L3 8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </div>
+        </div>
+        <div class="nav-tooltip">System</div>
+      </div>
+      <div class="sub-items" id="sub-system">
+        <div class="sub-item" onclick="activateSub(this)"><span class="sub-item-text">Integrations</span></div>
+        <div class="sub-item" onclick="activateSub(this)"><span class="sub-item-text">Settings</span></div>
+        <div class="sub-item" onclick="activateSub(this)"><span class="sub-item-text">Security &amp; Audit</span></div>
+      </div>
+
+    </nav>
+
+    <!-- Footer -->
+    <div class="sidebar-footer">
+      <div class="user-avatar">MA</div>
+      <div class="user-info">
+        <div class="user-name">Mat</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="signout-btn" title="Sign out">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7">
+          <path d="M10 8H2M6 4l-4 4 4 4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M6 2h7a1 1 0 011 1v10a1 1 0 01-1 1H6" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ═══════ MAIN ═══════ -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <span class="topbar-brand">NW Hub</span>
+      <div class="topbar-divider"></div>
+      <div class="breadcrumb">
+        Admin Panel
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.4">
+          <path d="M3 2l3.5 3L3 8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="breadcrumb-current">Overview</span>
+      </div>
+      <div class="topbar-right">
+        <button class="tb-btn">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7">
+            <rect x="4" y="1" width="8" height="14" rx="2"/>
+            <rect x="6.5" y="12" width="3" height="1.5" rx="0.75"/>
+          </svg>
+          Mobile Preview
+        </button>
+        <button class="tb-btn gold">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7">
+            <path d="M3 8h10M8 3l5 5-5 5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Customise
+        </button>
+      </div>
+    </header>
+
+    <!-- Scrollable content -->
+    <div class="content">
+
+      <!-- Page header -->
+      <div class="page-header">
+        <span class="page-eyebrow">Admin Panel</span>
+        <h1 class="page-title">Northern Warrior <span>Hub</span></h1>
+        <span class="page-date">Friday, 27 March 2026</span>
+      </div>
+
+      <!-- Stat cards -->
+      <div class="stats-grid">
+
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <span class="stat-card-label">Total Members</span>
+            <div class="stat-card-icon">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--slate-400)" stroke-width="1.7">
+                <circle cx="8" cy="5" r="3"/>
+                <path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-card-value">0</div>
+          <div class="stat-card-sub">Awaiting first signup</div>
+          <div class="stat-accent" style="background: linear-gradient(90deg, var(--slate-600), transparent)"></div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <span class="stat-card-label">Email Subscribers</span>
+            <div class="stat-card-icon">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--slate-400)" stroke-width="1.7">
+                <rect x="1" y="3" width="14" height="10" rx="2"/>
+                <path d="M1 5l7 5 7-5"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-card-value">0</div>
+          <div class="stat-card-sub">Via Mailchimp</div>
+          <div class="stat-accent" style="background: linear-gradient(90deg, var(--slate-600), transparent)"></div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <span class="stat-card-label">Unread Enquiries</span>
+            <div class="stat-card-icon">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--slate-400)" stroke-width="1.7">
+                <path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-3 3V3a1 1 0 011-1z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-card-value">0</div>
+          <div class="stat-card-sub">All caught up</div>
+          <div class="stat-accent" style="background: linear-gradient(90deg, var(--slate-600), transparent)"></div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-card-top">
+            <span class="stat-card-label">Monthly Revenue</span>
+            <div class="stat-card-icon">
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--gold-500)" stroke-width="1.7">
+                <path d="M2 12l3.5-3.5L8 11l5.5-6.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-card-value gold">£7,217</div>
+          <div class="stat-card-sub"><span class="stat-up">↑</span> via Xero P&amp;L</div>
+          <div class="stat-accent" style="background: linear-gradient(90deg, rgba(212,160,23,0.65), transparent)"></div>
+        </div>
+
+      </div>
+
+      <!-- Lower grid -->
+      <div class="lower-grid">
+
+        <!-- Left: Quick Actions + Enquiries -->
+        <div class="panel">
+
+          <div class="panel-head">
+            <span class="panel-eyebrow">Navigation</span>
+            <div class="panel-divider"></div>
+            <span class="panel-title">Quick Actions</span>
+          </div>
+
+          <div class="quick-grid">
+            <div class="quick-item">
+              <div class="qi-top">
+                <div class="qi-icon">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--gold-400)" stroke-width="1.7">
+                    <rect x="1" y="3" width="14" height="10" rx="2"/><path d="M1 5l7 5 7-5"/>
+                  </svg>
+                </div>
+                <span class="qi-arrow">↗</span>
+              </div>
+              <div class="qi-title">Contacts &amp; Enquiries</div>
+              <div class="qi-desc">Track inbound leads, AI chat messages, and contact records.</div>
+            </div>
+
+            <div class="quick-item">
+              <div class="qi-top">
+                <div class="qi-icon">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--gold-400)" stroke-width="1.7">
+                    <rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8h6M8 5v6"/>
+                  </svg>
+                </div>
+                <span class="qi-arrow">↗</span>
+              </div>
+              <div class="qi-title">Edit Website Content</div>
+              <div class="qi-desc">Update hero, memberships and FAQs without touching code.</div>
+            </div>
+
+            <div class="quick-item">
+              <div class="qi-top">
+                <div class="qi-icon">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--gold-400)" stroke-width="1.7">
+                    <path d="M3 3h10M3 7h7M3 11h9"/>
+                  </svg>
+                </div>
+                <span class="qi-arrow">↗</span>
+              </div>
+              <div class="qi-title">Blog &amp; Posts</div>
+              <div class="qi-desc">Write and publish posts to engage members and boost SEO.</div>
+            </div>
+
+            <div class="quick-item">
+              <div class="qi-top">
+                <div class="qi-icon">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--gold-400)" stroke-width="1.7">
+                    <path d="M13 2H3a2 2 0 00-2 2v7a2 2 0 002 2h3l2 2 2-2h3a2 2 0 002-2V4a2 2 0 00-2-2z"/>
+                  </svg>
+                </div>
+                <span class="qi-arrow">↗</span>
+              </div>
+              <div class="qi-title">Email Campaigns</div>
+              <div class="qi-desc">Send newsletters to your subscriber list via Mailchimp.</div>
+            </div>
+          </div>
+
+          <div class="panel-head" style="border-top: 1px solid rgba(255,255,255,0.07)">
+            <span class="panel-eyebrow">Inbound</span>
+            <div class="panel-divider"></div>
+            <span class="panel-title">Recent Enquiries</span>
+          </div>
+
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--slate-600)" stroke-width="1.5">
+                <path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-3 3V3a1 1 0 011-1z"/>
+              </svg>
+            </div>
+            No enquiries yet — they'll appear here as they come in.
+          </div>
+
+        </div>
+
+        <!-- Right: Checklist + Status -->
+        <div class="right-col">
+
+          <div class="checklist-panel">
+            <div class="checklist-head">
+              <div class="checklist-top-row">
+                <span class="checklist-title">Setup Checklist</span>
+                <span class="checklist-fraction">3 / 6</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill"></div>
+              </div>
+            </div>
+            <div class="checklist-body">
+
+              <div class="check-item">
+                <div class="check-circle done">
+                  <svg width="8" height="8" viewBox="0 0 12 12" fill="none" stroke="var(--slate-950)" stroke-width="2.5">
+                    <path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <span class="check-text crossed">Content seeded</span>
+                <span class="check-tag done-tag">Done</span>
+              </div>
+
+              <div class="check-item">
+                <div class="check-circle done">
+                  <svg width="8" height="8" viewBox="0 0 12 12" fill="none" stroke="var(--slate-950)" stroke-width="2.5">
+                    <path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <span class="check-text crossed">Settings seeded</span>
+                <span class="check-tag done-tag">Done</span>
+              </div>
+
+              <div class="check-item">
+                <div class="check-circle"></div>
+                <span class="check-text">First subscriber</span>
+                <span class="check-tag todo-tag">To do</span>
+              </div>
+
+              <div class="check-item">
+                <div class="check-circle done">
+                  <svg width="8" height="8" viewBox="0 0 12 12" fill="none" stroke="var(--slate-950)" stroke-width="2.5">
+                    <path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <span class="check-text crossed">First blog post</span>
+                <span class="check-tag done-tag">Done</span>
+              </div>
+
+              <div class="check-item">
+                <div class="check-circle"></div>
+                <span class="check-text">Resend domain verified</span>
+                <span class="check-tag todo-tag">To do</span>
+              </div>
+
+              <div class="check-item">
+                <div class="check-circle"></div>
+                <span class="check-text">WhatsApp registered</span>
+                <span class="check-tag todo-tag">To do</span>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="status-panel">
+            <span class="status-eyebrow">System Status</span>
+            <div class="status-rows">
+              <div class="status-row">
+                <span class="status-name">Supabase</span>
+                <span class="status-val" style="color: var(--green)">
+                  <span class="status-dot" style="background: var(--green)"></span>Operational
+                </span>
+              </div>
+              <div class="status-row">
+                <span class="status-name">Vercel Deploy</span>
+                <span class="status-val" style="color: var(--green)">
+                  <span class="status-dot" style="background: var(--green)"></span>Live
+                </span>
+              </div>
+              <div class="status-row">
+                <span class="status-name">Resend Email</span>
+                <span class="status-val" style="color: var(--amber)">
+                  <span class="status-dot" style="background: var(--amber)"></span>Pending
+                </span>
+              </div>
+              <div class="status-row">
+                <span class="status-name">Twilio SMS</span>
+                <span class="status-val" style="color: var(--amber)">
+                  <span class="status-dot" style="background: var(--amber)"></span>Pending
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const sidebar  = document.getElementById('sidebar');
+  const pullHint = document.getElementById('pullHint');
+
+  // Dismiss hint on first hover
+  sidebar.addEventListener('mouseenter', () => {
+    pullHint.classList.add('gone');
+  }, { once: true });
+
+  // ── Nav active state ──
+  function activateNav(el) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // ── Sub-menu toggle ──
+  function toggleSub(subId, navEl) {
+    const sub   = document.getElementById(subId);
+    const isOpen = sub.classList.contains('open');
+
+    // Close all
+    document.querySelectorAll('.sub-items').forEach(s => s.classList.remove('open'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('open'));
+
+    // Open clicked (unless it was already open)
+    if (!isOpen) {
+      sub.classList.add('open');
+      navEl.classList.add('open');
+    }
+  }
+
+  // ── Sub-item active state ──
+  function activateSub(el) {
+    document.querySelectorAll('.sub-item').forEach(s => s.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // ── Tooltip positioning for collapsed state ──
+  document.querySelectorAll('.nav-item').forEach(item => {
+    const tip = item.querySelector('.nav-tooltip');
+    if (!tip) return;
+
+    item.addEventListener('mouseenter', () => {
+      if (sidebar.matches(':hover') && !sidebar.classList.contains('pinned')) {
+        // Only show tooltip when collapsed
+        const sidebarWidth = parseInt(getComputedStyle(document.documentElement)
+          .getPropertyValue('--sidebar-collapsed'));
+        if (sidebar.offsetWidth <= sidebarWidth + 2) {
+          const rect = item.getBoundingClientRect();
+          tip.style.top  = rect.top + rect.height / 2 + 'px';
+          tip.style.left = sidebarWidth + 10 + 'px';
+          tip.style.opacity = '1';
+        }
+      }
+    });
+
+    item.addEventListener('mouseleave', () => {
+      tip.style.opacity = '0';
+    });
+  });
+</script>
+
+</body>
+</html>

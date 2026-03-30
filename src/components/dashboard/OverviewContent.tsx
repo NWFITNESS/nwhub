@@ -3,7 +3,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { TopBar } from '@/components/layout/TopBar'
 import type { DashboardData, DashboardTask } from '@/components/widgets/DashboardWidgetGrid'
 import { MiniCalendar } from './MiniCalendar'
 import { WebsiteVisitorsChart } from './MemberGrowthChart'
@@ -634,7 +633,6 @@ export function OverviewContent({ data, formattedDate }: Props) {
 
   return (
     <div className="hidden lg:flex flex-col" style={{ background: 'var(--slate-900)', height: '100%' }}>
-      <TopBar />
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 

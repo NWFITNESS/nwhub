@@ -1,6 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ContactsManager } from '@/components/contacts/ContactsManager'
-import { TopBar } from '@/components/layout/TopBar'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { MobileContactsList } from '@/components/mobile/MobileContactsList'
 import type { Contact } from '@/lib/types'
@@ -21,7 +20,6 @@ export default async function LeadsPage() {
 
       {/* Desktop layout */}
       <div className="hidden lg:block bg-nw-900 min-h-screen">
-        <TopBar title="Leads" />
         <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
           <PageHeader
             eyebrow="Admin Panel"

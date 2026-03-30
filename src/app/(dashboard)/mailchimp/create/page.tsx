@@ -1,5 +1,4 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { TopBar } from '@/components/layout/TopBar'
 import { CampaignBuilder } from '@/components/mailchimp/CampaignBuilder'
 import type { MailchimpSettings } from '@/lib/types'
 
@@ -50,7 +49,6 @@ export default async function CreateCampaignPage({
 
   return (
     <>
-      <TopBar title="New Campaign" />
       <CampaignBuilder settings={settings} designJson={designJson} />
     </>
   )

@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { TopBar } from '@/components/layout/TopBar'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { EmailSubscribersTable } from '@/components/email/EmailSubscribersTable'
 import Link from 'next/link'
@@ -14,14 +13,6 @@ export default async function EmailPage() {
 
   return (
     <>
-      <TopBar
-        title="Email"
-        actions={
-          <Link href="/email/campaigns">
-            <Button variant="secondary" size="sm">View Campaigns</Button>
-          </Link>
-        }
-      />
       <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
           eyebrow="Email"

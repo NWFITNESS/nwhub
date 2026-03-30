@@ -1,4 +1,3 @@
-import { TopBar } from '@/components/layout/TopBar'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { CalendarClient } from './CalendarClient'
 
@@ -20,7 +19,6 @@ export default function CalendarPage() {
 
       {/* Desktop */}
       <div className="hidden lg:flex flex-col bg-nw-900" style={{ height: '100%' }}>
-        <TopBar title="Calendar" />
         <main className="page-pad flex flex-col gap-5 py-5" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
           <PageHeader eyebrow="Admin Panel" title="Training" titleGold="Calendar" description="Trials, events and upcoming sessions at a glance." />
           <CalendarClient />

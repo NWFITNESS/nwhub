@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { TopBar } from '@/components/layout/TopBar'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Panel, PanelHeader } from '@/components/ui/Card'
 import { GlobalSettingsEditor } from '@/components/content/GlobalSettingsEditor'
@@ -25,7 +24,6 @@ export default async function SettingsPage() {
 
       {/* Desktop layout */}
       <div className="hidden lg:block bg-nw-900 min-h-screen">
-        <TopBar title="Settings" />
         <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
           <PageHeader
             eyebrow="Admin Panel"

@@ -1,5 +1,4 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { TopBar } from '@/components/layout/TopBar'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { AiChatDashboard } from '@/components/chat/AiChatDashboard'
 import { DEFAULT_CHAT_SETTINGS } from '@/lib/chat-defaults'
@@ -33,7 +32,6 @@ export default async function AiChatPage() {
 
   return (
     <>
-      <TopBar title="AI Chat" />
       <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
         <PageHeader
           title="AI Chat Widget"

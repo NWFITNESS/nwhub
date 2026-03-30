@@ -1,5 +1,4 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { TopBar } from '@/components/layout/TopBar'
 import { CampaignBuilder } from '@/components/mailchimp/CampaignBuilder'
 import { mc } from '@/lib/mailchimp'
 import type { MailchimpSettings } from '@/lib/types'
@@ -36,7 +35,6 @@ export default async function EditCampaignPage({ params }: { params: Promise<{ i
 
   return (
     <>
-      <TopBar title="Edit Campaign" />
       <CampaignBuilder settings={settings} campaign={campaign} designJson={designJson} />
     </>
   )

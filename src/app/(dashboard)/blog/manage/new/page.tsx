@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { TopBar } from '@/components/layout/TopBar'
 import { BlogPostEditor } from '@/components/editor/BlogPostEditor'
 import type { BlogCategory } from '@/lib/types'
 
@@ -12,7 +11,6 @@ export default async function NewBlogPostPage() {
 
   return (
     <>
-      <TopBar title="Blog — New Post" />
       <main className="p-10 page-pad">
         <BlogPostEditor categories={(categories ?? []) as BlogCategory[]} />
       </main>

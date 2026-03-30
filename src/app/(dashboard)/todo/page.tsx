@@ -1,5 +1,4 @@
 import { createAdminClient } from '@/lib/supabase/admin'
-import { TopBar } from '@/components/layout/TopBar'
 import { TodoPageClient } from './TodoPageClient'
 
 export default async function TodoPage() {
@@ -38,7 +37,6 @@ export default async function TodoPage() {
 
   return (
     <>
-      <TopBar title="To Do" />
       <main className="page-pad flex flex-col gap-5 py-6 min-h-[calc(100vh-5rem)]">
         <TodoPageClient
           initialTodos={todos}
