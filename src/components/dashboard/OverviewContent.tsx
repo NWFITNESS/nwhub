@@ -57,39 +57,15 @@ const PRIORITY_DOT: Record<string, string> = {
 function StatCard({ label, value, sub, gold, icon }: {
   label: string; value: number | string; sub: string; gold?: boolean; icon: React.ReactNode
 }) {
-  const [hovered, setHovered] = useState(false)
   return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: hovered ? 'var(--slate-700)' : 'var(--slate-750)',
-        border: `1px solid ${hovered ? 'rgba(212,160,23,0.22)' : 'rgba(255,255,255,0.13)'}`,
-        borderRadius: 10, padding: '15px 17px 13px',
-        display: 'flex', flexDirection: 'column', gap: 8,
-        position: 'relative', overflow: 'hidden', cursor: 'default',
-        height: '100%', boxSizing: 'border-box',
-        transition: 'background 0.18s, border-color 0.18s',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.1px', textTransform: 'uppercase', color: 'var(--slate-400)' }}>
-          {label}
-        </span>
-        <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {icon}
-        </div>
+    <div className="relative cursor-default overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.13)] bg-nw-750 p-[15px_17px_13px] shadow-gold-sm transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700 hover:shadow-gold-md h-full">
+      <div className="flex items-start justify-between">
+        <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">{label}</span>
+        <div className="flex h-7 w-7 items-center justify-center rounded-[7px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.06)]">{icon}</div>
       </div>
-      <div className="font-brand" style={{ fontSize: 32, fontWeight: 700, lineHeight: 1, letterSpacing: '-0.5px', color: gold ? 'var(--r-gold-300)' : '#fff' }}>
-        {value}
-      </div>
-      <div style={{ fontSize: 11, color: 'var(--slate-500)' }}>{sub}</div>
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0, height: 2,
-        background: gold
-          ? 'linear-gradient(90deg, rgba(212,160,23,0.65), transparent)'
-          : 'linear-gradient(90deg, var(--slate-600), transparent)',
-      }} />
+      <div className={`mt-2 font-brand text-[32px] font-bold leading-none tracking-[-0.5px] ${gold ? 'text-gold-300' : 'text-white'}`}>{value}</div>
+      <div className="mt-1.5 text-[11px] text-nw-500">{sub}</div>
+      <div className={`absolute bottom-0 left-0 right-0 h-[2px] ${gold ? 'bg-gradient-to-r from-[rgba(212,160,23,0.65)] to-transparent' : 'bg-gradient-to-r from-nw-600 to-transparent'}`} />
     </div>
   )
 }
@@ -97,31 +73,19 @@ function StatCard({ label, value, sub, gold, icon }: {
 // ── Quick Action ──────────────────────────────────────────────────────────────
 
 function QuickAction({ href, title, desc, icon }: { href: string; title: string; desc: string; icon: React.ReactNode }) {
-  const [hovered, setHovered] = useState(false)
   return (
     <Link
       href={href}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: hovered ? 'var(--slate-700)' : 'var(--slate-750)',
-        padding: '15px 17px',
-        display: 'flex', flexDirection: 'column', gap: 8,
-        transition: 'background 0.15s', textDecoration: 'none',
-      }}
+      className="group flex flex-col gap-2 bg-nw-750 p-[15px_17px] transition-colors hover:bg-nw-700 no-underline"
     >
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div style={{ width: 33, height: 33, borderRadius: 8, background: 'rgba(212,160,23,0.1)', border: '1px solid rgba(212,160,23,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="flex items-start justify-between">
+        <div className="flex h-[33px] w-[33px] items-center justify-center rounded-[8px] bg-[rgba(212,160,23,0.1)] border border-[rgba(212,160,23,0.22)]">
           {icon}
         </div>
-        <span style={{
-          color: hovered ? 'var(--r-gold-400)' : 'var(--slate-600)', fontSize: 14,
-          transform: hovered ? 'translate(2px,-2px)' : 'none',
-          transition: 'color 0.15s, transform 0.15s', display: 'inline-block',
-        }}>↗</span>
+        <span className="text-[14px] text-nw-600 transition-[color,transform] duration-150 group-hover:text-gold-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">↗</span>
       </div>
-      <div style={{ fontSize: 12.5, fontWeight: 500, color: hovered ? '#fff' : 'var(--slate-200)', transition: 'color 0.15s' }}>{title}</div>
-      <div style={{ fontSize: 11, color: 'var(--slate-500)', lineHeight: 1.5 }}>{desc}</div>
+      <div className="text-[12.5px] font-medium text-nw-200 transition-colors group-hover:text-white">{title}</div>
+      <div className="text-[11px] text-nw-500 leading-relaxed">{desc}</div>
     </Link>
   )
 }
@@ -286,39 +250,39 @@ export function OverviewContent({ data, formattedDate }: Props) {
       case 'main-panel':
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-            <div style={{ background: 'var(--slate-750)', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
-              <div style={{ padding: '11px 17px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1.4px', textTransform: 'uppercase', color: 'var(--slate-500)' }}>Navigation</span>
-                <div style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.09)' }} />
-                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--slate-200)' }}>Quick Actions</span>
+            <div className="flex h-full flex-col overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750">
+              <div className="flex flex-shrink-0 items-center gap-2 border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[11px]">
+                <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">Navigation</span>
+                <div className="h-3 w-px bg-[rgba(255,255,255,0.09)]" />
+                <span className="text-[13px] font-medium text-nw-200">Quick Actions</span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: 'rgba(255,255,255,0.07)', flexShrink: 0 }}>
+              <div className="grid grid-cols-2 flex-shrink-0" style={{ gap: 1, background: 'rgba(255,255,255,0.07)' }}>
                 <QuickAction href="/enquiries" title="Contacts & Enquiries" desc="Track inbound leads, AI chat messages, and contact records." icon={<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--r-gold-400)" strokeWidth="1.7"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M1 5l7 5 7-5"/></svg>} />
                 <QuickAction href="/content" title="Edit Website Content" desc="Update hero, memberships and FAQs without touching code." icon={<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--r-gold-400)" strokeWidth="1.7"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M8 2v12M2 8h12"/></svg>} />
                 <QuickAction href="/blog/manage" title="Blog & Posts" desc="Write and publish posts to engage members and boost SEO." icon={<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--r-gold-400)" strokeWidth="1.7"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 9h4"/></svg>} />
                 <QuickAction href="/mailchimp" title="Email Campaigns" desc="Send newsletters to your subscriber list via Mailchimp." icon={<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--r-gold-400)" strokeWidth="1.7"><path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-4 3V3a1 1 0 011-1z"/></svg>} />
               </div>
-              <div style={{ padding: '11px 17px', borderTop: '1px solid rgba(255,255,255,0.07)', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1.4px', textTransform: 'uppercase', color: 'var(--slate-500)' }}>Inbound</span>
-                <div style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.09)' }} />
-                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--slate-200)' }}>Recent Enquiries</span>
+              <div className="flex flex-shrink-0 items-center gap-2 border-y border-[rgba(255,255,255,0.07)] px-[17px] py-[11px]">
+                <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">Inbound</span>
+                <div className="h-3 w-px bg-[rgba(255,255,255,0.09)]" />
+                <span className="text-[13px] font-medium text-nw-200">Recent Enquiries</span>
               </div>
               {data.recentEnquiries.length === 0 ? (
-                <div style={{ padding: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, color: 'var(--slate-600)', fontSize: 12, textAlign: 'center', flex: 1, justifyContent: 'center' }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="flex flex-1 flex-col items-center justify-center gap-2 p-7 text-center text-xs text-nw-600">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)]">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-4 3V3a1 1 0 011-1z"/></svg>
                   </div>
                   No enquiries yet — they&apos;ll appear here as they come in.
                 </div>
               ) : (
-                <div style={{ flex: 1, overflowY: 'auto' }}>
+                <div className="flex-1 overflow-y-auto">
                   {data.recentEnquiries.map(enq => (
-                    <div key={enq.id} style={{ padding: '10px 17px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: 3 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--slate-200)' }}>{enq.name}</span>
-                        <span style={{ fontSize: 10, color: 'var(--slate-600)' }}>{new Date(enq.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+                    <div key={enq.id} className="flex flex-col gap-[3px] border-b border-[rgba(255,255,255,0.05)] px-[17px] py-[10px]">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-nw-200">{enq.name}</span>
+                        <span className="text-[10px] text-nw-600">{new Date(enq.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
                       </div>
-                      <span style={{ fontSize: 11, color: 'var(--slate-500)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{enq.message ?? enq.enquiry_type}</span>
+                      <span className="truncate text-[11px] text-nw-500">{enq.message ?? enq.enquiry_type}</span>
                     </div>
                   ))}
                 </div>
@@ -330,13 +294,13 @@ export function OverviewContent({ data, formattedDate }: Props) {
       case 'checklist':
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-            <div style={{ background: 'var(--slate-750)', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div className="flex h-full flex-col overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750">
               {/* Header */}
-              <div style={{ padding: '13px 17px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 9 }}>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--slate-200)' }}>Setup Checklist</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span className="font-brand" style={{ fontSize: 16, fontWeight: 700, color: 'var(--r-gold-300)' }}>
+              <div className="flex-shrink-0 border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[13px]">
+                <div className="flex items-center justify-between mb-[9px]">
+                  <span className="text-[13px] font-medium text-nw-200">Setup Checklist</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-brand text-[16px] font-bold text-gold-300">
                       {doneCount} / {effectiveChecklist.length}
                     </span>
                     <button
@@ -355,14 +319,10 @@ export function OverviewContent({ data, formattedDate }: Props) {
                     </button>
                   </div>
                 </div>
-                <div style={{ height: 3, background: 'var(--slate-700)', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{
-                    height: '100%',
-                    background: 'linear-gradient(90deg, var(--r-gold-600), var(--r-gold-300))',
-                    borderRadius: 3,
-                    width: effectiveChecklist.length > 0 ? `${(doneCount / effectiveChecklist.length) * 100}%` : '0%',
-                    transition: 'width 0.4s',
-                  }} />
+                <div className="h-[3px] overflow-hidden rounded-full bg-nw-700">
+                  <div className="h-full rounded-full bg-gradient-to-r from-gold-600 to-gold-300 transition-[width] duration-[400ms]"
+                    style={{ width: effectiveChecklist.length > 0 ? `${(doneCount / effectiveChecklist.length) * 100}%` : '0%' }}
+                  />
                 </div>
               </div>
 
@@ -460,19 +420,19 @@ export function OverviewContent({ data, formattedDate }: Props) {
       case 'system-status':
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-            <div style={{ background: 'var(--slate-750)', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, padding: '14px 17px', display: 'flex', flexDirection: 'column', gap: 11, height: '100%', boxSizing: 'border-box' }}>
-              <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1.4px', textTransform: 'uppercase', color: 'var(--slate-500)' }}>SYSTEM STATUS</span>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div className="flex h-full flex-col gap-3 rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-[14px_17px]">
+              <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">System Status</span>
+              <div className="flex flex-col gap-2">
                 {[
-                  { name: 'Supabase',      status: 'Operational', color: 'var(--r-green)' },
-                  { name: 'Vercel Deploy', status: 'Live',        color: 'var(--r-green)' },
-                  { name: 'Resend Email',  status: 'Pending',     color: 'var(--r-amber)' },
-                  { name: 'Twilio SMS',    status: 'Pending',     color: 'var(--r-amber)' },
+                  { name: 'Supabase',      status: 'Operational', color: '#4ade80' },
+                  { name: 'Vercel Deploy', status: 'Live',        color: '#4ade80' },
+                  { name: 'Resend Email',  status: 'Pending',     color: '#f59e0b' },
+                  { name: 'Twilio SMS',    status: 'Pending',     color: '#f59e0b' },
                 ].map(row => (
-                  <div key={row.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
-                    <span style={{ color: 'var(--slate-400)' }}>{row.name}</span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 500, color: row.color }}>
-                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: row.color, flexShrink: 0 }} />
+                  <div key={row.name} className="flex items-center justify-between text-xs">
+                    <span className="text-nw-400">{row.name}</span>
+                    <span className="flex items-center gap-1.5 font-medium" style={{ color: row.color }}>
+                      <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ background: row.color }} />
                       {row.status}
                     </span>
                   </div>
@@ -494,9 +454,9 @@ export function OverviewContent({ data, formattedDate }: Props) {
       case 'visitor-chart':
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-            <div style={{ background: 'var(--slate-750)', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ padding: '13px 17px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
-                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--slate-200)' }}>Website Visitors</span>
+            <div className="flex h-full flex-col overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750">
+              <div className="flex-shrink-0 border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[13px]">
+                <span className="text-[13px] font-medium text-nw-200">Website Visitors</span>
               </div>
               <div style={{ flex: 1, minHeight: 0, padding: '8px 0' }}>
                 <WebsiteVisitorsChart data24h={data.data24h} data7d={data.data7d} data30d={data.data30d} data1y={data.data1y} />
@@ -508,11 +468,11 @@ export function OverviewContent({ data, formattedDate }: Props) {
       case 'todo':
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-            <div style={{ background: 'var(--slate-750)', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div className="flex h-full flex-col overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750">
               {/* Header */}
-              <div style={{ padding: '13px 17px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+              <div className="flex flex-shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[13px]">
                 <div>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--slate-200)' }}>To Do</span>
+                  <span className="text-[13px] font-medium text-nw-200">To Do</span>
                   {tasks.filter(t => !t.completed).length > 0 && (
                     <span className="ml-2 text-[10px] font-bold text-[#f2ca50]">
                       {tasks.filter(t => !t.completed).length} pending
@@ -584,9 +544,9 @@ export function OverviewContent({ data, formattedDate }: Props) {
       case 'recent-posts':
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-            <div style={{ background: 'var(--slate-750)', border: '1px solid rgba(255,255,255,0.11)', borderRadius: 10, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              <div style={{ padding: '13px 17px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--slate-200)' }}>Recent Blog Posts</span>
+            <div className="flex h-full flex-col overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750">
+              <div className="flex flex-shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[13px]">
+                <span className="text-[13px] font-medium text-nw-200">Recent Blog Posts</span>
                 <Link href="/blog/manage" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--slate-500)', textDecoration: 'none' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--r-gold-400)' }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--slate-500)' }}
@@ -632,19 +592,16 @@ export function OverviewContent({ data, formattedDate }: Props) {
   }
 
   return (
-    <div className="hidden lg:flex flex-col" style={{ background: 'var(--slate-900)', height: '100%' }}>
-
-      <div style={{ flex: 1, overflowY: 'auto', padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="flex flex-col gap-4">
 
         {/* Page header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.8px', textTransform: 'uppercase', color: 'var(--slate-500)' }}>ADMIN PANEL</p>
-            <h1 className="font-brand" style={{ fontSize: 28, fontWeight: 700, letterSpacing: '0.3px', lineHeight: 1 }}>
-              <span style={{ color: '#fff' }}>Northern Warrior </span>
-              <span style={{ color: 'var(--r-gold-400)' }}>Hub</span>
+        <div className="flex items-start justify-between gap-6">
+          <div className="flex flex-col gap-[3px]">
+            <span className="text-[10px] font-semibold uppercase tracking-[1.8px] text-nw-500">Admin Panel</span>
+            <h1 className="font-brand text-[28px] font-bold leading-none tracking-[0.3px] text-white">
+              Northern Warrior <span className="text-gold-400">Hub</span>
             </h1>
-            <p style={{ fontSize: 12, color: 'var(--slate-500)', marginTop: 1 }}>{formattedDate}</p>
+            <span className="mt-px text-xs text-nw-500">{formattedDate}</span>
           </div>
 
           {/* Customise controls */}
@@ -688,8 +645,6 @@ export function OverviewContent({ data, formattedDate }: Props) {
             </div>
           ))}
         </ResponsiveGridLayout>
-
-      </div>
 
       <WidgetPicker
         open={pickerOpen}
