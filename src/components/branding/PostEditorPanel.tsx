@@ -307,17 +307,29 @@ export function PostEditorPanel({ review, onClearReview }: Props) {
     return toPng(fullResRef.current, { width: ratio.width, height: ratio.height, pixelRatio: 1 })
   }, [ratio])
 
-  const download = useCallback(async () => {
+  const [saved, setSaved] = useState(false)
+
+  const saveToMedia = useCallback(async () => {
     if (!hasContent) return
     setDownloading(true)
+    setSaved(false)
     try {
       const dataUrl = await getImageDataUrl()
-      const a = document.createElement('a')
-      a.href = dataUrl
-      a.download = `nw-post-${ratio.id}-${Date.now()}.png`
-      a.click()
+      // Convert data URL to blob for upload
+      const res = await fetch(dataUrl)
+      const blob = await res.blob()
+      const file = new File([blob], `nw-post-${ratio.id}-${Date.now()}.png`, { type: 'image/png' })
+      const form = new FormData()
+      form.append('file', file)
+      form.append('alt', headline || 'Social post')
+      form.append('category', 'social')
+      const uploadRes = await fetch('/api/media', { method: 'POST', body: form })
+      if (uploadRes.ok) {
+        setSaved(true)
+        setTimeout(() => setSaved(false), 3000)
+      }
     } finally { setDownloading(false) }
-  }, [hasContent, getImageDataUrl, ratio])
+  }, [hasContent, getImageDataUrl, ratio, headline])
 
   const canPublish = postType === 'carousel'
     ? carouselImages.length >= 2 && selectedPlatforms.size > 0
@@ -421,7 +433,7 @@ export function PostEditorPanel({ review, onClearReview }: Props) {
   const STAR_PATH = 'M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z'
 
   return (
-    <div className="p-5 space-y-4">
+    <div className="p-6 space-y-6">
 
       {/* Active review chip */}
       {review && (
@@ -615,9 +627,9 @@ export function PostEditorPanel({ review, onClearReview }: Props) {
             </div>
           </div>
           {hasContent && (
-            <Button variant="primary" onClick={download} loading={downloading} className="w-full gap-2">
-              <Download size={14} />
-              {downloading ? 'Exporting…' : `Download PNG (${ratio.width}×${ratio.height})`}
+            <Button variant="primary" onClick={saveToMedia} loading={downloading} className="w-full gap-2">
+              {saved ? <Check size={14} className="text-emerald-400" /> : <Download size={14} />}
+              {downloading ? 'Saving…' : saved ? 'Saved to Media Library' : `Save to Media (${ratio.width}×${ratio.height})`}
             </Button>
           )}
         </div>
