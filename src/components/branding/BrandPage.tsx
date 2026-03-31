@@ -60,16 +60,12 @@ function uid() {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function SectionHeader({ icon: Icon, label, title }: { icon: React.ElementType; label: string; title: string }) {
+function SectionHeader({ label, title }: { icon?: React.ElementType; label: string; title: string }) {
   return (
-    <div className="flex items-center gap-3 mb-6">
-      <div className="w-9 h-9 rounded-lg bg-gold-600/10 border border-gold-600/20 flex items-center justify-center flex-shrink-0">
-        <Icon size={16} className="text-gold-400" />
-      </div>
-      <div>
-        <p className="text-[9px] font-semibold text-gold-500 uppercase tracking-[0.15em]">{label}</p>
-        <h2 className="text-base font-semibold text-white">{title}</h2>
-      </div>
+    <div className="flex items-center gap-2 mb-4">
+      <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">{label}</span>
+      <div className="h-3 w-px bg-[rgba(255,255,255,0.09)]" />
+      <span className="text-[13px] font-medium text-nw-200">{title}</span>
     </div>
   )
 }
@@ -78,10 +74,10 @@ function EditButton({ editing, onToggle }: { editing: boolean; onToggle: () => v
   return (
     <button
       onClick={onToggle}
-      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-150 ${
+      className={`flex items-center gap-1.5 rounded-[7px] border px-3 py-[5px] text-xs font-medium transition-colors ${
         editing
-          ? 'text-gold-300 border-gold-600/50 bg-gold-600/10'
-          : 'text-white/40 border-white/[0.08] hover:text-white/70 hover:border-white/20'
+          ? 'border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-gold-300'
+          : 'border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] text-nw-400 hover:text-nw-200 hover:border-[rgba(255,255,255,0.14)]'
       }`}
     >
       {editing ? <Check size={12} /> : <Pencil size={12} />}
@@ -93,7 +89,7 @@ function EditButton({ editing, onToggle }: { editing: boolean; onToggle: () => v
 function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-[10px] font-semibold text-white/30 uppercase tracking-[0.12em]">{label}</label>
+      <label className="text-[11px] font-medium uppercase tracking-[1px] text-nw-500">{label}</label>
       {children}
     </div>
   )
@@ -101,7 +97,7 @@ function FieldRow({ label, children }: { label: string; children: React.ReactNod
 
 function StaticText({ value, placeholder }: { value: string; placeholder: string }) {
   return (
-    <p className={`text-sm leading-relaxed ${value ? 'text-white/70' : 'text-white/20 italic'}`}>
+    <p className={`text-[13px] leading-relaxed ${value ? 'text-nw-300' : 'text-nw-600 italic'}`}>
       {value || placeholder}
     </p>
   )
@@ -113,7 +109,7 @@ function EditableInput({ value, onChange, placeholder, multiline }: {
   placeholder?: string
   multiline?: boolean
 }) {
-  const cls = 'w-full bg-white/[0.04] border border-white/[0.1] rounded-lg px-3 py-2 text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-gold-600/40 focus:bg-white/[0.06] transition-all'
+  const cls = 'w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-[13px] text-nw-200 placeholder:text-nw-500 outline-none transition-colors focus:border-[rgba(212,160,23,0.4)] focus:bg-nw-750'
   return multiline
     ? <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={3} className={`${cls} resize-none`} />
     : <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className={cls} />
@@ -136,7 +132,7 @@ function IdentitySection({ data, editing, onChange }: {
       <FieldRow label="Tagline">
         {editing
           ? <EditableInput value={data.tagline} onChange={v => onChange('tagline', v)} placeholder="Short, punchy tagline" />
-          : <p className={`text-xl font-semibold tracking-tight ${data.tagline ? 'text-white' : 'text-white/20 italic text-sm'}`}>{data.tagline || 'No tagline yet — click Edit to add one.'}</p>}
+          : <p className={`text-xl font-semibold tracking-tight ${data.tagline ? 'text-white' : 'text-nw-600 italic text-[13px]'}`}>{data.tagline || 'No tagline yet — click Edit to add one.'}</p>}
       </FieldRow>
       <FieldRow label="Strapline / Sub-tagline">
         {editing
@@ -160,7 +156,7 @@ function ValuesSection({ values, editing, onChange, onAdd, onRemove }: {
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {values.map(v => (
-          <div key={v.id} className="relative rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 space-y-2 group">
+          <div key={v.id} className="relative rounded-[8px] border border-[rgba(255,255,255,0.07)] bg-nw-800 p-4 space-y-2 group">
             {editing && (
               <button
                 onClick={() => onRemove(v.id)}
@@ -181,22 +177,22 @@ function ValuesSection({ values, editing, onChange, onAdd, onRemove }: {
                 <input
                   value={v.title}
                   onChange={e => onChange(v.id, 'title', e.target.value)}
-                  className="block w-full bg-white/[0.04] border border-white/[0.1] rounded-lg px-2 py-1.5 text-sm font-semibold text-white placeholder:text-white/20 focus:outline-none focus:border-gold-600/40"
+                  className="block w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-2 py-1.5 text-[13px] font-medium text-nw-200 placeholder:text-nw-500 outline-none focus:border-[rgba(212,160,23,0.4)]"
                   placeholder="Value name"
                 />
                 <textarea
                   value={v.description}
                   onChange={e => onChange(v.id, 'description', e.target.value)}
                   rows={2}
-                  className="block w-full bg-white/[0.04] border border-white/[0.1] rounded-lg px-2 py-1.5 text-xs text-white/60 placeholder:text-white/20 focus:outline-none focus:border-gold-600/40 resize-none"
+                  className="block w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-2 py-1.5 text-[11px] text-nw-400 placeholder:text-nw-500 outline-none focus:border-[rgba(212,160,23,0.4)] resize-none"
                   placeholder="What this value means to us…"
                 />
               </>
             ) : (
               <>
-                <p className="text-2xl">{v.emoji}</p>
-                <p className="text-sm font-semibold text-white">{v.title}</p>
-                <p className="text-xs text-white/50 leading-relaxed">{v.description}</p>
+                <div className="flex h-8 w-8 items-center justify-center rounded-[7px] bg-[rgba(212,160,23,0.1)] text-xl">{v.emoji}</div>
+                <p className="text-[13px] font-medium text-nw-200">{v.title}</p>
+                <p className="text-[11px] text-nw-500 leading-relaxed">{v.description}</p>
               </>
             )}
           </div>
@@ -361,7 +357,7 @@ function LogoSection({ media, logoIds, editing, onToggle }: {
 function TypographySection() {
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6 space-y-4">
+      <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6 space-y-4">
         <div className="flex items-center gap-3 mb-2">
           <div>
             <p className="text-[9px] font-semibold text-gold-500 uppercase tracking-[0.15em]">Display / Headings</p>
@@ -373,7 +369,7 @@ function TypographySection() {
         <p style={{ fontFamily: 'Rajdhani, sans-serif' }} className="text-lg text-white/60">ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
         <p style={{ fontFamily: 'Rajdhani, sans-serif' }} className="text-lg text-white/40">abcdefghijklmnopqrstuvwxyz 0123456789</p>
       </div>
-      <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6 space-y-4">
+      <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6 space-y-4">
         <div>
           <p className="text-[9px] font-semibold text-gold-500 uppercase tracking-[0.15em]">Body / UI</p>
           <p className="text-xs text-white/40">Inter — Neutral Sans-Serif</p>
@@ -548,15 +544,15 @@ export function BrandPage({ identity: initial, media, placeId }: BrandPageProps)
   return (
     <div className="space-y-6">
       {/* Tab nav */}
-      <div className="flex items-center gap-1 border-b border-white/[0.08] pb-0">
+      <div className="flex gap-1 border-b border-[rgba(255,255,255,0.07)]">
         {TABS.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-150 -mb-px ${
+            className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-[13px] font-medium transition-colors ${
               tab === t.id
-                ? 'text-gold-300 border-gold-500'
-                : 'text-white/40 border-transparent hover:text-white/60'
+                ? 'border-gold-400 text-gold-300'
+                : 'border-transparent text-nw-400 hover:text-nw-200'
             }`}
           >
             <t.icon size={14} />
@@ -575,7 +571,7 @@ export function BrandPage({ identity: initial, media, placeId }: BrandPageProps)
         <div className="space-y-6">
 
           {/* Brand Identity */}
-          <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6">
+          <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
             <div className="flex items-start justify-between gap-4 mb-4">
               <SectionHeader icon={Target} label="Brand Guide" title="Brand Identity" />
               <EditButton editing={editing('identity')} onToggle={() => toggleSection('identity')} />
@@ -588,7 +584,7 @@ export function BrandPage({ identity: initial, media, placeId }: BrandPageProps)
           </div>
 
           {/* Core Values */}
-          <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6">
+          <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
             <div className="flex items-start justify-between gap-4 mb-4">
               <SectionHeader icon={Sparkles} label="Brand Guide" title="Core Values" />
               <EditButton editing={editing('values')} onToggle={() => toggleSection('values')} />
@@ -605,7 +601,7 @@ export function BrandPage({ identity: initial, media, placeId }: BrandPageProps)
           </div>
 
           {/* Brand Colours */}
-          <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6">
+          <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
             <div className="flex items-start justify-between gap-4 mb-4">
               <SectionHeader icon={Palette} label="Brand Guide" title="Brand Colours" />
               <EditButton editing={editing('colours')} onToggle={() => toggleSection('colours')} />
@@ -622,7 +618,7 @@ export function BrandPage({ identity: initial, media, placeId }: BrandPageProps)
           </div>
 
           {/* Logo Library */}
-          <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6">
+          <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
             <div className="flex items-start justify-between gap-4 mb-4">
               <SectionHeader icon={ImageIcon} label="Brand Guide" title="Logo Library" />
               <EditButton editing={editing('logos')} onToggle={() => toggleSection('logos')} />
@@ -641,13 +637,13 @@ export function BrandPage({ identity: initial, media, placeId }: BrandPageProps)
           </div>
 
           {/* Typography */}
-          <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6">
+          <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
             <SectionHeader icon={Type} label="Brand Guide" title="Typography" />
             <TypographySection />
           </div>
 
           {/* Voice & Tone */}
-          <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-6">
+          <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
             <div className="flex items-start justify-between gap-4 mb-4">
               <SectionHeader icon={Mic} label="Brand Guide" title="Voice &amp; Tone" />
               <EditButton editing={editing('voice')} onToggle={() => toggleSection('voice')} />

@@ -51,21 +51,21 @@ function ReviewCard({ review, isActive, onSelect }: { review: Review; isActive: 
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="w-9 h-9 rounded-full bg-[#967705]/20 border border-[#967705]/30 flex items-center justify-center flex-shrink-0">
-            <span className="text-sm font-semibold text-[#c9a70a]">{initial}</span>
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-nw-600 to-nw-700 flex items-center justify-center flex-shrink-0">
+            <span className="text-sm font-brand font-bold text-nw-300">{initial}</span>
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-white truncate">{review.author_name}</p>
+          <p className="text-[13px] font-medium text-nw-200 truncate">{review.author_name}</p>
           <div className="flex items-center gap-2 mt-0.5">
             <StarRow rating={review.rating} />
-            <span className="text-[11px] text-white/35">{review.relative_time_description}</span>
+            <span className="text-[11px] text-nw-500">{review.relative_time_description}</span>
           </div>
         </div>
       </div>
 
       <div>
-        <p className="text-[13px] text-white/65 leading-relaxed">{displayText}</p>
+        <p className="text-xs text-nw-400 leading-relaxed">{displayText}</p>
         {truncated && (
           <button
             onClick={() => setExpanded(!expanded)}
@@ -78,10 +78,10 @@ function ReviewCard({ review, isActive, onSelect }: { review: Review; isActive: 
 
       <button
         onClick={onSelect}
-        className={`w-full py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+        className={`w-full rounded-[7px] border py-[5px] text-xs font-medium transition-colors ${
           isActive
-            ? 'border-[#967705] bg-[#967705]/20 text-[#c9a70a]'
-            : 'border-white/[0.1] bg-white/[0.04] text-white/60 hover:border-[#967705]/50 hover:text-[#c9a70a] hover:bg-[#967705]/10'
+            ? 'border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-gold-300'
+            : 'border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-gold-300 hover:bg-[rgba(212,160,23,0.22)]'
         }`}
       >
         {isActive ? '✓ In editor' : 'Use this review'}

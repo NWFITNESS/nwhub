@@ -32,11 +32,9 @@ export default async function BrandingPage() {
   const media: Media[] = (mediaRows ?? []) as Media[]
 
   return (
-    <div className="bg-nw-900 min-h-screen">
-      <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
-        <PageHeader eyebrow="Admin Panel" title="Branding" titleGold="Studio" />
-        <BrandPage identity={identity} media={media} placeId={placeId} />
-      </main>
+    <div className="flex flex-col gap-4">
+      <PageHeader eyebrow="Platform" title="Branding" titleGold="Studio" />
+      <BrandPage identity={identity} media={media} placeId={placeId} />
     </div>
   )
 }

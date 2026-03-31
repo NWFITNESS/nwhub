@@ -13,11 +13,11 @@ export function BrandingStudio({ placeId: _ }: BrandingStudioProps) {
 
   return (
     <div
-      className="flex rounded-2xl border border-white/[0.07] overflow-hidden"
+      className="flex overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750"
       style={{ height: 'calc(100vh - 13rem)', minHeight: 600 }}
     >
       {/* Left — Reviews (30%) */}
-      <div className="w-[30%] flex-shrink-0 border-r border-white/[0.07] flex flex-col overflow-hidden">
+      <div className="w-[30%] flex-shrink-0 border-r border-[rgba(255,255,255,0.07)] flex flex-col overflow-hidden">
         <ReviewsPanel activeReview={activeReview} onSelectReview={setActiveReview} />
       </div>
 
