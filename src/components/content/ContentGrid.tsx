@@ -89,14 +89,14 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
         <div className="flex-1 relative group">
           <Search
             size={15}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-[#C9A70A] transition-colors duration-200"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-nw-500 group-focus-within:text-gold-400 transition-colors duration-200"
           />
           <input
             type="text"
             placeholder="Search pages…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-[#1a1a1a] border border-white/[0.08] rounded-lg text-sm text-[#F0F0F0] placeholder:text-white/20 focus:outline-none focus:border-[#967705]/60 focus:ring-1 focus:ring-[#967705]/30 transition-all duration-200"
+            className="w-full pl-10 pr-4 h-9 rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 text-[13px] text-nw-200 placeholder:text-nw-500 outline-none transition-colors focus:border-[rgba(212,160,23,0.4)] focus:bg-nw-750"
           />
         </div>
         <div className="flex gap-1.5">
@@ -104,10 +104,10 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
             <button
               key={f.key}
               onClick={() => setFilter(f.key)}
-              className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`-mb-px border-b-2 px-4 py-2.5 text-[13px] font-medium transition-colors ${
                 filter === f.key
-                  ? 'bg-[#967705]/15 border border-[#967705]/40 text-[#C9A70A]'
-                  : 'bg-white/[0.03] border border-white/[0.08] text-white/40 hover:text-white/70 hover:border-white/[0.14]'
+                  ? 'border-gold-400 text-gold-300'
+                  : 'border-transparent text-nw-400 hover:text-nw-200'
               }`}
             >
               {f.label}
@@ -117,36 +117,27 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
       </div>
 
       {/* Stats bar */}
-      <div className="flex items-center gap-6 px-5 py-3 bg-[#111111] border border-white/[0.06] rounded-xl">
-        <div className="flex items-center gap-2.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#C9A70A] shadow-[0_0_6px_rgba(201,167,10,0.8)]" />
-          <span className="text-xs text-white/40">Total Pages</span>
-          <span className="text-sm font-semibold text-[#C9A70A]" style={{ fontFamily: 'League Spartan' }}>
-            {allPages.length}
-          </span>
+      <div className="flex items-center gap-6 overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 px-[17px] py-3">
+        <div>
+          <div className="text-[10px] uppercase text-nw-500 tracking-[1px]">Total Pages</div>
+          <div className="text-[13px] font-medium text-nw-200">{allPages.length}</div>
         </div>
-        <div className="w-px h-4 bg-white/[0.06]" />
-        <div className="flex items-center gap-2.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.8)]" />
-          <span className="text-xs text-white/40">Published</span>
-          <span className="text-sm font-semibold text-green-400" style={{ fontFamily: 'League Spartan' }}>
-            {published}
-          </span>
+        <span className="text-nw-600">·</span>
+        <div>
+          <div className="text-[10px] uppercase text-nw-500 tracking-[1px]">Published</div>
+          <div className="text-[13px] font-medium text-nw-200">{published}</div>
         </div>
-        <div className="w-px h-4 bg-white/[0.06]" />
-        <div className="flex items-center gap-2.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.8)]" />
-          <span className="text-xs text-white/40">Drafts</span>
-          <span className="text-sm font-semibold text-amber-400" style={{ fontFamily: 'League Spartan' }}>
-            {drafts}
-          </span>
+        <span className="text-nw-600">·</span>
+        <div>
+          <div className="text-[10px] uppercase text-nw-500 tracking-[1px]">Drafts</div>
+          <div className="text-[13px] font-medium text-nw-200">{drafts}</div>
         </div>
         {latestUpdate && (
           <>
-            <div className="w-px h-4 bg-white/[0.06]" />
-            <div className="ml-auto flex items-center gap-1.5 text-xs text-white/25">
-              <Clock size={12} />
-              <span>Last updated {timeAgo(latestUpdate)}</span>
+            <span className="text-nw-600">·</span>
+            <div className="ml-auto flex items-center gap-1.5 text-[11px] text-nw-500">
+              <Clock size={11} />
+              Last updated {timeAgo(latestUpdate)}
             </div>
           </>
         )}
@@ -172,22 +163,8 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
                   key={slug}
                   variants={cardVariants}
                   whileHover={{ y: -4, transition: { duration: 0.2, ease: 'easeOut' } }}
-                  className="relative rounded-xl overflow-hidden transition-colors duration-200 group"
-                  style={{ background: 'var(--slate-750)', border: '1px solid var(--r-panel-border)' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(150,119,5,0.35)' }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--r-panel-border)' }}
+                  className="relative overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 transition-[background,border-color] duration-200 group hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700"
                 >
-                  {/* Top-right corner accent line */}
-                  <div className="absolute top-0 right-0 w-16 h-16 pointer-events-none">
-                    <div className="absolute top-0 right-0 w-full h-px bg-gradient-to-l from-[#967705]/30 to-transparent" />
-                    <div className="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-[#967705]/30 to-transparent" />
-                  </div>
-
-                  {/* Hover glow overlay */}
-                  <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                    style={{ background: 'radial-gradient(circle at 50% 0%, rgba(201,167,10,0.05), transparent 70%)' }}
-                  />
 
                   <div className="relative z-10 p-6 flex flex-col gap-4">
                     {/* Icon + status badge */}
@@ -213,13 +190,10 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
 
                     {/* Label + timestamp */}
                     <div>
-                      <p
-                        className="text-[15px] font-semibold text-[#F0F0F0] group-hover:text-[#C9A70A] transition-colors duration-200 leading-tight"
-                        style={{ fontFamily: 'League Spartan' }}
-                      >
+                      <p className="text-[13px] font-medium text-nw-200 group-hover:text-white transition-colors leading-tight">
                         {label}
                       </p>
-                      <p className="text-xs text-white/25 mt-1 flex items-center gap-1">
+                      <p className="text-[11px] text-nw-500 mt-1 flex items-center gap-1">
                         <Clock size={10} />
                         {updated ? `Updated ${timeAgo(updated)} ago` : 'Not yet seeded'}
                       </p>
@@ -229,7 +203,7 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
                     <div className="flex gap-2">
                       <Link
                         href={`/content/${slug}`}
-                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-black bg-gradient-to-r from-[#967705] to-[#C9A70A] hover:opacity-90 transition-opacity shadow-[0_0_14px_rgba(201,167,10,0.2)]"
+                        className="flex-1 flex items-center justify-center gap-1.5 rounded-[7px] border border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] px-3 py-[5px] text-xs font-medium text-gold-300 transition-colors hover:bg-[rgba(212,160,23,0.22)]"
                       >
                         <Edit3 size={13} />
                         Edit Content
@@ -238,7 +212,7 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
                         href={`${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/${slug === 'home' ? '' : slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/40 hover:text-[#C9A70A] hover:border-[#967705]/40 hover:bg-white/[0.07] transition-all duration-200"
+                        className="flex w-9 items-center justify-center rounded-[7px] border border-transparent bg-transparent text-nw-400 transition-colors hover:bg-[rgba(255,255,255,0.04)] hover:text-nw-200"
                       >
                         <Eye size={14} />
                       </a>
@@ -256,11 +230,11 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
             exit={{ opacity: 0 }}
             className="flex flex-col items-center justify-center py-20 gap-3"
           >
-            <div className="w-12 h-12 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
-              <Search size={20} className="text-white/20" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)]">
+              <Search size={16} className="text-nw-500" />
             </div>
-            <p className="text-sm font-medium text-white/40">No pages found</p>
-            <p className="text-xs text-white/20 text-center max-w-[220px]">
+            <p className="text-[13px] font-medium text-nw-400">No pages found</p>
+            <p className="text-[11px] text-nw-500 text-center max-w-[220px]">
               No pages match &ldquo;{search}&rdquo;. Try a different search term.
             </p>
           </motion.div>
