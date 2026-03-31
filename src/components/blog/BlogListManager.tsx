@@ -5,11 +5,13 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Panel, PanelHeader } from '@/components/ui/Card'
 import { ColumnToggle } from '@/components/ui/ColumnToggle'
 import { useColumnVisibility } from '@/lib/use-column-visibility'
 import { format } from 'date-fns'
 import {
-  ArrowUpDown, ArrowUp, ArrowDown, Search, Plus, Globe, PenLine, Eye,
+  ArrowUpDown, ArrowUp, ArrowDown, Plus, PenLine, Eye,
 } from 'lucide-react'
 import type { BlogPost, BlogCategory } from '@/lib/types'
 
@@ -40,7 +42,6 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
   const [toggling, setToggling] = useState<string | null>(null)
   const { visible, toggle } = useColumnVisibility('blog', COLUMNS.map((c) => c.key))
 
-  // Build grid template: Title (1fr) + visible optional cols (auto each) + Actions (auto)
   const gridTemplate = [
     '1fr',
     visible.has('status') ? 'auto' : null,
@@ -50,81 +51,40 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
   ].filter(Boolean).join(' ')
 
   function handleSort(key: SortKey) {
-    if (sortKey === key) {
-      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
-    } else {
-      setSortKey(key)
-      setSortDir('asc')
-    }
+    if (sortKey === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    else { setSortKey(key); setSortDir('asc') }
   }
 
   async function handleToggleStatus(post: BlogPost & { category?: BlogCategory | null }) {
     const newStatus = post.status === 'published' ? 'draft' : 'published'
     setToggling(post.id)
-
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === post.id
-          ? { ...p, status: newStatus, published_at: newStatus === 'published' ? new Date().toISOString() : null }
-          : p
-      )
-    )
-
+    setPosts((prev) => prev.map((p) => p.id === post.id ? { ...p, status: newStatus, published_at: newStatus === 'published' ? new Date().toISOString() : null } : p))
     try {
-      const res = await fetch(`/api/blog/${post.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      })
-
-      if (!res.ok) {
-        setPosts((prev) =>
-          prev.map((p) => (p.id === post.id ? post : p))
-        )
-      } else {
-        startTransition(() => router.refresh())
-      }
-    } finally {
-      setToggling(null)
-    }
+      const res = await fetch(`/api/blog/${post.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) })
+      if (!res.ok) setPosts((prev) => prev.map((p) => (p.id === post.id ? post : p)))
+      else startTransition(() => router.refresh())
+    } finally { setToggling(null) }
   }
 
   const filtered = useMemo(() => {
     let result = [...posts]
-
-    if (filterStatus !== 'all') {
-      result = result.filter((p) => p.status === filterStatus)
-    }
-    if (filterCategory) {
-      result = result.filter((p) => p.category_id === filterCategory)
-    }
+    if (filterStatus !== 'all') result = result.filter((p) => p.status === filterStatus)
+    if (filterCategory) result = result.filter((p) => p.category_id === filterCategory)
     if (search.trim()) {
       const q = search.toLowerCase()
-      result = result.filter(
-        (p) =>
-          p.title.toLowerCase().includes(q) ||
-          p.excerpt?.toLowerCase().includes(q) ||
-          p.slug?.toLowerCase().includes(q)
-      )
+      result = result.filter((p) => p.title.toLowerCase().includes(q) || p.excerpt?.toLowerCase().includes(q) || p.slug?.toLowerCase().includes(q))
     }
-
     result.sort((a, b) => {
-      let aVal: string | number | null = null
-      let bVal: string | number | null = null
-
+      let aVal: string | number | null = null, bVal: string | number | null = null
       if (sortKey === 'title') { aVal = a.title; bVal = b.title }
       else if (sortKey === 'status') { aVal = a.status; bVal = b.status }
       else if (sortKey === 'category') { aVal = a.category?.name ?? ''; bVal = b.category?.name ?? '' }
       else if (sortKey === 'published_at') { aVal = a.published_at ?? ''; bVal = b.published_at ?? '' }
       else if (sortKey === 'created_at') { aVal = a.created_at; bVal = b.created_at }
-
       if (aVal === null || aVal === '') return sortDir === 'asc' ? 1 : -1
       if (bVal === null || bVal === '') return sortDir === 'asc' ? -1 : 1
-      return sortDir === 'asc'
-        ? String(aVal).localeCompare(String(bVal))
-        : String(bVal).localeCompare(String(aVal))
+      return sortDir === 'asc' ? String(aVal).localeCompare(String(bVal)) : String(bVal).localeCompare(String(aVal))
     })
-
     return result
   }, [posts, filterStatus, filterCategory, search, sortKey, sortDir])
 
@@ -132,216 +92,169 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
   const draftCount = posts.filter((p) => p.status === 'draft').length
 
   function SortIcon({ col }: { col: SortKey }) {
-    if (sortKey !== col) return <ArrowUpDown size={12} className="text-white/20" />
-    return sortDir === 'asc'
-      ? <ArrowUp size={12} className="text-[#c9a70a]" />
-      : <ArrowDown size={12} className="text-[#c9a70a]" />
+    if (sortKey !== col) return <ArrowUpDown size={11} className="text-nw-600" />
+    return sortDir === 'asc' ? <ArrowUp size={11} className="text-gold-400" /> : <ArrowDown size={11} className="text-gold-400" />
   }
 
   return (
-    <div>
+    <div className="flex flex-col gap-3">
       {/* Stats row */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="flex items-center gap-1.5 text-sm text-white/40">
-          <span className="font-semibold text-white">{posts.length}</span> posts
-        </div>
-        <div className="w-px h-4 bg-white/10" />
-        <div className="flex items-center gap-1.5 text-sm text-green-400/70">
-          <Globe size={12} />
-          <span className="font-semibold text-green-400">{publishedCount}</span> published
-        </div>
-        <div className="flex items-center gap-1.5 text-sm text-yellow-400/70">
-          <PenLine size={12} />
-          <span className="font-semibold text-yellow-400">{draftCount}</span> drafts
-        </div>
-      </div>
-
-      {/* Filters bar */}
-      <div className="flex flex-wrap items-center gap-3 mb-5">
-        {/* Search */}
-        <div className="relative flex-1 min-w-[200px]">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/25 pointer-events-none" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search posts…"
-            className="w-full pl-9 pr-3 py-2 bg-[#111111] border border-white/10 rounded-lg text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#967705]/50 transition-colors"
-          />
-        </div>
-
-        {/* Status filter */}
-        <div className="flex items-center rounded-lg border border-white/10 overflow-hidden">
-          {(['all', 'published', 'draft'] as const).map((s) => (
-            <button
-              key={s}
-              onClick={() => setFilterStatus(s)}
-              className={`px-3 py-2 text-xs font-medium transition-colors capitalize ${
-                filterStatus === s
-                  ? 'bg-[#967705]/20 text-[#c9a70a]'
-                  : 'text-white/40 hover:text-white hover:bg-white/[0.04]'
-              }`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-
-        {/* Category filter */}
-        {categories.length > 0 && (
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            className="px-3 py-2 bg-[#111111] border border-white/10 rounded-lg text-sm text-white/60 focus:outline-none focus:border-[#967705]/50 transition-colors appearance-none cursor-pointer"
-          >
-            <option value="">All categories</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
-        )}
-
-        <ColumnToggle columns={COLUMNS} visible={visible} onToggle={toggle} />
-
-        <Link href="/blog/manage/new">
-          <Button variant="primary" size="sm">
-            <Plus size={14} /> New Post
-          </Button>
-        </Link>
-      </div>
-
-      {/* Table */}
-      <div className="rounded-xl border border-white/[0.08] overflow-hidden">
-        {/* Header */}
-        <div
-          className="grid gap-4 px-5 py-3 bg-nw-750 border-b border-white/[0.06]"
-          style={{ gridTemplateColumns: gridTemplate }}
-        >
-          <button
-            onClick={() => handleSort('title')}
-            className="flex items-center gap-1.5 text-xs font-semibold text-white/40 uppercase tracking-widest hover:text-white/70 transition-colors text-left"
-          >
-            Title <SortIcon col="title" />
-          </button>
-          {visible.has('status') && (
-            <button
-              onClick={() => handleSort('status')}
-              className="flex items-center gap-1.5 text-xs font-semibold text-white/40 uppercase tracking-widest hover:text-white/70 transition-colors"
-            >
-              Status <SortIcon col="status" />
-            </button>
-          )}
-          {visible.has('category') && (
-            <button
-              onClick={() => handleSort('category')}
-              className="flex items-center gap-1.5 text-xs font-semibold text-white/40 uppercase tracking-widest hover:text-white/70 transition-colors"
-            >
-              Category <SortIcon col="category" />
-            </button>
-          )}
-          {visible.has('published') && (
-            <button
-              onClick={() => handleSort('published_at')}
-              className="flex items-center gap-1.5 text-xs font-semibold text-white/40 uppercase tracking-widest hover:text-white/70 transition-colors"
-            >
-              Published <SortIcon col="published_at" />
-            </button>
-          )}
-          <span className="text-xs font-semibold text-white/40 uppercase tracking-widest">Actions</span>
-        </div>
-
-        {/* Rows */}
-        {filtered.length === 0 ? (
-          <div className="px-5 py-12 text-center text-white/30 text-sm">
-            {search || filterStatus !== 'all' || filterCategory
-              ? 'No posts match your filters.'
-              : 'No blog posts yet. Create your first post.'}
+      <Panel>
+        <PanelHeader eyebrow="Stats" title="Blog Overview" />
+        <div className="flex items-center gap-6 px-[17px] py-3">
+          <div>
+            <div className="text-[10px] uppercase text-nw-500 tracking-[1px]">Posts</div>
+            <div className="text-[13px] font-medium text-nw-200">{posts.length}</div>
           </div>
-        ) : (
-          filtered.map((post, i) => (
-            <div
-              key={post.id}
-              className={`grid gap-4 items-center px-5 py-4 transition-colors hover:bg-white/[0.02] ${
-                i < filtered.length - 1 ? 'border-b border-white/[0.04]' : ''
-              }`}
-              style={{ gridTemplateColumns: gridTemplate }}
-            >
-              {/* Title + slug */}
-              <div className="min-w-0">
-                <Link
-                  href={`/blog/manage/${post.id}`}
-                  className="font-medium text-white hover:text-[#c9a70a] transition-colors truncate block"
+          <span className="text-nw-600">·</span>
+          <div>
+            <div className="text-[10px] uppercase text-nw-500 tracking-[1px]">Published</div>
+            <div className="text-[13px] font-medium text-[#4ade80]">{publishedCount}</div>
+          </div>
+          <span className="text-nw-600">·</span>
+          <div>
+            <div className="text-[10px] uppercase text-nw-500 tracking-[1px]">Drafts</div>
+            <div className="text-[13px] font-medium text-nw-200">{draftCount}</div>
+          </div>
+        </div>
+      </Panel>
+
+      {/* Table Panel */}
+      <Panel>
+        <PanelHeader eyebrow="Posts" title="All Articles" action={
+          <div className="flex items-center gap-2">
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search posts..."
+              className="w-44"
+            />
+            <div className="flex gap-0.5">
+              {(['all', 'published', 'draft'] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setFilterStatus(s)}
+                  className={`rounded-[7px] px-2.5 py-1 text-[11px] font-semibold capitalize transition-colors ${
+                    filterStatus === s
+                      ? 'bg-[rgba(212,160,23,0.15)] text-gold-300 border border-[rgba(212,160,23,0.3)]'
+                      : 'text-nw-400 hover:text-nw-200 border border-transparent'
+                  }`}
                 >
-                  {post.title}
-                </Link>
-                {post.slug && (
-                  <span className="text-xs text-white/25 font-mono">/blog/{post.slug}</span>
-                )}
-              </div>
-
-              {/* Status + quick toggle */}
-              {visible.has('status') && (
-                <div className="flex items-center gap-2">
-                  <Badge variant={post.status}>{post.status}</Badge>
-                  <button
-                    onClick={() => handleToggleStatus(post)}
-                    disabled={toggling === post.id}
-                    title={post.status === 'published' ? 'Unpublish' : 'Publish'}
-                    className={`w-8 h-5 rounded-full relative transition-colors ${
-                      post.status === 'published'
-                        ? 'bg-green-500/70 hover:bg-red-500/50'
-                        : 'bg-white/10 hover:bg-green-500/40'
-                    } ${toggling === post.id ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
-                  >
-                    <span
-                      className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${
-                        post.status === 'published' ? 'translate-x-3' : 'translate-x-0.5'
-                      }`}
-                    />
-                  </button>
-                </div>
-              )}
-
-              {/* Category */}
-              {visible.has('category') && (
-                <span className="text-sm text-white/40">
-                  {post.category?.name ?? <span className="text-white/20">—</span>}
-                </span>
-              )}
-
-              {/* Date */}
-              {visible.has('published') && (
-                <span className="text-xs text-white/30 whitespace-nowrap">
-                  {post.published_at
-                    ? format(new Date(post.published_at), 'dd MMM yyyy')
-                    : <span className="text-white/20">—</span>
-                  }
-                </span>
-              )}
-
-              {/* Actions */}
-              <div className="flex items-center gap-1">
-                <Link href={`/blog/manage/${post.id}`}>
-                  <Button variant="ghost" size="sm" className="px-2 py-1.5">
-                    <PenLine size={13} />
-                  </Button>
-                </Link>
-                {post.status === 'published' && post.slug && (
-                  <a href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer">
-                    <Button variant="ghost" size="sm" className="px-2 py-1.5">
-                      <Eye size={13} />
-                    </Button>
-                  </a>
-                )}
-              </div>
+                  {s}
+                </button>
+              ))}
             </div>
-          ))
-        )}
-      </div>
+            {categories.length > 0 && (
+              <select
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+                className="h-9 rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 text-[13px] text-nw-200 outline-none transition-colors focus:border-[rgba(212,160,23,0.4)] focus:bg-nw-750"
+              >
+                <option value="">All categories</option>
+                {categories.map((cat) => (<option key={cat.id} value={cat.id}>{cat.name}</option>))}
+              </select>
+            )}
+            <ColumnToggle columns={COLUMNS} visible={visible} onToggle={toggle} />
+          </div>
+        } />
+
+        {/* Desktop table */}
+        <div className="hidden md:block">
+          {/* Header */}
+          <div className="grid gap-4 border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5" style={{ gridTemplateColumns: gridTemplate }}>
+            <button onClick={() => handleSort('title')} className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500 hover:text-nw-300 transition-colors text-left">
+              Title <SortIcon col="title" />
+            </button>
+            {visible.has('status') && (
+              <button onClick={() => handleSort('status')} className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500 hover:text-nw-300 transition-colors">
+                Status <SortIcon col="status" />
+              </button>
+            )}
+            {visible.has('category') && (
+              <button onClick={() => handleSort('category')} className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500 hover:text-nw-300 transition-colors">
+                Category <SortIcon col="category" />
+              </button>
+            )}
+            {visible.has('published') && (
+              <button onClick={() => handleSort('published_at')} className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500 hover:text-nw-300 transition-colors">
+                Published <SortIcon col="published_at" />
+              </button>
+            )}
+            <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Actions</span>
+          </div>
+
+          {/* Rows */}
+          {filtered.length === 0 ? (
+            <div className="px-4 py-12 text-center text-[13px] text-nw-500">
+              {search || filterStatus !== 'all' || filterCategory ? 'No posts match your filters.' : 'No blog posts yet. Create your first post.'}
+            </div>
+          ) : (
+            filtered.map((post) => (
+              <div key={post.id} className="grid items-center gap-4 border-b border-[rgba(255,255,255,0.05)] px-4 py-3 transition-colors hover:bg-[rgba(255,255,255,0.03)]" style={{ gridTemplateColumns: gridTemplate }}>
+                <div className="min-w-0">
+                  <Link href={`/blog/manage/${post.id}`} className="text-[13px] font-medium text-nw-200 hover:text-gold-300 transition-colors truncate block">
+                    {post.title}
+                  </Link>
+                  {post.slug && <span className="text-[11px] text-nw-500 font-mono">/blog/{post.slug}</span>}
+                </div>
+                {visible.has('status') && (
+                  <div className="flex items-center gap-2">
+                    <Badge variant={post.status === 'published' ? 'sent' : 'draft'}>{post.status}</Badge>
+                    <button
+                      onClick={() => handleToggleStatus(post)}
+                      disabled={toggling === post.id}
+                      title={post.status === 'published' ? 'Unpublish' : 'Publish'}
+                      className={`w-8 h-[18px] rounded-[9px] relative transition-colors ${post.status === 'published' ? 'bg-gold-500' : 'bg-nw-600'} ${toggling === post.id ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
+                    >
+                      <span className={`absolute top-[3px] w-3 h-3 rounded-full bg-white shadow transition-transform ${post.status === 'published' ? 'translate-x-[17px]' : 'translate-x-[3px]'}`} />
+                    </button>
+                  </div>
+                )}
+                {visible.has('category') && <span className="text-[13px] text-nw-400">{post.category?.name ?? <span className="text-nw-600">—</span>}</span>}
+                {visible.has('published') && (
+                  <span className="text-[11px] text-nw-500 whitespace-nowrap">
+                    {post.published_at ? format(new Date(post.published_at), 'dd MMM yyyy') : <span className="text-nw-600">—</span>}
+                  </span>
+                )}
+                <div className="flex items-center gap-1">
+                  <Link href={`/blog/manage/${post.id}`}><Button variant="ghost" size="sm"><PenLine size={13} /> Edit</Button></Link>
+                  {post.status === 'published' && post.slug && (
+                    <a href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer"><Button variant="ghost" size="sm"><Eye size={13} /></Button></a>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Mobile card rows */}
+        <div className="md:hidden">
+          {filtered.length === 0 ? (
+            <div className="px-4 py-12 text-center text-[13px] text-nw-500">No posts found.</div>
+          ) : (
+            filtered.map((post) => (
+              <div key={post.id} className="border-b border-[rgba(255,255,255,0.05)] p-4">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <Link href={`/blog/manage/${post.id}`} className="text-[13px] font-medium text-nw-200 hover:text-gold-300 transition-colors">
+                    {post.title}
+                  </Link>
+                  <Badge variant={post.status === 'published' ? 'sent' : 'draft'}>{post.status}</Badge>
+                </div>
+                {post.slug && <p className="text-[11px] text-nw-500 font-mono mb-2">/blog/{post.slug}</p>}
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-nw-500">
+                    {post.published_at ? format(new Date(post.published_at), 'dd MMM yyyy') : 'Draft'}
+                  </span>
+                  <Link href={`/blog/manage/${post.id}`}><Button variant="ghost" size="sm">Edit</Button></Link>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </Panel>
 
       {filtered.length > 0 && (
-        <p className="text-xs text-white/20 mt-3 text-right">
-          {filtered.length} of {posts.length} posts
-        </p>
+        <p className="text-[11px] text-nw-500 text-right">{filtered.length} of {posts.length} posts</p>
       )}
     </div>
   )

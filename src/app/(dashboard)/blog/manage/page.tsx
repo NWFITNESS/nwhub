@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { BlogListManager } from '@/components/blog/BlogListManager'
-import { MobileBlogManager } from '@/components/mobile/MobileBlogManager'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Plus } from 'lucide-react'
@@ -21,34 +20,26 @@ export default async function BlogManagePage() {
       .order('name'),
   ])
 
-  const totalPosts = posts?.length ?? 0
   const typedPosts = (posts ?? []) as unknown as (BlogPost & { category?: BlogCategory | null })[]
 
   return (
-    <>
-      <MobileBlogManager posts={typedPosts} />
-
-      <div className="hidden lg:block bg-nw-900 min-h-screen">
-        <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
-          <PageHeader
-            eyebrow="Admin Panel"
-            title="Blog"
-            titleGold="& Posts"
-            description={`${totalPosts} post${totalPosts !== 1 ? 's' : ''}`}
-            actions={
-              <Link href="/blog/manage/new">
-                <Button variant="primary" size="sm">
-                  <Plus size={14} /> New Post
-                </Button>
-              </Link>
-            }
-          />
-          <BlogListManager
-            initialPosts={typedPosts}
-            categories={(categories ?? []) as BlogCategory[]}
-          />
-        </main>
-      </div>
-    </>
+    <div className="flex flex-col gap-4">
+      <PageHeader
+        eyebrow="Content"
+        title="Blog"
+        titleGold="& Posts"
+        actions={
+          <Link href="/blog/manage/new">
+            <Button variant="gold" size="sm">
+              <Plus size={14} /> New Post
+            </Button>
+          </Link>
+        }
+      />
+      <BlogListManager
+        initialPosts={typedPosts}
+        categories={(categories ?? []) as BlogCategory[]}
+      />
+    </div>
   )
 }
