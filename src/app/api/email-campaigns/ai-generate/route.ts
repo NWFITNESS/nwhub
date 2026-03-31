@@ -99,13 +99,7 @@ export async function POST(req: NextRequest) {
       imageLines.push('No additional images selected — use text-based design with CSS decorative elements only')
     }
 
-    // Stream the response to avoid Vercel timeout
-    const stream = anthropic.messages.stream({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 4096,
-      messages: [{
-        role: 'user',
-        content: `You are an expert email designer and copywriter for Northern Warrior Fitness, a gym in Egremont, Cumbria.
+    const userContent = `You are an expert email designer and copywriter for Northern Warrior Fitness, a gym in Egremont, Cumbria.
 
 ${NW_BRAND}
 
@@ -119,29 +113,19 @@ ${prompt}
 TONE: ${TONE_LABELS[tone] ?? tone}
 AUDIENCE: ${AUDIENCE_LABELS[audience] ?? audience}
 
-Return ONLY the raw HTML — no explanation, no markdown code fences, no backticks. Start your response with <!DOCTYPE html> and end with </html>. Nothing else.`,
-      }],
+Return ONLY the raw HTML — no explanation, no markdown code fences, no backticks. Start your response with <!DOCTYPE html> and end with </html>. Nothing else.`
+
+    // Stream to keep the Vercel connection alive, collect into final text
+    const stream = anthropic.messages.stream({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 4096,
+      messages: [{ role: 'user', content: userContent }],
     })
 
-    // Collect all text chunks then return as JSON
-    const encoder = new TextEncoder()
-    const readable = new ReadableStream({
-      async start(controller) {
-        let html = ''
-        for await (const event of stream) {
-          if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-            html += event.delta.text
-          }
-        }
-        const json = JSON.stringify({ html: html.trim() })
-        controller.enqueue(encoder.encode(json))
-        controller.close()
-      },
-    })
+    const finalMessage = await stream.finalMessage()
+    const html = finalMessage.content[0].type === 'text' ? finalMessage.content[0].text.trim() : ''
 
-    return new Response(readable, {
-      headers: { 'Content-Type': 'application/json' },
-    })
+    return NextResponse.json({ html })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
     return NextResponse.json({ error: `AI generation failed: ${msg}` }, { status: 500 })
