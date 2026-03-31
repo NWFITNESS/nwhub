@@ -24,7 +24,7 @@ interface NavItem {
 
 const Icons = {
   overview: (
-    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7">
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7">
       <rect x="1" y="1" width="6" height="6" rx="1.5"/>
       <rect x="9" y="1" width="6" height="6" rx="1.5"/>
       <rect x="1" y="9" width="6" height="6" rx="1.5"/>
@@ -32,37 +32,37 @@ const Icons = {
     </svg>
   ),
   inbox: (
-    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7">
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7">
       <rect x="1" y="3" width="14" height="10" rx="2"/>
       <path d="M1 5l7 5 7-5"/>
     </svg>
   ),
   financials: (
-    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7">
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7">
       <path d="M2 11l3.5-3.5L8 10l5.5-6" strokeLinecap="round" strokeLinejoin="round"/>
       <rect x="1" y="1" width="14" height="14" rx="2"/>
     </svg>
   ),
   engagement: (
-    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7">
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7">
       <circle cx="8" cy="5" r="3"/>
       <path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5"/>
     </svg>
   ),
   content: (
-    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7">
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7">
       <rect x="2" y="2" width="12" height="12" rx="2"/>
       <path d="M5 6h6M5 9h4"/>
     </svg>
   ),
   calendar: (
-    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7">
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7">
       <rect x="2" y="3" width="12" height="11" rx="2"/>
       <path d="M2 7h12M5 1v4M11 1v4" strokeLinecap="round"/>
     </svg>
   ),
   system: (
-    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7">
+    <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7">
       <circle cx="8" cy="8" r="2.5"/>
       <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4" strokeLinecap="round"/>
     </svg>
@@ -269,7 +269,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
       <aside
         onMouseEnter={isMobile ? undefined : handleMouseEnter}
         onMouseLeave={isMobile ? undefined : handleMouseLeave}
-        className={`relative z-20 flex-shrink-0 flex-col bg-nw-950 border-r border-[rgba(212,160,23,0.18)] shadow-sidebar overflow-hidden transition-[width] duration-[260ms] ease-[cubic-bezier(0.4,0,0.2,1)] h-full ${isMobile ? 'flex' : 'hidden md:flex'} ${isOpen ? 'w-[228px]' : 'w-[58px]'}`}
+        className={`relative z-20 flex-shrink-0 flex-col bg-nw-950 border-r border-[rgba(212,160,23,0.18)] shadow-sidebar overflow-hidden transition-[width] duration-[260ms] ease-[cubic-bezier(0.4,0,0.2,1)] h-full ${isMobile ? 'flex' : 'hidden md:flex'} ${isOpen ? 'w-[242px]' : 'w-[58px]'}`}
       >
         {/* Pull hint */}
         {!isMobile && (
@@ -379,7 +379,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
 
 function SectionLabel({ label, isOpen }: { label: string; isOpen: boolean }) {
   return (
-    <div className={`overflow-hidden whitespace-nowrap px-[18px] text-[9px] font-semibold uppercase tracking-[1.6px] text-nw-600 transition-[opacity,max-height] duration-[260ms] ${isOpen ? 'max-h-8 pt-3 pb-1 opacity-100' : 'max-h-0 opacity-0'}`}>
+    <div className={`overflow-hidden whitespace-nowrap px-[18px] text-[10px] font-semibold uppercase tracking-[1.6px] text-nw-600 transition-[opacity,max-height] duration-[260ms] ${isOpen ? 'max-h-8 pt-4 pb-1.5 opacity-100' : 'max-h-0 opacity-0'}`}>
       {label}
     </div>
   )
@@ -402,14 +402,14 @@ interface NavRowProps {
 function NavRow({ item, isOpen, isActive, isSubOpen, isSubActive, onToggleSub, onNavigate, onShowTooltip, onHideTooltip }: NavRowProps) {
   const hasSub = !!(item.sub?.length)
 
-  const rowClass = `relative mx-[7px] my-px flex h-[38px] cursor-pointer items-center gap-[10px] overflow-hidden whitespace-nowrap rounded-[7px] px-[11px] text-[13px] transition-colors duration-150 select-none ${isActive ? 'bg-[rgba(212,160,23,0.11)] font-medium text-gold-300' : 'text-nw-400 hover:bg-[rgba(255,255,255,0.04)] hover:text-nw-200'}`
+  const rowClass = `relative mx-[7px] my-[2px] flex h-[42px] cursor-pointer items-center gap-[11px] overflow-hidden whitespace-nowrap rounded-[8px] px-[12px] text-[14px] transition-colors duration-150 select-none ${isActive ? 'bg-[rgba(212,160,23,0.11)] font-medium text-gold-300' : 'text-nw-400 hover:bg-[rgba(255,255,255,0.04)] hover:text-nw-200'}`
 
   const inner = (
     <>
       {isActive && (
         <div className="absolute left-0 top-[22%] h-[56%] w-[2.5px] rounded-r-sm bg-gold-400" />
       )}
-      <div className="flex h-4 w-4 min-w-[16px] items-center justify-center flex-shrink-0">
+      <div className="flex h-5 w-5 min-w-[20px] items-center justify-center flex-shrink-0">
         {item.icon}
       </div>
       <div
@@ -485,7 +485,7 @@ function SubRow({ sub, active, isOpen, onNavigate }: {
     <Link
       href={sub.href}
       onClick={onNavigate}
-      className={`relative mx-[7px] flex h-[30px] cursor-pointer items-center overflow-hidden whitespace-nowrap rounded-[6px] pl-10 pr-[11px] text-xs transition-colors duration-150 before:absolute before:left-6 before:top-1/2 before:h-px before:w-[7px] before:bg-nw-700 ${active ? 'text-gold-300 before:bg-gold-600' : 'text-nw-500 hover:bg-[rgba(255,255,255,0.04)] hover:text-nw-300'}`}
+      className={`relative mx-[7px] flex h-[34px] cursor-pointer items-center overflow-hidden whitespace-nowrap rounded-[6px] pl-11 pr-[12px] text-[13px] transition-colors duration-150 before:absolute before:left-[26px] before:top-1/2 before:h-px before:w-[8px] before:bg-nw-700 ${active ? 'text-gold-300 before:bg-gold-600' : 'text-nw-500 hover:bg-[rgba(255,255,255,0.04)] hover:text-nw-300'}`}
       style={{ textDecoration: 'none' }}
     >
       <span style={{ opacity: isOpen ? 1 : 0, transition: `opacity ${SPEED} ${EASE}` }}>
