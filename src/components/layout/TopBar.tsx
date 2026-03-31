@@ -168,7 +168,7 @@ export function TopBar({ title, actions }: TopBarProps) {
   return (
     <>
     <header
-      className="hidden md:flex h-[54px] min-h-[54px] flex-shrink-0 items-center gap-[14px] border-b border-[rgba(255,255,255,0.09)] bg-nw-950 px-[22px] sticky top-0 z-30"
+      className="hidden md:flex h-[54px] min-h-[54px] flex-shrink-0 items-center gap-[14px] border-b border-[rgba(255,255,255,0.09)] bg-nw-950 px-[22px] z-10"
     >
       {/* Brand */}
       <span className="font-brand text-sm font-bold uppercase tracking-[2px] text-nw-300 whitespace-nowrap">NW HUB</span>

@@ -67,16 +67,8 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
           <TopBar />
           <MobileAppBar title="NW Hub" />
 
-          <main className="flex-1 overflow-y-auto p-6 pb-24 md:p-8 md:pb-8">
-            {isMobileView ? (
-              <div className="flex justify-center bg-nw-950 min-h-full pt-6 px-4">
-                <div className="w-[390px] bg-nw-900 min-h-[844px] rounded-[2rem] border border-[rgba(255,255,255,0.1)] overflow-hidden shadow-2xl">
-                  {children}
-                </div>
-              </div>
-            ) : (
-              children
-            )}
+          <main className="flex-1 overflow-y-auto px-6 pt-6 pb-24 md:px-10 md:pt-8 md:pb-10">
+            {children}
           </main>
 
           <BottomTabBar />
