@@ -282,14 +282,14 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
         )}
 
         {/* Logo row */}
-        <div className="flex h-[54px] min-h-[54px] items-center gap-[11px] overflow-hidden whitespace-nowrap border-b border-[rgba(255,255,255,0.09)] px-[13px] flex-shrink-0">
-          <div className="flex h-8 w-8 min-w-[32px] flex-shrink-0 items-center justify-center">
-            <NWHubIcon size={28} />
+        <div className="flex h-[62px] min-h-[62px] items-center gap-[11px] overflow-hidden whitespace-nowrap border-b border-[rgba(255,255,255,0.09)] px-[10px] flex-shrink-0">
+          <div className="flex h-[38px] w-[38px] min-w-[38px] flex-shrink-0 items-center justify-center">
+            <NWHubIcon size={38} />
           </div>
 
           <div className={`transition-opacity duration-[260ms] ${isOpen ? 'opacity-100' : 'opacity-0'} pointer-events-none leading-[1.15]`}>
-            <span className="block font-brand text-[12.5px] font-bold uppercase tracking-[1.8px] text-white">Northern Warrior</span>
-            <span className="text-[9.5px] uppercase tracking-[0.6px] text-nw-500">Admin Dashboard</span>
+            <span className="block font-brand text-[13px] font-bold uppercase tracking-[1.8px] text-white">Northern Warrior</span>
+            <span className="text-[9.5px] uppercase tracking-[0.6px] text-nw-500">Admin Hub</span>
           </div>
 
           {onToggle && (

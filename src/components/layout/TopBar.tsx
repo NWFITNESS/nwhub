@@ -172,59 +172,49 @@ export function TopBar({ title, actions }: TopBarProps) {
   const totalResults = categories.reduce((n, [, items]) => n + items.length, 0)
 
   return (
-    <header className="hidden md:flex h-[54px] min-h-[54px] flex-shrink-0 items-center gap-[14px] border-b border-[rgba(255,255,255,0.09)] bg-nw-950 px-[22px] z-10">
-      {/* Brand */}
-      <span className="font-brand text-sm font-bold uppercase tracking-[2px] text-nw-300 whitespace-nowrap">NW HUB</span>
-      <div className="h-[18px] w-px flex-shrink-0 bg-[rgba(255,255,255,0.09)]" />
+    <header className="hidden md:flex h-[56px] min-h-[56px] flex-shrink-0 items-center border-b border-[rgba(255,255,255,0.09)] bg-nw-950 px-5 z-10">
 
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-[6px] text-xs text-nw-500">
-        {segments.map((seg, i) => (
-          <span key={i} className="flex items-center gap-[6px]">{seg} <Chevron /></span>
-        ))}
-        <span className="text-nw-200">{pageLabel}</span>
+      {/* ── LEFT: Breadcrumb ── */}
+      <div className="flex items-center gap-2 min-w-0 flex-shrink-0">
+        <div className="flex items-center gap-[6px] text-[12px] text-nw-500">
+          {segments.map((seg, i) => (
+            <span key={i} className="flex items-center gap-[6px] whitespace-nowrap">{seg} <Chevron /></span>
+          ))}
+          <span className="font-medium text-nw-200 whitespace-nowrap">{pageLabel}</span>
+        </div>
       </div>
 
-      {/* Right side */}
-      <div className="ml-auto flex items-center gap-1.5">
-
-        {/* Search */}
-        <div ref={wrapperRef} className="relative">
-          {searchVisible ? (
-            <div className="relative">
-              <input
-                ref={inputRef}
-                value={query}
-                onChange={e => setQuery(e.target.value)}
-                onFocus={() => { if (results && query.length >= 2) setSearchOpen(true) }}
-                onKeyDown={e => { if (e.key === 'Escape') { setSearchOpen(false); setSearchVisible(false); setQuery('') } }}
-                placeholder="Search everything…"
-                className="h-8 w-[220px] rounded-[7px] border border-[rgba(212,160,23,0.3)] bg-nw-800 pl-8 pr-8 text-xs text-nw-200 placeholder:text-nw-500 outline-none focus:bg-nw-750"
-              />
-              <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-nw-500 pointer-events-none" />
-              {query && (
-                <button onClick={() => { setQuery(''); setSearchOpen(false) }} className="absolute right-2 top-1/2 -translate-y-1/2 text-nw-500 hover:text-nw-300">
-                  <X size={12} />
-                </button>
-              )}
-            </div>
-          ) : (
-            <button
-              onClick={() => setSearchVisible(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] text-nw-400 transition-colors hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.08)] hover:text-nw-200"
-              title="Search (/)"
-            >
-              <Search size={14} />
-            </button>
-          )}
+      {/* ── CENTRE: Search bar ── */}
+      <div className="flex-1 flex justify-center px-6">
+        <div ref={wrapperRef} className="relative w-full max-w-[480px]">
+          <div className="relative">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-nw-500 pointer-events-none" />
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              onFocus={() => { setSearchVisible(true); if (results && query.length >= 2) setSearchOpen(true) }}
+              onKeyDown={e => { if (e.key === 'Escape') { setSearchOpen(false); setSearchVisible(false); setQuery('') } }}
+              placeholder="Search members, posts, campaigns…"
+              className="h-[36px] w-full rounded-[10px] border border-[rgba(255,255,255,0.08)] bg-nw-800 pl-10 pr-10 text-[13px] text-nw-200 placeholder:text-nw-500 outline-none transition-all focus:border-[rgba(212,160,23,0.35)] focus:bg-nw-750 focus:shadow-[0_0_0_3px_rgba(212,160,23,0.08)]"
+            />
+            {query && (
+              <button onClick={() => { setQuery(''); setSearchOpen(false) }} className="absolute right-3 top-1/2 -translate-y-1/2 text-nw-500 hover:text-nw-300 transition-colors">
+                <X size={14} />
+              </button>
+            )}
+            {!query && (
+              <kbd className="absolute right-3 top-1/2 -translate-y-1/2 rounded-[4px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)] px-1.5 py-0.5 text-[9px] font-mono text-nw-600">/</kbd>
+            )}
+          </div>
 
           {/* Search dropdown */}
-          {searchOpen && (
-            <div className="absolute right-0 top-full mt-1.5 z-50 w-[280px] max-h-[400px] overflow-y-auto rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 shadow-lg">
+          {searchOpen && query.length >= 2 && (
+            <div className="absolute left-0 right-0 top-full mt-2 z-50 max-h-[400px] overflow-y-auto rounded-[12px] border border-[rgba(255,255,255,0.11)] bg-nw-750 shadow-xl">
               {loading ? (
-                <p className="p-3 text-xs text-nw-500">Searching…</p>
+                <p className="p-4 text-[13px] text-nw-500">Searching…</p>
               ) : totalResults === 0 ? (
-                <p className="p-3 text-xs text-nw-500">No results for &ldquo;{query}&rdquo;</p>
+                <p className="p-4 text-[13px] text-nw-500">No results for &ldquo;{query}&rdquo;</p>
               ) : (
                 categories.map(([cat, items]) => {
                   const meta = CATEGORY_META[cat]
@@ -232,17 +222,17 @@ export function TopBar({ title, actions }: TopBarProps) {
                   const Icon = meta.icon
                   return (
                     <div key={cat}>
-                      <div className="flex items-center gap-1.5 border-b border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] px-3 py-1.5">
-                        <Icon size={10} className="text-gold-400" />
+                      <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] px-4 py-2">
+                        <Icon size={11} className="text-gold-400" />
                         <span className="text-[9px] font-semibold uppercase tracking-[1.2px] text-nw-500">{meta.label}</span>
                       </div>
                       {items.map(r => (
                         <Link
                           key={r.id} href={r.href}
                           onClick={() => { setSearchOpen(false); setQuery(''); setSearchVisible(false) }}
-                          className="block border-b border-[rgba(255,255,255,0.05)] px-3 py-2 transition-colors hover:bg-[rgba(255,255,255,0.03)] no-underline"
+                          className="block border-b border-[rgba(255,255,255,0.05)] px-4 py-2.5 transition-colors hover:bg-[rgba(255,255,255,0.03)] no-underline"
                         >
-                          <p className="text-xs text-nw-200">{r.label}</p>
+                          <p className="text-[13px] text-nw-200">{r.label}</p>
                           {r.sub && <p className="text-[11px] text-nw-500 mt-0.5">{r.sub}</p>}
                         </Link>
                       ))}
@@ -253,34 +243,38 @@ export function TopBar({ title, actions }: TopBarProps) {
             </div>
           )}
         </div>
+      </div>
+
+      {/* ── RIGHT: Action icons ── */}
+      <div className="flex items-center gap-1 flex-shrink-0">
+        {actions && <div className="flex items-center gap-1 mr-1">{actions}</div>}
 
         {/* Theme toggle */}
         <button
           onClick={() => setLightMode(v => !v)}
-          className="flex h-8 w-8 items-center justify-center rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] text-nw-400 transition-colors hover:border-[rgba(212,160,23,0.28)] hover:bg-[rgba(212,160,23,0.08)] hover:text-gold-400"
+          className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] text-nw-400 transition-all hover:bg-[rgba(212,160,23,0.08)] hover:text-gold-400"
           title={lightMode ? 'Switch to dark mode' : 'Switch to light mode'}
         >
-          {lightMode ? <Moon size={14} /> : <Sun size={14} />}
+          {lightMode ? <Moon size={16} strokeWidth={1.7} /> : <Sun size={16} strokeWidth={1.7} />}
         </button>
 
         {/* Notification bell */}
         <div ref={bellRef} className="relative">
           <button
             onClick={() => setBellOpen(v => !v)}
-            className={`flex h-8 w-8 items-center justify-center rounded-[7px] border transition-colors ${
+            className={`flex h-[34px] w-[34px] items-center justify-center rounded-[9px] transition-all ${
               bellOpen
-                ? 'border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-gold-300'
-                : 'border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] text-nw-400 hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.08)] hover:text-nw-200'
+                ? 'bg-[rgba(212,160,23,0.12)] text-gold-300'
+                : 'text-nw-400 hover:bg-[rgba(255,255,255,0.06)] hover:text-nw-200'
             }`}
             title="Notification settings"
           >
-            <Bell size={14} />
+            <Bell size={16} strokeWidth={1.7} />
           </button>
 
           {/* Notification popup */}
           {bellOpen && (
             <div className="absolute right-0 top-full mt-2 z-50 w-[340px] overflow-hidden rounded-[12px] border border-[rgba(255,255,255,0.11)] bg-nw-750 shadow-xl">
-              {/* Header */}
               <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.07)] px-5 py-3.5">
                 <div className="flex items-center gap-2.5">
                   <div className="flex h-7 w-7 items-center justify-center rounded-[7px] bg-[rgba(212,160,23,0.1)] border border-[rgba(212,160,23,0.22)]">
@@ -291,21 +285,15 @@ export function TopBar({ title, actions }: TopBarProps) {
                     <p className="text-[10px] text-nw-500">Choose what alerts you</p>
                   </div>
                 </div>
-                <button onClick={() => setBellOpen(false)} className="text-nw-500 hover:text-nw-300 transition-colors">
-                  <X size={14} />
-                </button>
+                <button onClick={() => setBellOpen(false)} className="text-nw-500 hover:text-nw-300 transition-colors"><X size={14} /></button>
               </div>
-
-              {/* Column headers */}
               <div className="flex items-center justify-end gap-0 border-b border-[rgba(255,255,255,0.05)] px-5 py-2">
                 <span className="w-[52px] text-center text-[9px] font-semibold uppercase tracking-[1px] text-nw-500">Desktop</span>
                 <span className="w-[52px] text-center text-[9px] font-semibold uppercase tracking-[1px] text-nw-500">Mobile</span>
               </div>
-
-              {/* Channels */}
               <div className="max-h-[360px] overflow-y-auto">
                 {NOTIFICATION_CHANNELS.map(({ key, label, desc, icon: Icon }) => {
-                  const settings = notifSettings[key] ?? { desktop: false, mobile: false }
+                  const s = notifSettings[key] ?? { desktop: false, mobile: false }
                   return (
                     <div key={key} className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.05)] px-5 py-3 last:border-0">
                       <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[7px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.07)]">
@@ -315,33 +303,21 @@ export function TopBar({ title, actions }: TopBarProps) {
                         <p className="text-[12px] font-medium text-nw-200">{label}</p>
                         <p className="text-[10px] text-nw-500 leading-tight mt-0.5">{desc}</p>
                       </div>
-                      {/* Desktop toggle */}
-                      <button
-                        onClick={() => toggleNotif(key, 'desktop')}
-                        className={`relative h-[18px] w-[32px] flex-shrink-0 rounded-full transition-colors ${settings.desktop ? 'bg-gold-500' : 'bg-nw-600'}`}
-                      >
-                        <div className={`absolute top-[3px] h-3 w-3 rounded-full bg-white shadow transition-transform ${settings.desktop ? 'translate-x-[17px]' : 'translate-x-[3px]'}`} />
+                      <button onClick={() => toggleNotif(key, 'desktop')} className={`relative h-[18px] w-[32px] flex-shrink-0 rounded-full transition-colors ${s.desktop ? 'bg-gold-500' : 'bg-nw-600'}`}>
+                        <div className={`absolute top-[3px] h-3 w-3 rounded-full bg-white shadow transition-transform ${s.desktop ? 'translate-x-[17px]' : 'translate-x-[3px]'}`} />
                       </button>
-                      {/* Mobile toggle */}
-                      <button
-                        onClick={() => toggleNotif(key, 'mobile')}
-                        className={`relative h-[18px] w-[32px] flex-shrink-0 rounded-full transition-colors ${settings.mobile ? 'bg-gold-500' : 'bg-nw-600'}`}
-                      >
-                        <div className={`absolute top-[3px] h-3 w-3 rounded-full bg-white shadow transition-transform ${settings.mobile ? 'translate-x-[17px]' : 'translate-x-[3px]'}`} />
+                      <button onClick={() => toggleNotif(key, 'mobile')} className={`relative h-[18px] w-[32px] flex-shrink-0 rounded-full transition-colors ${s.mobile ? 'bg-gold-500' : 'bg-nw-600'}`}>
+                        <div className={`absolute top-[3px] h-3 w-3 rounded-full bg-white shadow transition-transform ${s.mobile ? 'translate-x-[17px]' : 'translate-x-[3px]'}`} />
                       </button>
                     </div>
                   )
                 })}
               </div>
-
-              {/* Footer */}
               <div className="border-t border-[rgba(255,255,255,0.07)] px-5 py-3 flex items-center justify-between">
                 <p className="text-[10px] text-nw-500">Settings saved locally</p>
                 <button
                   onClick={async () => {
-                    if ('Notification' in window && Notification.permission === 'default') {
-                      await Notification.requestPermission()
-                    }
+                    if ('Notification' in window && Notification.permission === 'default') await Notification.requestPermission()
                     setBellOpen(false)
                   }}
                   className="rounded-[7px] border border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] px-3 py-[4px] text-[11px] font-medium text-gold-300 transition-colors hover:bg-[rgba(212,160,23,0.22)]"
@@ -352,8 +328,6 @@ export function TopBar({ title, actions }: TopBarProps) {
             </div>
           )}
         </div>
-
-        {actions && <div className="flex items-center gap-1.5">{actions}</div>}
       </div>
     </header>
   )
