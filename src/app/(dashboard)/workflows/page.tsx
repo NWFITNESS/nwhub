@@ -38,14 +38,12 @@ export default async function WorkflowsPage() {
 
   const activeCount = Object.values(workflowStates).filter(Boolean).length
 
-  // Review stats
   const reviewAll = reviewRequests ?? []
   const reviewSent      = reviewAll.filter((r) => r.messages_sent >= 1).length
   const reviewDetected  = reviewAll.filter((r) => r.review_detected).length
   const reviewPending   = reviewAll.filter((r) => r.messages_sent >= 1 && !r.review_detected && !r.opted_out).length
   const reviewThisMonth = reviewAll.filter((r) => r.last_sent_at && r.last_sent_at >= startOfMonth).length
 
-  // SMS messages sent this month
   const smsSentThisMonth = (smsCampaigns ?? [])
     .filter((c) => c.created_at >= startOfMonth)
     .reduce((sum, c) => sum + ((c.stats as { sent?: number })?.sent ?? 0), 0)
@@ -54,26 +52,15 @@ export default async function WorkflowsPage() {
   const triggeredThisMonth    = (newContactsThisMonth ?? 0) + reviewThisMonth
 
   return (
-    <div className="bg-nw-900 min-h-screen">
-      <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
-        <PageHeader eyebrow="Admin Panel" title="Automation" titleGold="Workflows" />
-        <WorkflowsClient
-          workflowStates={workflowStates}
-          stats={{
-            activeCount,
-            triggeredThisMonth,
-            messagesSentThisMonth,
-            membersInFlows: memberCount ?? 0,
-          }}
-          reviewStats={{
-            sent:     reviewSent,
-            reviewed: reviewDetected,
-            pending:  reviewPending,
-          }}
-          trialCount={trialCount ?? 0}
-          memberCount={memberCount ?? 0}
-        />
-      </main>
+    <div className="flex flex-col gap-4">
+      <PageHeader eyebrow="System" title="Workflows" />
+      <WorkflowsClient
+        workflowStates={workflowStates}
+        stats={{ activeCount, triggeredThisMonth, messagesSentThisMonth, membersInFlows: memberCount ?? 0 }}
+        reviewStats={{ sent: reviewSent, reviewed: reviewDetected, pending: reviewPending }}
+        trialCount={trialCount ?? 0}
+        memberCount={memberCount ?? 0}
+      />
     </div>
   )
 }

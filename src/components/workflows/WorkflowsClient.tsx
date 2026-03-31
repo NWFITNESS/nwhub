@@ -7,6 +7,10 @@ import {
   UserPlus, Star, RefreshCw, Clock, Gift,
   ChevronDown, Play, Eye,
 } from 'lucide-react'
+import { StatCard } from '@/components/widgets/dashboard/StatCard'
+import { Panel } from '@/components/ui/Card'
+import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,27 +48,6 @@ interface Props {
 }
 
 // ---------------------------------------------------------------------------
-// Stat card
-// ---------------------------------------------------------------------------
-function StatCard({
-  label, value, icon: Icon, iconBg,
-}: {
-  label: string; value: number; icon: React.ElementType; iconBg: string
-}) {
-  return (
-    <div className="bg-nw-750 border border-white/[0.06] rounded-xl p-6 min-h-[130px] flex flex-col justify-between hover:border-[#967705]/30 transition-colors">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-white/40 uppercase tracking-[0.1em]">{label}</p>
-        <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: iconBg }}>
-          <Icon size={18} className="text-white/70" />
-        </div>
-      </div>
-      <p className="text-5xl font-bold text-[#F0F0F0]" style={{ fontFamily: 'League Spartan' }}>{value}</p>
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
 // Channel badge
 // ---------------------------------------------------------------------------
 function ChannelBadge({ channel }: { channel: Step['channel'] }) {
@@ -94,26 +77,19 @@ function WorkflowCard({
   const { id, title, description, icon: Icon, iconColor, iconBg, trigger, steps, stats } = workflow
 
   return (
-    <div className={`bg-nw-750 border rounded-xl overflow-hidden transition-all duration-200 ${
-      enabled ? 'border-white/[0.08] hover:border-white/[0.12]' : 'border-white/[0.04] opacity-70 hover:opacity-90'
-    }`}>
-
+    <Panel>
       {/* Header */}
-      <div className="p-6 flex items-start justify-between gap-4">
-        <div className="flex items-start gap-4 min-w-0">
-          <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: iconBg }}>
-            <Icon size={20} className={iconColor} />
+      <div className="p-4 flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3 min-w-0">
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-[8px] border border-[rgba(255,255,255,0.1)] bg-nw-800" style={{ background: iconBg }}>
+            <Icon size={18} className={iconColor} />
           </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-3 mb-1 flex-wrap">
-              <h3 className="text-[#F0F0F0] font-semibold">{title}</h3>
-              {enabled ? (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-500/10 text-green-400 border border-green-500/20">ACTIVE</span>
-              ) : (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/[0.05] text-white/30 border border-white/[0.08]">PAUSED</span>
-              )}
+            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+              <h3 className="text-[13px] font-medium text-nw-200">{title}</h3>
+              <Badge variant={enabled ? 'active' : 'paused'}>{enabled ? 'Active' : 'Paused'}</Badge>
             </div>
-            <p className="text-sm text-white/40 leading-relaxed max-w-xl">{description}</p>
+            <p className="text-[11px] text-nw-500 mt-0.5 leading-relaxed max-w-xl">{description}</p>
           </div>
         </div>
 
@@ -121,59 +97,53 @@ function WorkflowCard({
           {/* Toggle */}
           <button
             onClick={() => onToggle(id, !enabled)}
-            className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${enabled ? 'bg-[#C9A70A]' : 'bg-white/10'}`}
+            className={`relative w-11 h-[22px] rounded-full transition-colors duration-200 ${enabled ? 'bg-gold-500' : 'bg-nw-600'}`}
             aria-label={enabled ? 'Pause workflow' : 'Activate workflow'}
           >
-            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${enabled ? 'translate-x-6' : 'translate-x-1'}`} />
+            <div className={`absolute top-[3px] w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${enabled ? 'translate-x-6' : 'translate-x-[3px]'}`} />
           </button>
 
           {/* Expand */}
-          <button
-            onClick={() => setExpanded((e) => !e)}
-            className="text-white/30 hover:text-white/60 transition-colors p-1"
-          >
-            <ChevronDown size={18} className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+          <button onClick={() => setExpanded((e) => !e)} className="text-nw-500 hover:text-nw-300 transition-colors p-1">
+            <ChevronDown size={16} className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
           </button>
         </div>
       </div>
 
       {/* Stats bar */}
-      <div className="px-6 pb-5 flex items-center gap-6 flex-wrap">
+      <div className="flex items-center gap-4 px-4 pb-4 flex-wrap">
         {Object.entries(stats).map(([key, value]) => (
           <div key={key}>
-            <p className="text-xl font-bold text-[#F0F0F0]" style={{ fontFamily: 'League Spartan' }}>{value}</p>
-            <p className="text-xs text-white/30 capitalize">{key.replace(/_/g, ' ')}</p>
+            <p className="text-[10px] uppercase tracking-[0.8px] text-nw-600">{key.replace(/_/g, ' ')}</p>
+            <p className="text-xs font-medium text-nw-300 mt-0.5">{value}</p>
           </div>
         ))}
       </div>
 
       {/* Expanded detail */}
       {expanded && (
-        <div className="border-t border-white/[0.06] p-6 space-y-5">
-
-          {/* Trigger */}
+        <div className="border-t border-[rgba(255,255,255,0.07)] p-4 space-y-4">
           <div>
-            <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.1em] mb-2">TRIGGER</p>
-            <div className="flex items-center gap-2.5 bg-nw-800 border border-white/[0.06] rounded-lg px-4 py-3">
-              <Zap size={13} className="text-[#C9A70A] flex-shrink-0" />
-              <p className="text-sm text-white/60">{trigger}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[1px] text-nw-500 mb-2">Trigger</p>
+            <div className="flex items-center gap-2.5 rounded-[8px] bg-nw-800 border border-[rgba(255,255,255,0.07)] px-4 py-3">
+              <Zap size={13} className="text-gold-400 flex-shrink-0" />
+              <p className="text-[13px] text-nw-400">{trigger}</p>
             </div>
           </div>
 
-          {/* Steps timeline */}
           <div>
-            <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.1em] mb-4">SEQUENCE</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[1px] text-nw-500 mb-3">Sequence</p>
             <div className="relative">
-              <div className="absolute left-[17px] top-5 bottom-5 w-px bg-white/[0.06]" />
-              <div className="space-y-3">
+              <div className="absolute left-[17px] top-5 bottom-5 w-px bg-[rgba(255,255,255,0.07)]" />
+              <div className="space-y-2.5">
                 {steps.map((step, i) => (
-                  <div key={i} className="flex items-center gap-4">
-                    <div className="w-9 h-9 rounded-full bg-nw-800 border border-white/[0.08] flex items-center justify-center flex-shrink-0 z-10">
-                      <span className="text-[10px] font-bold text-[#C9A70A]">D{step.day}</span>
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-nw-800 border border-[rgba(255,255,255,0.07)] z-10">
+                      <span className="text-[10px] font-bold text-gold-300">D{step.day}</span>
                     </div>
-                    <div className="flex items-center gap-3 flex-1 bg-nw-800 border border-white/[0.06] rounded-lg px-4 py-2.5">
+                    <div className="flex items-center gap-3 flex-1 rounded-[8px] bg-nw-800 border border-[rgba(255,255,255,0.07)] px-4 py-2.5">
                       <ChannelBadge channel={step.channel} />
-                      <span className="text-sm text-white/60">{step.label}</span>
+                      <span className="text-[13px] text-nw-400">{step.label}</span>
                     </div>
                   </div>
                 ))}
@@ -181,20 +151,13 @@ function WorkflowCard({
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-3 pt-1">
-            <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-black bg-gradient-to-r from-[#967705] to-[#C9A70A] hover:opacity-90 transition-opacity shadow-[0_0_16px_rgba(201,167,10,0.2)]">
-              <Play size={11} />
-              Run Now
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium text-white/40 border border-white/[0.08] bg-white/[0.03] hover:text-white/70 hover:border-white/20 hover:bg-white/[0.06] transition-all duration-200">
-              <Eye size={11} />
-              View Members In Flow
-            </button>
+          <div className="flex items-center gap-2 pt-1">
+            <Button variant="gold" size="sm"><Play size={11} /> Run Now</Button>
+            <Button variant="default" size="sm"><Eye size={11} /> View Members In Flow</Button>
           </div>
         </div>
       )}
-    </div>
+    </Panel>
   )
 }
 
@@ -203,10 +166,7 @@ function WorkflowCard({
 // ---------------------------------------------------------------------------
 function CategoryHeader({ label }: { label: string }) {
   return (
-    <div className="flex items-center gap-4 mt-2">
-      <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.15em] whitespace-nowrap">{label}</p>
-      <div className="flex-1 h-px bg-white/[0.06]" />
-    </div>
+    <p className="text-[10px] font-semibold uppercase tracking-[1.2px] text-nw-500 mb-2 mt-4">{label}</p>
   )
 }
 
@@ -330,17 +290,9 @@ export function WorkflowsClient({ workflowStates: initial, stats, reviewStats, t
   const categories = Array.from(new Set(WORKFLOWS.map((w) => w.category)))
 
   return (
-    <div className="flex flex-col gap-6">
-
-      {/* Page header */}
-      <div>
-        <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.15em] mb-1">NORTHERN WARRIOR HUB</p>
-        <h1 className="text-3xl font-bold text-[#F0F0F0]" style={{ fontFamily: 'League Spartan' }}>Workflows</h1>
-        <p className="text-sm text-white/40 mt-1">Your automation command centre — manage every workflow from one place</p>
-      </div>
-
+    <div className="flex flex-col gap-4">
       {/* Stats row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+      <div className="grid grid-cols-2 gap-[10px] md:grid-cols-4">
         <StatCard label="Active Workflows"      value={stats.activeCount}            icon={Zap}            iconBg="rgba(201,167,10,0.15)" />
         <StatCard label="Triggered This Month"  value={stats.triggeredThisMonth}     icon={Activity}       iconBg="rgba(34,197,94,0.15)" />
         <StatCard label="Messages Sent"         value={stats.messagesSentThisMonth}  icon={MessageSquare}  iconBg="rgba(59,130,246,0.15)" />
