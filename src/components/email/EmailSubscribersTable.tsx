@@ -85,7 +85,7 @@ export function EmailSubscribersTable({ initialSubscribers }: Props) {
             <button
               key={s}
               onClick={() => setFilter(s)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${filter === s ? 'bg-[#967705]/20 text-[#c9a70a]' : 'text-white/40 hover:text-white hover:bg-white/[0.05]'}`}
+              className={`rounded-[7px] px-2.5 py-1 text-[11px] font-semibold transition-colors capitalize ${filter === s ? 'bg-[rgba(212,160,23,0.15)] text-gold-300 border border-[rgba(212,160,23,0.3)]' : 'text-nw-400 hover:text-nw-200 border border-transparent'}`}
             >
               {s}
             </button>
@@ -93,34 +93,34 @@ export function EmailSubscribersTable({ initialSubscribers }: Props) {
         </div>
         <div className="flex gap-2">
           <ColumnToggle columns={COLUMNS} visible={visible} onToggle={toggle} />
-          <Button variant="secondary" size="sm" onClick={exportCsv}><Download size={13} /> Export CSV</Button>
-          <Button variant="primary" size="sm" onClick={() => setAddOpen(true)}><Plus size={13} /> Add</Button>
+          <Button variant="default" size="sm" onClick={exportCsv}><Download size={13} /> Export CSV</Button>
+          <Button variant="gold" size="sm" onClick={() => setAddOpen(true)}><Plus size={13} /> Add</Button>
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-white/[0.08]">
-        <table className="w-full text-sm">
+      <div className="w-full overflow-x-auto">
+        <table className="w-full border-collapse text-[13px]">
           <thead>
-            <tr className="border-b border-white/[0.08]">
+            <tr>
               {visibleCols.map((col) => (
-                <th key={col.key} className="px-6 py-4 text-left text-xs font-medium text-white/40 uppercase tracking-wider">
+                <th key={col.key} className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">
                   {col.label}
                 </th>
               ))}
-              <th className="px-6 py-4 text-left text-xs font-medium text-white/40 uppercase tracking-wider" />
+              <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5" />
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={colSpan} className="px-6 py-12 text-center text-white/30">No subscribers</td></tr>
+              <tr><td colSpan={colSpan} className="px-4 py-12 text-center text-nw-500">No subscribers</td></tr>
             ) : (
               filtered.map((s) => (
-                <tr key={s.id} className="border-b border-white/[0.04] last:border-0">
-                  {visible.has('email') && <td className="px-6 py-4 text-white">{s.email}</td>}
-                  {visible.has('name') && <td className="px-6 py-4 text-white/60">{[s.first_name, s.last_name].filter(Boolean).join(' ') || '—'}</td>}
-                  {visible.has('status') && <td className="px-6 py-4"><Badge variant={statusToBadge(s.status)}>{s.status}</Badge></td>}
-                  {visible.has('subscribed') && <td className="px-6 py-4 text-white/40 text-xs">{format(new Date(s.subscribed_at), 'dd MMM yyyy')}</td>}
-                  <td className="px-6 py-4 text-right">
+                <tr key={s.id} className="transition-colors hover:bg-[rgba(255,255,255,0.03)]">
+                  {visible.has('email') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 font-medium text-nw-200">{s.email}</td>}
+                  {visible.has('name') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-nw-400">{[s.first_name, s.last_name].filter(Boolean).join(' ') || '—'}</td>}
+                  {visible.has('status') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3"><Badge variant={statusToBadge(s.status)}>{s.status}</Badge></td>}
+                  {visible.has('subscribed') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-[11px] text-nw-500">{format(new Date(s.subscribed_at), 'dd MMM yyyy')}</td>}
+                  <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-right">
                     {s.status === 'subscribed' && (
                       <Button variant="ghost" size="sm" onClick={() => handleUnsubscribe(s.id)}>Unsubscribe</Button>
                     )}
