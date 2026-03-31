@@ -4,7 +4,7 @@ import { requireAuth } from '@/lib/auth-guard'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-// Allow up to 60s for AI generation (Vercel Pro) — default 10s is too short
+// Streaming keeps the connection alive — no Vercel timeout
 export const maxDuration = 60
 
 const NW_BRAND = `
@@ -79,50 +79,37 @@ export async function POST(req: NextRequest) {
   const unauth = await requireAuth()
   if (unauth) return unauth
 
-  const { prompt, tone, audience, selectedImages, logoUrl } = await req.json()
-  if (!prompt) return NextResponse.json({ error: 'Prompt is required' }, { status: 400 })
+  try {
+    const { prompt, tone, audience, selectedImages, logoUrl } = await req.json()
+    if (!prompt) return NextResponse.json({ error: 'Prompt is required' }, { status: 400 })
 
-  // Build image context
-  const imageLines: string[] = []
+    const imageLines: string[] = []
+    if (logoUrl) {
+      imageLines.push(`LOGO URL (use in header): ${logoUrl}`)
+    } else {
+      imageLines.push('No logo URL provided — use text "NORTHERN WARRIOR FITNESS" styled in gold in the header')
+    }
+    if (selectedImages && selectedImages.length > 0) {
+      imageLines.push('', 'IMAGES TO USE IN THIS EMAIL (use real <img> tags with exact URLs below):')
+      selectedImages.forEach((img: { url: string; alt: string | null; category: string | null }, i: number) => {
+        imageLines.push(`Image ${i + 1}:`, `  URL: ${img.url}`, `  Alt text: ${img.alt ?? ''}`, `  Category: ${img.category ?? 'general'}`)
+      })
+      imageLines.push('', 'Image placement rules:', '- Image 1 should be used as a full-width hero/banner image directly below the header (max-width 600px, width 100%)', '- Additional images can be placed in relevant content sections', '- Always use the exact alt text provided for each image', '- Never invent or guess image URLs — only use the ones listed above')
+    } else {
+      imageLines.push('No additional images selected — use text-based design with CSS decorative elements only')
+    }
 
-  if (logoUrl) {
-    imageLines.push(`LOGO URL (use in header): ${logoUrl}`)
-  } else {
-    imageLines.push('No logo URL provided — use text "NORTHERN WARRIOR FITNESS" styled in gold in the header')
-  }
-
-  if (selectedImages && selectedImages.length > 0) {
-    imageLines.push('')
-    imageLines.push('IMAGES TO USE IN THIS EMAIL (use real <img> tags with exact URLs below):')
-    selectedImages.forEach((img: { url: string; alt: string | null; category: string | null }, i: number) => {
-      imageLines.push(`Image ${i + 1}:`)
-      imageLines.push(`  URL: ${img.url}`)
-      imageLines.push(`  Alt text: ${img.alt ?? ''}`)
-      imageLines.push(`  Category: ${img.category ?? 'general'}`)
-    })
-    imageLines.push('')
-    imageLines.push('Image placement rules:')
-    imageLines.push('- Image 1 should be used as a full-width hero/banner image directly below the header (max-width 600px, width 100%)')
-    imageLines.push('- Additional images can be placed in relevant content sections')
-    imageLines.push('- Always use the exact alt text provided for each image')
-    imageLines.push('- Never invent or guess image URLs — only use the ones listed above')
-  } else {
-    imageLines.push('No additional images selected — use text-based design with CSS decorative elements only')
-  }
-
-  const imageContext = imageLines.join('\n')
-
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 4096,
-    messages: [
-      {
+    // Stream the response to avoid Vercel timeout
+    const stream = anthropic.messages.stream({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 4096,
+      messages: [{
         role: 'user',
         content: `You are an expert email designer and copywriter for Northern Warrior Fitness, a gym in Egremont, Cumbria.
 
 ${NW_BRAND}
 
-${imageContext}
+${imageLines.join('\n')}
 
 Create a complete, production-ready HTML email based on the following brief.
 
@@ -133,11 +120,30 @@ TONE: ${TONE_LABELS[tone] ?? tone}
 AUDIENCE: ${AUDIENCE_LABELS[audience] ?? audience}
 
 Return ONLY the raw HTML — no explanation, no markdown code fences, no backticks. Start your response with <!DOCTYPE html> and end with </html>. Nothing else.`,
+      }],
+    })
+
+    // Collect all text chunks then return as JSON
+    const encoder = new TextEncoder()
+    const readable = new ReadableStream({
+      async start(controller) {
+        let html = ''
+        for await (const event of stream) {
+          if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+            html += event.delta.text
+          }
+        }
+        const json = JSON.stringify({ html: html.trim() })
+        controller.enqueue(encoder.encode(json))
+        controller.close()
       },
-    ],
-  })
+    })
 
-  const html = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
-
-  return NextResponse.json({ html })
+    return new Response(readable, {
+      headers: { 'Content-Type': 'application/json' },
+    })
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    return NextResponse.json({ error: `AI generation failed: ${msg}` }, { status: 500 })
+  }
 }
