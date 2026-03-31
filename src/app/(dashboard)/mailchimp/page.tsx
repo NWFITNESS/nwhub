@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { MailchimpDashboard } from '@/components/mailchimp/MailchimpDashboard'
@@ -68,7 +69,9 @@ export default async function MailchimpPage() {
           </Link>
         }
       />
-      <MailchimpDashboard initialSettings={initialSettings} initialStats={initialStats} />
+      <Suspense>
+        <MailchimpDashboard initialSettings={initialSettings} initialStats={initialStats} />
+      </Suspense>
     </div>
   )
 }

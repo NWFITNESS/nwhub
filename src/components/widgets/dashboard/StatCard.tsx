@@ -1,3 +1,4 @@
+import React from 'react'
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react'
 
 interface StatCardProps {
@@ -13,12 +14,15 @@ interface StatCardProps {
 }
 
 export function StatCard({ label, value, sub, icon, iconBg, gold = false, trend, alert, alertLabel = 'Needs attention' }: StatCardProps) {
-  // Support both ReactNode icons and Lucide component icons
-  const iconElement = icon
-    ? typeof icon === 'function'
-      ? (() => { const Icon = icon as React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>; return <Icon size={16} className="text-nw-300" strokeWidth={1.7} /> })()
-      : icon
-    : null
+  let iconElement: React.ReactNode = null
+  if (icon) {
+    if (React.isValidElement(icon)) {
+      iconElement = icon
+    } else {
+      const Icon = icon as React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>
+      iconElement = <Icon size={16} className="text-nw-300" strokeWidth={1.7} />
+    }
+  }
 
   const subText = sub ?? (alert
     ? alertLabel
