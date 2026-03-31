@@ -16,10 +16,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   ])
 
   return (
-    <div className="min-h-screen">
-      <SidebarProvider unreadCount={unreadCount ?? 0} userEmail={user?.email}>
-        {children}
-      </SidebarProvider>
-    </div>
+    <SidebarProvider unreadCount={unreadCount ?? 0} userEmail={user?.email}>
+      {children}
+    </SidebarProvider>
   )
 }

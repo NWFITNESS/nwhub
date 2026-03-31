@@ -155,12 +155,6 @@ export default async function DashboardPage() {
   }
 
   return (
-    <>
-      {/* Mobile layout */}
-      <MobileDashboard data={data} />
-
-      {/* Desktop layout */}
-      <OverviewContent data={data} formattedDate={formattedDate} />
-    </>
+    <OverviewContent data={data} formattedDate={formattedDate} />
   )
 }
