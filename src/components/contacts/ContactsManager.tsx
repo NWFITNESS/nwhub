@@ -107,10 +107,10 @@ function MembershipDot({ groups }: { groups: string[] }) {
 // Source badge colours
 // ---------------------------------------------------------------------------
 const sourceBadge: Record<string, string> = {
-  manual:      'bg-white/5 text-white/50 border-white/10',
-  import:      'bg-blue-500/15 text-blue-400 border-blue-500/30',
-  squarespace: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
-  wodboard:    'bg-orange-500/15 text-orange-400 border-orange-500/30',
+  manual:      'bg-[rgba(100,116,139,0.1)] text-nw-500 border border-[rgba(255,255,255,0.07)]',
+  import:      'bg-[rgba(59,130,246,0.1)] text-blue-400 border border-[rgba(59,130,246,0.2)]',
+  squarespace: 'bg-[rgba(168,85,247,0.1)] text-purple-400 border border-[rgba(168,85,247,0.2)]',
+  wodboard:    'bg-[rgba(249,115,22,0.1)] text-orange-400 border border-[rgba(249,115,22,0.2)]',
 }
 
 // ---------------------------------------------------------------------------
@@ -506,14 +506,14 @@ export function ContactsManager({ initialContacts }: Props) {
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Quick search by name, email or phone…"
             style={{ paddingLeft: '2.25rem' }}
-            className="w-full pr-4 py-2 rounded-lg bg-nw-900 border border-white/10 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#967705]/60 transition-colors"
+            className="w-full pr-4 py-2 rounded-lg bg-nw-800 border border-[rgba(255,255,255,0.09)] text-[13px] text-nw-200 placeholder:text-nw-500 outline-none focus:border-[rgba(212,160,23,0.4)] focus:bg-nw-750 transition-colors"
           />
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none z-10" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-nw-500 pointer-events-none z-10" />
         </div>
         {hasColFilters && (
           <button
             onClick={() => setColFilters({ nameSort: '', email: '', phone: '', group: 'all', source: 'all', dateFrom: '', status: 'all' })}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-white/50 border border-white/10 hover:border-white/25 hover:text-white/80 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-nw-400 border border-[rgba(255,255,255,0.09)] hover:border-white/25 hover:text-white/80 transition-colors"
           >
             <X size={12} />Clear filters
           </button>
@@ -534,7 +534,7 @@ export function ContactsManager({ initialContacts }: Props) {
             <X size={13} />
           </button>
           <div className="h-4 w-px bg-white/[0.12] mx-0.5" />
-          <span className="text-xs text-white/40">Add to group:</span>
+          <span className="text-xs text-nw-500">Add to group:</span>
           {allGroups.map((g) => (
             <button
               key={g}
@@ -599,7 +599,7 @@ export function ContactsManager({ initialContacts }: Props) {
                   />
                 </th>
                 {['Name', 'Email', 'Phone', 'Groups', 'Source', 'Added', 'Status', ''].map((h) => (
-                  <th key={h} className="px-6 py-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">{h}</th>
+                  <th key={h} className="px-6 py-3 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">{h}</th>
                 ))}
               </tr>
               {/* Column filters */}
@@ -621,17 +621,17 @@ export function ContactsManager({ initialContacts }: Props) {
                 {/* Email */}
                 <th className="px-3 py-2">
                   <input value={colFilters.email} onChange={(e) => setCol('email', e.target.value)} placeholder="Filter…"
-                    className="w-full px-2 py-1 rounded bg-nw-900 border border-white/[0.07] text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-[#967705]/40" />
+                    className="w-full px-2 py-1 rounded bg-nw-800 border border-[rgba(255,255,255,0.09)] text-xs text-nw-200 placeholder:text-nw-500 outline-none focus:border-[rgba(212,160,23,0.4)]" />
                 </th>
                 {/* Phone */}
                 <th className="px-3 py-2">
                   <input value={colFilters.phone} onChange={(e) => setCol('phone', e.target.value)} placeholder="Filter…"
-                    className="w-full px-2 py-1 rounded bg-nw-900 border border-white/[0.07] text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-[#967705]/40" />
+                    className="w-full px-2 py-1 rounded bg-nw-800 border border-[rgba(255,255,255,0.09)] text-xs text-nw-200 placeholder:text-nw-500 outline-none focus:border-[rgba(212,160,23,0.4)]" />
                 </th>
                 {/* Groups */}
                 <th className="px-3 py-2">
                   <select value={colFilters.group} onChange={(e) => setCol('group', e.target.value)}
-                    className="w-full px-2 py-1 rounded bg-nw-900 border border-white/[0.07] text-xs text-white focus:outline-none focus:border-[#967705]/40">
+                    className="w-full px-2 py-1 rounded bg-nw-800 border border-[rgba(255,255,255,0.09)] text-xs text-nw-200 outline-none focus:border-[rgba(212,160,23,0.4)]">
                     <option value="all">All</option>
                     <option value="__none__">No group</option>
                     {allGroups.map((g) => <option key={g} value={g}>{g}</option>)}
@@ -640,7 +640,7 @@ export function ContactsManager({ initialContacts }: Props) {
                 {/* Source */}
                 <th className="px-3 py-2">
                   <select value={colFilters.source} onChange={(e) => setCol('source', e.target.value)}
-                    className="w-full px-2 py-1 rounded bg-nw-900 border border-white/[0.07] text-xs text-white focus:outline-none focus:border-[#967705]/40">
+                    className="w-full px-2 py-1 rounded bg-nw-800 border border-[rgba(255,255,255,0.09)] text-xs text-nw-200 outline-none focus:border-[rgba(212,160,23,0.4)]">
                     <option value="all">All</option>
                     {allSources.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
@@ -648,12 +648,12 @@ export function ContactsManager({ initialContacts }: Props) {
                 {/* Added (from date) */}
                 <th className="px-3 py-2">
                   <input type="date" value={colFilters.dateFrom} onChange={(e) => setCol('dateFrom', e.target.value)}
-                    className="w-full px-2 py-1 rounded bg-nw-900 border border-white/[0.07] text-xs text-white focus:outline-none focus:border-[#967705]/40 [color-scheme:dark]" />
+                    className="w-full px-2 py-1 rounded bg-nw-800 border border-[rgba(255,255,255,0.09)] text-xs text-nw-200 outline-none focus:border-[rgba(212,160,23,0.4)] [color-scheme:dark]" />
                 </th>
                 {/* Status */}
                 <th className="px-3 py-2">
                   <select value={colFilters.status} onChange={(e) => setCol('status', e.target.value)}
-                    className="w-full px-2 py-1 rounded bg-nw-900 border border-white/[0.07] text-xs text-white focus:outline-none focus:border-[#967705]/40">
+                    className="w-full px-2 py-1 rounded bg-nw-800 border border-[rgba(255,255,255,0.09)] text-xs text-nw-200 outline-none focus:border-[rgba(212,160,23,0.4)]">
                     <option value="all">All</option>
                     <option value="green">Membership</option>
                     <option value="amber">Class pack</option>
@@ -740,7 +740,7 @@ export function ContactsManager({ initialContacts }: Props) {
               value={form.notes}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               rows={3} placeholder="Optional notes…"
-              className="w-full px-3 py-2 rounded-lg bg-nw-900 border border-white/10 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#967705]/60 transition-colors resize-none"
+              className="w-full px-3 py-2 rounded-lg bg-nw-800 border border-[rgba(255,255,255,0.09)] text-[13px] text-nw-200 placeholder:text-nw-500 outline-none focus:border-[rgba(212,160,23,0.4)] focus:bg-nw-750 transition-colors resize-none"
             />
           </Field>
           <div className="flex items-center justify-between">
@@ -813,9 +813,9 @@ export function ContactsManager({ initialContacts }: Props) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/[0.08]">
-                    <th className="px-4 py-2.5 text-left text-xs font-medium text-white/40 uppercase tracking-wider w-36">Our field</th>
-                    <th className="px-4 py-2.5 text-left text-xs font-medium text-white/40 uppercase tracking-wider">Your CSV column</th>
-                    <th className="px-4 py-2.5 text-left text-xs font-medium text-white/40 uppercase tracking-wider w-48">Preview (first row)</th>
+                    <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500 w-36">Our field</th>
+                    <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Your CSV column</th>
+                    <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500 w-48">Preview (first row)</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -76,18 +76,14 @@ html.nw-light {
   --nw-shadow-sidebar: 4px 0 16px rgba(0,0,0,0.06), 2px 0 4px rgba(0,0,0,0.04);
 }
 
-/* Light mode: flip rgba(255,255,255,...) borders/bgs to rgba(0,0,0,...) */
-html.nw-light [class*="border-[rgba(255,255,255,"] { border-color: rgba(0,0,0,0.08) !important; }
-html.nw-light [class*="bg-[rgba(255,255,255,0.0"] { background-color: rgba(0,0,0,0.03) !important; }
-html.nw-light [class*="bg-[rgba(255,255,255,0.06)"] { background-color: rgba(0,0,0,0.05) !important; }
-html.nw-light .text-white { color: #111827 !important; }
-html.nw-light .bg-\[\#090c12\] { background-color: #f0f2f5 !important; }
+/* ── Light mode: comprehensive overrides ───────────────────────────────── */
 
-/* Light mode: update old --slate-* and --r-* vars used by TopBar drawer */
+/* 1. Old --slate-* and --r-* vars used by calendar, TopBar drawer, etc */
 html.nw-light {
   --slate-950: #f8f9fb;
   --slate-900: #f0f2f5;
-  --slate-800: #e8eaed;
+  --slate-850: #e8eaed;
+  --slate-800: #e2e5e9;
   --slate-750: #ffffff;
   --slate-700: #f5f6f8;
   --slate-600: #d1d5db;
@@ -100,21 +96,100 @@ html.nw-light {
   --r-panel-border: rgba(0, 0, 0, 0.08);
   --r-gold-400: #e8b933;
   --r-gold-300: #f2cb55;
+  --r-gold-600: #b8870f;
+  --r-green: #16a34a;
+  --r-amber: #d97706;
   --bg-base: #f0f2f5;
   --bg-surface: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-high: #f8f9fb;
+  --bg-card-highest: #f0f2f5;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.14);
   --text: #1f2937;
   --text-muted: #4b5563;
+  --text-subtle: rgba(0, 0, 0, 0.4);
 }
 
-/* Light mode scrollbar */
+/* 2. Flip rgba(255,255,255,...) borders → rgba(0,0,0,...) */
+html.nw-light [class*="border-[rgba(255,255,255,"] { border-color: rgba(0,0,0,0.10) !important; }
+
+/* 3. Flip rgba(255,255,255,...) backgrounds → subtle dark tint */
+html.nw-light [class*="bg-[rgba(255,255,255,0.0"] { background-color: rgba(0,0,0,0.03) !important; }
+html.nw-light [class*="bg-[rgba(255,255,255,0.06)"] { background-color: rgba(0,0,0,0.04) !important; }
+
+/* 4. White text → near-black */
+html.nw-light .text-white { color: #1f2937 !important; }
+html.nw-light .text-\[\#F0F0F0\],
+html.nw-light .text-\[\#f0f0f0\] { color: #1f2937 !important; }
+
+/* 5. Hardcoded dark backgrounds → light equivalents */
+html.nw-light .bg-\[\#090c12\] { background-color: #f0f2f5 !important; }
+html.nw-light .bg-\[\#0a0a0a\],
+html.nw-light .bg-\[\#0d0d0d\],
+html.nw-light .bg-\[\#0f0f0f\],
+html.nw-light .bg-\[\#0d1117\],
+html.nw-light .bg-\[\#111\],
+html.nw-light .bg-\[\#111111\],
+html.nw-light .bg-\[\#1a1a1a\],
+html.nw-light .bg-\[\#1c1b1b\],
+html.nw-light .bg-\[\#131313\] { background-color: #f5f6f8 !important; }
+
+/* 6. Hardcoded dark hover backgrounds */
+html.nw-light .hover\:bg-\[\#0f0f0f\]:hover,
+html.nw-light .hover\:bg-\[\#1a1a1a\]:hover,
+html.nw-light .active\:bg-\[\#1a1a1a\]:active { background-color: #edf0f3 !important; }
+
+/* 7. White/30, white/40, white/50 text → appropriate gray */
+html.nw-light [class*="text-white/"] { color: #6b7280 !important; }
+
+/* 8. Gradient buttons: gold gradient text should stay gold */
+html.nw-light .text-gold-300,
+html.nw-light .text-gold-400 { color: inherit; }
+
+/* 9. Light mode html/body background */
+html.nw-light { background-color: #f0f2f5 !important; }
+html.nw-light body { color: #1f2937; }
+
+/* 10. Panels & cards get a subtle shadow to stand out on light bg */
+html.nw-light .bg-nw-750 {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04) !important;
+}
+
+/* 11. Page titles: stronger weight in light mode */
+html.nw-light .font-brand { color: #111827; }
+
+/* 12. Stat cards: visible elevated shadow in light mode */
+html.nw-light .shadow-gold-sm {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 4px 20px rgba(212,160,23,0.08) !important;
+}
+html.nw-light .hover\:shadow-gold-md:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 6px 28px rgba(212,160,23,0.14) !important;
+}
+
+/* 13. Badge gold bg stays visible */
+html.nw-light [class*="bg-[rgba(212,160,23,"] { /* keep gold tints as-is */ }
+
+/* 14. Gradient gold accent bar on stat cards */
+html.nw-light [class*="from-[rgba(212,160,23,"] { /* keep gold gradients */ }
+
+/* 15. Scrollbar */
 html.nw-light ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); }
 html.nw-light ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
 
-/* Light mode skeleton shimmer */
+/* 16. Skeleton shimmer for light mode */
 html.nw-light .skeleton {
   background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 75%);
   background-size: 800px 100%;
 }
+
+/* 17. Focus visible ring stays gold */
+html.nw-light :focus-visible { outline-color: #d4a017; }
+
+/* 18. Recharts in light mode: make grid/axis visible */
+html.nw-light .recharts-cartesian-grid-horizontal line,
+html.nw-light .recharts-cartesian-grid-vertical line { stroke: rgba(0,0,0,0.06) !important; }
+html.nw-light .recharts-text { fill: #4b5563 !important; }
 
 @keyframes accordion-down {
   from { height: 0; }
