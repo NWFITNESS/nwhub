@@ -2,13 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react'
 import {
-  Search, X, Smartphone,
+  Search, X, Bell, Sun, Moon,
   Users, Mail, PenSquare, Baby, Image, AtSign,
   MessageSquare, Send, Tag, Phone,
-  SlidersHorizontal, Monitor, Zap, LayoutGrid, ChevronRight, Sun,
+  ChevronRight, Inbox, FileText, Clock, Zap,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useSidebarCtx } from './SidebarProvider'
 import { usePathname } from 'next/navigation'
 
 type SearchResult = { id: string; label: string; sub: string; href: string }
@@ -31,27 +30,13 @@ const CATEGORY_META: Record<string, {
 }
 
 const PATH_LABELS: Record<string, string> = {
-  inbox: 'Inbox Intelligence',
-  calendar: 'Calendar',
-  financials: 'Financials',
-  contacts: 'Contacts',
-  leads: 'Leads',
-  enquiries: 'Enquiries',
-  kids: 'Kids & Teens',
-  email: 'Email',
-  campaigns: 'Campaigns',
-  mailchimp: 'Email Campaigns',
-  content: 'Website Editor',
-  blog: 'Blog',
-  manage: 'Manage',
-  media: 'Media',
-  settings: 'Settings',
-  sync: 'Integrations',
-  branding: 'Branding Studio',
-  workflows: 'Workflows',
-  'ai-chat': 'AI Chat',
-  todo: 'To Do',
-  'email-campaigns': 'Email Campaigns',
+  inbox: 'Inbox Intelligence', calendar: 'Calendar', financials: 'Financials',
+  contacts: 'Contacts', leads: 'Leads', enquiries: 'Enquiries',
+  kids: 'Kids & Teens', email: 'Email', campaigns: 'Campaigns',
+  mailchimp: 'Email Campaigns', content: 'Website Editor', blog: 'Blog',
+  manage: 'Manage', media: 'Media', settings: 'Settings', sync: 'Integrations',
+  branding: 'Branding Studio', workflows: 'Workflows', 'ai-chat': 'AI Chat',
+  todo: 'To Do', 'email-campaigns': 'Email Campaigns',
 }
 
 function getBreadcrumb(pathname: string) {
@@ -62,133 +47,106 @@ function getBreadcrumb(pathname: string) {
   return { segments, current }
 }
 
-interface TopBarProps {
-  title?: string
-  actions?: React.ReactNode
-}
-
 const Chevron = () => (
   <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.7" style={{ opacity: 0.4 }}>
     <path d="M3 2l3.5 3L3 8" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 )
 
-function ToggleRow({ label, sub, icon: Icon, value, onToggle }: {
-  label: string; sub: string; icon: React.ElementType; value: boolean; onToggle: () => void
-}) {
-  return (
-    <div
-      onClick={onToggle}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 10,
-        padding: '9px 10px', borderRadius: 7, cursor: 'pointer',
-        background: value ? 'rgba(212,160,23,0.07)' : 'transparent',
-        border: `1px solid ${value ? 'rgba(212,160,23,0.2)' : 'transparent'}`,
-        marginBottom: 4, transition: 'all 0.15s',
-      }}
-    >
-      <div style={{ width: 28, height: 28, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: value ? 'rgba(212,160,23,0.12)' : 'rgba(255,255,255,0.04)', flexShrink: 0 }}>
-        <Icon size={13} style={{ color: value ? 'var(--r-gold-400)' : 'var(--slate-500)' }} />
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: 12, color: value ? 'var(--r-gold-300)' : 'var(--slate-200)', fontWeight: 500 }}>{label}</p>
-        <p style={{ fontSize: 10, color: 'var(--slate-500)', marginTop: 1 }}>{sub}</p>
-      </div>
-      <div style={{
-        width: 32, height: 18, borderRadius: 9, flexShrink: 0,
-        background: value ? 'rgba(212,160,23,0.5)' : 'rgba(255,255,255,0.1)',
-        position: 'relative', transition: 'background 0.2s',
-      }}>
-        <div style={{
-          position: 'absolute', top: 3, left: value ? 17 : 3,
-          width: 12, height: 12, borderRadius: '50%',
-          background: value ? 'var(--r-gold-300)' : 'var(--slate-500)',
-          transition: 'left 0.2s, background 0.2s',
-        }} />
-      </div>
-    </div>
-  )
+// ── Notification channels ────────────────────────────────────────────────────
+
+const NOTIFICATION_CHANNELS = [
+  { key: 'enquiries',      label: 'New Enquiries',      desc: 'When someone submits a contact form',    icon: Inbox },
+  { key: 'emails',         label: 'Inbound Emails',     desc: 'Gmail inbox intelligence alerts',         icon: Mail },
+  { key: 'todo',           label: 'To-Do Reminders',    desc: 'Task due dates and assignments',          icon: FileText },
+  { key: 'morning_digest', label: 'Morning Digest',     desc: 'Daily summary at 8am',                   icon: Clock },
+  { key: 'workflows',      label: 'Workflow Triggers',  desc: 'When automations fire or fail',           icon: Zap },
+  { key: 'reviews',        label: 'Google Reviews',     desc: 'New reviews detected for your business',  icon: MessageSquare },
+]
+
+// ── Main component ───────────────────────────────────────────────────────────
+
+interface TopBarProps {
+  title?: string
+  actions?: React.ReactNode
 }
 
 export function TopBar({ title, actions }: TopBarProps) {
-  const { isMobileView, setIsMobileView } = useSidebarCtx()
   const pathname = usePathname()
-  const [query, setQuery]           = useState('')
-  const [results, setResults]       = useState<SearchResults | null>(null)
-  const [loading, setLoading]       = useState(false)
-  const [open, setOpen]             = useState(false)
+
+  // Search
+  const [query, setQuery]               = useState('')
+  const [results, setResults]           = useState<SearchResults | null>(null)
+  const [loading, setLoading]           = useState(false)
+  const [searchOpen, setSearchOpen]     = useState(false)
   const [searchVisible, setSearchVisible] = useState(false)
-  const [customiseOpen, setCustomiseOpen] = useState(false)
-  const [compactMode, setCompactMode]     = useState(false)
-  const [showGridLines, setShowGridLines] = useState(false)
-  const [focusMode, setFocusMode]         = useState(false)
-  const [lightMode, setLightMode]         = useState(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const inputRef   = useRef<HTMLInputElement>(null)
 
-  // Init from localStorage and apply DOM classes
+  // Theme
+  const [lightMode, setLightMode] = useState(false)
+
+  // Notifications
+  const [bellOpen, setBellOpen] = useState(false)
+  const [notifSettings, setNotifSettings] = useState<Record<string, { desktop: boolean; mobile: boolean }>>({})
+  const bellRef = useRef<HTMLDivElement>(null)
+
+  // Init theme from localStorage
   useEffect(() => {
-    const compact   = localStorage.getItem('nw-compact')   === '1'
-    const grid      = localStorage.getItem('nw-gridlines') === '1'
-    const focus     = localStorage.getItem('nw-focus')     === '1'
-    const light     = localStorage.getItem('nw-theme')     === 'light'
-    setCompactMode(compact)
-    setShowGridLines(grid)
-    setFocusMode(focus)
+    const light = localStorage.getItem('nw-theme') === 'light'
     setLightMode(light)
-    document.documentElement.classList.toggle('nw-compact', compact)
-    document.documentElement.classList.toggle('nw-grid',    grid)
-    document.documentElement.classList.toggle('nw-focus',   focus)
+    // Load notification prefs
+    try {
+      const saved = localStorage.getItem('nw-notifications')
+      if (saved) setNotifSettings(JSON.parse(saved))
+    } catch {}
   }, [])
-
-  useEffect(() => {
-    localStorage.setItem('nw-compact', compactMode ? '1' : '0')
-    document.documentElement.classList.toggle('nw-compact', compactMode)
-  }, [compactMode])
-
-  useEffect(() => {
-    localStorage.setItem('nw-gridlines', showGridLines ? '1' : '0')
-    document.documentElement.classList.toggle('nw-grid', showGridLines)
-  }, [showGridLines])
-
-  useEffect(() => {
-    localStorage.setItem('nw-focus', focusMode ? '1' : '0')
-    document.documentElement.classList.toggle('nw-focus', focusMode)
-  }, [focusMode])
 
   useEffect(() => {
     localStorage.setItem('nw-theme', lightMode ? 'light' : 'dark')
     document.documentElement.classList.toggle('nw-light', lightMode)
   }, [lightMode])
 
-  // Global keyboard shortcuts
+  // Save notification settings
+  useEffect(() => {
+    if (Object.keys(notifSettings).length > 0) {
+      localStorage.setItem('nw-notifications', JSON.stringify(notifSettings))
+    }
+  }, [notifSettings])
+
+  function toggleNotif(key: string, type: 'desktop' | 'mobile') {
+    setNotifSettings(prev => {
+      const current = prev[key] ?? { desktop: false, mobile: false }
+      return { ...prev, [key]: { ...current, [type]: !current[type] } }
+    })
+  }
+
+  // Keyboard shortcuts
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       const target = e.target as HTMLElement
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return
-      if (e.key === 'm' || e.key === 'M') { setIsMobileView(!isMobileView); return }
       if (e.key === '/') { e.preventDefault(); setSearchVisible(true); return }
-      if (e.key === 'Escape') { setCustomiseOpen(false); return }
+      if (e.key === 'Escape') { setBellOpen(false); return }
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [isMobileView, setIsMobileView])
+  }, [])
 
+  // Search
   const { segments, current } = getBreadcrumb(pathname)
   const pageLabel = title ?? current
 
   useEffect(() => {
-    if (query.length < 2) { setResults(null); setOpen(false); return }
+    if (query.length < 2) { setResults(null); setSearchOpen(false); return }
     const t = setTimeout(async () => {
       setLoading(true)
       try {
         const res  = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
         const data = await res.json()
         setResults(data)
-        setOpen(true)
-      } finally {
-        setLoading(false)
-      }
+        setSearchOpen(true)
+      } finally { setLoading(false) }
     }, 250)
     return () => clearTimeout(t)
   }, [query])
@@ -196,7 +154,10 @@ export function TopBar({ title, actions }: TopBarProps) {
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-        setOpen(false); setSearchVisible(false); setQuery('')
+        setSearchOpen(false); setSearchVisible(false); setQuery('')
+      }
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
+        setBellOpen(false)
       }
     }
     document.addEventListener('mousedown', handler)
@@ -211,28 +172,21 @@ export function TopBar({ title, actions }: TopBarProps) {
   const totalResults = categories.reduce((n, [, items]) => n + items.length, 0)
 
   return (
-    <>
-    <header
-      className="hidden md:flex h-[54px] min-h-[54px] flex-shrink-0 items-center gap-[14px] border-b border-[rgba(255,255,255,0.09)] bg-nw-950 px-[22px] z-10"
-    >
+    <header className="hidden md:flex h-[54px] min-h-[54px] flex-shrink-0 items-center gap-[14px] border-b border-[rgba(255,255,255,0.09)] bg-nw-950 px-[22px] z-10">
       {/* Brand */}
       <span className="font-brand text-sm font-bold uppercase tracking-[2px] text-nw-300 whitespace-nowrap">NW HUB</span>
-
-      {/* Divider */}
       <div className="h-[18px] w-px flex-shrink-0 bg-[rgba(255,255,255,0.09)]" />
 
       {/* Breadcrumb */}
       <div className="flex items-center gap-[6px] text-xs text-nw-500">
         {segments.map((seg, i) => (
-          <span key={i} className="flex items-center gap-[6px]">
-            {seg} <Chevron />
-          </span>
+          <span key={i} className="flex items-center gap-[6px]">{seg} <Chevron /></span>
         ))}
         <span className="text-nw-200">{pageLabel}</span>
       </div>
 
       {/* Right side */}
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-1.5">
 
         {/* Search */}
         <div ref={wrapperRef} className="relative">
@@ -242,27 +196,14 @@ export function TopBar({ title, actions }: TopBarProps) {
                 ref={inputRef}
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                onFocus={() => { if (results && query.length >= 2) setOpen(true) }}
-                onKeyDown={e => {
-                  if (e.key === 'Escape') { setOpen(false); setSearchVisible(false); setQuery('') }
-                }}
+                onFocus={() => { if (results && query.length >= 2) setSearchOpen(true) }}
+                onKeyDown={e => { if (e.key === 'Escape') { setSearchOpen(false); setSearchVisible(false); setQuery('') } }}
                 placeholder="Search everything…"
-                style={{
-                  paddingLeft: '2rem', paddingRight: '2rem',
-                  paddingTop: '5px', paddingBottom: '5px',
-                  borderRadius: 7,
-                  background: 'var(--r-panel-bg)',
-                  border: '1px solid rgba(212,160,23,0.3)',
-                  color: 'var(--slate-200)', fontSize: 12, outline: 'none',
-                  width: 220,
-                }}
+                className="h-8 w-[220px] rounded-[7px] border border-[rgba(212,160,23,0.3)] bg-nw-800 pl-8 pr-8 text-xs text-nw-200 placeholder:text-nw-500 outline-none focus:bg-nw-750"
               />
-              <Search size={12} style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', color: 'var(--slate-500)', pointerEvents: 'none' }} />
+              <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-nw-500 pointer-events-none" />
               {query && (
-                <button
-                  onClick={() => { setQuery(''); setOpen(false) }}
-                  style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-500)', display: 'flex', padding: 0 }}
-                >
+                <button onClick={() => { setQuery(''); setSearchOpen(false) }} className="absolute right-2 top-1/2 -translate-y-1/2 text-nw-500 hover:text-nw-300">
                   <X size={12} />
                 </button>
               )}
@@ -270,24 +211,20 @@ export function TopBar({ title, actions }: TopBarProps) {
           ) : (
             <button
               onClick={() => setSearchVisible(true)}
-              className="flex items-center gap-1.5 rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] px-3 py-[5px] text-xs text-nw-300 transition-colors hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.08)] hover:text-nw-100"
+              className="flex h-8 w-8 items-center justify-center rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] text-nw-400 transition-colors hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.08)] hover:text-nw-200"
+              title="Search (/)"
             >
-              <Search size={13} /> Search
+              <Search size={14} />
             </button>
           )}
 
-          {/* Dropdown */}
-          {open && (
-            <div style={{
-              position: 'absolute', top: '100%', marginTop: 6, right: 0,
-              background: 'var(--slate-800)', border: '1px solid var(--slate-600)',
-              borderRadius: 8, boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-              zIndex: 50, maxHeight: 400, overflowY: 'auto', width: 280,
-            }}>
+          {/* Search dropdown */}
+          {searchOpen && (
+            <div className="absolute right-0 top-full mt-1.5 z-50 w-[280px] max-h-[400px] overflow-y-auto rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 shadow-lg">
               {loading ? (
-                <p style={{ padding: '10px 14px', fontSize: 12, color: 'var(--slate-500)' }}>Searching…</p>
+                <p className="p-3 text-xs text-nw-500">Searching…</p>
               ) : totalResults === 0 ? (
-                <p style={{ padding: '10px 14px', fontSize: 12, color: 'var(--slate-500)' }}>No results for &ldquo;{query}&rdquo;</p>
+                <p className="p-3 text-xs text-nw-500">No results for &ldquo;{query}&rdquo;</p>
               ) : (
                 categories.map(([cat, items]) => {
                   const meta = CATEGORY_META[cat]
@@ -295,23 +232,18 @@ export function TopBar({ title, actions }: TopBarProps) {
                   const Icon = meta.icon
                   return (
                     <div key={cat}>
-                      <div style={{ padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid var(--r-panel-border)', background: 'rgba(255,255,255,0.02)' }}>
-                        <Icon size={10} className="text-[#e8b933]" />
-                        <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '1.2px' }}>{meta.label}</span>
+                      <div className="flex items-center gap-1.5 border-b border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] px-3 py-1.5">
+                        <Icon size={10} className="text-gold-400" />
+                        <span className="text-[9px] font-semibold uppercase tracking-[1.2px] text-nw-500">{meta.label}</span>
                       </div>
                       {items.map(r => (
                         <Link
-                          key={r.id}
-                          href={r.href}
-                          onClick={() => { setOpen(false); setQuery(''); setSearchVisible(false) }}
-                          style={{ display: 'flex', alignItems: 'center', padding: '8px 14px', borderBottom: '1px solid var(--r-panel-border)', textDecoration: 'none' }}
-                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--r-panel-bg)' }}
-                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+                          key={r.id} href={r.href}
+                          onClick={() => { setSearchOpen(false); setQuery(''); setSearchVisible(false) }}
+                          className="block border-b border-[rgba(255,255,255,0.05)] px-3 py-2 transition-colors hover:bg-[rgba(255,255,255,0.03)] no-underline"
                         >
-                          <div>
-                            <p style={{ fontSize: 12, color: 'var(--slate-200)' }}>{r.label}</p>
-                            {r.sub && <p style={{ fontSize: 11, color: 'var(--slate-500)', marginTop: 1 }}>{r.sub}</p>}
-                          </div>
+                          <p className="text-xs text-nw-200">{r.label}</p>
+                          {r.sub && <p className="text-[11px] text-nw-500 mt-0.5">{r.sub}</p>}
                         </Link>
                       ))}
                     </div>
@@ -322,133 +254,107 @@ export function TopBar({ title, actions }: TopBarProps) {
           )}
         </div>
 
-        {/* Mobile view toggle */}
+        {/* Theme toggle */}
         <button
-          onClick={() => setIsMobileView(!isMobileView)}
-          title="Toggle mobile view"
-          className={`flex items-center gap-1.5 rounded-[7px] border px-3 py-[5px] text-xs transition-colors ${isMobileView ? 'border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-gold-300' : 'border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] text-nw-300 hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.08)] hover:text-nw-100'}`}
+          onClick={() => setLightMode(v => !v)}
+          className="flex h-8 w-8 items-center justify-center rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] text-nw-400 transition-colors hover:border-[rgba(212,160,23,0.28)] hover:bg-[rgba(212,160,23,0.08)] hover:text-gold-400"
+          title={lightMode ? 'Switch to dark mode' : 'Switch to light mode'}
         >
-          <Smartphone size={13} />
+          {lightMode ? <Moon size={14} /> : <Sun size={14} />}
         </button>
 
-        {/* Page Settings — gold */}
-        <button
-          onClick={() => setCustomiseOpen(v => !v)}
-          className="flex items-center gap-1.5 rounded-[7px] border border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] px-3 py-[5px] text-xs text-gold-300 transition-colors hover:bg-[rgba(212,160,23,0.22)]"
-        >
-          <SlidersHorizontal size={13} /> Page Settings
-        </button>
+        {/* Notification bell */}
+        <div ref={bellRef} className="relative">
+          <button
+            onClick={() => setBellOpen(v => !v)}
+            className={`flex h-8 w-8 items-center justify-center rounded-[7px] border transition-colors ${
+              bellOpen
+                ? 'border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-gold-300'
+                : 'border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] text-nw-400 hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.08)] hover:text-nw-200'
+            }`}
+            title="Notification settings"
+          >
+            <Bell size={14} />
+          </button>
 
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
-      </div>
-    </header>
+          {/* Notification popup */}
+          {bellOpen && (
+            <div className="absolute right-0 top-full mt-2 z-50 w-[340px] overflow-hidden rounded-[12px] border border-[rgba(255,255,255,0.11)] bg-nw-750 shadow-xl">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.07)] px-5 py-3.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-[7px] bg-[rgba(212,160,23,0.1)] border border-[rgba(212,160,23,0.22)]">
+                    <Bell size={13} className="text-gold-400" />
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-medium text-nw-200">Notifications</p>
+                    <p className="text-[10px] text-nw-500">Choose what alerts you</p>
+                  </div>
+                </div>
+                <button onClick={() => setBellOpen(false)} className="text-nw-500 hover:text-nw-300 transition-colors">
+                  <X size={14} />
+                </button>
+              </div>
 
-    {/* Customise Drawer */}
-    {customiseOpen && (
-      <>
-        {/* backdrop */}
-        <div
-          onClick={() => setCustomiseOpen(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 29 }}
-        />
-        <aside style={{
-          position: 'fixed', top: 54, right: 0, bottom: 0,
-          width: 280, zIndex: 30,
-          background: 'var(--slate-900)',
-          borderLeft: '1px solid var(--r-panel-border)',
-          display: 'flex', flexDirection: 'column',
-          boxShadow: '-8px 0 32px rgba(0,0,0,0.4)',
-          animation: 'slideInRight 0.2s ease',
-        }}>
-          {/* Header */}
-          <div style={{ padding: '16px 18px 14px', borderBottom: '1px solid var(--r-panel-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <SlidersHorizontal size={14} style={{ color: 'var(--r-gold-400)' }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--slate-100)', fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif', letterSpacing: '0.5px' }}>PAGE SETTINGS</span>
-            </div>
-            <button onClick={() => setCustomiseOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-500)', display: 'flex', padding: 2 }}>
-              <X size={14} />
-            </button>
-          </div>
+              {/* Column headers */}
+              <div className="flex items-center justify-end gap-0 border-b border-[rgba(255,255,255,0.05)] px-5 py-2">
+                <span className="w-[52px] text-center text-[9px] font-semibold uppercase tracking-[1px] text-nw-500">Desktop</span>
+                <span className="w-[52px] text-center text-[9px] font-semibold uppercase tracking-[1px] text-nw-500">Mobile</span>
+              </div>
 
-          {/* Content */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '14px 0' }}>
+              {/* Channels */}
+              <div className="max-h-[360px] overflow-y-auto">
+                {NOTIFICATION_CHANNELS.map(({ key, label, desc, icon: Icon }) => {
+                  const settings = notifSettings[key] ?? { desktop: false, mobile: false }
+                  return (
+                    <div key={key} className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.05)] px-5 py-3 last:border-0">
+                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[7px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.07)]">
+                        <Icon size={14} className="text-nw-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[12px] font-medium text-nw-200">{label}</p>
+                        <p className="text-[10px] text-nw-500 leading-tight mt-0.5">{desc}</p>
+                      </div>
+                      {/* Desktop toggle */}
+                      <button
+                        onClick={() => toggleNotif(key, 'desktop')}
+                        className={`relative h-[18px] w-[32px] flex-shrink-0 rounded-full transition-colors ${settings.desktop ? 'bg-gold-500' : 'bg-nw-600'}`}
+                      >
+                        <div className={`absolute top-[3px] h-3 w-3 rounded-full bg-white shadow transition-transform ${settings.desktop ? 'translate-x-[17px]' : 'translate-x-[3px]'}`} />
+                      </button>
+                      {/* Mobile toggle */}
+                      <button
+                        onClick={() => toggleNotif(key, 'mobile')}
+                        className={`relative h-[18px] w-[32px] flex-shrink-0 rounded-full transition-colors ${settings.mobile ? 'bg-gold-500' : 'bg-nw-600'}`}
+                      >
+                        <div className={`absolute top-[3px] h-3 w-3 rounded-full bg-white shadow transition-transform ${settings.mobile ? 'translate-x-[17px]' : 'translate-x-[3px]'}`} />
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
 
-            {/* Display */}
-            <div style={{ padding: '0 18px 8px' }}>
-              <p style={{ fontSize: 9, fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 10 }}>Display</p>
-
-              <ToggleRow label="Light Mode" sub="Switch to light gray theme" icon={Sun} value={lightMode} onToggle={() => setLightMode(v => !v)} />
-              <ToggleRow label="Compact Mode" sub="Reduce padding & spacing" icon={LayoutGrid} value={compactMode} onToggle={() => setCompactMode(v => !v)} />
-              <ToggleRow label="Focus Mode" sub="Hide non-essential UI" icon={Zap} value={focusMode} onToggle={() => setFocusMode(v => !v)} />
-              <ToggleRow label="Show Grid Lines" sub="Visual grid on panels" icon={Monitor} value={showGridLines} onToggle={() => setShowGridLines(v => !v)} />
-            </div>
-
-            <div style={{ height: 1, background: 'var(--r-panel-border)', margin: '8px 18px 14px' }} />
-
-            {/* Page */}
-            <div style={{ padding: '0 18px' }}>
-              <p style={{ fontSize: 9, fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 10 }}>Current Page</p>
-              <div style={{ padding: '10px 12px', borderRadius: 7, background: 'var(--r-panel-bg)', border: '1px solid var(--r-panel-border)' }}>
-                <p style={{ fontSize: 12, color: 'var(--slate-300)', marginBottom: 2 }}>{pageLabel}</p>
-                <p style={{ fontSize: 10, color: 'var(--slate-500)' }}>{pathname}</p>
+              {/* Footer */}
+              <div className="border-t border-[rgba(255,255,255,0.07)] px-5 py-3 flex items-center justify-between">
+                <p className="text-[10px] text-nw-500">Settings saved locally</p>
+                <button
+                  onClick={async () => {
+                    if ('Notification' in window && Notification.permission === 'default') {
+                      await Notification.requestPermission()
+                    }
+                    setBellOpen(false)
+                  }}
+                  className="rounded-[7px] border border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] px-3 py-[4px] text-[11px] font-medium text-gold-300 transition-colors hover:bg-[rgba(212,160,23,0.22)]"
+                >
+                  Enable Push
+                </button>
               </div>
             </div>
+          )}
+        </div>
 
-            <div style={{ height: 1, background: 'var(--r-panel-border)', margin: '14px 18px 14px' }} />
-
-            {/* Quick Actions */}
-            <div style={{ padding: '0 18px' }}>
-              <p style={{ fontSize: 9, fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 10 }}>Quick Actions</p>
-              {([
-                {
-                  key: 'M',
-                  label: 'Toggle mobile view',
-                  action: () => { setIsMobileView(!isMobileView); setCustomiseOpen(false) },
-                },
-                {
-                  key: '/',
-                  label: 'Open search',
-                  action: () => { setCustomiseOpen(false); setTimeout(() => setSearchVisible(true), 150) },
-                },
-                {
-                  key: 'Esc',
-                  label: 'Close panels',
-                  action: () => setCustomiseOpen(false),
-                },
-              ] as const).map(({ key, label, action }) => (
-                <button
-                  key={key}
-                  onClick={action}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    width: '100%', marginBottom: 6, padding: '7px 8px',
-                    background: 'transparent', border: '1px solid transparent',
-                    borderRadius: 6, cursor: 'pointer', transition: 'all 0.15s',
-                  }}
-                  onMouseEnter={e => {
-                    (e.currentTarget as HTMLElement).style.background = 'var(--r-panel-bg)'
-                    ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--r-panel-border)'
-                  }}
-                  onMouseLeave={e => {
-                    (e.currentTarget as HTMLElement).style.background = 'transparent'
-                    ;(e.currentTarget as HTMLElement).style.borderColor = 'transparent'
-                  }}
-                >
-                  <span style={{ fontSize: 11, color: 'var(--slate-300)' }}>{label}</span>
-                  <kbd style={{ fontSize: 9, fontFamily: 'monospace', color: 'var(--slate-500)', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--r-panel-border)', borderRadius: 4, padding: '2px 6px' }}>{key}</kbd>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div style={{ padding: '12px 18px', borderTop: '1px solid var(--r-panel-border)' }}>
-            <p style={{ fontSize: 10, color: 'var(--slate-600)', textAlign: 'center' }}>NW HUB v2 — Settings persist locally</p>
-          </div>
-        </aside>
-      </>
-    )}
-    </>
+        {actions && <div className="flex items-center gap-1.5">{actions}</div>}
+      </div>
+    </header>
   )
 }

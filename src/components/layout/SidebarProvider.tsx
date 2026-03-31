@@ -11,15 +11,11 @@ import { BottomTabBar } from '@/components/mobile/BottomTabBar'
 interface SidebarContextValue {
   mobileMenuOpen: boolean
   setMobileMenuOpen: (v: boolean) => void
-  isMobileView: boolean
-  setIsMobileView: (v: boolean) => void
 }
 
 export const SidebarCtx = createContext<SidebarContextValue>({
   mobileMenuOpen: false,
   setMobileMenuOpen: () => {},
-  isMobileView: false,
-  setIsMobileView: () => {},
 })
 
 export function useSidebarCtx() {
@@ -36,10 +32,9 @@ interface SidebarProviderProps {
 
 export function SidebarProvider({ children, unreadCount = 0, userEmail }: SidebarProviderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [isMobileView, setIsMobileView] = useState(false)
 
   return (
-    <SidebarCtx.Provider value={{ mobileMenuOpen, setMobileMenuOpen, isMobileView, setIsMobileView }}>
+    <SidebarCtx.Provider value={{ mobileMenuOpen, setMobileMenuOpen }}>
       <div className="flex h-screen min-h-[600px] overflow-hidden bg-nw-900">
         {/* Desktop sidebar */}
         <Sidebar unreadCount={unreadCount} userEmail={userEmail} />
