@@ -234,6 +234,12 @@ html.nw-light .nw-icon-dark { display: none; }
   }
 }
 
+/* ─── Sidebar nav scrollbar ────────────────────────────────────────────────── */
+.nwhub-nav::-webkit-scrollbar { width: 3px; }
+.nwhub-nav::-webkit-scrollbar-track { background: transparent; }
+.nwhub-nav::-webkit-scrollbar-thumb { background: #1a2840; border-radius: 2px; }
+.nwhub-nav::-webkit-scrollbar-thumb:hover { background: #2a3850; }
+
 /* ─── No scrollbar utility ─────────────────────────────────────────────────── */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
