@@ -134,9 +134,9 @@ function TagInput({
   }
 
   return (
-    <div className="flex flex-wrap gap-1.5 min-h-[38px] px-3 py-2 rounded-lg bg-nw-900 border border-white/10 focus-within:border-[#967705]/60 transition-colors">
+    <div className="flex flex-wrap gap-1.5 min-h-[38px] px-3 py-2 rounded-[7px] bg-nw-800 border border-[rgba(255,255,255,0.09)] focus-within:border-[rgba(212,160,23,0.4)] transition-colors">
       {tags.map((t) => (
-        <span key={t} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-[#967705]/20 text-[#c9a70a] border border-[#967705]/30">
+        <span key={t} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-[rgba(212,160,23,0.18)] text-gold-300 border border-[rgba(212,160,23,0.25)]">
           {t}
           <button type="button" onClick={() => onChange(tags.filter((x) => x !== t))} className="hover:text-white transition-colors">
             <X size={10} />
@@ -152,7 +152,7 @@ function TagInput({
         }}
         onBlur={() => { if (input.trim()) addTag(input) }}
         placeholder={tags.length === 0 ? placeholder : ''}
-        className="flex-1 min-w-[80px] bg-transparent text-sm text-white outline-none placeholder:text-white/25"
+        className="flex-1 min-w-[80px] bg-transparent text-[13px] text-nw-200 outline-none placeholder:text-nw-500"
       />
     </div>
   )
@@ -164,7 +164,7 @@ function TagInput({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs text-white/40 mb-1.5">{label}</label>
+      <label className="block text-[11px] font-medium uppercase tracking-[1px] text-nw-500 mb-1.5">{label}</label>
       {children}
     </div>
   )
@@ -179,7 +179,7 @@ function TextInput({ value, onChange, placeholder, type = 'text' }: {
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full px-3 py-2 rounded-lg bg-nw-900 border border-white/10 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#967705]/60 transition-colors"
+      className="h-9 w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 text-[13px] text-nw-200 placeholder:text-nw-500 outline-none transition-colors focus:border-[rgba(212,160,23,0.4)] focus:bg-nw-750"
     />
   )
 }
@@ -189,12 +189,12 @@ function TextInput({ value, onChange, placeholder, type = 'text' }: {
 // ---------------------------------------------------------------------------
 function EmptyContacts({ onAdd }: { onAdd: () => void }) {
   return (
-    <div className="rounded-xl border border-white/[0.08] px-8 py-16 flex flex-col items-center gap-4 text-center">
-      <div className="w-12 h-12 rounded-full bg-white/[0.04] flex items-center justify-center">
-        <Search size={20} className="text-white/20" />
+    <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 px-8 py-16 flex flex-col items-center gap-4 text-center">
+      <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)]">
+        <Search size={16} className="text-nw-500" />
       </div>
-      <p className="text-white/40 text-sm">No contacts yet.</p>
-      <Button variant="primary" size="sm" onClick={onAdd}>
+      <p className="text-[13px] text-nw-500">No contacts yet.</p>
+      <Button variant="gold" size="sm" onClick={onAdd}>
         <Plus size={15} />Add your first contact
       </Button>
     </div>

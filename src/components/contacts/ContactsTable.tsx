@@ -54,10 +54,10 @@ export function ContactsTable({ initialEnquiries }: Props) {
               <button
                 key={s}
                 onClick={() => setFilter(s)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${
+                className={`rounded-[7px] px-2.5 py-1 text-[11px] font-semibold capitalize transition-colors ${
                   filter === s
-                    ? 'bg-[#967705]/20 text-[#c9a70a]'
-                    : 'text-white/40 hover:text-white hover:bg-white/[0.05]'
+                    ? 'bg-[rgba(212,160,23,0.15)] text-gold-300 border border-[rgba(212,160,23,0.3)]'
+                    : 'text-nw-400 hover:text-nw-200 border border-transparent'
                 }`}
               >
                 {s} <span className="ml-1 opacity-60">({count})</span>
@@ -68,34 +68,34 @@ export function ContactsTable({ initialEnquiries }: Props) {
         <ColumnToggle columns={COLUMNS} visible={visible} onToggle={toggle} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-white/[0.08]">
-        <table className="w-full text-sm">
+      <div className="w-full overflow-x-auto">
+        <table className="w-full border-collapse text-[13px]">
           <thead>
-            <tr className="border-b border-white/[0.08]">
+            <tr>
               {visibleCols.map((col) => (
-                <th key={col.key} className="px-6 py-4 text-left text-xs font-medium text-white/40 uppercase tracking-wider">
+                <th key={col.key} className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">
                   {col.label}
                 </th>
               ))}
-              <th className="px-6 py-4 text-left text-xs font-medium text-white/40 uppercase tracking-wider" />
+              <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5" />
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={colSpan} className="px-6 py-12 text-center text-white/30">No enquiries</td></tr>
+              <tr><td colSpan={colSpan} className="px-4 py-12 text-center text-nw-500">No enquiries</td></tr>
             ) : (
               filtered.map((e) => (
                 <tr
                   key={e.id}
-                  className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors cursor-pointer"
+                  className="transition-colors hover:bg-[rgba(255,255,255,0.03)] cursor-pointer"
                   onClick={() => setSelected(e)}
                 >
-                  {visible.has('name') && <td className="px-6 py-4 font-medium text-white">{e.name}</td>}
-                  {visible.has('email') && <td className="px-6 py-4 text-white/60">{e.email}</td>}
-                  {visible.has('type') && <td className="px-6 py-4 text-white/50">{e.enquiry_type}</td>}
-                  {visible.has('status') && <td className="px-6 py-4"><Badge variant={statusToBadge(e.status)}>{e.status}</Badge></td>}
-                  {visible.has('date') && <td className="px-6 py-4 text-white/40 text-xs">{format(new Date(e.created_at), 'dd MMM yyyy')}</td>}
-                  <td className="px-6 py-4 text-right">
+                  {visible.has('name') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 font-medium text-nw-200">{e.name}</td>}
+                  {visible.has('email') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-nw-400">{e.email}</td>}
+                  {visible.has('type') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-nw-400">{e.enquiry_type}</td>}
+                  {visible.has('status') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3"><Badge variant={statusToBadge(e.status)}>{e.status}</Badge></td>}
+                  {visible.has('date') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-[11px] text-nw-500">{format(new Date(e.created_at), 'dd MMM yyyy')}</td>}
+                  <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-right">
                     <Button variant="ghost" size="sm" onClick={(ev) => { ev.stopPropagation(); setSelected(e) }}>
                       View
                     </Button>
@@ -110,30 +110,30 @@ export function ContactsTable({ initialEnquiries }: Props) {
       {selected && (
         <Modal open={!!selected} onClose={() => setSelected(null)} title={`Enquiry — ${selected.name}`} width="lg">
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-2 gap-4 text-[13px]">
               <div>
-                <p className="text-white/40 text-xs mb-1">Email</p>
-                <a href={`mailto:${selected.email}`} className="text-[#c9a70a]">{selected.email}</a>
+                <p className="text-[11px] text-nw-500 mb-1">Email</p>
+                <a href={`mailto:${selected.email}`} className="text-gold-300">{selected.email}</a>
               </div>
               <div>
-                <p className="text-white/40 text-xs mb-1">Phone</p>
-                <p className="text-white">{selected.phone || '—'}</p>
+                <p className="text-[11px] text-nw-500 mb-1">Phone</p>
+                <p className="text-nw-200">{selected.phone || '—'}</p>
               </div>
               <div>
-                <p className="text-white/40 text-xs mb-1">Type</p>
-                <p className="text-white">{selected.enquiry_type}</p>
+                <p className="text-[11px] text-nw-500 mb-1">Type</p>
+                <p className="text-nw-200">{selected.enquiry_type}</p>
               </div>
               <div>
-                <p className="text-white/40 text-xs mb-1">Date</p>
-                <p className="text-white">{format(new Date(selected.created_at), 'dd MMM yyyy HH:mm')}</p>
+                <p className="text-[11px] text-nw-500 mb-1">Date</p>
+                <p className="text-nw-200">{format(new Date(selected.created_at), 'dd MMM yyyy HH:mm')}</p>
               </div>
             </div>
             <div>
-              <p className="text-white/40 text-xs mb-2">Message</p>
-              <p className="text-sm text-white/80 bg-nw-800 rounded-lg p-3 whitespace-pre-wrap">{selected.message}</p>
+              <p className="text-[11px] text-nw-500 mb-2">Message</p>
+              <p className="text-[13px] text-nw-300 rounded-[7px] bg-nw-800 p-3 whitespace-pre-wrap">{selected.message}</p>
             </div>
-            <div className="flex items-center gap-2 pt-2 border-t border-white/10">
-              <span className="text-xs text-white/40 mr-2">Mark as:</span>
+            <div className="flex items-center gap-2 pt-2 border-t border-[rgba(255,255,255,0.07)]">
+              <span className="text-xs text-nw-500 mr-2">Mark as:</span>
               {(['new', 'read', 'replied'] as const).map((s) => (
                 <Button
                   key={s}
