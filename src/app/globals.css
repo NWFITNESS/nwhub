@@ -201,6 +201,11 @@ html.nw-light .recharts-text { fill: #4b5563 !important; }
   to { height: 0; }
 }
 
+@keyframes nwhub-sheet-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
 @keyframes slideInRight {
   from { transform: translateX(100%); opacity: 0; }
   to   { transform: translateX(0);    opacity: 1; }

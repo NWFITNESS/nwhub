@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useTheme as useThemeHook } from '@/hooks/useTheme'
 
 type SearchResult = { id: string; label: string; sub: string; href: string }
 type SearchResults = Record<string, SearchResult[]>
@@ -83,29 +84,22 @@ export function TopBar({ title, actions }: TopBarProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
   const inputRef   = useRef<HTMLInputElement>(null)
 
-  // Theme
-  const [lightMode, setLightMode] = useState(false)
+  // Theme — single source of truth via zustand
+  const { theme: currentTheme, toggle: toggleTheme } = useThemeHook()
+  const lightMode = currentTheme === 'light'
 
   // Notifications
   const [bellOpen, setBellOpen] = useState(false)
   const [notifSettings, setNotifSettings] = useState<Record<string, { desktop: boolean; mobile: boolean }>>({})
   const bellRef = useRef<HTMLDivElement>(null)
 
-  // Init theme from localStorage
+  // Load notification prefs
   useEffect(() => {
-    const light = localStorage.getItem('nw-theme') === 'light'
-    setLightMode(light)
-    // Load notification prefs
     try {
       const saved = localStorage.getItem('nw-notifications')
       if (saved) setNotifSettings(JSON.parse(saved))
     } catch {}
   }, [])
-
-  useEffect(() => {
-    localStorage.setItem('nw-theme', lightMode ? 'light' : 'dark')
-    document.documentElement.classList.toggle('nw-light', lightMode)
-  }, [lightMode])
 
   // Save notification settings
   useEffect(() => {
@@ -251,7 +245,7 @@ export function TopBar({ title, actions }: TopBarProps) {
 
         {/* Theme toggle */}
         <button
-          onClick={() => setLightMode(v => !v)}
+          onClick={toggleTheme}
           className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] text-nw-400 transition-all hover:bg-[rgba(212,160,23,0.08)] hover:text-gold-400"
           title={lightMode ? 'Switch to dark mode' : 'Switch to light mode'}
         >

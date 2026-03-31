@@ -1,52 +1,30 @@
 'use client'
 
-import { ChevronLeft, Bell } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { Bell } from 'lucide-react'
 import { NWHubIcon } from '@/components/NWHubIcon'
-import type { ReactNode } from 'react'
 
 interface MobileAppBarProps {
-  title: string
+  title?: string
   count?: number
   showBack?: boolean
-  actions?: ReactNode
+  actions?: React.ReactNode
 }
 
-export function MobileAppBar({ title, count, showBack, actions }: MobileAppBarProps) {
-  const router = useRouter()
-
+export function MobileAppBar({ title = 'NW Hub' }: MobileAppBarProps) {
   return (
-    <header className="flex md:hidden h-12 flex-shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.09)] bg-nw-950 px-4">
-      {showBack ? (
-        <button
-          onClick={() => router.back()}
-          className="w-9 h-9 flex items-center justify-center rounded-lg text-nw-400 active:bg-nw-800 flex-shrink-0"
-        >
-          <ChevronLeft size={22} />
-        </button>
-      ) : (
-        <div className="w-9" />
-      )}
+    <header className="flex md:hidden h-[52px] flex-shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.09)] bg-nw-950 px-4 sticky top-0 z-40">
+      <div style={{ width: 28 }} />
 
       <div className="flex items-center gap-2">
-        <NWHubIcon size={22} />
-        <span className="font-brand text-sm font-bold uppercase tracking-[1.5px] text-white">
+        <NWHubIcon size={26} animated />
+        <span className="font-brand text-[13px] font-bold uppercase tracking-[1.5px] text-nw-200">
           {title}
         </span>
-        {count != null && count > 0 && (
-          <span className="flex-shrink-0 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[rgba(212,160,23,0.15)] border border-[rgba(212,160,23,0.28)] text-gold-300">
-            {count}
-          </span>
-        )}
       </div>
 
-      <div className="flex items-center gap-1 flex-shrink-0">
-        {actions ?? (
-          <button className="w-9 h-9 flex items-center justify-center rounded-lg text-nw-400">
-            <Bell size={18} />
-          </button>
-        )}
-      </div>
+      <button className="flex h-7 w-7 items-center justify-center rounded-[8px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.07)] text-nw-500">
+        <Bell size={13} strokeWidth={1.7} />
+      </button>
     </header>
   )
 }

@@ -36,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem('nw-theme')==='light')document.documentElement.classList.add('nw-light')}catch(e){}` }} />
+        <script dangerouslySetInnerHTML={{ __html: `try{var t=JSON.parse(localStorage.getItem('nwhub-theme')||'{}');if(t.state&&t.state.theme==='light')document.documentElement.classList.add('nw-light')}catch(e){try{if(localStorage.getItem('nw-theme')==='light')document.documentElement.classList.add('nw-light')}catch(e2){}}` }} />
       </head>
       <body suppressHydrationWarning className={`${inter.variable} ${leagueSpartan.variable} ${manrope.variable} ${oswald.variable} ${robotoSlab.variable} ${rajdhani.variable} font-ui antialiased bg-[#090c12]`}>
         <ServiceWorkerRegistration />

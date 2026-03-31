@@ -5,6 +5,7 @@ import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
 import { MobileAppBar } from '@/components/mobile/MobileAppBar'
 import { BottomTabBar } from '@/components/mobile/BottomTabBar'
+import { MobileMenuSheet } from '@/components/mobile/MobileMenuSheet'
 
 // ── Shared context ─────────────────────────────────────────────────────────────
 
@@ -60,13 +61,14 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
         {/* Main column */}
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <TopBar />
-          <MobileAppBar title="NW Hub" />
+          <MobileAppBar />
 
           <main className="flex-1 overflow-y-auto nw-main-pad">
             {children}
           </main>
 
-          <BottomTabBar />
+          <BottomTabBar unreadCount={unreadCount} />
+          <MobileMenuSheet />
         </div>
       </div>
     </SidebarCtx.Provider>
