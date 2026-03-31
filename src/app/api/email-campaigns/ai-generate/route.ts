@@ -4,6 +4,9 @@ import { requireAuth } from '@/lib/auth-guard'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
+// Allow up to 60s for AI generation (Vercel Pro) — default 10s is too short
+export const maxDuration = 60
+
 const NW_BRAND = `
 NORTHERN WARRIOR FITNESS — BRAND GUIDELINES FOR EMAIL
 
@@ -110,7 +113,7 @@ export async function POST(req: NextRequest) {
   const imageContext = imageLines.join('\n')
 
   const message = await anthropic.messages.create({
-    model: 'claude-opus-4-6',
+    model: 'claude-sonnet-4-6',
     max_tokens: 4096,
     messages: [
       {

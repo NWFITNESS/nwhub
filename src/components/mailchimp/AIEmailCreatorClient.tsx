@@ -210,7 +210,10 @@ export function AIEmailCreatorClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, tone, audience, selectedImages, logoUrl }),
       })
-      const data = await res.json()
+      const text = await res.text()
+      if (!text) throw new Error('Empty response — the AI generation may have timed out. Try again with a shorter prompt.')
+      let data: { html: string; error?: string }
+      try { data = JSON.parse(text) } catch { throw new Error('Invalid response from server. Please try again.') }
       if (!res.ok) throw new Error(data.error ?? 'Generation failed')
       setHtml(data.html)
       setActiveTab('preview')
