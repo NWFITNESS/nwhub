@@ -73,6 +73,43 @@ const Chevron = () => (
   </svg>
 )
 
+function ToggleRow({ label, sub, icon: Icon, value, onToggle }: {
+  label: string; sub: string; icon: React.ElementType; value: boolean; onToggle: () => void
+}) {
+  return (
+    <div
+      onClick={onToggle}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '9px 10px', borderRadius: 7, cursor: 'pointer',
+        background: value ? 'rgba(212,160,23,0.07)' : 'transparent',
+        border: `1px solid ${value ? 'rgba(212,160,23,0.2)' : 'transparent'}`,
+        marginBottom: 4, transition: 'all 0.15s',
+      }}
+    >
+      <div style={{ width: 28, height: 28, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: value ? 'rgba(212,160,23,0.12)' : 'rgba(255,255,255,0.04)', flexShrink: 0 }}>
+        <Icon size={13} style={{ color: value ? 'var(--r-gold-400)' : 'var(--slate-500)' }} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 12, color: value ? 'var(--r-gold-300)' : 'var(--slate-200)', fontWeight: 500 }}>{label}</p>
+        <p style={{ fontSize: 10, color: 'var(--slate-500)', marginTop: 1 }}>{sub}</p>
+      </div>
+      <div style={{
+        width: 32, height: 18, borderRadius: 9, flexShrink: 0,
+        background: value ? 'rgba(212,160,23,0.5)' : 'rgba(255,255,255,0.1)',
+        position: 'relative', transition: 'background 0.2s',
+      }}>
+        <div style={{
+          position: 'absolute', top: 3, left: value ? 17 : 3,
+          width: 12, height: 12, borderRadius: '50%',
+          background: value ? 'var(--r-gold-300)' : 'var(--slate-500)',
+          transition: 'left 0.2s, background 0.2s',
+        }} />
+      </div>
+    </div>
+  )
+}
+
 export function TopBar({ title, actions }: TopBarProps) {
   const { isMobileView, setIsMobileView } = useSidebarCtx()
   const pathname = usePathname()
@@ -341,47 +378,10 @@ export function TopBar({ title, actions }: TopBarProps) {
             <div style={{ padding: '0 18px 8px' }}>
               <p style={{ fontSize: 9, fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 10 }}>Display</p>
 
-              {[
-                { label: 'Light Mode', sub: 'Switch to light gray theme', icon: Sun, value: lightMode, set: setLightMode },
-                { label: 'Compact Mode', sub: 'Reduce padding & spacing', icon: LayoutGrid, value: compactMode, set: setCompactMode },
-                { label: 'Focus Mode', sub: 'Hide non-essential UI', icon: Zap, value: focusMode, set: setFocusMode },
-                { label: 'Show Grid Lines', sub: 'Visual grid on panels', icon: Monitor, value: showGridLines, set: setShowGridLines },
-              ].map(({ label, sub, icon: Icon, value, set }) => (
-                <div
-                  key={label}
-                  onClick={() => set(v => !v)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '9px 10px', borderRadius: 7, cursor: 'pointer',
-                    background: value ? 'rgba(212,160,23,0.07)' : 'transparent',
-                    border: `1px solid ${value ? 'rgba(212,160,23,0.2)' : 'transparent'}`,
-                    marginBottom: 4, transition: 'all 0.15s',
-                  }}
-                  onMouseEnter={e => { if (!value) (e.currentTarget as HTMLElement).style.background = 'var(--r-panel-bg)' }}
-                  onMouseLeave={e => { if (!value) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-                >
-                  <div style={{ width: 28, height: 28, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: value ? 'rgba(212,160,23,0.12)' : 'rgba(255,255,255,0.04)', flexShrink: 0 }}>
-                    <Icon size={13} style={{ color: value ? 'var(--r-gold-400)' : 'var(--slate-500)' }} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 12, color: value ? 'var(--r-gold-300)' : 'var(--slate-200)', fontWeight: 500 }}>{label}</p>
-                    <p style={{ fontSize: 10, color: 'var(--slate-500)', marginTop: 1 }}>{sub}</p>
-                  </div>
-                  {/* Toggle */}
-                  <div style={{
-                    width: 32, height: 18, borderRadius: 9, flexShrink: 0,
-                    background: value ? 'rgba(212,160,23,0.5)' : 'rgba(255,255,255,0.1)',
-                    position: 'relative', transition: 'background 0.2s',
-                  }}>
-                    <div style={{
-                      position: 'absolute', top: 3, left: value ? 17 : 3,
-                      width: 12, height: 12, borderRadius: '50%',
-                      background: value ? 'var(--r-gold-300)' : 'var(--slate-500)',
-                      transition: 'left 0.2s, background 0.2s',
-                    }} />
-                  </div>
-                </div>
-              ))}
+              <ToggleRow label="Light Mode" sub="Switch to light gray theme" icon={Sun} value={lightMode} onToggle={() => setLightMode(v => !v)} />
+              <ToggleRow label="Compact Mode" sub="Reduce padding & spacing" icon={LayoutGrid} value={compactMode} onToggle={() => setCompactMode(v => !v)} />
+              <ToggleRow label="Focus Mode" sub="Hide non-essential UI" icon={Zap} value={focusMode} onToggle={() => setFocusMode(v => !v)} />
+              <ToggleRow label="Show Grid Lines" sub="Visual grid on panels" icon={Monitor} value={showGridLines} onToggle={() => setShowGridLines(v => !v)} />
             </div>
 
             <div style={{ height: 1, background: 'var(--r-panel-border)', margin: '8px 18px 14px' }} />
