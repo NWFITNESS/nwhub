@@ -206,6 +206,22 @@ html.nw-light .recharts-text { fill: #4b5563 !important; }
   to   { transform: translateX(0);    opacity: 1; }
 }
 
+/* ─── NWHub icon dark/light switching ──────────────────────────────────────── */
+.nw-icon-light { display: none; }
+.nw-icon-dark { display: inline-flex; }
+html.nw-light .nw-icon-light { display: inline-flex; }
+html.nw-light .nw-icon-dark { display: none; }
+
+/* Light mode needle animation */
+.nwhub-needle-light { transform-origin: 50px 46px; transform: rotate(-45deg); }
+.nwhub-compass-light:hover .nwhub-needle-light {
+  animation: nwhub-spin-to-nw-light 1s cubic-bezier(0.25, 0.1, 0.2, 1) forwards;
+}
+@keyframes nwhub-spin-to-nw-light {
+  0%   { transform: rotate(-45deg); }
+  100% { transform: rotate(315deg); }
+}
+
 /* ─── Dashboard main content padding ──────────────────────────────────────── */
 .nw-main-pad {
   padding: 24px;
