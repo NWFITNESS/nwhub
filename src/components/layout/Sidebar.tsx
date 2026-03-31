@@ -249,9 +249,9 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
           ref={tooltipRef}
           style={{
             position: 'fixed',
-            background: '#22293d',
-            border: '1px solid rgba(255,255,255,0.11)',
-            color: '#d2deee',
+            background: 'var(--nw-750, #22293d)',
+            border: '1px solid rgba(128,128,128,0.2)',
+            color: 'var(--nw-200, #d2deee)',
             fontSize: 12,
             padding: '5px 10px',
             borderRadius: 6,

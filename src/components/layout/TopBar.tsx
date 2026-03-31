@@ -5,7 +5,7 @@ import {
   Search, X, Smartphone,
   Users, Mail, PenSquare, Baby, Image, AtSign,
   MessageSquare, Send, Tag, Phone,
-  SlidersHorizontal, Monitor, Zap, LayoutGrid, ChevronRight,
+  SlidersHorizontal, Monitor, Zap, LayoutGrid, ChevronRight, Sun,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useSidebarCtx } from './SidebarProvider'
@@ -85,6 +85,7 @@ export function TopBar({ title, actions }: TopBarProps) {
   const [compactMode, setCompactMode]     = useState(false)
   const [showGridLines, setShowGridLines] = useState(false)
   const [focusMode, setFocusMode]         = useState(false)
+  const [lightMode, setLightMode]         = useState(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const inputRef   = useRef<HTMLInputElement>(null)
 
@@ -93,9 +94,11 @@ export function TopBar({ title, actions }: TopBarProps) {
     const compact   = localStorage.getItem('nw-compact')   === '1'
     const grid      = localStorage.getItem('nw-gridlines') === '1'
     const focus     = localStorage.getItem('nw-focus')     === '1'
+    const light     = localStorage.getItem('nw-theme')     === 'light'
     setCompactMode(compact)
     setShowGridLines(grid)
     setFocusMode(focus)
+    setLightMode(light)
     document.documentElement.classList.toggle('nw-compact', compact)
     document.documentElement.classList.toggle('nw-grid',    grid)
     document.documentElement.classList.toggle('nw-focus',   focus)
@@ -115,6 +118,11 @@ export function TopBar({ title, actions }: TopBarProps) {
     localStorage.setItem('nw-focus', focusMode ? '1' : '0')
     document.documentElement.classList.toggle('nw-focus', focusMode)
   }, [focusMode])
+
+  useEffect(() => {
+    localStorage.setItem('nw-theme', lightMode ? 'light' : 'dark')
+    document.documentElement.classList.toggle('nw-light', lightMode)
+  }, [lightMode])
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -334,6 +342,7 @@ export function TopBar({ title, actions }: TopBarProps) {
               <p style={{ fontSize: 9, fontWeight: 600, color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: 10 }}>Display</p>
 
               {[
+                { label: 'Light Mode', sub: 'Switch to light gray theme', icon: Sun, value: lightMode, set: setLightMode },
                 { label: 'Compact Mode', sub: 'Reduce padding & spacing', icon: LayoutGrid, value: compactMode, set: setCompactMode },
                 { label: 'Focus Mode', sub: 'Hide non-essential UI', icon: Zap, value: focusMode, set: setFocusMode },
                 { label: 'Show Grid Lines', sub: 'Visual grid on panels', icon: Monitor, value: showGridLines, set: setShowGridLines },

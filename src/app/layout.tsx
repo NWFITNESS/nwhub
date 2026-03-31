@@ -34,7 +34,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem('nw-theme')==='light')document.documentElement.classList.add('nw-light')}catch(e){}` }} />
+      </head>
       <body suppressHydrationWarning className={`${inter.variable} ${leagueSpartan.variable} ${manrope.variable} ${oswald.variable} ${robotoSlab.variable} ${rajdhani.variable} font-ui antialiased bg-[#090c12]`}>
         <ServiceWorkerRegistration />
         {children}

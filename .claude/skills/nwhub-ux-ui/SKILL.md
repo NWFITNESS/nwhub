@@ -326,15 +326,42 @@ Tabs: Overview `/`, Members `/leads`, Content `/content`, Revenue `/financials`,
 
 ## DASHBOARD LAYOUT
 
-File: `src/app/(dashboard)/layout.tsx`
+⚠️ IMPORTANT: The `<main>` element lives in `src/components/layout/SidebarProvider.tsx` — NOT in `layout.tsx`.
+Always edit `SidebarProvider.tsx` when changing content area padding or layout structure.
+`src/app/(dashboard)/layout.tsx` just wraps the page in `<SidebarProvider>`.
 
+### `src/components/layout/SidebarProvider.tsx` — main element:
+```tsx
+<main className="nw-main-pad flex-1 overflow-y-auto">
+  {children}
+</main>
+```
+
+⚠️ TAILWIND V4 KNOWN ISSUE — DO NOT USE TAILWIND PADDING CLASSES ON `<main>`
+Tailwind v4 compiles spacing utilities like `p-6`, `px-10`, `p-[24px]` to
+`calc(var(--spacing)*6)` which fails to resolve in this context.
+The padding for the main content area is defined in `globals.css` as a plain CSS class:
+```css
+.nw-main-pad {
+  padding: 24px;           /* mobile */
+}
+@media (min-width: 768px) {
+  .nw-main-pad {
+    padding: 40px;         /* desktop */
+    padding-bottom: 40px;
+  }
+}
+```
+Never replace `.nw-main-pad` with Tailwind padding utilities — they will not work.
+
+### Full shell structure inside SidebarProvider:
 ```tsx
 <div className="flex h-screen min-h-[600px] overflow-hidden bg-nw-900">
   <Sidebar />
   <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-    <TopBar pageTitle={title} />
-    <MobileAppBar pageTitle={title} />
-    <main className="flex-1 overflow-y-auto p-4 pb-20 md:p-[22px_24px] md:pb-[22px]">
+    <TopBar />
+    <MobileAppBar title="NW Hub" />
+    <main className="flex-1 overflow-y-auto p-6 pb-24 md:p-8 md:pb-8">
       {children}
     </main>
     <BottomTabBar />

@@ -9,20 +9,20 @@
 }
 
 @theme {
-  /* NWHub slate palette — becomes bg-nw-*, text-nw-*, border-nw-* */
-  --color-nw-950: #0b0e14;
-  --color-nw-900: #111520;
-  --color-nw-850: #161c2a;
-  --color-nw-800: #1c2333;
-  --color-nw-750: #22293d;
-  --color-nw-700: #293248;
-  --color-nw-600: #374059;
-  --color-nw-500: #607080;
-  --color-nw-400: #8296b4;
-  --color-nw-300: #aabdd8;
-  --color-nw-200: #d2deee;
-  --color-nw-100: #edf3fb;
-  /* NWHub gold palette */
+  /* NWHub slate palette — references CSS vars so light mode can override */
+  --color-nw-950: var(--nw-950);
+  --color-nw-900: var(--nw-900);
+  --color-nw-850: var(--nw-850);
+  --color-nw-800: var(--nw-800);
+  --color-nw-750: var(--nw-750);
+  --color-nw-700: var(--nw-700);
+  --color-nw-600: var(--nw-600);
+  --color-nw-500: var(--nw-500);
+  --color-nw-400: var(--nw-400);
+  --color-nw-300: var(--nw-300);
+  --color-nw-200: var(--nw-200);
+  --color-nw-100: var(--nw-100);
+  /* NWHub gold palette — same in both modes */
   --color-gold-600: #b8870f;
   --color-gold-500: #d4a017;
   --color-gold-400: #e8b933;
@@ -32,10 +32,65 @@
   /* Fonts */
   --font-brand: var(--font-rajdhani), Rajdhani, sans-serif;
   --font-ui: var(--font-inter), Inter, sans-serif;
-  /* Shadows */
-  --shadow-gold-sm: 0 4px 24px rgba(212,160,23,0.07), 0 1px 4px rgba(212,160,23,0.04);
-  --shadow-gold-md: 0 6px 32px rgba(212,160,23,0.13), 0 2px 8px rgba(212,160,23,0.07);
-  --shadow-sidebar: 4px 0 32px rgba(212,160,23,0.08), 2px 0 8px rgba(212,160,23,0.05);
+  /* Shadows — reference CSS vars for theme awareness */
+  --shadow-gold-sm: var(--nw-shadow-gold-sm);
+  --shadow-gold-md: var(--nw-shadow-gold-md);
+  --shadow-sidebar: var(--nw-shadow-sidebar);
+}
+
+/* ── Dark mode defaults (default theme) ───────────────────────────────── */
+:root {
+  --nw-950: #0b0e14;
+  --nw-900: #111520;
+  --nw-850: #161c2a;
+  --nw-800: #1c2333;
+  --nw-750: #22293d;
+  --nw-700: #293248;
+  --nw-600: #374059;
+  --nw-500: #607080;
+  --nw-400: #8296b4;
+  --nw-300: #aabdd8;
+  --nw-200: #d2deee;
+  --nw-100: #edf3fb;
+  --nw-shadow-gold-sm: 0 4px 24px rgba(212,160,23,0.07), 0 1px 4px rgba(212,160,23,0.04);
+  --nw-shadow-gold-md: 0 6px 32px rgba(212,160,23,0.13), 0 2px 8px rgba(212,160,23,0.07);
+  --nw-shadow-sidebar: 4px 0 32px rgba(212,160,23,0.08), 2px 0 8px rgba(212,160,23,0.05);
+}
+
+/* ── Light mode overrides ─────────────────────────────────────────────── */
+html.nw-light {
+  --nw-950: #ffffff;
+  --nw-900: #f0f2f5;
+  --nw-850: #e8eaed;
+  --nw-800: #e2e5e9;
+  --nw-750: #ffffff;
+  --nw-700: #f5f6f8;
+  --nw-600: #d1d5db;
+  --nw-500: #9ca3af;
+  --nw-400: #6b7280;
+  --nw-300: #4b5563;
+  --nw-200: #1f2937;
+  --nw-100: #111827;
+  --nw-shadow-gold-sm: 0 4px 24px rgba(212,160,23,0.10), 0 1px 4px rgba(212,160,23,0.06);
+  --nw-shadow-gold-md: 0 6px 32px rgba(212,160,23,0.18), 0 2px 8px rgba(212,160,23,0.10);
+  --nw-shadow-sidebar: 4px 0 16px rgba(0,0,0,0.06), 2px 0 4px rgba(0,0,0,0.04);
+}
+
+/* Light mode: flip rgba(255,255,255,...) borders/bgs to rgba(0,0,0,...) */
+html.nw-light [class*="border-[rgba(255,255,255,"] { border-color: rgba(0,0,0,0.08) !important; }
+html.nw-light [class*="bg-[rgba(255,255,255,0.0"] { background-color: rgba(0,0,0,0.03) !important; }
+html.nw-light [class*="bg-[rgba(255,255,255,0.06)"] { background-color: rgba(0,0,0,0.05) !important; }
+html.nw-light .text-white { color: #111827 !important; }
+html.nw-light .bg-\[\#090c12\] { background-color: #f0f2f5 !important; }
+
+/* Light mode scrollbar */
+html.nw-light ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); }
+html.nw-light ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+
+/* Light mode skeleton shimmer */
+html.nw-light .skeleton {
+  background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 75%);
+  background-size: 800px 100%;
 }
 
 @keyframes accordion-down {
