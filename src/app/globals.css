@@ -53,6 +53,18 @@
   to   { transform: translateX(0);    opacity: 1; }
 }
 
+/* ─── Dashboard main content padding ──────────────────────────────────────── */
+.nw-main-pad {
+  padding: 24px;
+  padding-bottom: 96px;
+}
+@media (min-width: 768px) {
+  .nw-main-pad {
+    padding: 40px;
+    padding-bottom: 40px;
+  }
+}
+
 /* ─── No scrollbar utility ─────────────────────────────────────────────────── */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
