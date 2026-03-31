@@ -4,13 +4,13 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { PoundSterling } from 'lucide-react'
 
 const TOOLTIP_STYLE = {
-  background: '#1a1a1a',
-  border: '1px solid rgba(201,167,10,0.3)',
-  borderRadius: '8px',
-  color: '#F0F0F0',
+  background: '#22293d',
+  border: '1px solid rgba(255,255,255,0.11)',
+  borderRadius: 8,
+  fontSize: 12,
 }
 
-const PIE_COLOURS = ['#C9A70A', '#3B82F6', '#22C55E', '#A855F7', '#F97316', '#EC4899']
+const PIE_COLOURS = ['#e8b933', '#f2cb55', '#d4a017', '#b8870f', '#f8df8a', '#fdf4d4']
 
 interface IncomeAccount {
   name: string
@@ -25,8 +25,8 @@ export function IncomeBreakdownWidget({ data }: Props) {
   if (data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-2">
-        <PoundSterling size={24} className="text-white/20" />
-        <p className="text-xs text-white/30">No breakdown available</p>
+        <PoundSterling size={24} className="text-nw-600" />
+        <p className="text-xs text-nw-500">No breakdown available</p>
       </div>
     )
   }
@@ -41,7 +41,7 @@ export function IncomeBreakdownWidget({ data }: Props) {
               <Cell key={i} fill={PIE_COLOURS[i % PIE_COLOURS.length]} />
             ))}
           </Pie>
-          <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [`£${Number(value).toLocaleString()}`, '']} />
+          <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={{ color: '#d2deee' }} itemStyle={{ color: '#f2cb55' }} formatter={(value) => [`£${Number(value).toLocaleString()}`, '']} />
         </PieChart>
       </ResponsiveContainer>
       <div className="space-y-2 mt-2 overflow-y-auto flex-1">
@@ -49,9 +49,9 @@ export function IncomeBreakdownWidget({ data }: Props) {
           <div key={i} className="flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
               <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: PIE_COLOURS[i % PIE_COLOURS.length] }} />
-              <span className="text-xs text-white/50 truncate">{item.name}</span>
+              <span className="text-xs text-nw-400 truncate">{item.name}</span>
             </div>
-            <span className="text-xs font-semibold text-[#F0F0F0] flex-shrink-0 ml-2">£{item.amount.toLocaleString()}</span>
+            <span className="text-xs font-semibold text-nw-200 flex-shrink-0 ml-2">£{item.amount.toLocaleString()}</span>
           </div>
         ))}
       </div>

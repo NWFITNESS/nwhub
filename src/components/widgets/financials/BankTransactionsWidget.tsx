@@ -1,5 +1,7 @@
 'use client'
 
+import { Badge } from '@/components/ui/Badge'
+
 interface BankTxn {
   date?: string
   contact?: string
@@ -27,38 +29,34 @@ interface Props {
 
 export function BankTransactionsWidget({ transactions }: Props) {
   return (
-    <div className="overflow-x-auto h-full">
-      <table className="w-full">
+    <div className="w-full overflow-x-auto h-full">
+      <table className="w-full border-collapse text-[13px]">
         <thead>
-          <tr className="border-b border-white/[0.04]">
-            <th className="text-left px-5 py-3 text-xs font-semibold text-white/30 uppercase tracking-[0.1em]">Contact</th>
-            <th className="text-left px-5 py-3 text-xs font-semibold text-white/30 uppercase tracking-[0.1em]">Reference</th>
-            <th className="text-left px-5 py-3 text-xs font-semibold text-white/30 uppercase tracking-[0.1em]">Date</th>
-            <th className="text-left px-5 py-3 text-xs font-semibold text-white/30 uppercase tracking-[0.1em]">Type</th>
-            <th className="text-right px-5 py-3 text-xs font-semibold text-white/30 uppercase tracking-[0.1em]">Amount</th>
+          <tr>
+            <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Contact</th>
+            <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Reference</th>
+            <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Date</th>
+            <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Type</th>
+            <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-right text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Amount</th>
           </tr>
         </thead>
         <tbody>
           {transactions.length === 0 ? (
             <tr>
-              <td colSpan={5} className="px-5 py-12 text-center text-sm text-white/30">No transactions found</td>
+              <td colSpan={5} className="px-4 py-12 text-center text-[13px] text-nw-500">No transactions found</td>
             </tr>
           ) : (
             transactions.map((txn, i) => (
-              <tr key={i} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
-                <td className="px-5 py-4 text-sm text-[#F0F0F0]">{txn.contact}</td>
-                <td className="px-5 py-4 text-sm text-white/50">{txn.reference}</td>
-                <td className="px-5 py-4 text-sm text-white/50">{formatDate(txn.date)}</td>
-                <td className="px-5 py-4">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border ${
-                    txn.type === 'IN'
-                      ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                      : 'bg-red-500/10 text-red-400 border-red-500/20'
-                  }`}>
+              <tr key={i} className="transition-colors hover:bg-[rgba(255,255,255,0.03)]">
+                <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-nw-200">{txn.contact}</td>
+                <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-nw-400">{txn.reference}</td>
+                <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-[11px] text-nw-500">{formatDate(txn.date)}</td>
+                <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3">
+                  <Badge variant={txn.type === 'IN' ? 'active' : 'danger'}>
                     {txn.type === 'IN' ? 'Income' : 'Expense'}
-                  </span>
+                  </Badge>
                 </td>
-                <td className={`px-5 py-4 text-sm font-semibold text-right ${txn.type === 'IN' ? 'text-green-400' : 'text-red-400'}`}>
+                <td className={`border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-right font-medium ${txn.type === 'IN' ? 'text-[#4ade80]' : 'text-red-400'}`}>
                   {txn.type === 'OUT' ? '-' : ''}£{(txn.amount ?? 0).toLocaleString()}
                 </td>
               </tr>

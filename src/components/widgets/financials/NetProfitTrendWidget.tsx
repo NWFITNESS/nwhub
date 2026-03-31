@@ -3,12 +3,12 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 const TOOLTIP_STYLE = {
-  background: '#1a1a1a',
-  border: '1px solid rgba(201,167,10,0.3)',
-  borderRadius: '8px',
-  color: '#F0F0F0',
+  background: '#22293d',
+  border: '1px solid rgba(255,255,255,0.11)',
+  borderRadius: 8,
+  fontSize: 12,
 }
-const AXIS_TICK = { fill: 'rgba(255,255,255,0.3)', fontSize: 11 }
+const AXIS_TICK = { fill: '#8296b4', fontSize: 11 }
 
 interface MonthlyPoint {
   label: string
@@ -27,15 +27,21 @@ export function NetProfitTrendWidget({ data }: Props) {
           <AreaChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
             <defs>
               <linearGradient id="profitGradW" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#22C55E" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="#22C55E" stopOpacity={0} />
+                <stop offset="5%" stopColor="#e8b933" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#e8b933" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
             <XAxis dataKey="label" tick={AXIS_TICK} axisLine={false} tickLine={false} />
             <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} tickFormatter={(v) => `£${(v / 1000).toFixed(0)}k`} />
-            <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [`£${Number(value).toLocaleString()}`, 'Profit']} />
-            <Area type="monotone" dataKey="profit" stroke="#22C55E" strokeWidth={2} fill="url(#profitGradW)" />
+            <Tooltip
+              contentStyle={TOOLTIP_STYLE}
+              labelStyle={{ color: '#d2deee' }}
+              itemStyle={{ color: '#f2cb55' }}
+              cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+              formatter={(value) => [`£${Number(value).toLocaleString()}`, 'Profit']}
+            />
+            <Area type="monotone" dataKey="profit" stroke="#e8b933" strokeWidth={2} fill="url(#profitGradW)" />
           </AreaChart>
         </ResponsiveContainer>
       </div>

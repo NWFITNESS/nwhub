@@ -2,28 +2,22 @@
 
 import { useState, useEffect } from 'react'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { Button } from '@/components/ui/Button'
 import { DollarSign, Receipt, RefreshCw } from 'lucide-react'
 import { FinancialsWidgetGrid, type FinancialsData } from '@/components/widgets/FinancialsWidgetGrid'
-
-// ─── Not Connected State ──────────────────────────────────────────────────────
 
 function NotConnected() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[500px] gap-4">
-      <div className="w-16 h-16 rounded-2xl bg-gold-600/10 border border-gold-600/20 flex items-center justify-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-[10px] bg-[rgba(212,160,23,0.1)] border border-[rgba(212,160,23,0.22)]">
         <DollarSign size={28} className="text-gold-400" />
       </div>
-      <h3 className="font-brand text-xl font-bold text-nw-100">
-        Connect Xero to get started
-      </h3>
-      <p className="text-sm text-nw-500 text-center max-w-[320px]">
+      <h3 className="font-brand text-xl font-bold text-nw-100">Connect Xero to get started</h3>
+      <p className="text-[13px] text-nw-500 text-center max-w-[320px]">
         Connect your Xero account to see revenue, expenses, and financial insights
       </p>
-      <a
-        href="/api/xero/connect"
-        className="flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold text-black bg-gradient-to-r from-gold-600 to-gold-400 hover:opacity-90 transition-opacity mt-2"
-      >
-        Connect Xero
+      <a href="/api/xero/connect">
+        <Button variant="gold" size="md">Connect Xero</Button>
       </a>
     </div>
   )
@@ -31,15 +25,13 @@ function NotConnected() {
 
 function SkeletonCard() {
   return (
-    <div className="rounded-xl p-6 min-h-[130px]" style={{ background: 'var(--slate-750)', border: '1px solid var(--r-panel-border)' }}>
-      <div className="skeleton h-3 w-24 rounded mb-4" />
-      <div className="skeleton h-10 w-20 rounded mb-2" />
-      <div className="skeleton h-2 w-32 rounded" />
+    <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-[15px_17px_13px] min-h-[100px]">
+      <div className="h-3 w-24 rounded bg-nw-700 mb-4 animate-pulse" />
+      <div className="h-8 w-20 rounded bg-nw-700 mb-2 animate-pulse" />
+      <div className="h-2 w-32 rounded bg-nw-700 animate-pulse" />
     </div>
   )
 }
-
-// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function FinancialsPage() {
   const [data, setData] = useState<FinancialsData | null>(null)
@@ -58,11 +50,7 @@ export default function FinancialsPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let json: any = {}
       try { if (text) json = JSON.parse(text) } catch { /* ignore */ }
-      if (!res.ok) {
-        setApiError(json?.message ?? `Xero API error (${res.status})`)
-        setLoading(false)
-        return
-      }
+      if (!res.ok) { setApiError(json?.message ?? `Xero API error (${res.status})`); setLoading(false); return }
       setData(json)
       setLastSynced(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }))
     } catch (err) {
@@ -75,131 +63,56 @@ export default function FinancialsPage() {
   useEffect(() => { load() }, [])
 
   return (
-    <>
-      {/* Mobile layout */}
-      <div className="lg:hidden flex flex-col bg-nw-950 min-h-[100dvh]">
-        <div className="sticky top-0 z-20 flex items-center h-14 bg-nw-950 border-b border-[rgba(255,255,255,0.09)] px-4 gap-2">
-          <span className="flex-1 text-[15px] font-brand font-medium text-nw-200">Financials</span>
-          {!notConnected && !loading && (
-            <button onClick={load} className="w-9 h-9 flex items-center justify-center rounded-lg text-white/50 active:bg-white/[0.06]">
-              <RefreshCw size={16} />
-            </button>
-          )}
-        </div>
-        <div className="flex-1 overflow-y-auto pb-[calc(56px+env(safe-area-inset-bottom))] p-3 flex flex-col gap-3">
-          {notConnected && (
-            <div className="flex flex-col items-center justify-center py-16 gap-4">
-              <p className="text-[14px] text-nw-400">Connect Xero to view financials</p>
-              <a href="/api/xero/connect" className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-gold-600 to-gold-400 text-nw-950 text-[13px] font-semibold">
-                Connect Xero
-              </a>
-            </div>
-          )}
-          {loading && !notConnected && (
-            <div className="flex flex-col gap-3">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="bg-nw-900 rounded-xl p-4 border border-[rgba(255,255,255,0.09)] h-24 skeleton" />
-              ))}
-            </div>
-          )}
-          {apiError && (
-            <div className="flex flex-col items-center justify-center py-16 gap-2">
-              <p className="text-[14px] text-red-400">Failed to load Xero data</p>
-              <button onClick={load} className="text-[12px] text-gold-300 mt-2">Retry</button>
-            </div>
-          )}
-          {!loading && !notConnected && !apiError && data && (() => {
-            const latest = data.monthly?.[data.monthly.length - 1]
-            const fmt = (n: number) => `£${n.toLocaleString('en-GB', { minimumFractionDigits: 0 })}`
-            const stats = [
-              { label: 'Revenue (this month)',  value: latest ? fmt(latest.income)   : '—' },
-              { label: 'Expenses (this month)', value: latest ? fmt(latest.expenses) : '—' },
-              { label: 'Net Profit',            value: latest ? fmt(latest.profit)   : '—' },
-            ]
-            return (
-              <>
-                {stats.map((stat) => (
-                  <div key={stat.label} className="bg-nw-900 rounded-xl p-4 border border-[rgba(255,255,255,0.09)]">
-                    <p className="text-[10px] text-nw-500 uppercase tracking-wider mb-1">{stat.label}</p>
-                    <p className="text-[26px] font-bold text-nw-100 font-brand">{stat.value}</p>
-                  </div>
-                ))}
-              </>
-            )
-          })()}
-        </div>
-      </div>
+    <div className="flex flex-col gap-4">
+      <PageHeader
+        eyebrow="Platform"
+        title="Financials"
+        description={
+          notConnected
+            ? 'Connect Xero to view your financial data'
+            : lastSynced
+              ? `Connected to Xero — last synced ${lastSynced}`
+              : 'Loading Xero data…'
+        }
+        actions={
+          !notConnected && !loading ? (
+            <Button variant="default" size="sm" onClick={load}>
+              <RefreshCw size={13} /> Refresh
+            </Button>
+          ) : undefined
+        }
+      />
 
-      {/* Desktop layout */}
-      <div className="hidden lg:block bg-nw-900 min-h-screen">
+      {notConnected && <NotConnected />}
 
-      <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
-
-        {/* ── Page Header ── */}
-        <PageHeader
-          eyebrow="Admin Panel"
-          title="Financial"
-          titleGold="Reports"
-          description={
-            notConnected
-              ? 'Connect Xero to view your financial data'
-              : lastSynced
-                ? `Connected to Xero — last synced ${lastSynced}`
-                : 'Loading Xero data…'
-          }
-          actions={
-            !notConnected && !loading ? (
-              <button
-                onClick={load}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] text-nw-400 bg-nw-800 border border-[rgba(255,255,255,0.08)] hover:text-nw-100 hover:bg-nw-700 transition-colors cursor-pointer"
-              >
-                <RefreshCw size={13} />
-                Refresh
-              </button>
-            ) : undefined
-          }
-        />
-
-        {/* ── Not Connected ── */}
-        {notConnected && <NotConnected />}
-
-        {/* ── API Error ── */}
-        {!notConnected && apiError && (
-          <div className="flex flex-col items-center justify-center min-h-[300px] gap-3">
-            <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-              <Receipt size={22} className="text-red-400" strokeWidth={1.75} />
-            </div>
-            <p className="text-sm font-semibold text-red-400">Failed to load Xero data</p>
-            <p className="text-xs text-nw-500 text-center max-w-[360px]">{apiError}</p>
-            <button
-              onClick={load}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium text-nw-400 border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.03)] hover:text-nw-100 hover:border-[rgba(255,255,255,0.2)] transition-all mt-1"
-            >
-              <RefreshCw size={12} /> Retry
-            </button>
+      {!notConnected && apiError && (
+        <div className="flex flex-col items-center justify-center min-h-[300px] gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-[10px] bg-[rgba(248,113,113,0.1)] border border-[rgba(248,113,113,0.2)]">
+            <Receipt size={22} className="text-red-400" strokeWidth={1.75} />
           </div>
-        )}
+          <p className="text-[13px] font-medium text-red-400">Failed to load Xero data</p>
+          <p className="text-[11px] text-nw-500 text-center max-w-[360px]">{apiError}</p>
+          <Button variant="default" size="sm" onClick={load}>
+            <RefreshCw size={12} /> Retry
+          </Button>
+        </div>
+      )}
 
-        {/* ── Loading skeletons ── */}
-        {loading && !notConnected && (
-          <>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-              {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
-            </div>
-            <div className="rounded-xl p-6 min-h-[320px]" style={{ background: 'var(--slate-750)', border: '1px solid var(--r-panel-border)' }}>
-              <div className="skeleton h-4 w-40 rounded mb-6" />
-              <div className="skeleton w-full h-[280px] rounded" />
-            </div>
-          </>
-        )}
+      {loading && !notConnected && (
+        <>
+          <div className="grid grid-cols-2 gap-[10px] md:grid-cols-4">
+            {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+          <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6 min-h-[320px]">
+            <div className="h-4 w-40 rounded bg-nw-700 mb-6 animate-pulse" />
+            <div className="w-full h-[280px] rounded bg-nw-700 animate-pulse" />
+          </div>
+        </>
+      )}
 
-        {/* ── Connected Dashboard ── */}
-        {!loading && !notConnected && !apiError && data && (
-          <FinancialsWidgetGrid data={data} />
-        )}
-
-      </main>
-      </div>
-    </>
+      {!loading && !notConnected && !apiError && data && (
+        <FinancialsWidgetGrid data={data} />
+      )}
+    </div>
   )
 }
