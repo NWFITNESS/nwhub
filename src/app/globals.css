@@ -83,6 +83,29 @@ html.nw-light [class*="bg-[rgba(255,255,255,0.06)"] { background-color: rgba(0,0
 html.nw-light .text-white { color: #111827 !important; }
 html.nw-light .bg-\[\#090c12\] { background-color: #f0f2f5 !important; }
 
+/* Light mode: update old --slate-* and --r-* vars used by TopBar drawer */
+html.nw-light {
+  --slate-950: #f8f9fb;
+  --slate-900: #f0f2f5;
+  --slate-800: #e8eaed;
+  --slate-750: #ffffff;
+  --slate-700: #f5f6f8;
+  --slate-600: #d1d5db;
+  --slate-500: #9ca3af;
+  --slate-400: #6b7280;
+  --slate-300: #4b5563;
+  --slate-200: #1f2937;
+  --slate-100: #111827;
+  --r-panel-bg: rgba(0, 0, 0, 0.03);
+  --r-panel-border: rgba(0, 0, 0, 0.08);
+  --r-gold-400: #e8b933;
+  --r-gold-300: #f2cb55;
+  --bg-base: #f0f2f5;
+  --bg-surface: #ffffff;
+  --text: #1f2937;
+  --text-muted: #4b5563;
+}
+
 /* Light mode scrollbar */
 html.nw-light ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); }
 html.nw-light ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
