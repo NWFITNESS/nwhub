@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { Upload, Clipboard, Trash2, X, Check, Pencil, Tag } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import type { Media } from '@/lib/types'
 
 const CATEGORIES = ['logo', 'hero', 'team', 'gym', 'classes', 'kids', 'hyrox', 'general'] as const
@@ -227,18 +228,46 @@ export function MediaGrid({ initialMedia }: Props) {
   async function uploadAll() {
     if (pending.length === 0) return
     setUploading(true)
+    const supabase = createClient()
     const uploaded: Media[] = []
+
     for (const p of pending) {
-      const form = new FormData()
-      form.append('file', p.file)
-      form.append('alt', p.alt)
-      form.append('category', p.category)
-      form.append('width', String(p.width))
-      form.append('height', String(p.height))
-      const res = await fetch('/api/media', { method: 'POST', body: form })
-      if (res.ok) uploaded.push(await res.json() as Media)
-      else console.error('Upload failed:', await res.text())
+      try {
+        // Upload directly to Supabase Storage from the client (no size limit)
+        const path = `media/${Date.now()}-${p.file.name.replace(/[^a-z0-9.-]/gi, '_')}`
+        const { error: storageError } = await supabase.storage
+          .from('media')
+          .upload(path, p.file, { contentType: p.file.type || 'application/octet-stream' })
+
+        if (storageError) {
+          console.error('Storage upload failed:', storageError.message)
+          continue
+        }
+
+        const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path)
+
+        // Insert DB record via API (small JSON payload, no size issue)
+        const res = await fetch('/api/media/record', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: p.file.name,
+            storage_path: path,
+            url: publicUrl,
+            alt: p.alt,
+            category: p.category,
+            size: p.file.size,
+            width: p.width,
+            height: p.height,
+          }),
+        })
+        if (res.ok) uploaded.push(await res.json() as Media)
+        else console.error('DB insert failed:', await res.text())
+      } catch (err) {
+        console.error('Upload error:', err)
+      }
     }
+
     setPending([])
     setMedia((prev) => [...uploaded.reverse(), ...prev])
     setUploading(false)
