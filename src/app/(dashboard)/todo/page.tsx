@@ -36,15 +36,13 @@ export default async function TodoPage() {
   }
 
   return (
-    <>
-      <main className="page-pad flex flex-col gap-5 py-6 min-h-[calc(100vh-5rem)]">
-        <TodoPageClient
-          initialTodos={todos}
-          initialEmails={emails}
-          gmailConnected={gmailConnected}
-          gmailEmail={gmailEmail}
-        />
-      </main>
-    </>
+    <div className="flex flex-col gap-4">
+      <TodoPageClient
+        initialTodos={todos}
+        initialEmails={emails}
+        gmailConnected={gmailConnected}
+        gmailEmail={gmailEmail}
+      />
+    </div>
   )
 }

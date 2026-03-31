@@ -10,10 +10,8 @@ export default async function NewBlogPostPage() {
     .order('name')
 
   return (
-    <>
-      <main className="p-10 page-pad">
-        <BlogPostEditor categories={(categories ?? []) as BlogCategory[]} />
-      </main>
-    </>
+    <div className="flex flex-col gap-4">
+      <BlogPostEditor categories={(categories ?? []) as BlogCategory[]} />
+    </div>
   )
 }

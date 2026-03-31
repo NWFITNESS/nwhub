@@ -1,6 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { InboxClient } from './InboxClient'
-import { MobileInbox } from '@/components/mobile/MobileInbox'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,24 +27,10 @@ export default async function InboxPage() {
   const gmailConnected = !!(gmailStatus?.value)
 
   return (
-    <>
-      {/* Mobile layout */}
-      <MobileInbox
-        emails={emails ?? []}
-        tasks={tasks ?? []}
-        gmailConnected={gmailConnected}
-      />
-
-      {/* Desktop layout */}
-      <div className="hidden lg:block bg-nw-900 min-h-screen">
-        <main className="page-pad flex flex-col gap-5 py-6 lg:py-8">
-          <InboxClient
-            initialEmails={emails ?? []}
-            initialTasks={tasks ?? []}
-            gmailConnected={gmailConnected}
-          />
-        </main>
-      </div>
-    </>
+    <InboxClient
+      initialEmails={emails ?? []}
+      initialTasks={tasks ?? []}
+      gmailConnected={gmailConnected}
+    />
   )
 }

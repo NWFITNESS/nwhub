@@ -26,13 +26,11 @@ export default async function EditBlogPostPage({ params }: Props) {
   if (!post) notFound()
 
   return (
-    <>
-      <main className="p-10 page-pad">
-        <BlogPostEditor
-          initialPost={post as unknown as BlogPost & { category?: BlogCategory | null }}
-          categories={(categories ?? []) as BlogCategory[]}
-        />
-      </main>
-    </>
+    <div className="flex flex-col gap-4">
+      <BlogPostEditor
+        initialPost={post as unknown as BlogPost & { category?: BlogCategory | null }}
+        categories={(categories ?? []) as BlogCategory[]}
+      />
+    </div>
   )
 }

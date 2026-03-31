@@ -31,14 +31,12 @@ export default async function AiChatPage() {
   const sessions = (sessionsData ?? []) as ChatSession[]
 
   return (
-    <>
-      <main className="page-pad flex flex-col gap-6 py-6 lg:py-8 min-h-[calc(100vh-5rem)]">
-        <PageHeader
-          title="AI Chat Widget"
-          description="Manage the public chat assistant, edit the system prompt, and review conversations"
-        />
-        <AiChatDashboard initialSettings={settings} initialSessions={sessions} />
-      </main>
-    </>
+    <div className="flex flex-col gap-4">
+      <PageHeader
+        title="AI Chat Widget"
+        description="Manage the public chat assistant, edit the system prompt, and review conversations"
+      />
+      <AiChatDashboard initialSettings={settings} initialSessions={sessions} />
+    </div>
   )
 }
