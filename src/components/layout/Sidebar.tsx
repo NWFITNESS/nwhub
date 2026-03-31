@@ -8,7 +8,7 @@ import { NWHubIcon } from '@/components/NWHubIcon'
 
 // ── Colours ──────────────────────────────────────────────────────────────────
 
-const C = {
+const DARK = {
   bg:       '#07090f',
   bg2:      '#0a0d16',
   border:   '#111825',
@@ -21,6 +21,56 @@ const C = {
   muted:    '#4a6080',
   dim:      '#1e2e48',
   sub:      '#3a5070',
+  hoverBg:  'rgba(255,255,255,0.03)',
+  hoverBdr: 'rgba(201,168,76,0.3)',
+  tooltipBg: '#0e1628',
+  avatarText: '#07090f',
+  userName:  '#d0d8e8',
+  glowShadow: '0 0 8px 2px rgba(201,168,76,0.5), 0 0 16px 3px rgba(201,168,76,0.18)',
+  subGroupRule: '#0f1828',
+  subGroupLabel: '#2a3d58',
+  toggleBg: '#0e1628',
+  toggleBdr: '#1a2840',
+  badgeDotBorder: '#07090f',
+}
+
+const LIGHT = {
+  bg:       '#f8f9fb',
+  bg2:      '#f0f2f5',
+  border:   '#e2e5ea',
+  gold:     '#b8870f',
+  goldBright: '#d4a017',
+  goldDim:  'rgba(184,135,15,0.06)',
+  goldBdr:  'rgba(184,135,15,0.18)',
+  blue:     '#2563eb',
+  text:     '#111827',
+  muted:    '#6b7280',
+  dim:      '#9ca3af',
+  sub:      '#6b7280',
+  hoverBg:  'rgba(0,0,0,0.03)',
+  hoverBdr: 'rgba(184,135,15,0.35)',
+  tooltipBg: '#ffffff',
+  avatarText: '#ffffff',
+  userName:  '#1f2937',
+  glowShadow: '0 0 6px 1px rgba(184,135,15,0.35), 0 0 12px 2px rgba(184,135,15,0.12)',
+  subGroupRule: '#e2e5ea',
+  subGroupLabel: '#9ca3af',
+  toggleBg: '#ffffff',
+  toggleBdr: '#d1d5db',
+  badgeDotBorder: '#f8f9fb',
+}
+
+function useThemeColors() {
+  const [light, setLight] = useState(false)
+  useEffect(() => {
+    setLight(document.documentElement.classList.contains('nw-light'))
+    const observer = new MutationObserver(() => {
+      setLight(document.documentElement.classList.contains('nw-light'))
+    })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    return () => observer.disconnect()
+  }, [])
+  return light ? LIGHT : DARK
 }
 
 // ── Icons (18px, strokeWidth 1.7) ────────────────────────────────────────────
@@ -137,6 +187,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
   const router = useRouter()
   const supabase = createClient()
   const isMobile = !!onToggle
+  const C = useThemeColors()
 
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window === 'undefined' || isMobile) return false
@@ -210,7 +261,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
       {/* Tooltip (collapsed only) */}
       {!isMobile && (
         <div ref={tooltipRef} style={{
-          position: 'fixed', background: '#0e1628', border: `1px solid ${C.goldBdr}`,
+          position: 'fixed', background: C.tooltipBg, border: `1px solid ${C.goldBdr}`,
           borderRadius: 6, padding: '4px 10px', fontSize: 12, color: C.gold,
           whiteSpace: 'nowrap', pointerEvents: 'none', opacity: 0, zIndex: 999,
           boxShadow: '0 4px 16px rgba(0,0,0,0.4)', transition: 'opacity 0.12s',
@@ -242,7 +293,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
             onClick={toggleCollapse}
             style={{
               position: 'absolute', top: 22, right: -12, width: 24, height: 24,
-              background: '#0e1628', border: '1px solid #1a2840', borderRadius: '50%',
+              background: C.toggleBg, border: `1px solid ${C.toggleBdr}`, borderRadius: '50%',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', zIndex: 10, color: C.gold,
             }}
@@ -262,7 +313,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
           <NWHubIcon size={isOpen ? 36 : 32} animated />
           {isOpen && (
             <div style={{ opacity: isOpen ? 1 : 0, transition: 'opacity 200ms' }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: '#fff', letterSpacing: '1px', textTransform: 'uppercase' }}>Northern Warrior</p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: C.text, letterSpacing: '1px', textTransform: 'uppercase' }}>Northern Warrior</p>
               <p style={{ fontSize: 9, color: 'rgba(201,168,76,0.55)', letterSpacing: '2px', textTransform: 'uppercase' }}>NWHub</p>
             </div>
           )}
@@ -288,20 +339,20 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
 
               {/* Items */}
               {section.items.map(entry => (
-                <NavItem key={entry.key} entry={entry} isOpen={isOpen} isActive={isActive} isParentActive={isParentActive} openSections={openSections} toggleSection={toggleSection} onNavigate={onNavigate} showTooltip={showTooltip} hideTooltip={hideTooltip} unreadCount={unreadCount} collapsed={collapsed && !isMobile} />
+                <NavItem key={entry.key} entry={entry} isOpen={isOpen} isActive={isActive} isParentActive={isParentActive} openSections={openSections} toggleSection={toggleSection} onNavigate={onNavigate} showTooltip={showTooltip} hideTooltip={hideTooltip} unreadCount={unreadCount} collapsed={collapsed && !isMobile} C={C} />
               ))}
 
               {/* Sub-group */}
               {section.subGroup && (
                 <>
                   {isOpen && (
-                    <div style={{ fontSize: 9, fontWeight: 700, color: '#2a3d58', letterSpacing: '2px', textTransform: 'uppercase', padding: '10px 16px 3px 28px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ fontSize: 9, fontWeight: 700, color: C.subGroupLabel, letterSpacing: '2px', textTransform: 'uppercase', padding: '10px 16px 3px 28px', display: 'flex', alignItems: 'center', gap: 6 }}>
                       {section.subGroup.label}
-                      <div style={{ flex: 1, height: 1, background: '#0f1828', marginLeft: 4 }} />
+                      <div style={{ flex: 1, height: 1, background: C.subGroupRule, marginLeft: 4 }} />
                     </div>
                   )}
                   {section.subGroup.items.map(entry => (
-                    <NavItem key={entry.key} entry={entry} isOpen={isOpen} isActive={isActive} isParentActive={isParentActive} openSections={openSections} toggleSection={toggleSection} onNavigate={onNavigate} showTooltip={showTooltip} hideTooltip={hideTooltip} unreadCount={unreadCount} collapsed={collapsed && !isMobile} indented />
+                    <NavItem key={entry.key} entry={entry} isOpen={isOpen} isActive={isActive} isParentActive={isParentActive} openSections={openSections} toggleSection={toggleSection} onNavigate={onNavigate} showTooltip={showTooltip} hideTooltip={hideTooltip} unreadCount={unreadCount} collapsed={collapsed && !isMobile} C={C} indented />
                   ))}
                 </>
               )}
@@ -327,13 +378,13 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
 
           {/* User + sign out */}
           <div style={{ padding: isOpen ? '8px 12px 10px' : '8px 0 10px', display: 'flex', alignItems: 'center', gap: 9, justifyContent: isOpen ? 'flex-start' : 'center', borderTop: `1px solid ${C.border}` }}>
-            <div style={{ width: 30, height: 30, minWidth: 30, borderRadius: '50%', background: `linear-gradient(135deg, ${C.gold}, ${C.goldBright})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: C.bg, fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif' }}>
+            <div style={{ width: 30, height: 30, minWidth: 30, borderRadius: '50%', background: `linear-gradient(135deg, ${C.gold}, ${C.goldBright})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: C.avatarText, fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif' }}>
               {initials}
             </div>
             {isOpen && (
               <>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 500, color: '#d0d8e8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</div>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: C.userName, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</div>
                   <div style={{ fontSize: 10, color: C.muted }}>Administrator</div>
                 </div>
                 <button onClick={handleSignOut} title="Sign out" style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, display: 'flex', padding: 2 }}>
@@ -350,11 +401,11 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
 
 // ── NavItem ──────────────────────────────────────────────────────────────────
 
-function NavItem({ entry, isOpen, isActive, isParentActive, openSections, toggleSection, onNavigate, showTooltip, hideTooltip, unreadCount, collapsed, indented }: {
+function NavItem({ entry, isOpen, isActive, isParentActive, openSections, toggleSection, onNavigate, showTooltip, hideTooltip, unreadCount, collapsed, indented, C }: {
   entry: NavEntry; isOpen: boolean; isActive: (h: string) => boolean; isParentActive: (e: NavEntry) => boolean
   openSections: string[]; toggleSection: (k: string) => void; onNavigate?: () => void
   showTooltip: (e: React.MouseEvent, l: string) => void; hideTooltip: () => void
-  unreadCount: number; collapsed: boolean; indented?: boolean
+  unreadCount: number; collapsed: boolean; indented?: boolean; C: typeof DARK
 }) {
   const hasSub = !!(entry.sub?.length)
   const active = isParentActive(entry)
@@ -377,8 +428,8 @@ function NavItem({ entry, isOpen, isActive, isParentActive, openSections, toggle
   const events = {
     onMouseEnter: (e: React.MouseEvent) => {
       if (!active) {
-        (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)';
-        (e.currentTarget as HTMLElement).style.borderRightColor = 'rgba(201,168,76,0.3)'
+        (e.currentTarget as HTMLElement).style.background = C.hoverBg;
+        (e.currentTarget as HTMLElement).style.borderRightColor = C.hoverBdr
       }
       showTooltip(e, entry.label)
     },
@@ -393,7 +444,7 @@ function NavItem({ entry, isOpen, isActive, isParentActive, openSections, toggle
 
   // Gold glow bar
   const glowBar = active && (
-    <div style={{ position: 'absolute', right: -2, top: '20%', height: '60%', width: 2, background: C.gold, boxShadow: '0 0 8px 2px rgba(201,168,76,0.5), 0 0 16px 3px rgba(201,168,76,0.18)', borderRadius: 2 }} />
+    <div style={{ position: 'absolute', right: -2, top: '20%', height: '60%', width: 2, background: C.gold, boxShadow: C.glowShadow, borderRadius: 2 }} />
   )
 
   // Badge
@@ -403,7 +454,7 @@ function NavItem({ entry, isOpen, isActive, isParentActive, openSections, toggle
         {unreadCount}
       </span>
     ) : (
-      <div style={{ position: 'absolute', top: 5, right: 4, width: 7, height: 7, background: C.blue, borderRadius: '50%', border: `1.5px solid ${C.bg}` }} />
+      <div style={{ position: 'absolute', top: 5, right: 4, width: 7, height: 7, background: C.blue, borderRadius: '50%', border: `1.5px solid ${C.badgeDotBorder}` }} />
     )
   )
 
