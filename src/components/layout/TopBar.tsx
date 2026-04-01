@@ -169,15 +169,15 @@ export function TopBar({ title, actions }: TopBarProps) {
     <header className="hidden md:flex h-[56px] min-h-[56px] flex-shrink-0 items-center border-b border-[rgba(255,255,255,0.09)] bg-nw-950 px-5 z-10">
 
       {/* ── LEFT: Page title ── */}
-      <div className="flex items-center gap-3 min-w-0 flex-shrink-0 pl-[10px]">
+      <div className="flex items-center gap-3 min-w-0 flex-shrink-0" style={{ paddingLeft: 10 }}>
         {segments.length > 0 && (
-          <div className="flex items-center gap-[6px] text-[12px] text-nw-500">
+          <div className="flex items-center gap-[6px] text-nw-500" style={{ fontSize: 12 }}>
             {segments.map((seg, i) => (
               <span key={i} className="flex items-center gap-[6px] whitespace-nowrap">{seg} <Chevron /></span>
             ))}
           </div>
         )}
-        <span className="text-[16px] font-bold text-nw-100 whitespace-nowrap">{pageLabel}</span>
+        <span className="font-bold text-nw-100 whitespace-nowrap" style={{ fontSize: 16 }}>{pageLabel}</span>
       </div>
 
       {/* ── CENTRE: Search bar ── */}
