@@ -113,19 +113,37 @@ ${prompt}
 TONE: ${TONE_LABELS[tone] ?? tone}
 AUDIENCE: ${AUDIENCE_LABELS[audience] ?? audience}
 
-Return ONLY the raw HTML — no explanation, no markdown code fences, no backticks. Start your response with <!DOCTYPE html> and end with </html>. Nothing else.`
+Return your response as JSON with exactly this structure (no markdown, no code fences):
+{"title": "Short campaign title (max 60 chars)", "preview_text": "Email preview text shown in inbox (max 150 chars)", "html": "<!DOCTYPE html>...full HTML email...</html>"}
+
+The title should be catchy and concise. The preview_text is what recipients see in their inbox before opening.
+Return ONLY valid JSON. No explanation before or after.`
 
     // Stream to keep the Vercel connection alive, collect into final text
     const stream = anthropic.messages.stream({
       model: 'claude-sonnet-4-6',
-      max_tokens: 4096,
+      max_tokens: 5000,
       messages: [{ role: 'user', content: userContent }],
     })
 
     const finalMessage = await stream.finalMessage()
-    const html = finalMessage.content[0].type === 'text' ? finalMessage.content[0].text.trim() : ''
+    const raw = finalMessage.content[0].type === 'text' ? finalMessage.content[0].text.trim() : ''
 
-    return NextResponse.json({ html })
+    // Parse JSON response — fallback to treating entire response as HTML if JSON parse fails
+    let html = '', title = '', preview_text = ''
+    try {
+      const parsed = JSON.parse(raw)
+      html = parsed.html ?? ''
+      title = parsed.title ?? ''
+      preview_text = parsed.preview_text ?? ''
+    } catch {
+      // Fallback: if AI returned raw HTML instead of JSON
+      html = raw
+      title = prompt.slice(0, 60)
+      preview_text = prompt.slice(0, 150)
+    }
+
+    return NextResponse.json({ html, title, preview_text })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
     return NextResponse.json({ error: `AI generation failed: ${msg}` }, { status: 500 })
