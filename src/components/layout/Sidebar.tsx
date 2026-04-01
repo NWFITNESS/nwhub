@@ -126,6 +126,7 @@ function buildNav(unreadCount: number): NavSection[] {
         { key: 'members', label: 'Members', icon: I.members, sub: [
           { label: 'Member List', href: '/leads' },
           { label: 'Leads', href: '/leads/pipeline' },
+          { label: 'KPIs', href: '/members/kpis' },
           { label: 'Calendar', href: '/calendar' },
           { label: 'Kids & Teens', href: '/kids' },
         ]},
@@ -197,7 +198,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
 
   const [openSections, setOpenSections] = useState<string[]>(() => {
     const auto: string[] = []
-    if (pathname.startsWith('/leads') || pathname.startsWith('/calendar') || pathname.startsWith('/kids')) auto.push('members')
+    if (pathname.startsWith('/leads') || pathname.startsWith('/members') || pathname.startsWith('/calendar') || pathname.startsWith('/kids')) auto.push('members')
     if (pathname.startsWith('/email') || pathname.startsWith('/mailchimp')) auto.push('email')
     return auto
   })
@@ -246,7 +247,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
   useEffect(() => {
     // Auto-expand sections containing active route
     const auto: string[] = []
-    if (pathname.startsWith('/leads') || pathname.startsWith('/calendar') || pathname.startsWith('/kids')) auto.push('members')
+    if (pathname.startsWith('/leads') || pathname.startsWith('/members') || pathname.startsWith('/calendar') || pathname.startsWith('/kids')) auto.push('members')
     if (pathname.startsWith('/email') || pathname.startsWith('/mailchimp')) auto.push('email')
     if (auto.length) setOpenSections(prev => [...new Set([...prev, ...auto])])
   }, [pathname])
