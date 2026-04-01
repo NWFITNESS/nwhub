@@ -143,6 +143,8 @@ No other text. No markdown. No code fences. Start with TITLE: on the very first 
 
     if (htmlMatch) {
       html = htmlMatch[0].trim()
+      // Strip any TITLE:/PREVIEW:/HTML: lines the AI may have left inside the HTML
+      html = html.replace(/^TITLE:.*$/gm, '').replace(/^PREVIEW:.*$/gm, '').replace(/^HTML:\s*$/gm, '').trim()
     } else {
       // Fallback: entire response is HTML
       html = raw

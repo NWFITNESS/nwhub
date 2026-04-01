@@ -221,7 +221,9 @@ export function AIEmailCreatorClient() {
       let data: { html: string; title?: string; preview_text?: string; error?: string }
       try { data = JSON.parse(text) } catch { throw new Error('Invalid response from server. Please try again.') }
       if (!res.ok) throw new Error(data.error ?? 'Generation failed')
-      setHtml(data.html)
+      // Clean any leftover TITLE:/PREVIEW: lines from the HTML
+      const cleanHtml = (data.html ?? '').replace(/^TITLE:.*$/gm, '').replace(/^PREVIEW:.*$/gm, '').replace(/^HTML:\s*$/gm, '').trim()
+      setHtml(cleanHtml)
       setCampaignTitle(data.title ?? prompt.slice(0, 60))
       setPreviewText(data.preview_text ?? prompt.slice(0, 150))
       setActiveTab('preview')
