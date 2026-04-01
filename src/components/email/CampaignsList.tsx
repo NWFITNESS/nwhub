@@ -21,7 +21,7 @@ interface Campaign {
 function statusVariant(status: string) {
   switch (status) {
     case 'sent': return 'sent' as const
-    case 'draft': return 'draft' as const
+    case 'draft': return 'gold' as const
     case 'schedule': case 'scheduled': return 'gold' as const
     case 'sending': return 'active' as const
     case 'paused': return 'paused' as const
@@ -57,7 +57,11 @@ export function CampaignsList({ campaigns }: { campaigns: Campaign[] }) {
               {campaigns.length === 0 ? (
                 <tr><td colSpan={7} className="px-4 py-12 text-center text-nw-500">No campaigns yet</td></tr>
               ) : campaigns.map(c => (
-                <tr key={c.id} className="transition-colors hover:bg-[rgba(255,255,255,0.03)]">
+                <tr
+                  key={c.id}
+                  onClick={c.status === 'draft' ? () => openDraft(c) : undefined}
+                  className={`transition-colors ${c.status === 'draft' ? 'cursor-pointer hover:bg-[rgba(212,160,23,0.04)] border-l-2 border-l-gold-400' : 'hover:bg-[rgba(255,255,255,0.03)]'}`}
+                >
                   <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3">
                     <p className="font-medium text-nw-200 truncate" style={{ maxWidth: 240 }}>{c.settings.title || c.settings.subject_line}</p>
                     {c.settings.title && c.settings.subject_line && c.settings.title !== c.settings.subject_line && (
@@ -95,7 +99,11 @@ export function CampaignsList({ campaigns }: { campaigns: Campaign[] }) {
           {campaigns.length === 0 ? (
             <div className="px-4 py-12 text-center text-nw-500">No campaigns yet</div>
           ) : campaigns.map(c => (
-            <div key={c.id} className="border-b border-[rgba(255,255,255,0.05)] p-4">
+            <div
+              key={c.id}
+              onClick={c.status === 'draft' ? () => openDraft(c) : undefined}
+              className={`border-b border-[rgba(255,255,255,0.05)] p-4 ${c.status === 'draft' ? 'cursor-pointer border-l-2 border-l-gold-400 bg-[rgba(212,160,23,0.03)]' : ''}`}
+            >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <p className="font-medium text-nw-200" style={{ fontSize: 14 }}>{c.settings.title || c.settings.subject_line}</p>
                 <Badge variant={statusVariant(c.status)}>{c.status}</Badge>
