@@ -145,17 +145,40 @@ export function CampaignSendModal({ open, onClose, html, title, previewText }: P
   async function handleSchedule() {
     if (!scheduleDate) { setError('Pick a date'); return }
     setScheduling(true); setError(''); setSuccess('')
+
+    // Save as Mailchimp draft
     const id = await createDraft()
     if (!id) { setScheduling(false); return }
-    const scheduledTime = new Date(`${scheduleDate}T${scheduleTime}:00`).toISOString()
-    const res = await fetch('/api/mailchimp/send', {
+
+    const scheduledTime = `${scheduleDate}T${scheduleTime}:00`
+    const scheduledISO = new Date(scheduledTime).toISOString()
+    const friendlyDate = new Date(scheduledTime).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+
+    // Create a to-do task as a reminder
+    await fetch('/api/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ campaign_id: id, subject, title: campaignName, html, scheduled_time: scheduledTime }),
+      body: JSON.stringify({
+        title: `📧 Send campaign: ${campaignName}`,
+        notes: `Mailchimp draft ID: ${id}\nSubject: ${subject}\nScheduled for: ${friendlyDate}\n\nGo to Email Campaigns → find this draft → Send Now`,
+        due_date: scheduleDate,
+        priority: 'high',
+        source: 'campaign_schedule',
+      }),
     })
+
+    // Save scheduled campaign reminder for the popup
+    await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        key: 'scheduled_campaigns',
+        value: [{ campaign_id: id, name: campaignName, subject, scheduled_for: scheduledISO, created_at: new Date().toISOString() }],
+      }),
+    })
+
     setScheduling(false)
-    if (res.ok) { setSuccess('Campaign scheduled!'); setTimeout(onClose, 2000) }
-    else { const d = await res.json().catch(() => ({})); setError(d.error ?? 'Scheduling failed') }
+    setSuccess(`Draft saved & reminder set for ${friendlyDate}! You'll see a popup + to-do when it's time to send.`)
   }
 
   if (!open) return null
@@ -340,7 +363,8 @@ export function CampaignSendModal({ open, onClose, html, title, previewText }: P
 
                 {/* Schedule */}
                 <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4">
-                  <p className="text-nw-200 font-medium mb-3" style={{ fontSize: 13 }}>Schedule</p>
+                  <p className="text-nw-200 font-medium mb-1" style={{ fontSize: 13 }}>Schedule for Later</p>
+                  <p className="text-nw-500 mb-3" style={{ fontSize: 11 }}>Saves draft + creates a to-do reminder. You&apos;ll get a popup when it&apos;s time to send.</p>
                   <div className="flex gap-2 mb-3">
                     <input type="date" value={scheduleDate} onChange={e => setScheduleDate(e.target.value)} className={inputCls + ' flex-1'} />
                     <input type="time" value={scheduleTime} onChange={e => setScheduleTime(e.target.value)} className={inputCls} style={{ width: 120 }} />

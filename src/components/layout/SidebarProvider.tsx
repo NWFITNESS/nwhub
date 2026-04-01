@@ -6,6 +6,7 @@ import { TopBar } from './TopBar'
 import { MobileAppBar } from '@/components/mobile/MobileAppBar'
 import { BottomTabBar } from '@/components/mobile/BottomTabBar'
 import { MobileMenuSheet } from '@/components/mobile/MobileMenuSheet'
+import { ScheduledCampaignPopup } from '@/components/dashboard/ScheduledCampaignPopup'
 
 // ── Shared context ─────────────────────────────────────────────────────────────
 
@@ -71,6 +72,9 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
           <MobileMenuSheet />
         </div>
       </div>
+
+      {/* Scheduled campaign reminder popup */}
+      <ScheduledCampaignPopup />
     </SidebarCtx.Provider>
   )
 }
