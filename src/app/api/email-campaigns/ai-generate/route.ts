@@ -113,11 +113,16 @@ ${prompt}
 TONE: ${TONE_LABELS[tone] ?? tone}
 AUDIENCE: ${AUDIENCE_LABELS[audience] ?? audience}
 
-Return your response as JSON with exactly this structure (no markdown, no code fences):
-{"title": "Short campaign title (max 60 chars)", "preview_text": "Email preview text shown in inbox (max 150 chars)", "html": "<!DOCTYPE html>...full HTML email...</html>"}
+Return your response in EXACTLY this format — three lines followed by the HTML:
 
-The title should be catchy and concise. The preview_text is what recipients see in their inbox before opening.
-Return ONLY valid JSON. No explanation before or after.`
+TITLE: A short catchy campaign title (max 60 chars)
+PREVIEW: Email preview text shown in inbox before opening (max 150 chars)
+HTML:
+<!DOCTYPE html>
+...full HTML email here...
+</html>
+
+No other text. No markdown. No code fences. Start with TITLE: on the very first line.`
 
     // Stream to keep the Vercel connection alive, collect into final text
     const stream = anthropic.messages.stream({
@@ -129,19 +134,22 @@ Return ONLY valid JSON. No explanation before or after.`
     const finalMessage = await stream.finalMessage()
     const raw = finalMessage.content[0].type === 'text' ? finalMessage.content[0].text.trim() : ''
 
-    // Parse JSON response — fallback to treating entire response as HTML if JSON parse fails
+    // Parse the structured response
     let html = '', title = '', preview_text = ''
-    try {
-      const parsed = JSON.parse(raw)
-      html = parsed.html ?? ''
-      title = parsed.title ?? ''
-      preview_text = parsed.preview_text ?? ''
-    } catch {
-      // Fallback: if AI returned raw HTML instead of JSON
+
+    const titleMatch = raw.match(/^TITLE:\s*(.+)/m)
+    const previewMatch = raw.match(/^PREVIEW:\s*(.+)/m)
+    const htmlMatch = raw.match(/<!DOCTYPE html[\s\S]*<\/html>/i)
+
+    if (htmlMatch) {
+      html = htmlMatch[0].trim()
+    } else {
+      // Fallback: entire response is HTML
       html = raw
-      title = prompt.slice(0, 60)
-      preview_text = prompt.slice(0, 150)
     }
+
+    title = titleMatch?.[1]?.trim() ?? prompt.slice(0, 60)
+    preview_text = previewMatch?.[1]?.trim() ?? prompt.slice(0, 150)
 
     return NextResponse.json({ html, title, preview_text })
   } catch (e) {
