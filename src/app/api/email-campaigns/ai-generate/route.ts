@@ -131,23 +131,38 @@ No other text. No markdown. No code fences. Start with TITLE: on the very first 
       messages: [{ role: 'user', content: userContent }],
     })
 
-    const finalMessage = await stream.finalMessage()
-    const raw = finalMessage.content[0].type === 'text' ? finalMessage.content[0].text.trim() : ''
+    let raw = ''
+    try {
+      const finalMessage = await stream.finalMessage()
+      raw = finalMessage.content[0].type === 'text' ? finalMessage.content[0].text.trim() : ''
+    } catch (streamErr) {
+      const msg = streamErr instanceof Error ? streamErr.message : String(streamErr)
+      return NextResponse.json({ error: `AI stream failed: ${msg}` }, { status: 500 })
+    }
 
-    // Parse the structured response
+    if (!raw) {
+      return NextResponse.json({ error: 'AI returned empty response. Try again.' }, { status: 500 })
+    }
+
+    // Parse the structured response — be very forgiving
     let html = '', title = '', preview_text = ''
 
     const titleMatch = raw.match(/^TITLE:\s*(.+)/m)
     const previewMatch = raw.match(/^PREVIEW:\s*(.+)/m)
-    const htmlMatch = raw.match(/<!DOCTYPE html[\s\S]*<\/html>/i)
+
+    // Try to find HTML in the response
+    const htmlMatch = raw.match(/<!DOCTYPE\s+html[\s\S]*<\/html>/i)
+      ?? raw.match(/<html[\s\S]*<\/html>/i)
 
     if (htmlMatch) {
       html = htmlMatch[0].trim()
-      // Strip any TITLE:/PREVIEW:/HTML: lines the AI may have left inside the HTML
+      // Strip any metadata lines the AI left inside
       html = html.replace(/^TITLE:.*$/gm, '').replace(/^PREVIEW:.*$/gm, '').replace(/^HTML:\s*$/gm, '').trim()
+    } else if (raw.includes('<') && raw.includes('>')) {
+      // Looks like HTML even without DOCTYPE
+      html = raw.replace(/^TITLE:.*$/gm, '').replace(/^PREVIEW:.*$/gm, '').replace(/^HTML:\s*$/gm, '').trim()
     } else {
-      // Fallback: entire response is HTML
-      html = raw
+      return NextResponse.json({ error: 'AI did not return valid HTML. Try again with a clearer prompt.' }, { status: 500 })
     }
 
     title = titleMatch?.[1]?.trim() ?? prompt.slice(0, 60)
