@@ -221,5 +221,33 @@ export async function POST(req: NextRequest) {
     // Don't fail the whole import if sync_log write fails
   }
 
+  // Auto-sync contacts to email_subscribers
+  try {
+    const { data: contacts } = await supabase.from('contacts').select('email, first_name, last_name, groups').not('email', 'is', null)
+    const { data: existingSubs } = await supabase.from('email_subscribers').select('email')
+    const existingEmails = new Set((existingSubs ?? []).map(e => e.email.toLowerCase()))
+
+    const toInsert = (contacts ?? [])
+      .filter(c => c.email && !existingEmails.has(c.email.toLowerCase()))
+      .map(c => ({
+        email: c.email!.toLowerCase(),
+        first_name: c.first_name ?? '',
+        last_name: c.last_name ?? '',
+        tags: c.groups ?? [],
+        source: 'wodboard_sync' as const,
+        status: 'subscribed' as const,
+        subscribed_at: new Date().toISOString(),
+      }))
+
+    if (toInsert.length > 0) {
+      for (let i = 0; i < toInsert.length; i += 50) {
+        await supabase.from('email_subscribers').insert(toInsert.slice(i, i + 50))
+      }
+      results.log.push(`Synced ${toInsert.length} contacts to email subscribers`)
+    }
+  } catch {
+    // Don't fail import if subscriber sync fails
+  }
+
   return NextResponse.json(results)
 }

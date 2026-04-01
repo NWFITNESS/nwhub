@@ -1,32 +1,26 @@
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { EmailSubscribersTable } from '@/components/email/EmailSubscribersTable'
-import Link from 'next/link'
-import { Button } from '@/components/ui/Button'
+import { SyncContactsButton } from '@/components/email/SyncContactsButton'
 
 export default async function EmailPage() {
   const supabase = await createClient()
-  const [{ data: subscribers }, { count: total }] = await Promise.all([
+  const [{ data: subscribers }, { count: total }, { count: contactsWithEmail }] = await Promise.all([
     supabase.from('email_subscribers').select('*').order('subscribed_at', { ascending: false }),
     supabase.from('email_subscribers').select('*', { count: 'exact', head: true }).eq('status', 'subscribed'),
+    supabase.from('contacts').select('*', { count: 'exact', head: true }).not('email', 'is', null),
   ])
+
+  const unsyncedCount = (contactsWithEmail ?? 0) - (total ?? 0)
 
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
-        eyebrow="Email"
-        title="Email Subscribers"
+        eyebrow="Marketing"
+        title="Email"
+        titleGold="Subscribers"
         description={`${total ?? 0} active subscribers`}
-        actions={
-          <div className="flex gap-2">
-            <Link href="/email/campaigns/new">
-              <Button variant="primary" size="sm">New Campaign</Button>
-            </Link>
-            <Link href="/email/campaigns">
-              <Button variant="secondary" size="sm">All Campaigns</Button>
-            </Link>
-          </div>
-        }
+        actions={<SyncContactsButton unsyncedCount={unsyncedCount > 0 ? unsyncedCount : 0} />}
       />
       <EmailSubscribersTable initialSubscribers={subscribers ?? []} />
     </div>
