@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Panel, PanelHeader } from '@/components/ui/Card'
-import { Send, ArrowRight } from 'lucide-react'
+import { Send, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { CampaignSendModal } from '@/components/mailchimp/CampaignSendModal'
 
@@ -38,11 +38,13 @@ function statusLabel(status: string) {
   return status
 }
 
-export function CampaignsList({ campaigns }: { campaigns: Campaign[] }) {
+export function CampaignsList({ campaigns: initialCampaigns }: { campaigns: Campaign[] }) {
+  const [campaigns, setCampaigns] = useState(initialCampaigns)
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedDraft, setSelectedDraft] = useState<Campaign | null>(null)
   const [draftHtml, setDraftHtml] = useState('')
   const [loadingDraft, setLoadingDraft] = useState(false)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   async function openDraft(c: Campaign) {
     setSelectedDraft(c)
@@ -59,6 +61,17 @@ export function CampaignsList({ campaigns }: { campaigns: Campaign[] }) {
       }
     } catch {}
     setLoadingDraft(false)
+  }
+
+  async function deleteDraft(e: React.MouseEvent, campaignId: string) {
+    e.stopPropagation()
+    if (!confirm('Delete this draft? This cannot be undone.')) return
+    setDeleting(campaignId)
+    try {
+      const res = await fetch(`/api/mailchimp/campaign-delete?id=${campaignId}`, { method: 'DELETE' })
+      if (res.ok) setCampaigns(prev => prev.filter(c => c.id !== campaignId))
+    } catch {}
+    setDeleting(null)
   }
 
   return (
@@ -106,9 +119,18 @@ export function CampaignsList({ campaigns }: { campaigns: Campaign[] }) {
                   </td>
                   <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3">
                     {isDraft(c.status) && (
-                      <Button variant="gold" size="sm" onClick={() => openDraft(c)}>
-                        <Send size={11} /> Continue
-                      </Button>
+                      <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                        <Button variant="gold" size="sm" onClick={() => openDraft(c)}>
+                          <Send size={11} /> Continue
+                        </Button>
+                        <button
+                          onClick={(e) => deleteDraft(e, c.id)}
+                          disabled={deleting === c.id}
+                          className="flex h-[28px] w-[28px] items-center justify-center rounded-[6px] text-nw-500 transition-colors hover:bg-[rgba(248,113,113,0.1)] hover:text-red-400 disabled:opacity-50"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -138,9 +160,14 @@ export function CampaignsList({ campaigns }: { campaigns: Campaign[] }) {
                 <span className="text-nw-500 ml-auto">{c.send_time ? format(new Date(c.send_time), 'dd MMM') : 'Draft'}</span>
               </div>
               {isDraft(c.status) && (
-                <Button variant="gold" size="sm" onClick={() => openDraft(c)} className="w-full mt-1">
-                  <Send size={11} /> Continue Draft
-                </Button>
+                <div className="flex gap-2 mt-2" onClick={e => e.stopPropagation()}>
+                  <Button variant="gold" size="sm" onClick={() => openDraft(c)} className="flex-1">
+                    <Send size={11} /> Continue
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={(e) => deleteDraft(e, c.id)} loading={deleting === c.id}>
+                    <Trash2 size={11} />
+                  </Button>
+                </div>
               )}
             </div>
           ))}
