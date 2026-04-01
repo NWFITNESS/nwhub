@@ -50,12 +50,9 @@ export function Toolbar({
             <button
               key={t.id}
               onClick={() => onPostTypeChange(t.id)}
-              disabled={t.id === 'reel'}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium transition-colors ${
                 postType === t.id
                   ? 'bg-[#967705]/20 text-[#c9a70a]'
-                  : t.id === 'reel'
-                  ? 'bg-nw-800 text-white/20 cursor-not-allowed'
                   : 'bg-nw-800 text-white/40 hover:text-white/70'
               }`}
             >
@@ -63,9 +60,6 @@ export function Toolbar({
               {t.label}
               {t.id === 'carousel' && carouselCount > 0 && (
                 <span className="text-[9px] bg-[#967705]/30 px-1 rounded">{carouselCount}</span>
-              )}
-              {t.id === 'reel' && (
-                <span className="text-[8px] bg-white/[0.06] px-1 rounded">Soon</span>
               )}
             </button>
           ))}

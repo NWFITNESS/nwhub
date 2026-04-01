@@ -20,7 +20,10 @@ import { ImageControls } from './studio/ImageControls'
 import { RatioSelector } from './studio/RatioSelector'
 import { CaptionEditor } from './studio/CaptionEditor'
 import { CarouselSlides } from './studio/CarouselSlides'
-import { ChevronDown } from 'lucide-react'
+import { VideoTrimmer } from './studio/VideoTrimmer'
+import { CoverPicker } from './studio/CoverPicker'
+import { ChevronDown, Film } from 'lucide-react'
+import { MediaPickerModal } from '../media/MediaPicker'
 
 interface PlatformInfo { connected: boolean; label: string; subtitle?: string }
 interface PublishResult { ok: boolean; post_id?: string; error?: string }
@@ -39,6 +42,9 @@ function MobileAccordion({ title, children, defaultOpen = false, accent }: {
     </div>
   )
 }
+
+// Reel ratio (fixed 9:16)
+const REEL_RATIO: PostRatio = { id: 'reel-916', label: 'Reel', ratio: '9:16', width: 1080, height: 1920, platform: 'instagram' }
 
 export function PostStudio() {
   const searchParams = useSearchParams()
@@ -73,6 +79,15 @@ export function PostStudio() {
   // ── Carousel state ─────────────────────────────────────────────────────────
   const [carouselImages, setCarouselImages] = useState<string[]>([])
   const [activeSlide, setActiveSlide] = useState(0)
+
+  // ── Video / Reel state ─────────────────────────────────────────────────────
+  const [videoUrl, setVideoUrl] = useState('')
+  const [videoDuration, setVideoDuration] = useState(0)
+  const [trimStart, setTrimStart] = useState(0)
+  const [trimEnd, setTrimEnd] = useState(0)
+  const [coverTime, setCoverTime] = useState<number | null>(null)
+  const [customCoverUrl, setCustomCoverUrl] = useState('')
+  const [showMobileVideoPicker, setShowMobileVideoPicker] = useState(false)
 
   // ── Social state ───────────────────────────────────────────────────────────
   const [platforms, setPlatforms] = useState<Record<SocialPlatform, PlatformInfo>>({
@@ -143,10 +158,12 @@ export function PostStudio() {
   }
 
   // ── Export helpers ────────────────────────────────────────────────────────
+  const activeRatio = postType === 'reel' ? REEL_RATIO : ratio
+
   const getImageDataUrl = useCallback(async (): Promise<string> => {
     if (!fullResRef.current) throw new Error('Canvas ref not ready')
-    return toPng(fullResRef.current, { width: ratio.width, height: ratio.height, pixelRatio: 1 })
-  }, [ratio])
+    return toPng(fullResRef.current, { width: activeRatio.width, height: activeRatio.height, pixelRatio: 1 })
+  }, [activeRatio])
 
   const saveToMedia = useCallback(async () => {
     if (!hasContent) return
@@ -156,7 +173,7 @@ export function PostStudio() {
       const dataUrl = await getImageDataUrl()
       const res = await fetch(dataUrl)
       const blob = await res.blob()
-      const file = new File([blob], `nw-post-${ratio.id}-${Date.now()}.png`, { type: 'image/png' })
+      const file = new File([blob], `nw-post-${activeRatio.id}-${Date.now()}.png`, { type: 'image/png' })
       const form = new FormData()
       form.append('file', file)
       form.append('alt', headline || 'Social post')
@@ -167,43 +184,63 @@ export function PostStudio() {
         setTimeout(() => setSaved(false), 3000)
       }
     } finally { setSaving(false) }
-  }, [hasContent, getImageDataUrl, ratio, headline])
+  }, [hasContent, getImageDataUrl, activeRatio, headline])
 
   // ── Publish ───────────────────────────────────────────────────────────────
   const canPublish = postType === 'carousel'
     ? carouselImages.length >= 2 && selectedPlatforms.size > 0
+    : postType === 'reel'
+    ? !!videoUrl && selectedPlatforms.size > 0
     : hasContent && selectedPlatforms.size > 0
 
   const publish = useCallback(async () => {
     if (!canPublish) return
     setPublishResults(null)
     try {
-      let payload: Record<string, unknown>
-      if (postType === 'carousel') {
-        payload = {
-          imageUrls: carouselImages,
-          captions: Object.fromEntries(Array.from(selectedPlatforms).map((p) => [p, captions[p]])),
-          platforms: Array.from(selectedPlatforms),
-        }
+      if (postType === 'reel') {
+        // Video publish flow
+        const res = await fetch('/api/social/publish-video', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            videoUrl,
+            captions: Object.fromEntries(Array.from(selectedPlatforms).map((p) => [p, captions[p]])),
+            platforms: Array.from(selectedPlatforms),
+            coverUrl: customCoverUrl || undefined,
+            shareToFeed: true,
+          }),
+        })
+        const data = await res.json()
+        setPublishResults(data.results ?? {})
       } else {
-        const imageDataUrl = await getImageDataUrl()
-        payload = {
-          imageDataUrl,
-          captions: Object.fromEntries(Array.from(selectedPlatforms).map((p) => [p, captions[p]])),
-          platforms: Array.from(selectedPlatforms),
+        // Image publish flow (single or carousel)
+        let payload: Record<string, unknown>
+        if (postType === 'carousel') {
+          payload = {
+            imageUrls: carouselImages,
+            captions: Object.fromEntries(Array.from(selectedPlatforms).map((p) => [p, captions[p]])),
+            platforms: Array.from(selectedPlatforms),
+          }
+        } else {
+          const imageDataUrl = await getImageDataUrl()
+          payload = {
+            imageDataUrl,
+            captions: Object.fromEntries(Array.from(selectedPlatforms).map((p) => [p, captions[p]])),
+            platforms: Array.from(selectedPlatforms),
+          }
         }
+        const res = await fetch('/api/social/publish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        const data = await res.json()
+        setPublishResults(data.results ?? {})
       }
-      const res = await fetch('/api/social/publish', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      const data = await res.json()
-      setPublishResults(data.results ?? {})
     } catch (err) {
       setPublishResults({ _error: { ok: false, error: err instanceof Error ? err.message : 'Publish failed' } })
     }
-  }, [canPublish, postType, carouselImages, selectedPlatforms, captions, getImageDataUrl])
+  }, [canPublish, postType, videoUrl, customCoverUrl, carouselImages, selectedPlatforms, captions, getImageDataUrl])
 
   const schedule = useCallback(async (scheduledAt: string) => {
     if (!canPublish) return
@@ -214,6 +251,9 @@ export function PostStudio() {
     }
     if (postType === 'carousel') {
       payload.imageUrls = carouselImages
+    } else if (postType === 'reel') {
+      payload.videoUrl = videoUrl
+      payload.coverUrl = customCoverUrl || undefined
     } else {
       payload.imageDataUrl = await getImageDataUrl()
     }
@@ -222,10 +262,9 @@ export function PostStudio() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
-  }, [canPublish, postType, carouselImages, selectedPlatforms, captions, getImageDataUrl])
+  }, [canPublish, postType, videoUrl, customCoverUrl, carouselImages, selectedPlatforms, captions, getImageDataUrl])
 
   // ── Template props ────────────────────────────────────────────────────────
-  const filterCss = FILTERS.find(f => f.id === filter)?.css
   const templateProps: TemplateRenderProps = {
     review,
     headline,
@@ -234,11 +273,12 @@ export function PostStudio() {
     imagePosition,
     textStyles,
     overlayOpacity,
-    canvasWidth: ratio.width,
-    canvasHeight: ratio.height,
+    canvasWidth: activeRatio.width,
+    canvasHeight: activeRatio.height,
   }
 
   const isCarousel = postType === 'carousel'
+  const isReel = postType === 'reel'
 
   return (
     <div className="flex flex-col h-full">
@@ -270,6 +310,10 @@ export function PostStudio() {
             onCarouselImagesChange={setCarouselImages}
             activeSlide={activeSlide}
             onActiveSlideChange={setActiveSlide}
+            videoUrl={videoUrl}
+            videoDuration={videoDuration}
+            trimStart={trimStart}
+            trimEnd={trimEnd}
           />
         </div>
 
@@ -278,13 +322,19 @@ export function PostStudio() {
           <Preview
             style={style}
             templateProps={templateProps}
-            ratio={ratio}
+            ratio={activeRatio}
             filter={filter}
             fullResRef={fullResRef}
             carouselMode={isCarousel}
             carouselImages={carouselImages}
             activeSlide={activeSlide}
             onSlideChange={setActiveSlide}
+            reelMode={isReel}
+            videoUrl={videoUrl}
+            trimStart={trimStart}
+            trimEnd={trimEnd}
+            coverTime={coverTime}
+            onVideoDurationReady={setVideoDuration}
           />
         </div>
 
@@ -322,6 +372,18 @@ export function PostStudio() {
             captions={captions}
             onCaptionsChange={setCaptions}
             isCarousel={isCarousel}
+            isReel={isReel}
+            videoUrl={videoUrl}
+            onVideoChange={setVideoUrl}
+            videoDuration={videoDuration}
+            trimStart={trimStart}
+            trimEnd={trimEnd}
+            onTrimStartChange={setTrimStart}
+            onTrimEndChange={setTrimEnd}
+            coverTime={coverTime}
+            onCoverTimeChange={setCoverTime}
+            customCoverUrl={customCoverUrl}
+            onCustomCoverChange={setCustomCoverUrl}
           />
         </div>
       </div>
@@ -333,18 +395,77 @@ export function PostStudio() {
           <Preview
             style={style}
             templateProps={templateProps}
-            ratio={ratio}
+            ratio={activeRatio}
             filter={filter}
             fullResRef={fullResRef}
             carouselMode={isCarousel}
             carouselImages={carouselImages}
             activeSlide={activeSlide}
             onSlideChange={setActiveSlide}
+            reelMode={isReel}
+            videoUrl={videoUrl}
+            trimStart={trimStart}
+            trimEnd={trimEnd}
+            coverTime={coverTime}
+            onVideoDurationReady={setVideoDuration}
           />
         </div>
 
         {/* Accordion controls */}
         <div className="bg-nw-900 border-t border-white/[0.06]">
+          {isReel && (
+            <>
+              <MobileAccordion title="Video" defaultOpen>
+                <div className="space-y-3">
+                  {videoUrl ? (
+                    <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-nw-750 border border-white/[0.08]">
+                      <Film size={16} className="text-[#c9a70a] flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] text-white/60 truncate">{videoUrl.split('/').pop()}</p>
+                        <button onClick={() => setShowMobileVideoPicker(true)} className="text-[10px] text-[#c9a70a]">Change</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setShowMobileVideoPicker(true)}
+                      className="w-full flex items-center gap-3 p-3 rounded-lg border border-dashed border-white/[0.12] hover:border-[#967705]/50 bg-nw-750 hover:bg-[#967705]/5 transition-all text-white/40 hover:text-white/70"
+                    >
+                      <Film size={16} />
+                      <span className="text-xs">Pick video from media</span>
+                    </button>
+                  )}
+                </div>
+              </MobileAccordion>
+
+              {videoUrl && videoDuration > 0 && (
+                <MobileAccordion title="Trim & Clip">
+                  <VideoTrimmer
+                    duration={videoDuration}
+                    trimStart={trimStart}
+                    trimEnd={trimEnd}
+                    onTrimStartChange={setTrimStart}
+                    onTrimEndChange={setTrimEnd}
+                  />
+                </MobileAccordion>
+              )}
+
+              {videoUrl && videoDuration > 0 && (
+                <MobileAccordion title="Cover Image">
+                  <CoverPicker
+                    videoSrc={videoUrl}
+                    duration={videoDuration}
+                    trimStart={trimStart}
+                    trimEnd={trimEnd}
+                    coverTime={coverTime}
+                    onCoverTimeChange={setCoverTime}
+                    customCoverUrl={customCoverUrl}
+                    onCustomCoverChange={setCustomCoverUrl}
+                  />
+                </MobileAccordion>
+              )}
+            </>
+          )}
+
           {isCarousel && (
             <MobileAccordion title="Slides" defaultOpen>
               <CarouselSlides
@@ -356,7 +477,7 @@ export function PostStudio() {
             </MobileAccordion>
           )}
 
-          {!isCarousel && (
+          {!isCarousel && !isReel && (
             <>
               <MobileAccordion title="Template" defaultOpen>
                 <TemplateGrid selected={style} onSelect={handleStyleChange} />
@@ -426,6 +547,15 @@ export function PostStudio() {
         onSchedule={schedule}
         publishResults={publishResults}
       />
+
+      {/* Mobile video picker */}
+      {showMobileVideoPicker && (
+        <MediaPickerModal
+          value={videoUrl}
+          onSelect={(url) => { setVideoUrl(url); setShowMobileVideoPicker(false) }}
+          onClose={() => setShowMobileVideoPicker(false)}
+        />
+      )}
     </div>
   )
 }

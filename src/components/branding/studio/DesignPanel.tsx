@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Film } from 'lucide-react'
 import type { Style, TextStyles } from '../templates'
 import type { Review } from '../ReviewsPanel'
 import type { PostRatio, PlatformTab } from './RatioSelector'
@@ -11,6 +11,9 @@ import { TextEditor } from './TextEditor'
 import { ImageControls } from './ImageControls'
 import { RatioSelector } from './RatioSelector'
 import { CaptionEditor } from './CaptionEditor'
+import { VideoTrimmer } from './VideoTrimmer'
+import { CoverPicker } from './CoverPicker'
+import { MediaPickerModal } from '@/components/media/MediaPicker'
 
 interface PlatformInfo { connected: boolean; label: string; subtitle?: string }
 
@@ -52,6 +55,19 @@ interface Props {
   onCaptionsChange: (c: Record<SocialPlatform, string>) => void
   // Mode
   isCarousel: boolean
+  isReel: boolean
+  // Video (reel mode)
+  videoUrl: string
+  onVideoChange: (url: string) => void
+  videoDuration: number
+  trimStart: number
+  trimEnd: number
+  onTrimStartChange: (v: number) => void
+  onTrimEndChange: (v: number) => void
+  coverTime: number | null
+  onCoverTimeChange: (t: number | null) => void
+  customCoverUrl: string
+  onCustomCoverChange: (url: string) => void
 }
 
 interface AccordionSectionProps {
@@ -91,8 +107,13 @@ export function DesignPanel({
   review, caption, onCaptionChange, hashtags, onHashtagsChange,
   platforms, selectedPlatforms, onTogglePlatform,
   captions, onCaptionsChange,
-  isCarousel,
+  isCarousel, isReel,
+  videoUrl, onVideoChange, videoDuration,
+  trimStart, trimEnd, onTrimStartChange, onTrimEndChange,
+  coverTime, onCoverTimeChange, customCoverUrl, onCustomCoverChange,
 }: Props) {
+  const [showVideoPicker, setShowVideoPicker] = useState(false)
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
@@ -101,7 +122,66 @@ export function DesignPanel({
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {!isCarousel && (
+        {isReel ? (
+          <>
+            {/* Video picker */}
+            <AccordionSection title="Video">
+              <div className="space-y-3">
+                {videoUrl ? (
+                  <div className="flex items-center gap-2.5 p-2.5 rounded-lg bg-nw-750 border border-white/[0.08]">
+                    <Film size={16} className="text-[#c9a70a] flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] text-white/60 truncate">{videoUrl.split('/').pop()}</p>
+                      <button onClick={() => setShowVideoPicker(true)} className="text-[10px] text-[#c9a70a] hover:text-[#967705] transition-colors mt-0.5">
+                        Change video
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowVideoPicker(true)}
+                    className="w-full flex items-center gap-3 p-3 rounded-lg border border-dashed border-white/[0.12] hover:border-[#967705]/50 bg-nw-750 hover:bg-[#967705]/5 transition-all text-white/40 hover:text-white/70"
+                  >
+                    <Film size={16} />
+                    <div className="text-left">
+                      <p className="text-xs font-medium">Pick video from media</p>
+                      <p className="text-[10px] text-white/30 mt-0.5">MP4, WebM, MOV supported</p>
+                    </div>
+                  </button>
+                )}
+              </div>
+            </AccordionSection>
+
+            {/* Trim controls */}
+            {videoUrl && videoDuration > 0 && (
+              <AccordionSection title="Trim & Clip">
+                <VideoTrimmer
+                  duration={videoDuration}
+                  trimStart={trimStart}
+                  trimEnd={trimEnd}
+                  onTrimStartChange={onTrimStartChange}
+                  onTrimEndChange={onTrimEndChange}
+                />
+              </AccordionSection>
+            )}
+
+            {/* Cover image */}
+            {videoUrl && videoDuration > 0 && (
+              <AccordionSection title="Cover Image">
+                <CoverPicker
+                  videoSrc={videoUrl}
+                  duration={videoDuration}
+                  trimStart={trimStart}
+                  trimEnd={trimEnd}
+                  coverTime={coverTime}
+                  onCoverTimeChange={onCoverTimeChange}
+                  customCoverUrl={customCoverUrl}
+                  onCustomCoverChange={onCustomCoverChange}
+                />
+              </AccordionSection>
+            )}
+          </>
+        ) : !isCarousel ? (
           <>
             <AccordionSection title="Template">
               <TemplateGrid selected={style} onSelect={onStyleChange} />
@@ -140,7 +220,7 @@ export function DesignPanel({
               />
             </AccordionSection>
           </>
-        )}
+        ) : null}
 
         <AccordionSection title="Caption & AI" accent>
           <CaptionEditor
@@ -161,6 +241,15 @@ export function DesignPanel({
           />
         </AccordionSection>
       </div>
+
+      {/* Video picker modal */}
+      {showVideoPicker && (
+        <MediaPickerModal
+          value={videoUrl}
+          onSelect={(url) => { onVideoChange(url); setShowVideoPicker(false) }}
+          onClose={() => setShowVideoPicker(false)}
+        />
+      )}
     </div>
   )
 }

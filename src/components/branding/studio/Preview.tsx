@@ -4,6 +4,7 @@ import { type RefObject } from 'react'
 import { TEMPLATE_MAP, type Style, type TemplateRenderProps } from '../templates'
 import type { PostRatio } from './RatioSelector'
 import { FILTERS } from './FilterStrip'
+import { VideoPlayer } from './VideoPlayer'
 
 interface Props {
   style: Style
@@ -15,11 +16,19 @@ interface Props {
   carouselImages?: string[]
   activeSlide?: number
   onSlideChange?: (i: number) => void
+  // Video / Reel
+  reelMode?: boolean
+  videoUrl?: string
+  trimStart?: number
+  trimEnd?: number
+  coverTime?: number | null
+  onVideoDurationReady?: (d: number) => void
 }
 
 export function Preview({
   style, templateProps, ratio, filter, fullResRef,
   carouselMode, carouselImages, activeSlide = 0, onSlideChange,
+  reelMode, videoUrl, trimStart = 0, trimEnd = 0, coverTime = null, onVideoDurationReady,
 }: Props) {
   const TemplateComponent = TEMPLATE_MAP[style]
   const filterCss = FILTERS.find(f => f.id === filter)?.css
@@ -33,8 +42,31 @@ export function Preview({
 
   return (
     <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
-      {/* Carousel slide view */}
-      {carouselMode && carouselImages && carouselImages.length > 0 ? (
+      {/* Reel / Video preview */}
+      {reelMode ? (
+        <div className="flex flex-col items-center gap-3 w-full" style={{ maxWidth: 300 }}>
+          {videoUrl ? (
+            <VideoPlayer
+              src={videoUrl}
+              trimStart={trimStart}
+              trimEnd={trimEnd}
+              coverTime={coverTime}
+              onDurationReady={onVideoDurationReady ?? (() => {})}
+            />
+          ) : (
+            <div className="w-full aspect-[9/16] rounded-lg bg-nw-800 border border-dashed border-white/[0.12] flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-sm text-white/30">No video selected</p>
+                <p className="text-[11px] text-white/20 mt-1">Pick a video from the media library</p>
+              </div>
+            </div>
+          )}
+          <p className="text-[10px] text-white/25">
+            9:16 Reel · 1080 x 1920
+          </p>
+        </div>
+      ) : carouselMode && carouselImages && carouselImages.length > 0 ? (
+        /* Carousel slide view */
         <div className="flex flex-col items-center gap-3">
           <div
             className="rounded-lg overflow-hidden border border-white/[0.06] bg-nw-950"
