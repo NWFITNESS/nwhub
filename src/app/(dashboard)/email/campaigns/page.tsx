@@ -20,8 +20,8 @@ export default async function EmailCampaignsPage() {
         title="Email"
         titleGold="Campaigns"
         actions={
-          <Link href="/email/campaigns/new">
-            <Button variant="primary" size="sm"><Plus size={14} /> New Campaign</Button>
+          <Link href="/mailchimp/create-ai">
+            <Button variant="gold" size="sm"><Plus size={14} /> Create Campaign</Button>
           </Link>
         }
       />

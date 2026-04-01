@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import {
   Sparkles, Copy, Download, RefreshCw, Send,
   ChevronRight, Check, Eye, Code, Image as ImageIcon, Lock,
 } from 'lucide-react'
+import { CampaignSendModal } from './CampaignSendModal'
 
 const QUICK_PROMPTS = [
   'New class launching next month — get members excited and booking',
@@ -232,36 +232,7 @@ export function AIEmailCreatorClient() {
     }
   }
 
-  const router = useRouter()
-  const [creating, setCreating] = useState(false)
-
-  async function createCampaign() {
-    if (!html) return
-    setCreating(true)
-    setError('')
-    try {
-      const res = await fetch('/api/mailchimp/draft', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          subject: campaignTitle || prompt.slice(0, 80) || 'AI Generated Campaign',
-          title: campaignTitle || prompt.slice(0, 80) || 'AI Generated Campaign',
-          preview_text: previewText || prompt.slice(0, 150),
-          html,
-        }),
-      })
-      const text = await res.text()
-      if (!text) throw new Error('Empty response from server')
-      let data: { campaign_id?: string; error?: string }
-      try { data = JSON.parse(text) } catch { throw new Error('Invalid response') }
-      if (!res.ok) throw new Error(data.error ?? 'Failed to create campaign')
-      router.push(`/mailchimp/edit/${data.campaign_id}`)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to create campaign')
-    } finally {
-      setCreating(false)
-    }
-  }
+  const [sendModalOpen, setSendModalOpen] = useState(false)
 
   function copyHTML() {
     navigator.clipboard.writeText(html)
@@ -439,11 +410,10 @@ export function AIEmailCreatorClient() {
                   <Download size={12} /> Download
                 </button>
                 <button
-                  onClick={createCampaign}
-                  disabled={creating}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium border border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-gold-300 hover:bg-[rgba(212,160,23,0.22)] transition-all disabled:opacity-50"
+                  onClick={() => setSendModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium border border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-gold-300 hover:bg-[rgba(212,160,23,0.22)] transition-all"
                 >
-                  {creating ? <><RefreshCw size={12} className="animate-spin" /> Creating...</> : <><Send size={12} /> Create Campaign</>}
+                  <Send size={12} /> Send to Campaign
                 </button>
               </div>
             </div>
@@ -512,6 +482,15 @@ export function AIEmailCreatorClient() {
           )}
         </div>
       </div>
+
+      {/* Campaign send modal */}
+      <CampaignSendModal
+        open={sendModalOpen}
+        onClose={() => setSendModalOpen(false)}
+        html={html}
+        title={campaignTitle}
+        previewText={previewText}
+      />
     </div>
   )
 }

@@ -1,0 +1,310 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { X, Send, Clock, Mail, User, AtSign, Eye, Smartphone, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+
+interface Props {
+  open: boolean
+  onClose: () => void
+  html: string
+  title: string
+  previewText: string
+}
+
+type Step = 'details' | 'preview' | 'audience' | 'send'
+
+export function CampaignSendModal({ open, onClose, html, title, previewText }: Props) {
+  const [step, setStep] = useState<Step>('details')
+  const [campaignName, setCampaignName] = useState(title)
+  const [subject, setSubject] = useState(title)
+  const [preview, setPreview] = useState(previewText)
+  const [fromName, setFromName] = useState('Northern Warrior')
+  const [fromEmail, setFromEmail] = useState('')
+  const [replyTo, setReplyTo] = useState('')
+  const [testEmail, setTestEmail] = useState('')
+  const [scheduleDate, setScheduleDate] = useState('')
+  const [scheduleTime, setScheduleTime] = useState('08:00')
+
+  const [sending, setSending] = useState(false)
+  const [sendingTest, setSendingTest] = useState(false)
+  const [scheduling, setScheduling] = useState(false)
+  const [campaignId, setCampaignId] = useState<string | null>(null)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+
+  // Load saved Mailchimp settings
+  useEffect(() => {
+    if (!open) return
+    fetch('/api/mailchimp/settings')
+      .then(r => r.json())
+      .then(d => {
+        if (d.from_name) setFromName(d.from_name)
+        if (d.from_email) setFromEmail(d.from_email)
+        if (d.reply_to) setReplyTo(d.reply_to)
+      })
+      .catch(() => {})
+  }, [open])
+
+  // Reset on open
+  useEffect(() => {
+    if (open) {
+      setStep('details')
+      setCampaignName(title)
+      setSubject(title)
+      setPreview(previewText)
+      setCampaignId(null)
+      setError('')
+      setSuccess('')
+    }
+  }, [open, title, previewText])
+
+  async function createDraft(): Promise<string | null> {
+    if (campaignId) return campaignId
+    setError('')
+    const res = await fetch('/api/mailchimp/draft', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subject, title: campaignName, preview_text: preview,
+        from_name: fromName, from_email: fromEmail, reply_to: replyTo || fromEmail,
+        html,
+      }),
+    })
+    const text = await res.text()
+    if (!text) { setError('Empty response from server'); return null }
+    try {
+      const data = JSON.parse(text)
+      if (!res.ok) { setError(data.error ?? 'Failed to create draft'); return null }
+      setCampaignId(data.campaign_id)
+      return data.campaign_id
+    } catch { setError('Invalid response'); return null }
+  }
+
+  async function handleTestSend() {
+    if (!testEmail) { setError('Enter a test email address'); return }
+    setSendingTest(true); setError('')
+    const id = await createDraft()
+    if (!id) { setSendingTest(false); return }
+    const res = await fetch('/api/mailchimp/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campaign_id: id, test_emails: [testEmail] }),
+    })
+    setSendingTest(false)
+    if (res.ok) setSuccess('Test email sent!')
+    else { const d = await res.json().catch(() => ({})); setError(d.error ?? 'Test send failed') }
+  }
+
+  async function handleSendNow() {
+    setSending(true); setError(''); setSuccess('')
+    const id = await createDraft()
+    if (!id) { setSending(false); return }
+    const res = await fetch('/api/mailchimp/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campaign_id: id, subject, title: campaignName, html }),
+    })
+    setSending(false)
+    if (res.ok) { setSuccess('Campaign sent! Check Email Campaigns for stats.'); setTimeout(onClose, 2000) }
+    else { const d = await res.json().catch(() => ({})); setError(d.error ?? 'Send failed') }
+  }
+
+  async function handleSchedule() {
+    if (!scheduleDate) { setError('Pick a date'); return }
+    setScheduling(true); setError(''); setSuccess('')
+    const id = await createDraft()
+    if (!id) { setScheduling(false); return }
+    const scheduledTime = new Date(`${scheduleDate}T${scheduleTime}:00`).toISOString()
+    const res = await fetch('/api/mailchimp/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campaign_id: id, subject, title: campaignName, html, scheduled_time: scheduledTime }),
+    })
+    setScheduling(false)
+    if (res.ok) { setSuccess('Campaign scheduled!'); setTimeout(onClose, 2000) }
+    else { const d = await res.json().catch(() => ({})); setError(d.error ?? 'Scheduling failed') }
+  }
+
+  if (!open) return null
+
+  const steps: { id: Step; label: string }[] = [
+    { id: 'details', label: 'Details' },
+    { id: 'preview', label: 'Preview' },
+    { id: 'send', label: 'Send' },
+  ]
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div onClick={onClose} className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
+
+      {/* Modal */}
+      <div className="fixed inset-4 z-50 flex items-center justify-center md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[600px] md:max-h-[85vh]">
+        <div className="w-full max-h-full overflow-hidden rounded-[14px] border border-[rgba(255,255,255,0.11)] bg-nw-900 shadow-2xl flex flex-col">
+
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.07)] px-5 py-3.5 flex-shrink-0">
+            <div>
+              <p className="text-nw-200 font-medium" style={{ fontSize: 15 }}>Send Campaign</p>
+              <p className="text-nw-500" style={{ fontSize: 11 }}>via Mailchimp</p>
+            </div>
+            <button onClick={onClose} className="text-nw-500 hover:text-nw-300 transition-colors"><X size={18} /></button>
+          </div>
+
+          {/* Step tabs */}
+          <div className="flex border-b border-[rgba(255,255,255,0.07)] px-5 flex-shrink-0">
+            {steps.map(s => (
+              <button
+                key={s.id}
+                onClick={() => setStep(s.id)}
+                className={`-mb-px border-b-2 px-4 py-2.5 font-medium transition-colors ${
+                  step === s.id ? 'border-gold-400 text-gold-300' : 'border-transparent text-nw-400 hover:text-nw-200'
+                }`}
+                style={{ fontSize: 13 }}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Content area */}
+          <div className="flex-1 overflow-y-auto p-5">
+
+            {/* Error / Success */}
+            {error && (
+              <div className="mb-4 flex items-center gap-2 rounded-[8px] border border-[rgba(248,113,113,0.2)] bg-[rgba(248,113,113,0.08)] px-3 py-2 text-red-400" style={{ fontSize: 12 }}>
+                <AlertCircle size={14} /> {error}
+              </div>
+            )}
+            {success && (
+              <div className="mb-4 flex items-center gap-2 rounded-[8px] border border-[rgba(74,222,128,0.2)] bg-[rgba(74,222,128,0.08)] px-3 py-2 text-[#4ade80]" style={{ fontSize: 12 }}>
+                <CheckCircle size={14} /> {success}
+              </div>
+            )}
+
+            {/* STEP: Details */}
+            {step === 'details' && (
+              <div className="flex flex-col gap-4">
+                <Field label="Campaign Name">
+                  <input value={campaignName} onChange={e => setCampaignName(e.target.value)} placeholder="e.g. March Newsletter" className={inputCls} />
+                </Field>
+                <Field label="Subject Line">
+                  <input value={subject} onChange={e => setSubject(e.target.value)} placeholder="What subscribers see in their inbox" className={inputCls} />
+                </Field>
+                <Field label="Preview Text">
+                  <input value={preview} onChange={e => setPreview(e.target.value)} placeholder="Short preview shown after subject" className={inputCls} />
+                </Field>
+                <div className="h-px bg-[rgba(255,255,255,0.07)]" />
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <Field label="From Name">
+                    <div className="relative">
+                      <User size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-nw-500" />
+                      <input value={fromName} onChange={e => setFromName(e.target.value)} className={inputCls + ' pl-9'} />
+                    </div>
+                  </Field>
+                  <Field label="Reply-To Email">
+                    <div className="relative">
+                      <AtSign size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-nw-500" />
+                      <input value={replyTo || fromEmail} onChange={e => setReplyTo(e.target.value)} placeholder="info@northernwarrior.co.uk" className={inputCls + ' pl-9'} />
+                    </div>
+                  </Field>
+                </div>
+                <div className="flex justify-end mt-2">
+                  <Button variant="gold" size="sm" onClick={() => setStep('preview')}>Next: Preview →</Button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP: Preview */}
+            {step === 'preview' && (
+              <div className="flex flex-col gap-4">
+                {/* Inbox mockup */}
+                <p className="text-nw-500" style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase' }}>Inbox Preview</p>
+                <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-800 p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gold-500 font-brand font-bold text-nw-950" style={{ fontSize: 12 }}>NW</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-nw-200 font-medium" style={{ fontSize: 13 }}>{fromName || 'Northern Warrior'}</span>
+                        <span className="text-nw-500" style={{ fontSize: 10 }}>now</span>
+                      </div>
+                      <p className="text-nw-200 font-medium truncate" style={{ fontSize: 13 }}>{subject || 'Subject line'}</p>
+                      <p className="text-nw-400 truncate" style={{ fontSize: 12 }}>{preview || 'Preview text appears here...'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* HTML preview */}
+                <p className="text-nw-500 mt-2" style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase' }}>Email Content</p>
+                <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] overflow-hidden bg-white" style={{ maxHeight: 400 }}>
+                  <iframe srcDoc={html} className="w-full border-0" style={{ height: 380 }} title="Email Preview" sandbox="allow-same-origin" />
+                </div>
+
+                <div className="flex justify-between mt-2">
+                  <Button variant="default" size="sm" onClick={() => setStep('details')}>← Back</Button>
+                  <Button variant="gold" size="sm" onClick={() => setStep('send')}>Next: Send →</Button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP: Send */}
+            {step === 'send' && (
+              <div className="flex flex-col gap-5">
+                {/* Test send */}
+                <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4">
+                  <p className="text-nw-200 font-medium mb-3" style={{ fontSize: 13 }}>Test Send</p>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <Mail size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-nw-500" />
+                      <input value={testEmail} onChange={e => setTestEmail(e.target.value)} placeholder="your@email.com" className={inputCls + ' pl-9'} />
+                    </div>
+                    <Button variant="default" size="sm" onClick={handleTestSend} loading={sendingTest}>
+                      <Send size={12} /> Test
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Schedule */}
+                <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4">
+                  <p className="text-nw-200 font-medium mb-3" style={{ fontSize: 13 }}>Schedule</p>
+                  <div className="flex gap-2 mb-3">
+                    <input type="date" value={scheduleDate} onChange={e => setScheduleDate(e.target.value)} className={inputCls + ' flex-1'} />
+                    <input type="time" value={scheduleTime} onChange={e => setScheduleTime(e.target.value)} className={inputCls} style={{ width: 120 }} />
+                  </div>
+                  <Button variant="default" size="sm" onClick={handleSchedule} loading={scheduling} className="w-full">
+                    <Clock size={12} /> Schedule Campaign
+                  </Button>
+                </div>
+
+                {/* Send now */}
+                <div className="rounded-[10px] border border-[rgba(212,160,23,0.2)] bg-[rgba(212,160,23,0.05)] p-4">
+                  <p className="text-nw-200 font-medium mb-2" style={{ fontSize: 13 }}>Send Now</p>
+                  <p className="text-nw-500 mb-3" style={{ fontSize: 11 }}>This will send to your entire Mailchimp audience immediately.</p>
+                  <Button variant="gold" size="sm" onClick={handleSendNow} loading={sending} className="w-full">
+                    <Send size={12} /> Send Campaign Now
+                  </Button>
+                </div>
+
+                <div className="flex justify-start">
+                  <Button variant="default" size="sm" onClick={() => setStep('preview')}>← Back</Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-nw-500 mb-1.5" style={{ fontSize: 11, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase' }}>{label}</label>
+      {children}
+    </div>
+  )
+}
+
+const inputCls = 'h-9 w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 text-nw-200 placeholder:text-nw-500 outline-none transition-colors focus:border-[rgba(212,160,23,0.4)] focus:bg-nw-750 text-[13px]'
