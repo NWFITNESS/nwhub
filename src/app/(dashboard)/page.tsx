@@ -81,11 +81,22 @@ export default async function DashboardPage() {
     .single()
   const memberGroups: string[] = (memberGroupsSetting?.value as string[] | undefined) ?? []
 
+  // Fetch all contacts to count members (those with groups beyond just "lead")
+  const { data: allContacts } = await supabase.from('contacts').select('groups')
+  const membersTotal = (allContacts ?? []).filter(c => {
+    const groups: string[] = c.groups ?? []
+    if (memberGroups.length > 0) {
+      // If configured, check if any group matches the member_groups setting
+      return groups.some(g => memberGroups.some(mg => g.toLowerCase().includes(mg.toLowerCase())))
+    }
+    // Default: has any group that isn't just "lead"
+    return groups.some(g => g.toLowerCase() !== 'lead')
+  }).length
+
   const [
     { count: newContacts },
     { count: draftPosts },
     { count: subscribers },
-    { count: membersTotal },
     { data: recentEnquiries },
     { count: contentCount },
     { count: settingsCount },
@@ -98,10 +109,6 @@ export default async function DashboardPage() {
     supabase.from('contact_enquiries').select('*', { count: 'exact', head: true }).eq('status', 'new'),
     supabase.from('blog_posts').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
     supabase.from('email_subscribers').select('*', { count: 'exact', head: true }).eq('status', 'subscribed'),
-    // If member_groups defined, count contacts whose groups overlap; otherwise fall back to status
-    memberGroups.length > 0
-      ? supabase.from('contacts').select('*', { count: 'exact', head: true }).overlaps('groups', memberGroups)
-      : supabase.from('contacts').select('*', { count: 'exact', head: true }).in('status', ['member', 'trial']),
     supabase
       .from('contact_enquiries')
       .select('id, name, enquiry_type, message, created_at')

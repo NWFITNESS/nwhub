@@ -8,28 +8,44 @@ export default async function MemberKPIsPage() {
 
   const [
     { data: memberGroupsSetting },
-    { count: totalContacts },
-    { count: memberCount },
-    { count: trialCount },
-    { count: leadCount },
-    { count: cancelledCount },
+    { data: allContacts },
   ] = await Promise.all([
     supabase.from('global_settings').select('value').eq('key', 'member_groups').single(),
-    supabase.from('contacts').select('*', { count: 'exact', head: true }),
-    supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('status', 'member'),
-    supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('status', 'trial'),
-    supabase.from('contacts').select('*', { count: 'exact', head: true }).in('status', ['inactive', 'active']),
-    supabase.from('contacts').select('*', { count: 'exact', head: true }).eq('status', 'cancelled'),
+    supabase.from('contacts').select('status, groups'),
   ])
 
   const memberGroups = (memberGroupsSetting?.value as string[] | undefined) ?? []
+  const contacts = allContacts ?? []
+
+  // Count by actual group data, not status field
+  function hasRealMembership(groups: string[]): boolean {
+    if (memberGroups.length > 0) {
+      return groups.some(g => memberGroups.some(mg => g.toLowerCase().includes(mg.toLowerCase())))
+    }
+    return groups.some(g => g.toLowerCase() !== 'lead')
+  }
+
+  function isLead(groups: string[]): boolean {
+    if (!groups || groups.length === 0) return true
+    return groups.every(g => g.toLowerCase() === 'lead')
+  }
+
+  function isTrial(groups: string[]): boolean {
+    return groups.some(g => g.toLowerCase().includes('trial'))
+  }
+
+  const totalContacts = contacts.length
+  const memberCount = contacts.filter(c => hasRealMembership(c.groups ?? []) && !isTrial(c.groups ?? [])).length
+  const trialCount = contacts.filter(c => isTrial(c.groups ?? [])).length
+  const leadCount = contacts.filter(c => isLead(c.groups ?? [])).length
+  const cancelledCount = contacts.filter(c => c.status === 'cancelled').length
 
   const stats = [
-    { label: 'Total Contacts', value: totalContacts ?? 0 },
-    { label: 'Members', value: memberCount ?? 0 },
-    { label: 'Trials', value: trialCount ?? 0 },
-    { label: 'Leads', value: leadCount ?? 0 },
-    { label: 'Cancelled', value: cancelledCount ?? 0 },
+    { label: 'Total Contacts', value: totalContacts },
+    { label: 'Members', value: memberCount },
+    { label: 'Trials', value: trialCount },
+    { label: 'Leads', value: leadCount },
+    { label: 'Cancelled', value: cancelledCount },
   ]
 
   return (
