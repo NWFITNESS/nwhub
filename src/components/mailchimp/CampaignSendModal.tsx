@@ -41,6 +41,7 @@ export function CampaignSendModal({ open, onClose, html, title, previewText }: P
   const [sending, setSending] = useState(false)
   const [sendingTest, setSendingTest] = useState(false)
   const [scheduling, setScheduling] = useState(false)
+  const [savingDraft, setSavingDraft] = useState(false)
   const [campaignId, setCampaignId] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -103,6 +104,13 @@ export function CampaignSendModal({ open, onClose, html, title, previewText }: P
       setCampaignId(data.campaign_id)
       return data.campaign_id
     } catch { setError('Invalid response'); return null }
+  }
+
+  async function handleSaveDraft() {
+    setSavingDraft(true); setError(''); setSuccess('')
+    const id = await createDraft()
+    setSavingDraft(false)
+    if (id) setSuccess('Draft saved to Mailchimp! You can send it later from the Email Campaigns page.')
   }
 
   async function handleTestSend() {
@@ -339,6 +347,15 @@ export function CampaignSendModal({ open, onClose, html, title, previewText }: P
                   </div>
                   <Button variant="default" size="sm" onClick={handleSchedule} loading={scheduling} className="w-full">
                     <Clock size={12} /> Schedule Campaign
+                  </Button>
+                </div>
+
+                {/* Save draft */}
+                <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4">
+                  <p className="text-nw-200 font-medium mb-2" style={{ fontSize: 13 }}>Save as Draft</p>
+                  <p className="text-nw-500 mb-3" style={{ fontSize: 11 }}>Save to Mailchimp without sending. You can send it later.</p>
+                  <Button variant="default" size="sm" onClick={handleSaveDraft} loading={savingDraft} className="w-full">
+                    <CheckCircle size={12} /> Save Draft
                   </Button>
                 </div>
 
