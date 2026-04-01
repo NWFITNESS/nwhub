@@ -39,6 +39,7 @@ interface BrandPageProps {
   identity: BrandIdentity
   media: Media[]
   placeId: string
+  guideOnly?: boolean
 }
 
 // ─── Default brand colours ────────────────────────────────────────────────────
@@ -495,7 +496,7 @@ type TabId = typeof TABS[number]['id']
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export function BrandPage({ identity: initial, media, placeId }: BrandPageProps) {
+export function BrandPage({ identity: initial, media, placeId, guideOnly = false }: BrandPageProps) {
   const [tab, setTab] = useState<TabId>('guide')
   const [identity, setIdentity] = useState<BrandIdentity>(() => ({
     mission:        initial.mission        ?? '',
@@ -543,31 +544,33 @@ export function BrandPage({ identity: initial, media, placeId }: BrandPageProps)
 
   return (
     <div className="space-y-6">
-      {/* Tab nav */}
-      <div className="flex gap-1 border-b border-[rgba(255,255,255,0.07)]">
-        {TABS.map(t => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-[13px] font-medium transition-colors ${
-              tab === t.id
-                ? 'border-gold-400 text-gold-300'
-                : 'border-transparent text-nw-400 hover:text-nw-200'
-            }`}
-          >
-            <t.icon size={14} />
-            {t.label}
-          </button>
-        ))}
-      </div>
+      {/* Tab nav — hidden in guideOnly mode */}
+      {!guideOnly && (
+        <div className="flex gap-1 border-b border-[rgba(255,255,255,0.07)]">
+          {TABS.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-2.5 text-[13px] font-medium transition-colors ${
+                tab === t.id
+                  ? 'border-gold-400 text-gold-300'
+                  : 'border-transparent text-nw-400 hover:text-nw-200'
+              }`}
+            >
+              <t.icon size={14} />
+              {t.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Post Studio tab */}
-      {tab === 'studio' && (
+      {!guideOnly && tab === 'studio' && (
         <BrandingStudio placeId={placeId} />
       )}
 
       {/* Brand Guide tab */}
-      {tab === 'guide' && (
+      {(guideOnly || tab === 'guide') && (
         <div className="space-y-6">
 
           {/* Brand Identity */}

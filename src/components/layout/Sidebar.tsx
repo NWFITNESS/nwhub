@@ -142,13 +142,12 @@ function buildNav(unreadCount: number): NavSection[] {
           { label: 'Import Subscribers', href: '/email/import' },
           { label: 'AI Email Creator', href: '/mailchimp/create-ai' },
         ]},
+        { key: 'branding', label: 'Branding Studio', icon: I.branding, sub: [
+          { label: 'Post Studio', href: '/branding' },
+          { label: 'Documents', href: '/branding/documents' },
+          { label: 'Brand Assets', href: '/branding/brand-guide' },
+        ]},
       ],
-      subGroup: {
-        label: 'Branding',
-        items: [
-          { key: 'branding', label: 'Brand Studio', icon: I.branding, href: '/branding' },
-        ],
-      },
     },
     {
       label: 'AI',
@@ -202,6 +201,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
     const auto: string[] = []
     if (pathname.startsWith('/leads') || pathname.startsWith('/members') || pathname.startsWith('/calendar') || pathname.startsWith('/kids')) auto.push('members')
     if (pathname.startsWith('/email') || pathname.startsWith('/mailchimp')) auto.push('email')
+    if (pathname.startsWith('/branding')) auto.push('branding')
     return auto
   })
 
@@ -251,6 +251,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
     const auto: string[] = []
     if (pathname.startsWith('/leads') || pathname.startsWith('/members') || pathname.startsWith('/calendar') || pathname.startsWith('/kids')) auto.push('members')
     if (pathname.startsWith('/email') || pathname.startsWith('/mailchimp')) auto.push('email')
+    if (pathname.startsWith('/branding')) auto.push('branding')
     if (auto.length) setOpenSections(prev => [...new Set([...prev, ...auto])])
   }, [pathname])
 
