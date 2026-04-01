@@ -19,6 +19,9 @@ export interface RecentPost { id: string; title: string; status: 'draft' | 'publ
 
 export interface DashboardData {
   membersTotal: number
+  kidsRegistrations: number
+  leadCount: number
+  convertedLeads: number
   subscribers: number
   newContacts: number
   enquiriesAlert: boolean

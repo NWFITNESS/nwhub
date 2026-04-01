@@ -81,16 +81,32 @@ export default async function DashboardPage() {
     .single()
   const memberGroups: string[] = (memberGroupsSetting?.value as string[] | undefined) ?? []
 
-  // Fetch all contacts to count members (those with groups beyond just "lead")
-  const { data: allContacts } = await supabase.from('contacts').select('groups')
-  const membersTotal = (allContacts ?? []).filter(c => {
+  // Fetch all contacts to count members, leads, converted
+  const [{ data: allContacts }, { count: kidsRegistrations }] = await Promise.all([
+    supabase.from('contacts').select('groups'),
+    supabase.from('kids_registrations').select('*', { count: 'exact', head: true }),
+  ])
+  const allC = allContacts ?? []
+
+  const membersTotal = allC.filter(c => {
     const groups: string[] = c.groups ?? []
     if (memberGroups.length > 0) {
-      // If configured, check if any group matches the member_groups setting
       return groups.some(g => memberGroups.some(mg => g.toLowerCase().includes(mg.toLowerCase())))
     }
-    // Default: has any group that isn't just "lead"
     return groups.some(g => g.toLowerCase() !== 'lead')
+  }).length
+
+  const leadCount = allC.filter(c => {
+    const groups: string[] = c.groups ?? []
+    if (!groups.length) return true
+    return groups.every(g => g.toLowerCase() === 'lead')
+  }).length
+
+  const convertedLeads = allC.filter(c => {
+    const groups: string[] = c.groups ?? []
+    const hasLead = groups.some(g => g.toLowerCase() === 'lead')
+    const hasOther = groups.some(g => g.toLowerCase() !== 'lead')
+    return hasLead && hasOther
   }).length
 
   const [
@@ -158,7 +174,10 @@ export default async function DashboardPage() {
   const enquiriesAlert = (newContacts ?? 0) > 0
 
   const data: DashboardData = {
-    membersTotal:    membersTotal    ?? 0,
+    membersTotal,
+    kidsRegistrations: kidsRegistrations ?? 0,
+    leadCount,
+    convertedLeads,
     subscribers:     subscribers    ?? 0,
     newContacts:     newContacts     ?? 0,
     enquiriesAlert,

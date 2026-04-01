@@ -20,10 +20,12 @@ const ResponsiveGridLayout = WidthProvider(Responsive)
 // ── Widget catalogue ───────────────────────────────────────────────────────────
 
 const OVERVIEW_WIDGETS: WidgetDef[] = [
-  { id: 'kpi-members',     name: 'Total Members',             category: 'kpi',   defaultLayout: { w: 3,  h: 3, x: 0,  y: 0  } },
-  { id: 'kpi-subscribers', name: 'Email Subscribers',         category: 'kpi',   defaultLayout: { w: 3,  h: 3, x: 3,  y: 0  } },
-  { id: 'kpi-enquiries',   name: 'Unread Enquiries',          category: 'kpi',   defaultLayout: { w: 3,  h: 3, x: 6,  y: 0  } },
-  { id: 'kpi-revenue',     name: 'Monthly Revenue',           category: 'kpi',   defaultLayout: { w: 3,  h: 3, x: 9,  y: 0  } },
+  { id: 'kpi-members',     name: 'Total Members',             category: 'kpi',   defaultLayout: { w: 2,  h: 3, x: 0,  y: 0  } },
+  { id: 'kpi-kids',        name: 'Kids & Teens',              category: 'kpi',   defaultLayout: { w: 2,  h: 3, x: 2,  y: 0  } },
+  { id: 'kpi-leads',       name: 'Lead Pipeline',             category: 'kpi',   defaultLayout: { w: 4,  h: 3, x: 4,  y: 0  } },
+  { id: 'kpi-subscribers', name: 'Email Subscribers',         category: 'kpi',   defaultLayout: { w: 2,  h: 3, x: 8,  y: 0  } },
+  { id: 'kpi-enquiries',   name: 'Unread Enquiries',          category: 'kpi',   defaultLayout: { w: 2,  h: 3, x: 10, y: 0  } },
+  { id: 'kpi-revenue',     name: 'Monthly Revenue',           category: 'kpi',   defaultLayout: { w: 3,  h: 3, x: 0,  y: 3  } },
   { id: 'main-panel',      name: 'Quick Actions & Enquiries', category: 'misc',  defaultLayout: { w: 8,  h: 10, x: 0, y: 3  } },
   { id: 'checklist',       name: 'Setup Checklist',           category: 'misc',  defaultLayout: { w: 4,  h: 7, x: 8,  y: 3  } },
   { id: 'system-status',   name: 'System Status',             category: 'misc',  defaultLayout: { w: 4,  h: 3, x: 8,  y: 10 } },
@@ -222,9 +224,51 @@ export function OverviewContent({ data, formattedDate }: Props) {
       case 'kpi-members':
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-            <StatCard label="Total Members" value={data.membersTotal} sub="Kids & adult registrations" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5"/></svg>} />
+            <StatCard label="Total Members" value={data.membersTotal} sub="Active memberships" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5"/></svg>} />
           </WidgetWrapper>
         )
+
+      case 'kpi-kids':
+        return (
+          <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
+            <StatCard label="Kids & Teens" value={data.kidsRegistrations} sub="Programme registrations" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="6" r="3"/><path d="M4 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M5 3c0-1 .5-2 3-2s3 1 3 2" strokeLinecap="round"/></svg>} />
+          </WidgetWrapper>
+        )
+
+      case 'kpi-leads':
+        {
+          const convRate = data.leadCount + data.convertedLeads > 0
+            ? Math.round((data.convertedLeads / (data.leadCount + data.convertedLeads)) * 100)
+            : 0
+          return (
+            <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
+              <div className="relative cursor-default overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.13)] bg-nw-750 shadow-gold-sm transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700 hover:shadow-gold-md h-full">
+                <div className="flex items-stretch h-full">
+                  {/* Total Leads */}
+                  <div className="flex-1 p-[13px_15px_11px]">
+                    <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">Total Leads</span>
+                    <div className="mt-1.5 font-brand text-[28px] font-bold leading-none tracking-[-0.5px] text-white">{data.leadCount}</div>
+                    <div className="mt-1 text-[10px] text-nw-500">No membership</div>
+                  </div>
+                  {/* Divider */}
+                  <div className="w-px self-stretch my-2.5 bg-[rgba(255,255,255,0.09)]" />
+                  {/* Converted */}
+                  <div className="flex-1 p-[13px_15px_11px]">
+                    <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">Converted</span>
+                    <div className="mt-1.5 flex items-baseline gap-1.5">
+                      <span className="font-brand text-[28px] font-bold leading-none tracking-[-0.5px] text-gold-300">{data.convertedLeads}</span>
+                      {convRate > 0 && (
+                        <span className="rounded-[5px] bg-[rgba(74,222,128,0.1)] border border-[rgba(74,222,128,0.2)] px-1 py-px text-[9px] font-semibold text-[#4ade80]">{convRate}%</span>
+                      )}
+                    </div>
+                    <div className="mt-1 text-[10px] text-nw-500">Became members</div>
+                  </div>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[rgba(212,160,23,0.65)] to-transparent" />
+              </div>
+            </WidgetWrapper>
+          )
+        }
 
       case 'kpi-subscribers':
         return (
