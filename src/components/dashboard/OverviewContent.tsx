@@ -273,7 +273,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
       case 'kpi-subscribers':
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-            <StatCard label="Email Subscribers" value={data.subscribers} sub="Via Mailchimp" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M1 5l7 5 7-5"/></svg>} />
+            <StatCard label="Email Subscribers" value={data.subscribers} sub="Active subscribers" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M1 5l7 5 7-5"/></svg>} />
           </WidgetWrapper>
         )
 
