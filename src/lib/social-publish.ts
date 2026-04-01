@@ -138,6 +138,7 @@ export async function publishReelToInstagram(
   caption: string,
   coverUrl?: string,
   shareToFeed = true,
+  audioName?: string,
 ): Promise<PublishResult> {
   // Step 1: Create media container for REELS
   const containerBody: Record<string, unknown> = {
@@ -148,6 +149,7 @@ export async function publishReelToInstagram(
     access_token: pageToken,
   }
   if (coverUrl) containerBody.cover_url = coverUrl
+  if (audioName) containerBody.audio_name = audioName
 
   const containerRes = await fetch(`https://graph.facebook.com/${META_VERSION}/${igUserId}/media`, {
     method: 'POST',

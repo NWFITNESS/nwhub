@@ -22,11 +22,20 @@ import { CaptionEditor } from './studio/CaptionEditor'
 import { CarouselSlides } from './studio/CarouselSlides'
 import { VideoTrimmer } from './studio/VideoTrimmer'
 import { CoverPicker } from './studio/CoverPicker'
+import { MusicPicker } from './studio/MusicPicker'
 import { ChevronDown, Film } from 'lucide-react'
 import { MediaPickerModal } from '../media/MediaPicker'
 
 interface PlatformInfo { connected: boolean; label: string; subtitle?: string }
 interface PublishResult { ok: boolean; post_id?: string; error?: string }
+interface MusicTrack {
+  id: string
+  name: string
+  artist: string
+  duration_seconds: number
+  preview_url: string | null
+  isrc: string | null
+}
 
 function MobileAccordion({ title, children, defaultOpen = false, accent }: {
   title: string; children: React.ReactNode; defaultOpen?: boolean; accent?: boolean
@@ -87,6 +96,7 @@ export function PostStudio() {
   const [trimEnd, setTrimEnd] = useState(0)
   const [coverTime, setCoverTime] = useState<number | null>(null)
   const [customCoverUrl, setCustomCoverUrl] = useState('')
+  const [selectedMusic, setSelectedMusic] = useState<MusicTrack | null>(null)
   const [showMobileVideoPicker, setShowMobileVideoPicker] = useState(false)
 
   // ── Social state ───────────────────────────────────────────────────────────
@@ -208,6 +218,7 @@ export function PostStudio() {
             platforms: Array.from(selectedPlatforms),
             coverUrl: customCoverUrl || undefined,
             shareToFeed: true,
+            audioName: selectedMusic?.name || undefined,
           }),
         })
         const data = await res.json()
@@ -384,6 +395,8 @@ export function PostStudio() {
             onCoverTimeChange={setCoverTime}
             customCoverUrl={customCoverUrl}
             onCustomCoverChange={setCustomCoverUrl}
+            selectedMusic={selectedMusic}
+            onMusicChange={setSelectedMusic}
           />
         </div>
       </div>
@@ -461,6 +474,12 @@ export function PostStudio() {
                     customCoverUrl={customCoverUrl}
                     onCustomCoverChange={setCustomCoverUrl}
                   />
+                </MobileAccordion>
+              )}
+
+              {videoUrl && (
+                <MobileAccordion title="Music">
+                  <MusicPicker selected={selectedMusic} onSelect={setSelectedMusic} />
                 </MobileAccordion>
               )}
             </>

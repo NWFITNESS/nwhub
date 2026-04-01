@@ -18,9 +18,10 @@ export async function POST(req: NextRequest) {
     platforms: Array<'facebook' | 'instagram' | 'linkedin'>
     coverUrl?: string
     shareToFeed?: boolean
+    audioName?: string
   }
 
-  const { videoUrl, captions, platforms, coverUrl, shareToFeed = true } = body
+  const { videoUrl, captions, platforms, coverUrl, shareToFeed = true, audioName } = body
 
   if (!videoUrl) {
     return NextResponse.json({ error: 'videoUrl is required' }, { status: 400 })
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest) {
         captions.instagram ?? '',
         coverUrl,
         shareToFeed,
+        audioName,
       )
     }
   }

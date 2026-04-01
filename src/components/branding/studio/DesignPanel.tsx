@@ -13,7 +13,17 @@ import { RatioSelector } from './RatioSelector'
 import { CaptionEditor } from './CaptionEditor'
 import { VideoTrimmer } from './VideoTrimmer'
 import { CoverPicker } from './CoverPicker'
+import { MusicPicker } from './MusicPicker'
 import { MediaPickerModal } from '@/components/media/MediaPicker'
+
+interface MusicTrack {
+  id: string
+  name: string
+  artist: string
+  duration_seconds: number
+  preview_url: string | null
+  isrc: string | null
+}
 
 interface PlatformInfo { connected: boolean; label: string; subtitle?: string }
 
@@ -68,6 +78,9 @@ interface Props {
   onCoverTimeChange: (t: number | null) => void
   customCoverUrl: string
   onCustomCoverChange: (url: string) => void
+  // Music (reel mode)
+  selectedMusic: MusicTrack | null
+  onMusicChange: (track: MusicTrack | null) => void
 }
 
 interface AccordionSectionProps {
@@ -111,6 +124,7 @@ export function DesignPanel({
   videoUrl, onVideoChange, videoDuration,
   trimStart, trimEnd, onTrimStartChange, onTrimEndChange,
   coverTime, onCoverTimeChange, customCoverUrl, onCustomCoverChange,
+  selectedMusic, onMusicChange,
 }: Props) {
   const [showVideoPicker, setShowVideoPicker] = useState(false)
 
@@ -178,6 +192,13 @@ export function DesignPanel({
                   customCoverUrl={customCoverUrl}
                   onCustomCoverChange={onCustomCoverChange}
                 />
+              </AccordionSection>
+            )}
+
+            {/* Music picker - only for reels */}
+            {videoUrl && (
+              <AccordionSection title="Music" defaultOpen={false}>
+                <MusicPicker selected={selectedMusic} onSelect={onMusicChange} />
               </AccordionSection>
             )}
           </>
