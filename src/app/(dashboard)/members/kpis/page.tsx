@@ -80,7 +80,7 @@ export default async function MemberKPIsPage() {
 
       {/* Lead conversion widget */}
       <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.13)] bg-nw-750 shadow-gold-sm">
-        <div className="flex items-stretch">
+        <div className="flex flex-col md:flex-row md:items-stretch">
           {/* Total Leads */}
           <div className="flex-1 p-[17px_20px_15px]">
             <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">Total Leads</span>
@@ -89,7 +89,7 @@ export default async function MemberKPIsPage() {
           </div>
 
           {/* Divider */}
-          <div className="w-px self-stretch my-3 bg-[rgba(255,255,255,0.09)]" />
+          <div className="h-px w-full md:h-auto md:w-px self-stretch mx-4 md:mx-0 my-0 md:my-3 bg-[rgba(255,255,255,0.09)]" />
 
           {/* Converted */}
           <div className="flex-1 p-[17px_20px_15px]">
@@ -106,7 +106,7 @@ export default async function MemberKPIsPage() {
           </div>
 
           {/* Divider */}
-          <div className="w-px self-stretch my-3 bg-[rgba(255,255,255,0.09)]" />
+          <div className="h-px w-full md:h-auto md:w-px self-stretch mx-4 md:mx-0 my-0 md:my-3 bg-[rgba(255,255,255,0.09)]" />
 
           {/* Conversion rate visual */}
           <div className="flex-1 p-[17px_20px_15px] flex flex-col justify-between">

@@ -79,7 +79,7 @@ export function EmailSubscribersTable({ initialSubscribers }: Props) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
         <div className="flex gap-1">
           {(['all', 'subscribed', 'unsubscribed'] as const).map((s) => (
             <button
@@ -91,14 +91,38 @@ export function EmailSubscribersTable({ initialSubscribers }: Props) {
             </button>
           ))}
         </div>
-        <div className="flex gap-2">
-          <ColumnToggle columns={COLUMNS} visible={visible} onToggle={toggle} />
-          <Button variant="default" size="sm" onClick={exportCsv}><Download size={13} /> Export CSV</Button>
+        <div className="flex flex-wrap gap-2">
+          <div className="hidden md:flex gap-2">
+            <ColumnToggle columns={COLUMNS} visible={visible} onToggle={toggle} />
+            <Button variant="default" size="sm" onClick={exportCsv}><Download size={13} /> Export CSV</Button>
+          </div>
           <Button variant="gold" size="sm" onClick={() => setAddOpen(true)}><Plus size={13} /> Add</Button>
         </div>
       </div>
 
-      <div className="w-full overflow-x-auto">
+      {/* Mobile card rows */}
+      <div className="md:hidden flex flex-col">
+        {filtered.length === 0 ? (
+          <p className="text-center text-nw-500 py-12">No subscribers</p>
+        ) : filtered.map(s => (
+          <div key={s.id} className="border-b border-[rgba(255,255,255,0.05)] p-4">
+            <div className="flex items-start justify-between gap-2 mb-1">
+              <p className="text-nw-200 font-medium" style={{ fontSize: 13 }}>{s.email}</p>
+              <Badge variant={statusToBadge(s.status)}>{s.status}</Badge>
+            </div>
+            <p className="text-nw-400" style={{ fontSize: 12 }}>{[s.first_name, s.last_name].filter(Boolean).join(' ') || '—'}</p>
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-nw-500" style={{ fontSize: 10 }}>{format(new Date(s.subscribed_at), 'dd MMM yyyy')}</span>
+              {s.status === 'subscribed' && (
+                <Button variant="ghost" size="sm" onClick={() => handleUnsubscribe(s.id)}>Unsubscribe</Button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden md:block w-full overflow-x-auto">
         <table className="w-full border-collapse text-[13px]">
           <thead>
             <tr>
