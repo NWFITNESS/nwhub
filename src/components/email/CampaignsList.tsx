@@ -18,15 +18,24 @@ interface Campaign {
   clicks?: { click_rate: number; unique_clicks: number }
 }
 
+function isDraft(status: string) {
+  return status === 'draft' || status === 'save' || status === 'created'
+}
+
 function statusVariant(status: string) {
+  if (isDraft(status)) return 'gold' as const
   switch (status) {
     case 'sent': return 'sent' as const
-    case 'draft': return 'gold' as const
     case 'schedule': case 'scheduled': return 'gold' as const
     case 'sending': return 'active' as const
     case 'paused': return 'paused' as const
     default: return 'default' as const
   }
+}
+
+function statusLabel(status: string) {
+  if (isDraft(status)) return 'Draft'
+  return status
 }
 
 export function CampaignsList({ campaigns }: { campaigns: Campaign[] }) {
@@ -73,8 +82,8 @@ export function CampaignsList({ campaigns }: { campaigns: Campaign[] }) {
               ) : campaigns.map(c => (
                 <tr
                   key={c.id}
-                  onClick={c.status === 'draft' ? () => openDraft(c) : undefined}
-                  className={`transition-colors ${c.status === 'draft' ? 'cursor-pointer hover:bg-[rgba(212,160,23,0.04)] border-l-2 border-l-gold-400' : 'hover:bg-[rgba(255,255,255,0.03)]'}`}
+                  onClick={isDraft(c.status) ? () => openDraft(c) : undefined}
+                  className={`transition-colors ${isDraft(c.status) ? 'cursor-pointer hover:bg-[rgba(212,160,23,0.04)] border-l-2 border-l-gold-400' : 'hover:bg-[rgba(255,255,255,0.03)]'}`}
                 >
                   <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3">
                     <p className="font-medium text-nw-200 truncate" style={{ maxWidth: 240 }}>{c.settings.title || c.settings.subject_line}</p>
@@ -83,7 +92,7 @@ export function CampaignsList({ campaigns }: { campaigns: Campaign[] }) {
                     )}
                   </td>
                   <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3">
-                    <Badge variant={statusVariant(c.status)}>{c.status}</Badge>
+                    <Badge variant={statusVariant(c.status)}>{statusLabel(c.status)}</Badge>
                   </td>
                   <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-nw-300">{c.emails_sent > 0 ? c.emails_sent.toLocaleString() : '—'}</td>
                   <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3">
@@ -96,7 +105,7 @@ export function CampaignsList({ campaigns }: { campaigns: Campaign[] }) {
                     {c.send_time ? format(new Date(c.send_time), 'dd MMM yyyy') : 'Draft'}
                   </td>
                   <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3">
-                    {c.status === 'draft' && (
+                    {isDraft(c.status) && (
                       <Button variant="gold" size="sm" onClick={() => openDraft(c)}>
                         <Send size={11} /> Continue
                       </Button>
@@ -115,12 +124,12 @@ export function CampaignsList({ campaigns }: { campaigns: Campaign[] }) {
           ) : campaigns.map(c => (
             <div
               key={c.id}
-              onClick={c.status === 'draft' ? () => openDraft(c) : undefined}
-              className={`border-b border-[rgba(255,255,255,0.05)] p-4 ${c.status === 'draft' ? 'cursor-pointer border-l-2 border-l-gold-400 bg-[rgba(212,160,23,0.03)]' : ''}`}
+              onClick={isDraft(c.status) ? () => openDraft(c) : undefined}
+              className={`border-b border-[rgba(255,255,255,0.05)] p-4 ${isDraft(c.status) ? 'cursor-pointer border-l-2 border-l-gold-400 bg-[rgba(212,160,23,0.03)]' : ''}`}
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <p className="font-medium text-nw-200" style={{ fontSize: 14 }}>{c.settings.title || c.settings.subject_line}</p>
-                <Badge variant={statusVariant(c.status)}>{c.status}</Badge>
+                <Badge variant={statusVariant(c.status)}>{statusLabel(c.status)}</Badge>
               </div>
               <div className="flex items-center gap-4 mb-2" style={{ fontSize: 11 }}>
                 {c.emails_sent > 0 && <span className="text-nw-400">{c.emails_sent} sent</span>}
@@ -128,7 +137,7 @@ export function CampaignsList({ campaigns }: { campaigns: Campaign[] }) {
                 {c.clicks && <span className="text-gold-300">{(c.clicks.click_rate * 100).toFixed(1)}% clicks</span>}
                 <span className="text-nw-500 ml-auto">{c.send_time ? format(new Date(c.send_time), 'dd MMM') : 'Draft'}</span>
               </div>
-              {c.status === 'draft' && (
+              {isDraft(c.status) && (
                 <Button variant="gold" size="sm" onClick={() => openDraft(c)} className="w-full mt-1">
                   <Send size={11} /> Continue Draft
                 </Button>
