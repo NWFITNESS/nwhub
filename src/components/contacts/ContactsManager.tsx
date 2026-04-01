@@ -584,7 +584,38 @@ export function ContactsManager({ initialContacts }: Props) {
       {contacts.length === 0 ? (
         <EmptyContacts onAdd={openAdd} />
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-white/[0.08]">
+        <>
+        {/* Mobile card rows */}
+        <div className="md:hidden flex flex-col gap-2">
+          {filtered.length === 0 ? (
+            <p className="text-center text-nw-500 py-12">No contacts match your search</p>
+          ) : filtered.map((c) => (
+            <div key={c.id} className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4" onClick={() => openEdit(c)}>
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div>
+                  <p className="text-[14px] font-medium text-nw-200">{c.first_name} {c.last_name}</p>
+                  {c.email && <p className="text-[12px] text-nw-400 mt-0.5">{c.email}</p>}
+                  {c.phone && <p className="text-[11px] text-nw-500 font-mono mt-0.5">{c.phone}</p>}
+                </div>
+                <MembershipDot groups={c.groups} />
+              </div>
+              {c.groups.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {c.groups.map((g) => (
+                    <span key={g} className="rounded-full bg-[rgba(212,160,23,0.1)] border border-[rgba(212,160,23,0.22)] px-2 py-0.5 text-[10px] text-gold-300">{g}</span>
+                  ))}
+                </div>
+              )}
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-[10px] text-nw-500">{format(new Date(c.created_at), 'dd MMM yyyy')}</span>
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${sourceBadge[c.source] ?? sourceBadge.manual}`}>{c.source}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto rounded-xl border border-[rgba(255,255,255,0.11)]">
           <table className="w-full text-sm">
             <thead>
               {/* Column labels */}
@@ -711,6 +742,7 @@ export function ContactsManager({ initialContacts }: Props) {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       {/* ------------------------------------------------------------------ */}

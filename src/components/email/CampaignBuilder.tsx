@@ -68,7 +68,7 @@ export function CampaignBuilder() {
         <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400">{error}</div>
       )}
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
         <div className="col-span-2 space-y-4">
           <Field label="Campaign Name (internal)">
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="May Newsletter 2026" />

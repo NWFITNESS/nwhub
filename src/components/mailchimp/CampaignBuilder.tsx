@@ -735,7 +735,7 @@ export function CampaignBuilder({ settings, campaign, designJson }: Props) {
           >
             <div className="space-y-4">
               <p className="text-sm text-white/40">The name and email address your recipients will see.</p>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-white/40 uppercase tracking-[0.1em]">From name</label>
                   <input type="text" value={fromName} onChange={e => setFromName(e.target.value)} className={inp()} placeholder="Northern Warrior" />
@@ -850,7 +850,7 @@ export function CampaignBuilder({ settings, campaign, designJson }: Props) {
           >
             <div className="space-y-5">
               <p className="text-sm text-white/40">Add a subject line and preview text for your campaign.</p>
-              <div className="grid grid-cols-2 gap-6 items-start">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 items-start">
                 {/* Inputs */}
                 <div className="space-y-4">
                   <div className="space-y-1.5">
