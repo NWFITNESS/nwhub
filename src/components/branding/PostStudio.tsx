@@ -251,7 +251,7 @@ export function PostStudio() {
     } catch (err) {
       setPublishResults({ _error: { ok: false, error: err instanceof Error ? err.message : 'Publish failed' } })
     }
-  }, [canPublish, postType, videoUrl, customCoverUrl, carouselImages, selectedPlatforms, captions, getImageDataUrl])
+  }, [canPublish, postType, videoUrl, customCoverUrl, selectedMusic, carouselImages, selectedPlatforms, captions, getImageDataUrl])
 
   const schedule = useCallback(async (scheduledAt: string) => {
     if (!canPublish) return
@@ -265,6 +265,7 @@ export function PostStudio() {
     } else if (postType === 'reel') {
       payload.videoUrl = videoUrl
       payload.coverUrl = customCoverUrl || undefined
+      payload.audioName = selectedMusic?.name || undefined
     } else {
       payload.imageDataUrl = await getImageDataUrl()
     }
@@ -273,7 +274,7 @@ export function PostStudio() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
-  }, [canPublish, postType, videoUrl, customCoverUrl, carouselImages, selectedPlatforms, captions, getImageDataUrl])
+  }, [canPublish, postType, videoUrl, customCoverUrl, selectedMusic, carouselImages, selectedPlatforms, captions, getImageDataUrl])
 
   // ── Template props ────────────────────────────────────────────────────────
   const templateProps: TemplateRenderProps = {

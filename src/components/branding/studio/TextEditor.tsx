@@ -75,22 +75,6 @@ export function TextEditor({ headline, subheadline, onHeadlineChange, onSubheadl
           ))}
         </select>
 
-        {/* Bold */}
-        <button
-          onClick={() => update({ headlineFont: textStyles.headlineFont })}
-          className="w-7 h-7 rounded-md border border-white/[0.08] bg-nw-750 text-white/50 hover:text-white/80 text-xs font-bold flex items-center justify-center"
-          title="Bold"
-        >
-          B
-        </button>
-
-        {/* Italic */}
-        <button
-          className="w-7 h-7 rounded-md border border-white/[0.08] bg-nw-750 text-white/50 hover:text-white/80 text-xs italic flex items-center justify-center"
-          title="Italic"
-        >
-          I
-        </button>
       </div>
 
       {/* Headline size slider */}
