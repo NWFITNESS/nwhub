@@ -10,6 +10,7 @@ interface Props {
   html: string
   title: string
   previewText: string
+  existingCampaignId?: string
 }
 
 interface Segment {
@@ -22,7 +23,7 @@ interface Segment {
 
 type Step = 'details' | 'preview' | 'send'
 
-export function CampaignSendModal({ open, onClose, html, title, previewText }: Props) {
+export function CampaignSendModal({ open, onClose, html, title, previewText, existingCampaignId }: Props) {
   const [step, setStep] = useState<Step>('details')
   const [campaignName, setCampaignName] = useState(title)
   const [subject, setSubject] = useState(title)
@@ -74,7 +75,7 @@ export function CampaignSendModal({ open, onClose, html, title, previewText }: P
       setCampaignName(title)
       setSubject(title)
       setPreview(previewText)
-      setCampaignId(null)
+      setCampaignId(existingCampaignId ?? null)
       setSelectedSegments(new Set(['all']))
       setError('')
       setSuccess('')

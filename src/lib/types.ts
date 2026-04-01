@@ -218,7 +218,7 @@ export interface MailchimpAudienceStats {
 
 export interface MailchimpCampaignRow {
   id: string
-  settings: { subject_line: string; title: string }
+  settings: { subject_line: string; title: string; preview_text?: string }
   status: string
   send_time: string | null
   emails_sent: number
