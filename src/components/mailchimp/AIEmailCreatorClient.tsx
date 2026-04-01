@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import {
-  Sparkles, Copy, Download, RefreshCw,
+  Sparkles, Copy, Download, RefreshCw, Send,
   ChevronRight, Check, Eye, Code, Image as ImageIcon, Lock,
 } from 'lucide-react'
 
@@ -224,6 +225,37 @@ export function AIEmailCreatorClient() {
     }
   }
 
+  const router = useRouter()
+  const [creating, setCreating] = useState(false)
+
+  async function createCampaign() {
+    if (!html) return
+    setCreating(true)
+    setError('')
+    try {
+      const res = await fetch('/api/mailchimp/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: prompt.slice(0, 80) || 'AI Generated Campaign',
+          title: prompt.slice(0, 80) || 'AI Generated Campaign',
+          preview_text: prompt.slice(0, 150),
+          html,
+        }),
+      })
+      const text = await res.text()
+      if (!text) throw new Error('Empty response from server')
+      let data: { campaign_id?: string; error?: string }
+      try { data = JSON.parse(text) } catch { throw new Error('Invalid response') }
+      if (!res.ok) throw new Error(data.error ?? 'Failed to create campaign')
+      router.push(`/mailchimp/edit/${data.campaign_id}`)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to create campaign')
+    } finally {
+      setCreating(false)
+    }
+  }
+
   function copyHTML() {
     navigator.clipboard.writeText(html)
     setCopied(true)
@@ -364,15 +396,22 @@ export function AIEmailCreatorClient() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={copyHTML}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium text-white/50 border border-white/[0.08] bg-white/[0.03] hover:text-white hover:border-white/20 hover:bg-white/[0.06] transition-all duration-200"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium text-nw-400 border border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] hover:text-nw-200 hover:border-[rgba(255,255,255,0.14)] transition-all"
                 >
-                  {copied ? <><Check size={12} className="text-green-400" /> Copied!</> : <><Copy size={12} /> Copy HTML</>}
+                  {copied ? <><Check size={12} className="text-[#4ade80]" /> Copied!</> : <><Copy size={12} /> Copy HTML</>}
                 </button>
                 <button
                   onClick={downloadHTML}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-black bg-gradient-to-r from-[#967705] to-[#C9A70A] hover:opacity-90 transition-opacity"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium text-nw-400 border border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] hover:text-nw-200 hover:border-[rgba(255,255,255,0.14)] transition-all"
                 >
                   <Download size={12} /> Download
+                </button>
+                <button
+                  onClick={createCampaign}
+                  disabled={creating}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium border border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-gold-300 hover:bg-[rgba(212,160,23,0.22)] transition-all disabled:opacity-50"
+                >
+                  {creating ? <><RefreshCw size={12} className="animate-spin" /> Creating...</> : <><Send size={12} /> Create Campaign</>}
                 </button>
               </div>
             </div>
