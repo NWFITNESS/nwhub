@@ -17,6 +17,7 @@ interface Segment {
   label: string
   count: number
   emails: string[]
+  category?: string
 }
 
 type Step = 'details' | 'preview' | 'send'
@@ -35,7 +36,7 @@ export function CampaignSendModal({ open, onClose, html, title, previewText }: P
 
   // Segments
   const [segments, setSegments] = useState<Segment[]>([])
-  const [selectedSegment, setSelectedSegment] = useState('all')
+  const [selectedSegments, setSelectedSegments] = useState<Set<string>>(new Set(['all']))
   const [loadingSegments, setLoadingSegments] = useState(false)
 
   const [sending, setSending] = useState(false)
@@ -74,18 +75,29 @@ export function CampaignSendModal({ open, onClose, html, title, previewText }: P
       setSubject(title)
       setPreview(previewText)
       setCampaignId(null)
-      setSelectedSegment('all')
+      setSelectedSegments(new Set(['all']))
       setError('')
       setSuccess('')
     }
   }, [open, title, previewText])
 
-  const activeSegment = segments.find(s => s.id === selectedSegment)
+  // Combine emails from all selected segments (deduped)
+  const selectedEmails = (() => {
+    const emails = new Set<string>()
+    for (const seg of segments) {
+      if (selectedSegments.has(seg.id)) {
+        for (const e of seg.emails) emails.add(e.toLowerCase())
+      }
+    }
+    return [...emails]
+  })()
+  const recipientCount = selectedSegments.has('all') ? (segments.find(s => s.id === 'all')?.count ?? 0) : selectedEmails.length
+  const selectedLabels = segments.filter(s => selectedSegments.has(s.id)).map(s => s.label).join(', ')
 
   async function createDraft(): Promise<string | null> {
     if (campaignId) return campaignId
     setError('')
-    const segEmails = selectedSegment !== 'all' && activeSegment ? activeSegment.emails : undefined
+    const segEmails = selectedSegments.has('all') ? undefined : selectedEmails.length > 0 ? selectedEmails : undefined
     const res = await fetch('/api/mailchimp/draft', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -200,7 +212,7 @@ export function CampaignSendModal({ open, onClose, html, title, previewText }: P
           <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.07)] px-5 py-3.5 flex-shrink-0">
             <div>
               <p className="text-nw-200 font-medium" style={{ fontSize: 15 }}>Send Campaign</p>
-              <p className="text-nw-500" style={{ fontSize: 11 }}>via Mailchimp · {activeSegment ? `${activeSegment.count} recipients` : 'loading...'}</p>
+              <p className="text-nw-500" style={{ fontSize: 11 }}>via Mailchimp · {`${recipientCount} recipients`}</p>
             </div>
             <button onClick={onClose} className="text-nw-500 hover:text-nw-300 transition-colors"><X size={18} /></button>
           </div>
@@ -244,35 +256,58 @@ export function CampaignSendModal({ open, onClose, html, title, previewText }: P
                 <div className="h-px bg-[rgba(255,255,255,0.07)]" />
 
                 {/* Audience picker */}
-                <Field label="Audience">
+                <Field label="Audience (select one or more)">
                   {loadingSegments ? (
                     <p className="text-nw-500" style={{ fontSize: 12 }}>Loading segments...</p>
                   ) : (
-                    <div className="flex flex-col gap-2">
-                      {segments.map(seg => (
-                        <button
-                          key={seg.id}
-                          onClick={() => setSelectedSegment(seg.id)}
-                          className={`flex items-center gap-3 rounded-[8px] border p-3 text-left transition-all ${
-                            selectedSegment === seg.id
-                              ? 'border-[rgba(212,160,23,0.3)] bg-[rgba(212,160,23,0.08)]'
-                              : 'border-[rgba(255,255,255,0.09)] bg-nw-800 hover:border-[rgba(255,255,255,0.14)]'
-                          }`}
-                        >
-                          <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[7px] ${
-                            selectedSegment === seg.id
-                              ? 'bg-[rgba(212,160,23,0.12)] text-gold-400'
-                              : 'bg-[rgba(255,255,255,0.04)] text-nw-400'
-                          }`}>
-                            <Users size={14} />
+                    <div className="flex flex-col gap-3">
+                      {['core', 'membership', 'source', 'tags'].map(cat => {
+                        const catSegs = segments.filter(s => s.category === cat)
+                        if (catSegs.length === 0) return null
+                        const catLabel = { core: 'Main', membership: 'Membership', source: 'Source', tags: 'Custom Tags' }[cat]
+                        return (
+                          <div key={cat}>
+                            <p className="text-nw-500 mb-1.5" style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase' }}>{catLabel}</p>
+                            <div className="flex flex-col gap-1.5">
+                              {catSegs.map(seg => {
+                                const selected = selectedSegments.has(seg.id)
+                                return (
+                                  <button
+                                    key={seg.id}
+                                    onClick={() => {
+                                      setSelectedSegments(prev => {
+                                        const next = new Set(prev)
+                                        if (seg.id === 'all') {
+                                          // Selecting "all" clears others
+                                          return new Set(['all'])
+                                        }
+                                        next.delete('all')
+                                        if (next.has(seg.id)) next.delete(seg.id)
+                                        else next.add(seg.id)
+                                        if (next.size === 0) next.add('all')
+                                        return next
+                                      })
+                                    }}
+                                    className={`flex items-center gap-3 rounded-[8px] border p-2.5 text-left transition-all ${
+                                      selected
+                                        ? 'border-[rgba(212,160,23,0.3)] bg-[rgba(212,160,23,0.08)]'
+                                        : 'border-[rgba(255,255,255,0.09)] bg-nw-800 hover:border-[rgba(255,255,255,0.14)]'
+                                    }`}
+                                  >
+                                    <div className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-[4px] border ${
+                                      selected ? 'border-gold-400 bg-gold-500' : 'border-[rgba(255,255,255,0.15)] bg-transparent'
+                                    }`}>
+                                      {selected && <CheckCircle size={12} className="text-nw-950" />}
+                                    </div>
+                                    <span className={`flex-1 font-medium ${selected ? 'text-gold-300' : 'text-nw-200'}`} style={{ fontSize: 12 }}>{seg.label}</span>
+                                    <span className="text-nw-500 flex-shrink-0" style={{ fontSize: 11 }}>{seg.count}</span>
+                                  </button>
+                                )
+                              })}
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className={`font-medium ${selectedSegment === seg.id ? 'text-gold-300' : 'text-nw-200'}`} style={{ fontSize: 13 }}>{seg.label}</p>
-                            <p className="text-nw-500" style={{ fontSize: 11 }}>{seg.count} contact{seg.count !== 1 ? 's' : ''} with email</p>
-                          </div>
-                          {selectedSegment === seg.id && <CheckCircle size={16} className="text-gold-400 flex-shrink-0" />}
-                        </button>
-                      ))}
+                        )
+                      })}
                     </div>
                   )}
                 </Field>
@@ -321,7 +356,7 @@ export function CampaignSendModal({ open, onClose, html, title, previewText }: P
                 <div className="flex items-center justify-between">
                   <p className="text-nw-500" style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase' }}>Email Content</p>
                   <span className="text-nw-500 flex items-center gap-1" style={{ fontSize: 10 }}>
-                    <Users size={10} /> Sending to: {activeSegment?.label ?? 'All'} ({activeSegment?.count ?? 0})
+                    <Users size={10} /> Sending to: {selectedLabels || 'All'} ({recipientCount})
                   </span>
                 </div>
                 <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] overflow-hidden bg-white" style={{ maxHeight: 400 }}>
@@ -342,8 +377,8 @@ export function CampaignSendModal({ open, onClose, html, title, previewText }: P
                 <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4 flex items-center gap-3">
                   <Users size={16} className="text-gold-400 flex-shrink-0" />
                   <div>
-                    <p className="text-nw-200 font-medium" style={{ fontSize: 13 }}>Sending to: {activeSegment?.label ?? 'All Contacts'}</p>
-                    <p className="text-nw-500" style={{ fontSize: 11 }}>{activeSegment?.count ?? 0} recipients · Subject: {subject}</p>
+                    <p className="text-nw-200 font-medium" style={{ fontSize: 13 }}>Sending to: {selectedLabels || 'All Contacts'}</p>
+                    <p className="text-nw-500" style={{ fontSize: 11 }}>{recipientCount} recipients · Subject: {subject}</p>
                   </div>
                 </div>
 
@@ -386,7 +421,7 @@ export function CampaignSendModal({ open, onClose, html, title, previewText }: P
                 {/* Send now */}
                 <div className="rounded-[10px] border border-[rgba(212,160,23,0.2)] bg-[rgba(212,160,23,0.05)] p-4">
                   <p className="text-nw-200 font-medium mb-2" style={{ fontSize: 13 }}>Send Now</p>
-                  <p className="text-nw-500 mb-3" style={{ fontSize: 11 }}>Send to {activeSegment?.count ?? 0} {activeSegment?.label?.toLowerCase() ?? 'contacts'} immediately.</p>
+                  <p className="text-nw-500 mb-3" style={{ fontSize: 11 }}>Send to {recipientCount} {selectedLabels.toLowerCase() || 'contacts'} immediately.</p>
                   <Button variant="gold" size="sm" onClick={handleSendNow} loading={sending} className="w-full">
                     <Send size={12} /> Send Campaign Now
                   </Button>

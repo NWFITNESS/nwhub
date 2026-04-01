@@ -139,6 +139,7 @@ function buildNav(unreadCount: number): NavSection[] {
         { key: 'email', label: 'Email Campaigns', icon: I.email, sub: [
           { label: 'All Campaigns', href: '/email/campaigns' },
           { label: 'Subscribers', href: '/email' },
+          { label: 'Import Subscribers', href: '/email/import' },
           { label: 'AI Email Creator', href: '/mailchimp/create-ai' },
         ]},
       ],
