@@ -31,11 +31,11 @@ export async function POST(req: NextRequest) {
   let campaignId = campaign_id as string | undefined
 
   const campaignSettings = {
-    subject_line: subject,
-    title: title || subject,
+    subject_line: subject || 'Campaign',
+    title: title || subject || 'Campaign',
     preview_text: preview_text || '',
-    from_name: from_name || 'Northern Warrior',
-    reply_to: reply_to || from_email || '',
+    from_name: from_name || settings.from_name || 'Northern Warrior',
+    reply_to: reply_to || from_email || settings.reply_to || settings.from_email || 'info@northernwarrior.co.uk',
   }
 
   const segmentEmails = Array.isArray(segment_emails)
@@ -69,7 +69,8 @@ export async function POST(req: NextRequest) {
     })
     if (!createRes.ok) {
       const err = await createRes.json().catch(() => ({}))
-      return NextResponse.json({ error: err.detail ?? 'Failed to create campaign draft' }, { status: createRes.status })
+      const fieldErrors = err.errors?.map((e: { field: string; message: string }) => `${e.field}: ${e.message}`).join(', ')
+      return NextResponse.json({ error: fieldErrors || err.detail || 'Failed to create campaign draft' }, { status: createRes.status })
     }
     const campaign = await createRes.json()
     campaignId = campaign.id as string
