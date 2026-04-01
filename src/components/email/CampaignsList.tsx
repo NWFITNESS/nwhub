@@ -32,10 +32,24 @@ function statusVariant(status: string) {
 export function CampaignsList({ campaigns }: { campaigns: Campaign[] }) {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedDraft, setSelectedDraft] = useState<Campaign | null>(null)
+  const [draftHtml, setDraftHtml] = useState('')
+  const [loadingDraft, setLoadingDraft] = useState(false)
 
-  function openDraft(c: Campaign) {
+  async function openDraft(c: Campaign) {
     setSelectedDraft(c)
+    setDraftHtml('')
     setModalOpen(true)
+
+    // Fetch draft HTML content from Mailchimp
+    setLoadingDraft(true)
+    try {
+      const res = await fetch(`/api/mailchimp/campaign-content?id=${c.id}`)
+      if (res.ok) {
+        const data = await res.json()
+        setDraftHtml(data.html ?? '')
+      }
+    } catch {}
+    setLoadingDraft(false)
   }
 
   return (
@@ -128,8 +142,8 @@ export function CampaignsList({ campaigns }: { campaigns: Campaign[] }) {
       {selectedDraft && (
         <CampaignSendModal
           open={modalOpen}
-          onClose={() => { setModalOpen(false); setSelectedDraft(null) }}
-          html=""
+          onClose={() => { setModalOpen(false); setSelectedDraft(null); setDraftHtml('') }}
+          html={draftHtml}
           title={selectedDraft.settings.title || selectedDraft.settings.subject_line}
           previewText={selectedDraft.settings.preview_text ?? ''}
           existingCampaignId={selectedDraft.id}
