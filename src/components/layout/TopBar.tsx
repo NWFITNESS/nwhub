@@ -168,14 +168,16 @@ export function TopBar({ title, actions }: TopBarProps) {
   return (
     <header className="hidden md:flex h-[56px] min-h-[56px] flex-shrink-0 items-center border-b border-[rgba(255,255,255,0.09)] bg-nw-950 px-5 z-10">
 
-      {/* ── LEFT: Breadcrumb ── */}
-      <div className="flex items-center gap-2 min-w-0 flex-shrink-0">
-        <div className="flex items-center gap-[6px] text-[12px] text-nw-500">
-          {segments.map((seg, i) => (
-            <span key={i} className="flex items-center gap-[6px] whitespace-nowrap">{seg} <Chevron /></span>
-          ))}
-          <span className="font-medium text-nw-200 whitespace-nowrap">{pageLabel}</span>
-        </div>
+      {/* ── LEFT: Page title ── */}
+      <div className="flex items-center gap-3 min-w-0 flex-shrink-0 pl-[10px]">
+        {segments.length > 0 && (
+          <div className="flex items-center gap-[6px] text-[12px] text-nw-500">
+            {segments.map((seg, i) => (
+              <span key={i} className="flex items-center gap-[6px] whitespace-nowrap">{seg} <Chevron /></span>
+            ))}
+          </div>
+        )}
+        <span className="text-[16px] font-bold text-nw-100 whitespace-nowrap">{pageLabel}</span>
       </div>
 
       {/* ── CENTRE: Search bar ── */}
