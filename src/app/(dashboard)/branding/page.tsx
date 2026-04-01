@@ -1,23 +1,16 @@
-import { createAdminClient } from '@/lib/supabase/admin'
-import { PageHeader } from '@/components/layout/PageHeader'
-import { BrandingStudio } from '@/components/branding/BrandingStudio'
-import type { Media } from '@/lib/types'
+import { Suspense } from 'react'
+import { PostStudio } from '@/components/branding/PostStudio'
 
-export default async function PostStudioPage() {
-  const supabase = createAdminClient()
-
-  const { data: reviewSettings } = await supabase
-    .from('global_settings')
-    .select('value')
-    .eq('key', 'review_settings')
-    .single()
-
-  const placeId: string = reviewSettings?.value?.google_place_id ?? ''
-
+export default function PostStudioPage() {
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader eyebrow="Branding" title="Post" titleGold="Studio" description="Create branded social posts from Google reviews" />
-      <BrandingStudio placeId={placeId} />
+    <div className="flex flex-col" style={{ height: 'calc(100vh - 4rem)' }}>
+      <Suspense fallback={
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-sm text-white/30">Loading Post Studio...</div>
+        </div>
+      }>
+        <PostStudio />
+      </Suspense>
     </div>
   )
 }

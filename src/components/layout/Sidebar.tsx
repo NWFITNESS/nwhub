@@ -144,6 +144,7 @@ function buildNav(unreadCount: number): NavSection[] {
         ]},
         { key: 'branding', label: 'Branding Studio', icon: I.branding, sub: [
           { label: 'Post Studio', href: '/branding' },
+          { label: 'Google Reviews', href: '/branding/reviews' },
           { label: 'Documents', href: '/branding/documents' },
           { label: 'Brand Assets', href: '/branding/brand-guide' },
         ]},
