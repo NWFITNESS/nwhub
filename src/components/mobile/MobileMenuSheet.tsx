@@ -6,9 +6,20 @@ import { useTheme } from '@/hooks/useTheme'
 
 const SECTIONS = [
   {
+    label: 'Members',
+    items: [
+      { label: 'Leads Pipeline', href: '/leads/pipeline', iconColor: 'gold' as const },
+      { label: 'Member KPIs', href: '/members/kpis', iconColor: 'gold' as const },
+      { label: 'Calendar', href: '/calendar', iconColor: 'blue' as const },
+      { label: 'Kids & Teens', href: '/kids', iconColor: 'blue' as const },
+    ],
+  },
+  {
     label: 'Marketing',
     items: [
       { label: 'Email Campaigns', href: '/email/campaigns', iconColor: 'gold' as const },
+      { label: 'AI Email Creator', href: '/mailchimp/create-ai', iconColor: 'gold' as const, tag: 'AI' },
+      { label: 'Subscribers', href: '/email', iconColor: 'gold' as const },
       { label: 'Brand Studio', href: '/branding', iconColor: 'gold' as const },
     ],
   },
@@ -36,7 +47,13 @@ const SECTIONS = [
 ]
 
 const ICONS: Record<string, React.ReactNode> = {
+  'Leads Pipeline': <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M2 11l3.5-3.5L8 10l5.5-6" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  'Member KPIs': <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>,
+  'Calendar': <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M2 7h12M5 1v4M11 1v4" strokeLinecap="round"/></svg>,
+  'Kids & Teens': <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="6" r="3"/><path d="M4 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/></svg>,
   'Email Campaigns': <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M1 5l7 5 7-5"/></svg>,
+  'AI Email Creator': <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M8 2l1.5 4.5H14l-3.5 2.5L12 14 8 11l-4 3 1.5-5L2 6.5h4.5z"/></svg>,
+  'Subscribers': <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5"/></svg>,
   'Brand Studio': <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="8" r="6"/><path d="M8 2v2M8 12v2M2 8h2M12 8h2" strokeLinecap="round"/></svg>,
   'Blog': <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 9h4"/></svg>,
   'Media Library': <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="2" width="14" height="12" rx="2"/><circle cx="5" cy="6" r="1.5"/><path d="M1 12l4-4 3 3 3-3 4 4"/></svg>,
