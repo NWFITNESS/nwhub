@@ -5,6 +5,7 @@ import { GlobalSettingsEditor } from '@/components/content/GlobalSettingsEditor'
 import { AccountSecuritySettings } from '@/components/content/AccountSecuritySettings'
 import { SocialConnections } from '@/components/settings/SocialConnections'
 import { DigestPreferences } from '@/components/settings/DigestPreferences'
+import { MembershipGroups } from '@/components/settings/MembershipGroups'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -22,6 +23,13 @@ export default async function SettingsPage() {
         eyebrow="System"
         title="Settings"
       />
+
+      <Panel>
+        <PanelHeader eyebrow="Members" title="Membership Groups" />
+        <div className="p-4">
+          <MembershipGroups initialGroups={(settingsMap['member_groups'] as string[] | undefined) ?? []} />
+        </div>
+      </Panel>
 
       <Panel>
         <PanelHeader eyebrow="CMS" title="Global Settings" />

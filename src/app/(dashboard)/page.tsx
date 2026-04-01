@@ -73,6 +73,14 @@ function buildMonthlyVisitors(rows: Array<{ created_at: string }>, months: numbe
 export default async function DashboardPage() {
   const supabase = await createClient()
 
+  // Load member_groups setting to filter Total Members count
+  const { data: memberGroupsSetting } = await supabase
+    .from('global_settings')
+    .select('value')
+    .eq('key', 'member_groups')
+    .single()
+  const memberGroups: string[] = (memberGroupsSetting?.value as string[] | undefined) ?? []
+
   const [
     { count: newContacts },
     { count: draftPosts },
@@ -90,7 +98,10 @@ export default async function DashboardPage() {
     supabase.from('contact_enquiries').select('*', { count: 'exact', head: true }).eq('status', 'new'),
     supabase.from('blog_posts').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
     supabase.from('email_subscribers').select('*', { count: 'exact', head: true }).eq('status', 'subscribed'),
-    supabase.from('contacts').select('*', { count: 'exact', head: true }).in('status', ['member', 'trial']),
+    // If member_groups defined, count contacts whose groups overlap; otherwise fall back to status
+    memberGroups.length > 0
+      ? supabase.from('contacts').select('*', { count: 'exact', head: true }).overlaps('groups', memberGroups)
+      : supabase.from('contacts').select('*', { count: 'exact', head: true }).in('status', ['member', 'trial']),
     supabase
       .from('contact_enquiries')
       .select('id, name, enquiry_type, message, created_at')
