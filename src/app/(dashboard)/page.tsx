@@ -90,7 +90,7 @@ export default async function DashboardPage() {
     supabase.from('contact_enquiries').select('*', { count: 'exact', head: true }).eq('status', 'new'),
     supabase.from('blog_posts').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
     supabase.from('email_subscribers').select('*', { count: 'exact', head: true }).eq('status', 'subscribed'),
-    supabase.from('kids_registrations').select('*', { count: 'exact', head: true }),
+    supabase.from('contacts').select('*', { count: 'exact', head: true }).in('status', ['member', 'trial']),
     supabase
       .from('contact_enquiries')
       .select('id, name, enquiry_type, message, created_at')

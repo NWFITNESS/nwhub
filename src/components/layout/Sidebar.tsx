@@ -125,6 +125,7 @@ function buildNav(unreadCount: number): NavSection[] {
         { key: 'inbox', label: 'Inbox Intelligence', icon: I.inbox, href: '/inbox', badge: unreadCount > 0 ? 'unread' : undefined },
         { key: 'members', label: 'Members', icon: I.members, sub: [
           { label: 'Member List', href: '/leads' },
+          { label: 'Leads', href: '/leads/pipeline' },
           { label: 'Calendar', href: '/calendar' },
           { label: 'Kids & Teens', href: '/kids' },
         ]},

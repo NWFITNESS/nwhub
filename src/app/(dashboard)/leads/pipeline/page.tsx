@@ -3,12 +3,12 @@ import { ContactsManager } from '@/components/contacts/ContactsManager'
 import { PageHeader } from '@/components/layout/PageHeader'
 import type { Contact } from '@/lib/types'
 
-export default async function MemberListPage() {
+export default async function LeadsPipelinePage() {
   const supabase = createAdminClient()
   const { data } = await supabase
     .from('contacts')
     .select('*')
-    .in('status', ['member', 'trial'])
+    .in('status', ['inactive', 'active'])
     .order('created_at', { ascending: false })
   const contacts = (data ?? []) as Contact[]
 
@@ -16,9 +16,9 @@ export default async function MemberListPage() {
     <div className="flex flex-col gap-4">
       <PageHeader
         eyebrow="Members"
-        title="Member"
-        titleGold="List"
-        description={`${contacts.length} member${contacts.length !== 1 ? 's' : ''}`}
+        title="Leads"
+        titleGold="Pipeline"
+        description={`${contacts.length} lead${contacts.length !== 1 ? 's' : ''} — contacts without a membership`}
       />
       <ContactsManager initialContacts={contacts} />
     </div>
