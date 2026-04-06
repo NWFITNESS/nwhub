@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
   Sparkles, Copy, Download, RefreshCw, Send,
-  ChevronRight, Check, Eye, Code, Image as ImageIcon, Lock,
+  ChevronRight, Check, Eye, Code, Image as ImageIcon, Lock, FileCode,
 } from 'lucide-react'
 import { CampaignSendModal } from './CampaignSendModal'
 
@@ -174,6 +174,7 @@ function ImagePicker({ onSelect }: { onSelect: (images: MediaItem[]) => void }) 
 }
 
 export function AIEmailCreatorClient() {
+  const [mode, setMode]               = useState<'ai' | 'import'>('ai')
   const [prompt, setPrompt]           = useState('')
   const [tone, setTone]               = useState('warm')
   const [audience, setAudience]       = useState('all_members')
@@ -184,6 +185,7 @@ export function AIEmailCreatorClient() {
   const [copied, setCopied]           = useState(false)
   const [activeTab, setActiveTab]     = useState<'preview' | 'html'>('preview')
   const [logoUrl, setLogoUrl]         = useState('')
+  const [importHtml, setImportHtml]   = useState('')
 
   const supabase = createClient()
 
@@ -256,10 +258,40 @@ export function AIEmailCreatorClient() {
     <div className="flex flex-col gap-6">
 
       {/* Page header */}
-      <div>
-        <p className="text-xs font-semibold text-gold-600 uppercase tracking-[0.15em] mb-1">EMAIL CAMPAIGNS</p>
-        <h1 className="text-3xl font-bold text-nw-100" style={{ fontFamily: 'League Spartan' }}>AI Email Creator</h1>
-        <p className="text-sm text-nw-400 mt-1">Describe your email — get a fully branded HTML template in seconds</p>
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold text-gold-600 uppercase tracking-[0.15em] mb-1">EMAIL CAMPAIGNS</p>
+          <h1 className="text-3xl font-bold text-nw-100" style={{ fontFamily: 'League Spartan' }}>
+            {mode === 'ai' ? 'AI Email Creator' : 'Import HTML Email'}
+          </h1>
+          <p className="text-sm text-nw-400 mt-1">
+            {mode === 'ai'
+              ? 'Describe your email — get a fully branded HTML template in seconds'
+              : 'Paste your pre-built HTML email code and send it as a campaign'}
+          </p>
+        </div>
+        <div className="flex bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-lg p-1 gap-1 self-start sm:self-auto flex-shrink-0">
+          <button
+            onClick={() => { setMode('ai'); setHtml(''); setCampaignTitle(''); setPreviewText(''); setActiveTab('preview') }}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition-all ${
+              mode === 'ai'
+                ? 'bg-[rgba(212,160,23,0.15)] text-gold-300 border border-[rgba(212,160,23,0.3)]'
+                : 'text-nw-500 hover:text-nw-400'
+            }`}
+          >
+            <Sparkles size={12} /> AI Creator
+          </button>
+          <button
+            onClick={() => { setMode('import'); setHtml(''); setCampaignTitle(''); setPreviewText(''); setActiveTab('preview') }}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-xs font-semibold uppercase tracking-wider transition-all ${
+              mode === 'import'
+                ? 'bg-[rgba(212,160,23,0.15)] text-gold-300 border border-[rgba(212,160,23,0.3)]'
+                : 'text-nw-500 hover:text-nw-400'
+            }`}
+          >
+            <FileCode size={12} /> Import HTML
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
@@ -267,89 +299,145 @@ export function AIEmailCreatorClient() {
         {/* ── LEFT — Input panel ───────────────────────────────────────────── */}
         <div className="flex flex-col gap-5">
 
-          {/* Prompt */}
-          <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl p-6">
-            <p className="text-xs font-semibold text-gold-600 uppercase tracking-[0.15em] mb-4">DESCRIBE YOUR EMAIL</p>
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate() }}
-              placeholder={`e.g. Announce our new Hyrox training programme starting in April. Target adult members. Include what Hyrox is, class times (Mon/Wed 6:30pm), and a CTA to book a free taster session...`}
-              rows={6}
-              className="w-full bg-nw-800 border border-[rgba(255,255,255,0.09)] rounded-lg px-4 py-3 text-sm text-nw-200 placeholder:text-nw-500 resize-none focus:outline-none focus:border-[rgba(212,160,23,0.4)] transition-colors leading-relaxed"
-            />
-            <p className="text-xs text-nw-500 mt-2">The more detail you give, the better the email. Press ⌘+Enter to generate.</p>
-            <p className="text-xs text-nw-500 mt-1">Personalise with <span className="text-gold-600/80 font-mono">*|FNAME|*</span> — e.g. <span className="text-nw-500 font-mono">Hey *|FNAME|*,</span> — Mailchimp replaces this automatically per subscriber.</p>
-          </div>
-
-          {/* Options */}
-          <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl p-6">
-            <p className="text-xs font-semibold text-gold-600 uppercase tracking-[0.15em] mb-4">OPTIONS</p>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-nw-400 uppercase tracking-[0.1em] mb-1.5">Tone</label>
-                <select
-                  value={tone}
-                  onChange={(e) => setTone(e.target.value)}
-                  className="w-full bg-nw-800 border border-[rgba(255,255,255,0.09)] rounded-lg px-3.5 py-2.5 text-sm text-nw-200 focus:outline-none focus:border-[rgba(212,160,23,0.4)] transition-colors"
-                >
-                  {TONES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </select>
+          {mode === 'ai' ? (
+            <>
+              {/* Prompt */}
+              <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl p-6">
+                <p className="text-xs font-semibold text-gold-600 uppercase tracking-[0.15em] mb-4">DESCRIBE YOUR EMAIL</p>
+                <textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate() }}
+                  placeholder={`e.g. Announce our new Hyrox training programme starting in April. Target adult members. Include what Hyrox is, class times (Mon/Wed 6:30pm), and a CTA to book a free taster session...`}
+                  rows={6}
+                  className="w-full bg-nw-800 border border-[rgba(255,255,255,0.09)] rounded-lg px-4 py-3 text-sm text-nw-200 placeholder:text-nw-500 resize-none focus:outline-none focus:border-[rgba(212,160,23,0.4)] transition-colors leading-relaxed"
+                />
+                <p className="text-xs text-nw-500 mt-2">The more detail you give, the better the email. Press ⌘+Enter to generate.</p>
+                <p className="text-xs text-nw-500 mt-1">Personalise with <span className="text-gold-600/80 font-mono">*|FNAME|*</span> — e.g. <span className="text-nw-500 font-mono">Hey *|FNAME|*,</span> — Mailchimp replaces this automatically per subscriber.</p>
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-nw-400 uppercase tracking-[0.1em] mb-1.5">Audience</label>
-                <select
-                  value={audience}
-                  onChange={(e) => setAudience(e.target.value)}
-                  className="w-full bg-nw-800 border border-[rgba(255,255,255,0.09)] rounded-lg px-3.5 py-2.5 text-sm text-nw-200 focus:outline-none focus:border-[rgba(212,160,23,0.4)] transition-colors"
-                >
-                  {AUDIENCES.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
-                </select>
+
+              {/* Options */}
+              <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl p-6">
+                <p className="text-xs font-semibold text-gold-600 uppercase tracking-[0.15em] mb-4">OPTIONS</p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-nw-400 uppercase tracking-[0.1em] mb-1.5">Tone</label>
+                    <select
+                      value={tone}
+                      onChange={(e) => setTone(e.target.value)}
+                      className="w-full bg-nw-800 border border-[rgba(255,255,255,0.09)] rounded-lg px-3.5 py-2.5 text-sm text-nw-200 focus:outline-none focus:border-[rgba(212,160,23,0.4)] transition-colors"
+                    >
+                      {TONES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-nw-400 uppercase tracking-[0.1em] mb-1.5">Audience</label>
+                    <select
+                      value={audience}
+                      onChange={(e) => setAudience(e.target.value)}
+                      className="w-full bg-nw-800 border border-[rgba(255,255,255,0.09)] rounded-lg px-3.5 py-2.5 text-sm text-nw-200 focus:outline-none focus:border-[rgba(212,160,23,0.4)] transition-colors"
+                    >
+                      {AUDIENCES.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
+                    </select>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* Image picker */}
-          <ImagePicker onSelect={setSelectedImages} />
+              {/* Image picker */}
+              <ImagePicker onSelect={setSelectedImages} />
 
-          {/* Quick prompts */}
-          <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl p-6">
-            <p className="text-xs font-semibold text-gold-600 uppercase tracking-[0.15em] mb-4">QUICK START</p>
-            <div className="flex flex-col gap-2">
-              {QUICK_PROMPTS.map((qp, i) => (
-                <button
-                  key={i}
-                  onClick={() => setPrompt(qp)}
-                  className="flex items-center justify-between px-4 py-3 rounded-lg text-left text-sm text-nw-400 bg-white/[0.02] border border-white/[0.05] hover:text-nw-200 hover:border-[#967705]/30 hover:bg-[#967705]/5 transition-all duration-200 group"
-                >
-                  <span>{qp}</span>
-                  <ChevronRight size={13} className="flex-shrink-0 opacity-0 group-hover:opacity-100 text-gold-400 transition-opacity ml-3" />
-                </button>
-              ))}
-            </div>
-          </div>
+              {/* Quick prompts */}
+              <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl p-6">
+                <p className="text-xs font-semibold text-gold-600 uppercase tracking-[0.15em] mb-4">QUICK START</p>
+                <div className="flex flex-col gap-2">
+                  {QUICK_PROMPTS.map((qp, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setPrompt(qp)}
+                      className="flex items-center justify-between px-4 py-3 rounded-lg text-left text-sm text-nw-400 bg-white/[0.02] border border-white/[0.05] hover:text-nw-200 hover:border-[#967705]/30 hover:bg-[#967705]/5 transition-all duration-200 group"
+                    >
+                      <span>{qp}</span>
+                      <ChevronRight size={13} className="flex-shrink-0 opacity-0 group-hover:opacity-100 text-gold-400 transition-opacity ml-3" />
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-          {/* Generate button */}
-          {error && (
-            <div className="px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400">{error}</div>
+              {/* Generate button */}
+              {error && (
+                <div className="px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400">{error}</div>
+              )}
+              <button
+                onClick={generate}
+                disabled={!prompt.trim() || generating}
+                className="flex items-center justify-center gap-3 w-full py-4 rounded-xl text-sm font-semibold text-black bg-gradient-to-r from-[#967705] to-[#C9A70A] hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_30px_rgba(201,167,10,0.2)]"
+              >
+                {generating
+                  ? <><RefreshCw size={15} className="animate-spin" /> Generating your email...</>
+                  : <><Sparkles size={15} /> Generate Email{selectedImages.length > 0 ? ` with ${selectedImages.length} image${selectedImages.length > 1 ? 's' : ''}` : ''}</>
+                }
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Import mode — Campaign details */}
+              <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl p-6">
+                <p className="text-xs font-semibold text-gold-600 uppercase tracking-[0.15em] mb-4">CAMPAIGN DETAILS</p>
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-nw-400 uppercase tracking-[0.1em] mb-1.5">Campaign Title</label>
+                    <input
+                      value={campaignTitle}
+                      onChange={e => setCampaignTitle(e.target.value)}
+                      placeholder="e.g. April Newsletter"
+                      className="h-10 w-full bg-nw-800 border border-[rgba(255,255,255,0.09)] rounded-lg px-3.5 text-sm text-nw-200 placeholder:text-nw-500 focus:outline-none focus:border-[rgba(212,160,23,0.4)] transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-nw-400 uppercase tracking-[0.1em] mb-1.5">Preview Text</label>
+                    <input
+                      value={previewText}
+                      onChange={e => setPreviewText(e.target.value)}
+                      placeholder="Shown in inbox before opening"
+                      className="h-10 w-full bg-nw-800 border border-[rgba(255,255,255,0.09)] rounded-lg px-3.5 text-sm text-nw-200 placeholder:text-nw-500 focus:outline-none focus:border-[rgba(212,160,23,0.4)] transition-colors"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Import mode — HTML input */}
+              <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl p-6">
+                <p className="text-xs font-semibold text-gold-600 uppercase tracking-[0.15em] mb-4">PASTE HTML CODE</p>
+                <textarea
+                  value={importHtml}
+                  onChange={(e) => setImportHtml(e.target.value)}
+                  placeholder="Paste your HTML email code here..."
+                  rows={18}
+                  spellCheck={false}
+                  className="w-full bg-nw-800 border border-[rgba(255,255,255,0.09)] rounded-lg px-4 py-3 text-xs text-green-400/80 font-mono placeholder:text-nw-500 resize-none focus:outline-none focus:border-[rgba(212,160,23,0.4)] transition-colors leading-relaxed"
+                />
+                <p className="text-xs text-nw-500 mt-2">
+                  Use <span className="text-gold-600/80 font-mono">*|FNAME|*</span>, <span className="text-gold-600/80 font-mono">*|LNAME|*</span>, <span className="text-gold-600/80 font-mono">*|UNSUB|*</span> for Mailchimp merge tags.
+                </p>
+              </div>
+
+              {/* Load into preview */}
+              <button
+                onClick={() => { setHtml(importHtml); setActiveTab('preview') }}
+                disabled={!importHtml.trim() || !campaignTitle.trim()}
+                className="flex items-center justify-center gap-3 w-full py-4 rounded-xl text-sm font-semibold text-black bg-gradient-to-r from-[#967705] to-[#C9A70A] hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_30px_rgba(201,167,10,0.2)]"
+              >
+                <Eye size={15} /> Preview Email
+              </button>
+            </>
           )}
-          <button
-            onClick={generate}
-            disabled={!prompt.trim() || generating}
-            className="flex items-center justify-center gap-3 w-full py-4 rounded-xl text-sm font-semibold text-black bg-gradient-to-r from-[#967705] to-[#C9A70A] hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_30px_rgba(201,167,10,0.2)]"
-          >
-            {generating
-              ? <><RefreshCw size={15} className="animate-spin" /> Generating your email...</>
-              : <><Sparkles size={15} /> Generate Email{selectedImages.length > 0 ? ` with ${selectedImages.length} image${selectedImages.length > 1 ? 's' : ''}` : ''}</>
-            }
-          </button>
         </div>
 
         {/* ── RIGHT — Preview panel ─────────────────────────────────────────── */}
         <div className="flex flex-col gap-4">
 
-          {/* AI-generated title + preview text */}
-          {html && campaignTitle && (
+          {/* AI-generated title + preview text (AI mode only — import mode has these on the left) */}
+          {mode === 'ai' && html && campaignTitle && (
             <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-[10px] p-4 flex flex-col gap-3">
               <div>
                 <label className="block text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500 mb-1.5">Campaign Title</label>
@@ -428,10 +516,14 @@ export function AIEmailCreatorClient() {
             {!html && !generating && (
               <div className="flex flex-col items-center justify-center flex-1 gap-4 p-12">
                 <div className="w-16 h-16 rounded-2xl bg-[rgba(212,160,23,0.1)] border border-[rgba(212,160,23,0.22)] flex items-center justify-center">
-                  <Sparkles size={28} className="text-gold-400" />
+                  {mode === 'ai' ? <Sparkles size={28} className="text-gold-400" /> : <FileCode size={28} className="text-gold-400" />}
                 </div>
                 <p className="text-base font-semibold text-nw-400 text-center">Your email will appear here</p>
-                <p className="text-sm text-nw-500 text-center max-w-xs">Describe what you need on the left and hit Generate</p>
+                <p className="text-sm text-nw-500 text-center max-w-xs">
+                  {mode === 'ai'
+                    ? 'Describe what you need on the left and hit Generate'
+                    : 'Paste your HTML code on the left and click Preview Email'}
+                </p>
               </div>
             )}
 
@@ -477,7 +569,7 @@ export function AIEmailCreatorClient() {
             )}
           </div>
 
-          {html && (
+          {html && mode === 'ai' && (
             <p className="text-xs text-nw-500 text-center">
               Not quite right? Refine your prompt and generate again
             </p>
