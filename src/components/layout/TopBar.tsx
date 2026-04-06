@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import {
-  Search, X, Bell, Sun, Moon,
+  Search, X, Bell, Sun, Moon, RotateCw,
   Users, Mail, PenSquare, Baby, Image, AtSign,
   MessageSquare, Send, Tag, Phone,
   ChevronRight, Inbox, FileText, Clock, Zap,
@@ -87,6 +87,13 @@ export function TopBar({ title, actions }: TopBarProps) {
   // Theme — single source of truth via zustand
   const { theme: currentTheme, toggle: toggleTheme } = useThemeHook()
   const lightMode = currentTheme === 'light'
+
+  // Refresh
+  const [refreshing, setRefreshing] = useState(false)
+  function handleRefresh() {
+    setRefreshing(true)
+    window.location.reload()
+  }
 
   // Notifications
   const [bellOpen, setBellOpen] = useState(false)
@@ -244,6 +251,15 @@ export function TopBar({ title, actions }: TopBarProps) {
       {/* ── RIGHT: Action icons ── */}
       <div className="flex items-center gap-1 flex-shrink-0">
         {actions && <div className="flex items-center gap-1 mr-1">{actions}</div>}
+
+        {/* Refresh */}
+        <button
+          onClick={handleRefresh}
+          className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] text-nw-400 transition-all hover:bg-[rgba(255,255,255,0.06)] hover:text-nw-200"
+          title="Refresh"
+        >
+          <RotateCw size={16} strokeWidth={1.7} className={refreshing ? 'animate-spin' : ''} />
+        </button>
 
         {/* Theme toggle */}
         <button
