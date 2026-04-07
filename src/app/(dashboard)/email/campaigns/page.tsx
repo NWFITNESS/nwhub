@@ -3,10 +3,13 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Panel } from '@/components/ui/Card'
 import { CampaignsList } from '@/components/email/CampaignsList'
+import { MailchimpConnectionPanel } from '@/components/email/MailchimpConnectionPanel'
 import { mc, resolveApiKey } from '@/lib/mailchimp'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import type { MailchimpSettings, MailchimpCampaignRow } from '@/lib/types'
+
+export const dynamic = 'force-dynamic'
 
 export default async function EmailCampaignsPage() {
   const supabase = createAdminClient()
@@ -17,12 +20,57 @@ export default async function EmailCampaignsPage() {
     .single()
 
   const settings = (settingsData?.value ?? {}) as Partial<MailchimpSettings>
-  const apiKey = resolveApiKey(settings.api_key)
+  const dbApiKey = settings.api_key ?? ''
+  const apiKey = resolveApiKey(dbApiKey)
   const audienceId = settings.audience_id ?? ''
+
+  // Detect API key source for the status panel
+  const apiKeySource: 'env' | 'database' | 'none' = process.env.MAILCHIMP_API_KEY
+    ? 'env'
+    : dbApiKey
+    ? 'database'
+    : 'none'
+
+  // Test connection by hitting the audience endpoint
+  let connected = false
+  let connectionError: string | null = null
+  let audienceName: string | null = null
+  let memberCount: number | null = null
+
+  if (apiKey) {
+    try {
+      // If we have an audience selected, fetch its details to verify both key + audience
+      if (audienceId) {
+        const audRes = await mc(apiKey, `/lists/${audienceId}?fields=id,name,stats.member_count`)
+        if (audRes.ok) {
+          const data = await audRes.json()
+          connected = true
+          audienceName = data.name ?? null
+          memberCount = data.stats?.member_count ?? null
+        } else {
+          const err = await audRes.json().catch(() => ({}))
+          connectionError = err.detail ?? `Mailchimp returned ${audRes.status}`
+        }
+      } else {
+        // No audience selected — just verify the key works by listing audiences
+        const pingRes = await mc(apiKey, '/lists?count=1&fields=lists.id')
+        if (pingRes.ok) {
+          connected = true
+        } else {
+          const err = await pingRes.json().catch(() => ({}))
+          connectionError = err.detail ?? `Mailchimp returned ${pingRes.status}`
+        }
+      }
+    } catch (e) {
+      connectionError = e instanceof Error ? e.message : 'Connection failed'
+    }
+  } else {
+    connectionError = 'No API key configured'
+  }
 
   let campaigns: MailchimpCampaignRow[] = []
 
-  if (apiKey && audienceId) {
+  if (connected && apiKey && audienceId) {
     try {
       const [campaignsRes, reportsRes] = await Promise.all([
         mc(apiKey, `/campaigns?list_id=${audienceId}&count=50&sort_field=create_time&sort_dir=DESC`),
@@ -69,16 +117,21 @@ export default async function EmailCampaignsPage() {
         }
       />
 
-      {!apiKey || !audienceId ? (
-        <Panel>
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <p className="text-nw-400" style={{ fontSize: 14 }}>Connect Mailchimp to view campaigns</p>
-            <Link href="/settings"><Button variant="gold" size="sm">Go to Settings</Button></Link>
-          </div>
-        </Panel>
-      ) : (
+      <MailchimpConnectionPanel
+        initialConnected={connected}
+        initialError={connectionError}
+        apiKeySource={apiKeySource}
+        initialAudienceId={audienceId}
+        initialAudienceName={audienceName}
+        initialMemberCount={memberCount}
+        initialFromName={settings.from_name ?? ''}
+        initialFromEmail={settings.from_email ?? ''}
+        initialReplyTo={settings.reply_to ?? ''}
+      />
+
+      {connected && audienceId ? (
         <CampaignsList campaigns={campaigns as MailchimpCampaignRow[]} />
-      )}
+      ) : null}
     </div>
   )
 }
