@@ -167,11 +167,11 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
               </span>
             </div>
 
-            {!gmailConnected && (
-              <a href="/api/gmail/connect">
-                <Button variant="primary" size="sm">Connect Gmail</Button>
-              </a>
-            )}
+            <a href="/api/gmail/connect">
+              <Button variant={gmailConnected ? 'secondary' : 'primary'} size="sm">
+                {gmailConnected ? 'Reconnect Gmail' : 'Connect Gmail'}
+              </Button>
+            </a>
 
             <Button
               variant="secondary"
