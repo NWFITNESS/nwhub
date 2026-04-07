@@ -19,8 +19,30 @@ export async function POST(req: NextRequest) {
     const width    = Number(form.get('width')  ?? 0) || null
     const height   = Number(form.get('height') ?? 0) || null
 
+    // Validate file type
+    const ALLOWED_MIME_TYPES = [
+      'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml',
+      'video/mp4', 'video/webm',
+      'application/pdf',
+    ]
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { error: `File type "${file.type}" not allowed. Accepted: images, videos, PDFs.` },
+        { status: 400 }
+      )
+    }
+
+    // Validate file size (50 MB max)
+    const MAX_FILE_SIZE = 50 * 1024 * 1024
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: 'File too large. Maximum size is 50 MB.' },
+        { status: 413 }
+      )
+    }
+
     const bytes       = await file.arrayBuffer()
-    const contentType = file.type || 'application/octet-stream'
+    const contentType = file.type
     const filename    = file.name
     const size        = file.size
 

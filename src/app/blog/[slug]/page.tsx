@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import DOMPurify from 'isomorphic-dompurify'
 import type { BlogPost, BlogCategory } from '@/lib/types'
 
 export const revalidate = 60
@@ -90,7 +91,7 @@ export default async function PublicPostPage({ params }: Props) {
         {typedPost.content && (
           <div
             className="post-content"
-            dangerouslySetInnerHTML={{ __html: typedPost.content }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(typedPost.content) }}
           />
         )}
 
