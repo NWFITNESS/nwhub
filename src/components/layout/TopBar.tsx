@@ -25,9 +25,7 @@ const CATEGORY_META: Record<string, {
   media:             { label: 'Media',                 icon: Image },
   kids:              { label: 'Kids & Teens',          icon: Baby },
   email_subscribers: { label: 'Email Subscribers',     icon: AtSign },
-  sms_subscribers:   { label: 'WhatsApp Subscribers',  icon: Phone },
   email_campaigns:   { label: 'Email Campaigns',       icon: Send },
-  sms_campaigns:     { label: 'WhatsApp Campaigns',    icon: MessageSquare },
 }
 
 const PATH_LABELS: Record<string, string> = {
@@ -61,7 +59,6 @@ const NOTIFICATION_CHANNELS = [
   { key: 'emails',         label: 'Inbound Emails',     desc: 'Gmail inbox intelligence alerts',         icon: Mail },
   { key: 'todo',           label: 'To-Do Reminders',    desc: 'Task due dates and assignments',          icon: FileText },
   { key: 'morning_digest', label: 'Morning Digest',     desc: 'Daily summary at 8am',                   icon: Clock },
-  { key: 'workflows',      label: 'Workflow Triggers',  desc: 'When automations fire or fail',           icon: Zap },
   { key: 'reviews',        label: 'Google Reviews',     desc: 'New reviews detected for your business',  icon: MessageSquare },
 ]
 

@@ -471,7 +471,6 @@ export function OverviewContent({ data, formattedDate }: Props) {
                   { name: 'Supabase',      status: 'Operational', color: '#4ade80' },
                   { name: 'Vercel Deploy', status: 'Live',        color: '#4ade80' },
                   { name: 'Resend Email',  status: 'Pending',     color: '#f59e0b' },
-                  { name: 'Twilio SMS',    status: 'Pending',     color: '#f59e0b' },
                 ].map(row => (
                   <div key={row.name} className="flex items-center justify-between text-xs">
                     <span className="text-nw-400">{row.name}</span>

@@ -43,13 +43,5 @@ export async function POST(req: NextRequest) {
   const { data, error } = await supabase.from('contacts').insert(row).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Sync to sms_subscribers if phone present
-  if (phone) {
-    await supabase.from('sms_subscribers').upsert(
-      { phone, first_name: row.first_name, tags: row.groups, status: 'subscribed' },
-      { onConflict: 'phone', ignoreDuplicates: false }
-    )
-  }
-
   return NextResponse.json(data, { status: 201 })
 }

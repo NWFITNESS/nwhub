@@ -147,14 +147,5 @@ export async function POST(req: NextRequest) {
   const { data, error } = await supabase.from('contacts').insert(deduped).select()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Sync phone numbers to sms_subscribers
-  const phoneRows = (data ?? [])
-    .filter((c) => c.phone)
-    .map((c) => ({ phone: c.phone, first_name: c.first_name, tags: c.groups, status: 'subscribed' }))
-
-  if (phoneRows.length > 0) {
-    await supabase.from('sms_subscribers').upsert(phoneRows, { onConflict: 'phone', ignoreDuplicates: false })
-  }
-
   return NextResponse.json({ inserted: data?.length ?? 0, errors })
 }

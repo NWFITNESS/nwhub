@@ -16,9 +16,7 @@ export async function GET(req: NextRequest) {
     media,
     kids,
     emailSubs,
-    smsSubs,
     emailCampaigns,
-    smsCampaigns,
   ] = await Promise.all([
     supabase
       .from('contacts')
@@ -63,21 +61,9 @@ export async function GET(req: NextRequest) {
       .limit(4),
 
     supabase
-      .from('sms_subscribers')
-      .select('id, phone, first_name, status')
-      .or(`phone.ilike.${like},first_name.ilike.${like}`)
-      .limit(4),
-
-    supabase
       .from('email_campaigns')
       .select('id, name, subject, status')
       .or(`name.ilike.${like},subject.ilike.${like}`)
-      .limit(3),
-
-    supabase
-      .from('sms_campaigns')
-      .select('id, name, message, status')
-      .or(`name.ilike.${like},message.ilike.${like}`)
       .limit(3),
   ])
 
@@ -146,30 +132,12 @@ export async function GET(req: NextRequest) {
     }))
   }
 
-  if (smsSubs.data?.length) {
-    results.sms_subscribers = smsSubs.data.map((s) => ({
-      id: s.id,
-      label: s.first_name || s.phone,
-      sub: `${s.phone} · ${s.status}`,
-      href: '/sms',
-    }))
-  }
-
   if (emailCampaigns.data?.length) {
     results.email_campaigns = emailCampaigns.data.map((c) => ({
       id: c.id,
       label: c.name,
       sub: `${c.subject} · ${c.status}`,
       href: '/email/campaigns',
-    }))
-  }
-
-  if (smsCampaigns.data?.length) {
-    results.sms_campaigns = smsCampaigns.data.map((c) => ({
-      id: c.id,
-      label: c.name,
-      sub: c.status,
-      href: '/sms/campaigns',
     }))
   }
 

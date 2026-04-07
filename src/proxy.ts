@@ -54,10 +54,8 @@ export async function proxy(request: NextRequest) {
     pathname === '/api/gcal/connect' ||      // OAuth initiation — browser redirect, no body
     pathname === '/api/gcal/callback' ||     // OAuth callback from Google — no session cookie sent back
     pathname === '/api/gmail/webhook' ||     // Google push notification (validated separately)
-    pathname === '/api/reviews/webhook' ||   // Twilio inbound webhook
     pathname.startsWith('/api/webhooks/') || // external inbound webhooks (e.g. WodBoard)
     pathname === '/api/branding/schedule/process' || // cron job (uses CRON_SECRET)
-    pathname === '/api/reviews/automation' ||        // cron job (uses CRON_SECRET)
     !!isCronRequest                          // internal cron routes with valid secret
 
   if (!user && !isLoginPage && !isAuthPage && !isPublicBlog && !isPublicApi) {

@@ -10,16 +10,6 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === 'delete') {
-    // Remove related records first to avoid FK constraint failures
-    await supabase.from('review_requests').delete().in('contact_id', ids)
-
-    // Fetch phones so we can clean up sms_subscribers
-    const { data: contactRows } = await supabase.from('contacts').select('phone').in('id', ids)
-    const phones = (contactRows ?? []).map((c) => c.phone).filter(Boolean)
-    if (phones.length > 0) {
-      await supabase.from('sms_subscribers').delete().in('phone', phones)
-    }
-
     const { error } = await supabase.from('contacts').delete().in('id', ids)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ deleted: ids.length })

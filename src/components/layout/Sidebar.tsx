@@ -168,7 +168,6 @@ function buildNav(unreadCount: number): NavSection[] {
       label: 'SYSTEM',
       items: [
         { key: 'integrations', label: 'Integrations', icon: I.integrations, href: '/sync' },
-        { key: 'workflows', label: 'Workflows', icon: I.workflows, href: '/workflows' },
         { key: 'settings', label: 'Settings', icon: I.settings, href: '/settings' },
       ],
     },

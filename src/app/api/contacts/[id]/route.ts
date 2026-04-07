@@ -37,34 +37,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Sync to sms_subscribers if phone present
-  if (phone) {
-    await supabase.from('sms_subscribers').upsert(
-      {
-        phone,
-        first_name: updates.first_name ?? data.first_name,
-        tags: updates.groups ?? data.groups,
-        status: 'subscribed',
-      },
-      { onConflict: 'phone', ignoreDuplicates: false }
-    )
-  }
-
   return NextResponse.json(data)
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = createAdminClient()
-
-  // Remove related records first to avoid FK constraint failures
-  await supabase.from('review_requests').delete().eq('contact_id', id)
-
-  // Fetch phone so we can clean up sms_subscribers
-  const { data: contact } = await supabase.from('contacts').select('phone').eq('id', id).single()
-  if (contact?.phone) {
-    await supabase.from('sms_subscribers').delete().eq('phone', contact.phone)
-  }
 
   const { error } = await supabase.from('contacts').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
