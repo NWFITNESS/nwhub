@@ -10,7 +10,7 @@ export async function POST(request: Request) {
 
   // 5 campaign sends per admin per hour
   const ip = getClientIp(request)
-  if (!rateLimit(`sms-send:${ip}`, 5, 60 * 60 * 1000)) {
+  if (!(await rateLimit(`sms-send:${ip}`, 5, 60 * 60 * 1000))) {
     return NextResponse.json({ error: 'Too many requests — try again later' }, { status: 429 })
   }
 

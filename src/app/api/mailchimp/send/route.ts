@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   if (unauth) return unauth
 
   const ip = getClientIp(req)
-  if (!rateLimit(`mailchimp-send:${ip}`, 5, 60 * 60 * 1000)) {
+  if (!(await rateLimit(`mailchimp-send:${ip}`, 5, 60 * 60 * 1000))) {
     return NextResponse.json({ error: 'Too many requests — try again later' }, { status: 429 })
   }
   const supabase = createAdminClient()

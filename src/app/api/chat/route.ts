@@ -23,7 +23,7 @@ const SAVE_LEAD_TOOL: Anthropic.Tool = {
 export async function POST(req: NextRequest) {
   // 20 messages per IP per minute — public endpoint, needs rate limiting
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? req.headers.get('x-real-ip') ?? 'unknown'
-  if (!rateLimit(`chat:${ip}`, 20, 60_000)) {
+  if (!(await rateLimit(`chat:${ip}`, 20, 60_000))) {
     return NextResponse.json({ error: 'Too many requests — slow down' }, { status: 429 })
   }
 

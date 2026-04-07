@@ -9,7 +9,7 @@ export async function POST(request: Request) {
 
   // 10 test messages per hour
   const ip = getClientIp(request)
-  if (!rateLimit(`sms-test:${ip}`, 10, 60 * 60 * 1000)) {
+  if (!(await rateLimit(`sms-test:${ip}`, 10, 60 * 60 * 1000))) {
     return NextResponse.json({ error: 'Too many test messages — try again later' }, { status: 429 })
   }
 
