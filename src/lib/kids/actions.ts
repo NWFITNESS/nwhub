@@ -210,14 +210,29 @@ export async function deleteBlock(blockId: string): Promise<void> {
 }
 
 /**
- * Set a block as the active block. Only one block is active at a time.
+ * Set a block as the active block. Only one block is active at a time, so
+ * this also clears `is_active` on every other block.
  */
 export async function setActiveBlock(blockId: string): Promise<void> {
   const admin = createAdminClient()
   await admin.from('kids_blocks').update({ is_active: false }).neq('id', blockId)
   await admin.from('kids_blocks').update({ is_active: true }).eq('id', blockId)
   revalidatePath('/kids')
-  revalidatePath('/kids-teens')
+}
+
+/**
+ * Mark a block as inactive without deleting it. Used when a block is
+ * finished — keeps it in the roster history but stops it appearing on the
+ * public site as the live block.
+ */
+export async function deactivateBlock(blockId: string): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('kids_blocks')
+    .update({ is_active: false })
+    .eq('id', blockId)
+  if (error) throw new Error(`Failed to deactivate block: ${error.message}`)
+  revalidatePath('/kids')
 }
 
 /**

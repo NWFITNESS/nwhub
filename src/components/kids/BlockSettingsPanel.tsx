@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import { Button } from '@/components/ui/Button'
-import { saveBlock, setActiveBlock, deleteBlock } from '@/lib/kids/actions'
+import { saveBlock, setActiveBlock, deactivateBlock, deleteBlock } from '@/lib/kids/actions'
 import { CATEGORY_LABEL, CATEGORY_TIME } from '@/lib/kids/constants'
 import type { BlockWithDetails, KidsCategory } from '@/lib/kids/types'
 
@@ -53,6 +53,19 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
     })
   }
 
+  function handleDeactivate() {
+    if (!window.confirm(
+      `Mark "${block.name}" as inactive? It will stay in your roster history but stop showing on the public website.`,
+    )) return
+    startTransition(async () => {
+      try {
+        await deactivateBlock(block.id)
+      } catch (e) {
+        alert((e as Error).message)
+      }
+    })
+  }
+
   function handleDelete() {
     if (!window.confirm(
       `Permanently delete "${block.name}"? This removes the block, its sessions and its pricing. Refuses if any bookings exist.`,
@@ -75,9 +88,18 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
         <div className="h-3 w-px bg-[rgba(255,255,255,0.09)]" />
         <span className="text-[13px] font-medium text-nw-200">Settings</span>
         {block.is_active ? (
-          <span className="ml-auto rounded-full bg-[rgba(212,160,23,0.15)] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.8px] text-gold-300">
-            Active
-          </span>
+          <div className="ml-auto flex items-center gap-2">
+            <span className="rounded-full bg-[rgba(212,160,23,0.15)] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.8px] text-gold-300">
+              Active
+            </span>
+            <button
+              onClick={handleDeactivate}
+              disabled={pending}
+              className="text-[10px] font-medium text-nw-400 hover:text-[#f87171] transition-colors disabled:opacity-50"
+            >
+              Deactivate
+            </button>
+          </div>
         ) : (
           <button
             onClick={handleMakeActive}
