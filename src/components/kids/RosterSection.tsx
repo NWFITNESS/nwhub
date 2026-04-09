@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo, useState, useRef, useEffect } from 'react'
+import { useMemo, useState, useRef, useEffect, useTransition } from 'react'
 import { CATEGORY_BADGE, CATEGORY_LABEL, ageFromDob } from '@/lib/kids/constants'
+import { refundBlockBooking } from '@/lib/kids/actions'
 import type { BlockWithDetails, KidsCategory, RosterRow, SearchResultRow } from '@/lib/kids/types'
 
 interface Props {
@@ -274,6 +275,19 @@ function CameraIcon({ active }: { active: boolean }) {
 }
 
 function RosterTable({ rows, totalRows, onClearFilters }: { rows: RosterRow[]; totalRows: number; onClearFilters: () => void }) {
+  const [pending, startTransition] = useTransition()
+
+  function handleRefund(bookingId: string, childName: string) {
+    if (!window.confirm(`Refund the block booking for ${childName}? This is a full Stripe refund. Note: if this booking was part of a multi-child checkout, all children on the same payment will be refunded.`)) return
+    startTransition(async () => {
+      try {
+        await refundBlockBooking(bookingId)
+      } catch (e) {
+        alert((e as Error).message)
+      }
+    })
+  }
+
   if (rows.length === 0) {
     return (
       <div className="flex flex-col items-center gap-2 px-[17px] py-12">
@@ -302,6 +316,7 @@ function RosterTable({ rows, totalRows, onClearFilters }: { rows: RosterRow[]; t
             <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Payment</th>
             <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Photo</th>
             <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Waiver</th>
+            <th className="px-3 py-2.5 text-right text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -315,12 +330,25 @@ function RosterTable({ rows, totalRows, onClearFilters }: { rows: RosterRow[]; t
               <td className="px-3 py-3">
                 {r.payment_status === 'paid' ? (
                   <span className="rounded-full bg-[rgba(74,222,128,0.12)] px-2 py-0.5 text-[10px] font-semibold text-[#4ade80]">Paid</span>
+                ) : r.payment_status === 'refunded' ? (
+                  <span className="rounded-full bg-[rgba(248,113,113,0.12)] px-2 py-0.5 text-[10px] font-semibold text-[#f87171]">Refunded</span>
                 ) : (
                   <span className="rounded-full bg-[rgba(245,158,11,0.12)] px-2 py-0.5 text-[10px] font-semibold text-[#f59e0b]">Pending</span>
                 )}
               </td>
               <td className="px-3 py-3 text-[12px]">{r.photo_consent ? <span className="text-[#4ade80]">✓ Yes</span> : <span className="text-[#f87171]">✗ No</span>}</td>
               <td className="px-3 py-3 text-[12px]">{r.waiver_signed ? <span className="text-[#4ade80]">✓</span> : <span className="text-[#f87171]">✗</span>}</td>
+              <td className="px-3 py-3 text-right">
+                {r.payment_status === 'paid' && (
+                  <button
+                    onClick={() => handleRefund(r.booking_id, r.child_name)}
+                    disabled={pending}
+                    className="text-[11px] font-medium text-nw-400 hover:text-[#f87171] disabled:opacity-50 transition-colors"
+                  >
+                    Refund
+                  </button>
+                )}
+              </td>
             </tr>
           ))}
         </tbody>

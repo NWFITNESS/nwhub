@@ -526,3 +526,122 @@ export async function setPhotoConsent(childId: string, allowed: boolean): Promis
   if (error) throw new Error(`Failed to update photo consent: ${error.message}`)
   revalidatePath('/kids')
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Refund + cancel
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Refund a paid block booking via Stripe and mark the row as refunded.
+ *
+ * Refunds the full amount from the Stripe PaymentIntent attached to the
+ * Checkout Session. If the booking is part of a multi-child checkout
+ * (booking_ids was a comma-joined list in the session metadata), only THIS
+ * booking is marked refunded — Stripe refunds the entire PaymentIntent
+ * because line items can't be partially refunded by ID. If you have multiple
+ * children on the same checkout you'll currently get a full refund of all of
+ * them. We can revisit with `amount`-based partial refunds if needed.
+ */
+export async function refundBlockBooking(bookingId: string): Promise<void> {
+  const admin = createAdminClient()
+
+  const { data: booking, error } = await admin
+    .from('kids_block_bookings')
+    .select('id, payment_status, stripe_payment_intent_id')
+    .eq('id', bookingId)
+    .single()
+
+  if (error || !booking) throw new Error(`Booking not found: ${error?.message ?? 'unknown'}`)
+  if (booking.payment_status !== 'paid') {
+    throw new Error('Only paid bookings can be refunded.')
+  }
+  if (!booking.stripe_payment_intent_id) {
+    throw new Error('No Stripe payment intent on this booking — cannot refund.')
+  }
+
+  const stripe = getStripe()
+  await stripe.refunds.create({ payment_intent: booking.stripe_payment_intent_id })
+
+  await admin
+    .from('kids_block_bookings')
+    .update({ payment_status: 'refunded' })
+    .eq('id', bookingId)
+
+  revalidatePath('/kids')
+}
+
+/**
+ * Refund a paid drop-in booking via Stripe and mark the row as refunded.
+ */
+export async function refundDropIn(bookingId: string): Promise<void> {
+  const admin = createAdminClient()
+
+  const { data: booking, error } = await admin
+    .from('kids_dropin_bookings')
+    .select('id, payment_status, stripe_payment_intent_id')
+    .eq('id', bookingId)
+    .single()
+
+  if (error || !booking) throw new Error(`Drop-in not found: ${error?.message ?? 'unknown'}`)
+  if (booking.payment_status !== 'paid') {
+    throw new Error('Only paid drop-ins can be refunded.')
+  }
+  if (!booking.stripe_payment_intent_id) {
+    throw new Error('No Stripe payment intent on this drop-in — cannot refund.')
+  }
+
+  const stripe = getStripe()
+  await stripe.refunds.create({ payment_intent: booking.stripe_payment_intent_id })
+
+  await admin
+    .from('kids_dropin_bookings')
+    .update({ payment_status: 'refunded' })
+    .eq('id', bookingId)
+
+  revalidatePath('/kids')
+}
+
+/**
+ * Cancel and remove a drop-in booking that hasn't been paid yet.
+ *
+ * Deactivates the Stripe Payment Link so the URL stops working (Stripe
+ * doesn't support deletion of payment links — only setting active=false),
+ * then deletes the row from kids_dropin_bookings so it disappears from the
+ * recent-drop-ins list. Refuses if the booking is already paid — use
+ * refundDropIn instead in that case.
+ */
+export async function cancelDropIn(bookingId: string): Promise<void> {
+  const admin = createAdminClient()
+
+  const { data: booking, error } = await admin
+    .from('kids_dropin_bookings')
+    .select('id, payment_status, stripe_payment_link_id')
+    .eq('id', bookingId)
+    .single()
+
+  if (error || !booking) throw new Error(`Drop-in not found: ${error?.message ?? 'unknown'}`)
+  if (booking.payment_status === 'paid') {
+    throw new Error('This drop-in is already paid — use Refund instead.')
+  }
+
+  // Deactivate the Stripe payment link if there is one. Best-effort: if the
+  // link was never created or has already been deactivated we don't want to
+  // block the row deletion on a Stripe error.
+  if (booking.stripe_payment_link_id) {
+    try {
+      const stripe = getStripe()
+      await stripe.paymentLinks.update(booking.stripe_payment_link_id, { active: false })
+    } catch (e) {
+      console.warn('[cancelDropIn] failed to deactivate Stripe link:', (e as Error).message)
+    }
+  }
+
+  const { error: deleteError } = await admin
+    .from('kids_dropin_bookings')
+    .delete()
+    .eq('id', bookingId)
+
+  if (deleteError) throw new Error(`Failed to delete drop-in: ${deleteError.message}`)
+
+  revalidatePath('/kids')
+}

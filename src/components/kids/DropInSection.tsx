@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/Button'
-import { createDropInPaymentLink, sendDropInLinkEmail } from '@/lib/kids/actions'
+import { createDropInPaymentLink, sendDropInLinkEmail, cancelDropIn, refundDropIn } from '@/lib/kids/actions'
 import { CATEGORY_LABEL, DROPIN_PRICE_PENCE, formatPence } from '@/lib/kids/constants'
 import type { BlockWithDetails, DropInRow, KidsCategory } from '@/lib/kids/types'
 
@@ -21,7 +21,8 @@ export function DropInSection({ blocks, recentDropIns }: Props) {
 }
 
 function GenerateLinkCard({ blocks }: { blocks: BlockWithDetails[] }) {
-  const [childName, setChildName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [category, setCategory] = useState<KidsCategory>('littles')
   const [sessionId, setSessionId] = useState<string>('')
   const [parentEmail, setParentEmail] = useState('')
@@ -45,14 +46,20 @@ function GenerateLinkCard({ blocks }: { blocks: BlockWithDetails[] }) {
   }
 
   function handleGenerate() {
-    if (!childName.trim() || !parentEmail.trim() || !sessionId) {
-      alert('Child name, parent email, and session are required')
+    const first = firstName.trim()
+    const last = lastName.trim()
+    if (!first || !last) {
+      alert("Both the child's first name and surname are required.")
+      return
+    }
+    if (!parentEmail.trim() || !sessionId) {
+      alert('Parent email and session are required')
       return
     }
     startTransition(async () => {
       try {
         const { url, bookingId: id } = await createDropInPaymentLink({
-          childName: childName.trim(),
+          childName: `${first} ${last}`,
           category,
           sessionId,
           parentEmail: parentEmail.trim(),
@@ -95,14 +102,26 @@ function GenerateLinkCard({ blocks }: { blocks: BlockWithDetails[] }) {
       </div>
 
       <div className="flex flex-col gap-3 p-[17px]">
-        <Field label="Child name">
-          <input
-            type="text"
-            value={childName}
-            onChange={(e) => setChildName(e.target.value)}
-            className="w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-sm text-nw-100 focus:border-gold-500 focus:outline-none"
-          />
-        </Field>
+        <div className="grid grid-cols-2 gap-2">
+          <Field label="Child first name">
+            <input
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+              className="w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-sm text-nw-100 focus:border-gold-500 focus:outline-none"
+            />
+          </Field>
+          <Field label="Child surname">
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+              className="w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-sm text-nw-100 focus:border-gold-500 focus:outline-none"
+            />
+          </Field>
+        </div>
 
         <div className="grid grid-cols-2 gap-2">
           <Field label="Category">
@@ -170,6 +189,30 @@ function GenerateLinkCard({ blocks }: { blocks: BlockWithDetails[] }) {
 }
 
 function RecentDropInsCard({ rows }: { rows: DropInRow[] }) {
+  const [pending, startTransition] = useTransition()
+
+  function handleCancel(id: string, childName: string) {
+    if (!window.confirm(`Cancel drop-in for ${childName}? This deactivates the Stripe link and removes the row.`)) return
+    startTransition(async () => {
+      try {
+        await cancelDropIn(id)
+      } catch (e) {
+        alert((e as Error).message)
+      }
+    })
+  }
+
+  function handleRefund(id: string, childName: string) {
+    if (!window.confirm(`Refund the drop-in payment for ${childName}? This is a full refund via Stripe.`)) return
+    startTransition(async () => {
+      try {
+        await refundDropIn(id)
+      } catch (e) {
+        alert((e as Error).message)
+      }
+    })
+  }
+
   return (
     <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750">
       <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[11px]">
@@ -188,19 +231,44 @@ function RecentDropInsCard({ rows }: { rows: DropInRow[] }) {
                 <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Cat.</th>
                 <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Amount</th>
                 <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Status</th>
+                <th className="px-3 py-2.5 text-right text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => (
-                <tr key={r.id} className="border-b border-[rgba(255,255,255,0.04)] last:border-0">
-                  <td className="px-3 py-2.5 text-nw-100">{r.child_name}</td>
-                  <td className="px-3 py-2.5 text-xs text-nw-400">{CATEGORY_LABEL[r.category]}</td>
-                  <td className="px-3 py-2.5 text-xs text-nw-300">{formatPence(r.price_pence)}</td>
-                  <td className="px-3 py-2.5">
-                    <StatusPill status={r.payment_status} />
-                  </td>
-                </tr>
-              ))}
+              {rows.map((r) => {
+                const canCancel = r.payment_status === 'pending' || r.payment_status === 'link_sent'
+                const canRefund = r.payment_status === 'paid'
+                return (
+                  <tr key={r.id} className="border-b border-[rgba(255,255,255,0.04)] last:border-0">
+                    <td className="px-3 py-2.5 text-nw-100">{r.child_name}</td>
+                    <td className="px-3 py-2.5 text-xs text-nw-400">{CATEGORY_LABEL[r.category]}</td>
+                    <td className="px-3 py-2.5 text-xs text-nw-300">{formatPence(r.price_pence)}</td>
+                    <td className="px-3 py-2.5">
+                      <StatusPill status={r.payment_status} />
+                    </td>
+                    <td className="px-3 py-2.5 text-right">
+                      {canCancel && (
+                        <button
+                          onClick={() => handleCancel(r.id, r.child_name)}
+                          disabled={pending}
+                          className="text-[11px] font-medium text-nw-400 hover:text-[#f87171] disabled:opacity-50 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                      {canRefund && (
+                        <button
+                          onClick={() => handleRefund(r.id, r.child_name)}
+                          disabled={pending}
+                          className="text-[11px] font-medium text-nw-400 hover:text-[#f87171] disabled:opacity-50 transition-colors"
+                        >
+                          Refund
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
