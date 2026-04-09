@@ -3,10 +3,17 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe, siteUrl } from '@/lib/stripe'
-import { getResend, FROM_EMAIL, REPLY_TO } from '@/lib/resend'
+import { getResend, FROM_EMAIL } from '@/lib/resend'
 import { revalidatePath } from 'next/cache'
 import type { KidsCategory } from './types'
 import { CATEGORY_LABEL, CATEGORY_TIME, DROPIN_PRICE_PENCE, categoryFromDob, formatPence } from './constants'
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Kids inbox — every parent-facing kids email is BCC'd and reply-to'd to this
+// address so all booking-related info funnels into one place. The sender
+// stays on the verified northernwarrior.co.uk domain.
+// ─────────────────────────────────────────────────────────────────────────────
+const KIDS_ADMIN_EMAIL = 'info@nwfitnesskids.co.uk'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Kids & Teens — server actions
@@ -409,12 +416,13 @@ export async function sendDropInLinkEmail(bookingId: string): Promise<{ ok: true
     paymentUrl,
   })
 
-  // 4. Send
+  // 4. Send — bcc the kids inbox so admin sees a copy in real time
   const resend = getResend()
   const { error: sendError } = await resend.emails.send({
     from: FROM_EMAIL,
     to: booking.parent_email,
-    replyTo: REPLY_TO,
+    bcc: KIDS_ADMIN_EMAIL,
+    replyTo: KIDS_ADMIN_EMAIL,
     subject: 'Your drop-in payment link — Northern Warrior Kids',
     html,
   })
@@ -683,7 +691,8 @@ export async function submitTrialBooking(
     const { error: sendError } = await resend.emails.send({
       from: FROM_EMAIL,
       to: parent.email,
-      replyTo: REPLY_TO,
+      bcc: KIDS_ADMIN_EMAIL,
+      replyTo: KIDS_ADMIN_EMAIL,
       subject: 'Your Northern Warrior Kids trial is booked',
       html,
     })
