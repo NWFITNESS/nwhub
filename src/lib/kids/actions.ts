@@ -1,9 +1,11 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getStripe, siteUrl } from '@/lib/stripe'
 import { revalidatePath } from 'next/cache'
 import type { KidsCategory } from './types'
-import { DROPIN_PRICE_PENCE } from './constants'
+import { CATEGORY_LABEL, DROPIN_PRICE_PENCE } from './constants'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Kids & Teens — server actions
@@ -160,40 +162,182 @@ interface CreateDropInLinkInput {
 }
 
 /**
- * Generate a payment link for a single drop-in session.
+ * Generate a real Stripe Payment Link for a single drop-in session.
  *
- * STUBBED — returns a placeholder URL until Phase 3 wires real Stripe.
- * Still inserts a kids_dropin_bookings row with payment_status='link_sent'
- * so the recent-drop-ins table reflects it.
+ * Creates the booking row first so we have a stable booking_id to put in the
+ * Payment Link metadata, then creates a one-off Price + Payment Link in
+ * Stripe, then stores the link ID on the booking row. The Stripe webhook
+ * marks the row as paid once the parent completes checkout.
  */
 export async function createDropInPaymentLink(
   input: CreateDropInLinkInput,
 ): Promise<{ url: string; bookingId: string }> {
   const supabase = await createClient()
   const pricePence = DROPIN_PRICE_PENCE[input.category]
+  const parentEmail = input.parentEmail.toLowerCase().trim()
 
-  // STUB: Phase 3 replaces this with stripe.paymentLinks.create()
-  const stubLinkId = `stub_${Math.random().toString(36).slice(2, 10)}`
-  const stubUrl = `https://buy.stripe.com/test_stub/${stubLinkId}`
-
-  const { data, error } = await supabase
+  // 1. Insert booking with status 'pending' so we have an ID for metadata
+  const { data: booking, error: insertError } = await supabase
     .from('kids_dropin_bookings')
     .insert({
       session_id: input.sessionId,
       child_name: input.childName,
-      parent_email: input.parentEmail.toLowerCase().trim(),
+      parent_email: parentEmail,
       category: input.category,
-      stripe_payment_link_id: stubLinkId,
-      payment_status: 'link_sent',
+      payment_status: 'pending',
       price_pence: pricePence,
     })
     .select('id')
     .single()
 
-  if (error || !data) throw new Error(`Failed to create drop-in: ${error?.message ?? 'unknown'}`)
+  if (insertError || !booking) {
+    throw new Error(`Failed to create drop-in booking: ${insertError?.message ?? 'unknown'}`)
+  }
 
-  revalidatePath('/kids')
-  return { url: stubUrl, bookingId: data.id }
+  try {
+    const stripe = getStripe()
+
+    // 2. Create a one-off Price (Payment Links require a Price object, not
+    //    inline price_data). The product is created inline via product_data.
+    const price = await stripe.prices.create({
+      unit_amount: pricePence,
+      currency: 'gbp',
+      product_data: {
+        name: `Drop-in: ${input.childName} (${CATEGORY_LABEL[input.category]})`,
+      },
+    })
+
+    // 3. Create the Payment Link with metadata that the webhook will read
+    const link = await stripe.paymentLinks.create({
+      line_items: [{ price: price.id, quantity: 1 }],
+      metadata: {
+        type: 'dropin',
+        dropin_booking_id: booking.id,
+        child_name: input.childName,
+        category: input.category,
+        session_id: input.sessionId ?? '',
+      },
+      after_completion: {
+        type: 'redirect',
+        redirect: { url: `${siteUrl()}/kids-teens/confirmed?dropin=${booking.id}` },
+      },
+    })
+
+    // 4. Store the link ID on the booking and flip status to link_sent
+    await supabase
+      .from('kids_dropin_bookings')
+      .update({
+        stripe_payment_link_id: link.id,
+        payment_status: 'link_sent',
+      })
+      .eq('id', booking.id)
+
+    revalidatePath('/kids')
+    return { url: link.url, bookingId: booking.id }
+  } catch (e) {
+    // Roll back: delete the orphan booking row so the UI doesn't show a
+    // pending row for a Stripe call that never succeeded.
+    await supabase.from('kids_dropin_bookings').delete().eq('id', booking.id)
+    throw new Error(`Stripe error: ${(e as Error).message}`)
+  }
+}
+
+interface CreateBlockCheckoutInput {
+  blockId: string
+  bookingIds: string[]   // one or more kids_block_bookings IDs (multi-child support)
+  parentEmail: string
+}
+
+/**
+ * Create a Stripe Checkout Session for one or more block bookings.
+ *
+ * Looks up each booking, finds the matching block pricing, and builds a
+ * Checkout Session with one line item per booking. Stores the session ID on
+ * every booking so the webhook can flip them all to 'paid' at once.
+ *
+ * Bookings must already exist in kids_block_bookings with payment_status
+ * 'pending' before this is called — the public register form / returning
+ * flow inserts those rows first, then calls this action.
+ */
+export async function createBlockCheckoutSession(
+  input: CreateBlockCheckoutInput,
+): Promise<{ url: string; sessionId: string }> {
+  const admin = createAdminClient()
+
+  // Look up bookings + block + pricing in one go
+  const { data: bookings, error: bookingsError } = await admin
+    .from('kids_block_bookings')
+    .select('id, block_id, child_id, parent_id, category')
+    .in('id', input.bookingIds)
+
+  if (bookingsError || !bookings?.length) {
+    throw new Error(`Failed to load bookings: ${bookingsError?.message ?? 'no rows'}`)
+  }
+
+  // All bookings must be for the same block (and must match input.blockId)
+  for (const b of bookings) {
+    if (b.block_id !== input.blockId) {
+      throw new Error('All bookings must belong to the same block')
+    }
+  }
+
+  const [blockRes, pricingRes, childrenRes] = await Promise.all([
+    admin.from('kids_blocks').select('name').eq('id', input.blockId).single(),
+    admin.from('kids_block_pricing').select('category, price_pence').eq('block_id', input.blockId),
+    admin.from('kids_children').select('id, child_name').in('id', bookings.map((b) => b.child_id)),
+  ])
+
+  if (blockRes.error || !blockRes.data) {
+    throw new Error(`Block not found: ${blockRes.error?.message ?? 'unknown'}`)
+  }
+  const blockName = blockRes.data.name
+
+  const priceByCategory = new Map<KidsCategory, number>()
+  for (const p of pricingRes.data ?? []) priceByCategory.set(p.category as KidsCategory, p.price_pence)
+
+  const childById = new Map<string, string>()
+  for (const c of childrenRes.data ?? []) childById.set(c.id, c.child_name)
+
+  // Build line items
+  const lineItems = bookings.map((b) => {
+    const pricePence = priceByCategory.get(b.category as KidsCategory)
+    if (pricePence == null) throw new Error(`No price for category ${b.category} on block ${input.blockId}`)
+    const childName = childById.get(b.child_id) ?? 'Child'
+    return {
+      price_data: {
+        currency: 'gbp' as const,
+        product_data: {
+          name: `${blockName} — ${CATEGORY_LABEL[b.category as KidsCategory]} (${childName})`,
+        },
+        unit_amount: pricePence,
+      },
+      quantity: 1,
+    }
+  })
+
+  const stripe = getStripe()
+  const session = await stripe.checkout.sessions.create({
+    mode: 'payment',
+    line_items: lineItems,
+    customer_email: input.parentEmail.toLowerCase().trim(),
+    success_url: `${siteUrl()}/kids-teens/confirmed?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${siteUrl()}/kids-teens`,
+    metadata: {
+      type: 'block',
+      block_id: input.blockId,
+      booking_ids: bookings.map((b) => b.id).join(','),
+    },
+  })
+
+  if (!session.url) throw new Error('Stripe did not return a checkout URL')
+
+  // Store the session ID on every booking so the webhook can flip them all
+  await admin
+    .from('kids_block_bookings')
+    .update({ stripe_checkout_session_id: session.id })
+    .in('id', bookings.map((b) => b.id))
+
+  return { url: session.url, sessionId: session.id }
 }
 
 /**
