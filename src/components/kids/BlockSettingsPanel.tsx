@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import { Button } from '@/components/ui/Button'
-import { saveBlock, setActiveBlock } from '@/lib/kids/actions'
+import { saveBlock, setActiveBlock, deleteBlock } from '@/lib/kids/actions'
 import { CATEGORY_LABEL, CATEGORY_TIME } from '@/lib/kids/constants'
 import type { BlockWithDetails, KidsCategory } from '@/lib/kids/types'
 
@@ -18,6 +18,16 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
   const [isRecurring, setIsRecurring] = useState(block.is_recurring)
   const [pending, startTransition] = useTransition()
   const [savedAt, setSavedAt] = useState<number | null>(null)
+
+  // Sync local state when the block prop changes (e.g. after revalidatePath
+  // re-fetches and the page re-renders with fresh data, OR when the user
+  // switches between blocks via the roster tabs).
+  useEffect(() => {
+    setName(block.name)
+    setStartDate(block.start_date)
+    setSessionCount(block.session_count)
+    setIsRecurring(block.is_recurring)
+  }, [block.id, block.name, block.start_date, block.session_count, block.is_recurring])
 
   function handleSave() {
     startTransition(async () => {
@@ -40,6 +50,19 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
   function handleMakeActive() {
     startTransition(async () => {
       await setActiveBlock(block.id)
+    })
+  }
+
+  function handleDelete() {
+    if (!window.confirm(
+      `Permanently delete "${block.name}"? This removes the block, its sessions and its pricing. Refuses if any bookings exist.`,
+    )) return
+    startTransition(async () => {
+      try {
+        await deleteBlock(block.id)
+      } catch (e) {
+        alert((e as Error).message)
+      }
     })
   }
 
@@ -122,12 +145,15 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
           ))}
         </div>
 
-        <div className="mt-1 flex gap-2">
-          <Button variant="gold" size="md" onClick={handleSave} loading={pending} className="flex-1">
+        <div className="mt-1 flex flex-wrap gap-2">
+          <Button variant="gold" size="md" onClick={handleSave} loading={pending} className="flex-1 min-w-[120px]">
             {savedAt ? 'Saved ✓' : 'Save block'}
           </Button>
           <Button variant="default" size="md" onClick={onOpenPricing}>
-            Capacity & pricing
+            Capacity &amp; pricing
+          </Button>
+          <Button variant="danger" size="md" onClick={handleDelete} disabled={pending}>
+            Delete
           </Button>
         </div>
       </div>

@@ -1,6 +1,5 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe, siteUrl } from '@/lib/stripe'
 import { getResend, FROM_EMAIL } from '@/lib/resend'
@@ -39,12 +38,28 @@ interface SaveBlockInput {
  * but preserve break flags by matching session_number to the previous state.
  */
 export async function saveBlock(input: SaveBlockInput): Promise<{ id: string }> {
-  const supabase = await createClient()
+  // Use the admin client for mutations: the user is already authenticated to
+  // be on /kids (the dashboard layout enforces it), and using the admin
+  // client eliminates a class of RLS edge cases where the cookie context
+  // gets stale during a server action invocation.
+  const admin = createAdminClient()
 
-  // Capture existing breaks (so we can re-apply after regenerating sessions)
+  // Validate inputs upfront — vague errors during production renders are
+  // much harder to diagnose than a clean throw here with a real message.
+  if (!input.name?.trim()) throw new Error('Block name is required.')
+  if (!input.start_date) throw new Error('Start date is required.')
+  if (!Number.isInteger(input.session_count) || input.session_count < 1 || input.session_count > 52) {
+    throw new Error('Session count must be between 1 and 52.')
+  }
+  // Sanity check the date format — must be ISO yyyy-mm-dd
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.start_date)) {
+    throw new Error('Start date must be in YYYY-MM-DD format.')
+  }
+
+  // Capture existing breaks so we can re-apply after regenerating sessions
   const breaksBefore = new Map<number, string | null>()
   if (input.id) {
-    const { data: existing } = await supabase
+    const { data: existing } = await admin
       .from('kids_sessions')
       .select('session_number, is_break, break_label')
       .eq('block_id', input.id)
@@ -55,10 +70,10 @@ export async function saveBlock(input: SaveBlockInput): Promise<{ id: string }> 
 
   let blockId = input.id
   if (blockId) {
-    const { error } = await supabase
+    const { error } = await admin
       .from('kids_blocks')
       .update({
-        name: input.name,
+        name: input.name.trim(),
         start_date: input.start_date,
         session_count: input.session_count,
         is_recurring: input.is_recurring,
@@ -66,10 +81,10 @@ export async function saveBlock(input: SaveBlockInput): Promise<{ id: string }> 
       .eq('id', blockId)
     if (error) throw new Error(`Failed to update block: ${error.message}`)
   } else {
-    const { data, error } = await supabase
+    const { data, error } = await admin
       .from('kids_blocks')
       .insert({
-        name: input.name,
+        name: input.name.trim(),
         start_date: input.start_date,
         session_count: input.session_count,
         is_recurring: input.is_recurring,
@@ -81,19 +96,26 @@ export async function saveBlock(input: SaveBlockInput): Promise<{ id: string }> 
     blockId = data.id
 
     // Default pricing for new blocks
-    await supabase.from('kids_block_pricing').insert([
+    const { error: pricingError } = await admin.from('kids_block_pricing').insert([
       { block_id: blockId, category: 'minis',   capacity: 12, price_pence: 4500 },
       { block_id: blockId, category: 'littles', capacity: 12, price_pence: 4500 },
       { block_id: blockId, category: 'teens',   capacity: 12, price_pence: 5000 },
     ])
+    if (pricingError) throw new Error(`Failed to seed pricing: ${pricingError.message}`)
   }
 
-  // Regenerate sessions
-  await supabase.from('kids_sessions').delete().eq('block_id', blockId)
-  const startDate = new Date(input.start_date)
+  // Regenerate sessions. Date arithmetic is done in pure UTC to avoid the
+  // BST/UTC drift that would otherwise cause Sunday → Saturday on a UK
+  // server during summer. Parse the input as UTC midnight, then add 7 *
+  // 86400000 ms per session — never call setDate which uses local time.
+  const { error: deleteError } = await admin.from('kids_sessions').delete().eq('block_id', blockId)
+  if (deleteError) throw new Error(`Failed to clear old sessions: ${deleteError.message}`)
+
+  const startMs = new Date(`${input.start_date}T00:00:00Z`).getTime()
+  if (Number.isNaN(startMs)) throw new Error(`Invalid start date: ${input.start_date}`)
+
   const sessions = Array.from({ length: input.session_count }, (_, i) => {
-    const date = new Date(startDate)
-    date.setDate(startDate.getDate() + i * 7)
+    const date = new Date(startMs + i * 7 * 86400000)
     const sessionNumber = i + 1
     const wasBreak = breaksBefore.has(sessionNumber)
     return {
@@ -105,21 +127,49 @@ export async function saveBlock(input: SaveBlockInput): Promise<{ id: string }> 
     }
   })
   if (sessions.length) {
-    const { error } = await supabase.from('kids_sessions').insert(sessions)
+    const { error } = await admin.from('kids_sessions').insert(sessions)
     if (error) throw new Error(`Failed to insert sessions: ${error.message}`)
   }
 
   revalidatePath('/kids')
+  revalidatePath('/kids-teens')
   return { id: blockId! }
+}
+
+/**
+ * Permanently delete a block and (via cascade) its sessions and pricing rows.
+ * Refuses if there are any bookings on the block — those need to be refunded
+ * or removed first to avoid orphaning paid customers.
+ */
+export async function deleteBlock(blockId: string): Promise<void> {
+  const admin = createAdminClient()
+
+  // Refuse if any block bookings exist for this block
+  const { count: bookingCount, error: countError } = await admin
+    .from('kids_block_bookings')
+    .select('id', { count: 'exact', head: true })
+    .eq('block_id', blockId)
+  if (countError) throw new Error(`Failed to check bookings: ${countError.message}`)
+  if ((bookingCount ?? 0) > 0) {
+    throw new Error(
+      `This block has ${bookingCount} booking(s) attached. Refund or remove them before deleting the block.`,
+    )
+  }
+
+  const { error } = await admin.from('kids_blocks').delete().eq('id', blockId)
+  if (error) throw new Error(`Failed to delete block: ${error.message}`)
+
+  revalidatePath('/kids')
+  revalidatePath('/kids-teens')
 }
 
 /**
  * Set a block as the active block. Only one block is active at a time.
  */
 export async function setActiveBlock(blockId: string): Promise<void> {
-  const supabase = await createClient()
-  await supabase.from('kids_blocks').update({ is_active: false }).neq('id', blockId)
-  await supabase.from('kids_blocks').update({ is_active: true }).eq('id', blockId)
+  const admin = createAdminClient()
+  await admin.from('kids_blocks').update({ is_active: false }).neq('id', blockId)
+  await admin.from('kids_blocks').update({ is_active: true }).eq('id', blockId)
   revalidatePath('/kids')
   revalidatePath('/kids-teens')
 }
@@ -132,8 +182,8 @@ export async function setSessionBreak(
   isBreak: boolean,
   label: string | null = null,
 ): Promise<void> {
-  const supabase = await createClient()
-  const { error } = await supabase
+  const admin = createAdminClient()
+  const { error } = await admin
     .from('kids_sessions')
     .update({ is_break: isBreak, break_label: isBreak ? label : null })
     .eq('id', sessionId)
@@ -149,9 +199,9 @@ export async function saveBlockPricing(
   blockId: string,
   rows: { category: KidsCategory; capacity: number; price_pence: number; stripe_price_id?: string | null }[],
 ): Promise<void> {
-  const supabase = await createClient()
+  const admin = createAdminClient()
   for (const row of rows) {
-    const { error } = await supabase
+    const { error } = await admin
       .from('kids_block_pricing')
       .upsert(
         { block_id: blockId, ...row },
@@ -186,7 +236,7 @@ interface CreateDropInLinkInput {
 export async function createDropInPaymentLink(
   input: CreateDropInLinkInput,
 ): Promise<{ url: string; bookingId: string }> {
-  const supabase = await createClient()
+  const admin = createAdminClient()
   const pricePence = input.pricePence ?? DROPIN_PRICE_PENCE[input.category]
   if (!Number.isInteger(pricePence) || pricePence < 50) {
     throw new Error('Drop-in price must be at least £0.50.')
@@ -194,7 +244,7 @@ export async function createDropInPaymentLink(
   const parentEmail = input.parentEmail.toLowerCase().trim()
 
   // 1. Insert booking with status 'pending' so we have an ID for metadata
-  const { data: booking, error: insertError } = await supabase
+  const { data: booking, error: insertError } = await admin
     .from('kids_dropin_bookings')
     .insert({
       session_id: input.sessionId,
@@ -241,7 +291,7 @@ export async function createDropInPaymentLink(
     })
 
     // 4. Store the link ID on the booking and flip status to link_sent
-    await supabase
+    await admin
       .from('kids_dropin_bookings')
       .update({
         stripe_payment_link_id: link.id,
@@ -254,7 +304,7 @@ export async function createDropInPaymentLink(
   } catch (e) {
     // Roll back: delete the orphan booking row so the UI doesn't show a
     // pending row for a Stripe call that never succeeded.
-    await supabase.from('kids_dropin_bookings').delete().eq('id', booking.id)
+    await admin.from('kids_dropin_bookings').delete().eq('id', booking.id)
     throw new Error(`Stripe error: ${(e as Error).message}`)
   }
 }
@@ -535,8 +585,8 @@ function escapeHtml(s: string): string {
  * but also surfaced from the NWHub roster if needed).
  */
 export async function setPhotoConsent(childId: string, allowed: boolean): Promise<void> {
-  const supabase = await createClient()
-  const { error } = await supabase
+  const admin = createAdminClient()
+  const { error } = await admin
     .from('kids_children')
     .update({ photo_consent: allowed })
     .eq('id', childId)

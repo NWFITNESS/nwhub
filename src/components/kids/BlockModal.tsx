@@ -16,9 +16,17 @@ interface Props {
 export function BlockModal({ open, onClose, onCreated }: Props) {
   const [name, setName] = useState('')
   const [startDate, setStartDate] = useState(() => {
-    const d = new Date()
-    d.setDate(d.getDate() + (6 - d.getDay() + 7) % 7) // next Saturday
-    return d.toISOString().slice(0, 10)
+    // Default to the next Sunday (kids classes are on Sundays). Computed in
+    // UTC to avoid timezone drift on either the server or client.
+    const now = new Date()
+    const dayOfWeek = now.getUTCDay() // 0 = Sunday
+    const daysUntilSunday = (7 - dayOfWeek) % 7 || 7  // skip "today is Sunday"
+    const sunday = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() + daysUntilSunday,
+    ))
+    return sunday.toISOString().slice(0, 10)
   })
   const [sessionCount, setSessionCount] = useState(6)
   const [isRecurring, setIsRecurring] = useState(true)
