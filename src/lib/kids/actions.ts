@@ -3,9 +3,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe, siteUrl } from '@/lib/stripe'
+import { getResend, FROM_EMAIL, REPLY_TO } from '@/lib/resend'
 import { revalidatePath } from 'next/cache'
 import type { KidsCategory } from './types'
-import { CATEGORY_LABEL, DROPIN_PRICE_PENCE } from './constants'
+import { CATEGORY_LABEL, CATEGORY_TIME, DROPIN_PRICE_PENCE, formatPence } from './constants'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Kids & Teens — server actions
@@ -341,14 +342,175 @@ export async function createBlockCheckoutSession(
 }
 
 /**
- * Send the drop-in payment link via email.
+ * Send the drop-in payment link to the parent via Resend.
  *
- * STUBBED — Phase 6 wires real Resend send. For now records nothing extra
- * but returns success so the UI can show a confirm message.
+ * Loads the booking, joins through to the session date and the Stripe link,
+ * builds the dark/gold branded NW email, and sends. Throws if anything fails
+ * so the UI can surface the error to the admin user.
  */
-export async function sendDropInLinkEmail(_bookingId: string): Promise<{ ok: true }> {
-  // TODO: Phase 6 — pull booking + send via Resend
+export async function sendDropInLinkEmail(bookingId: string): Promise<{ ok: true }> {
+  const admin = createAdminClient()
+
+  // 1. Load the booking + (optionally) the session date
+  const { data: booking, error } = await admin
+    .from('kids_dropin_bookings')
+    .select('id, child_name, parent_email, category, price_pence, stripe_payment_link_id, session_id')
+    .eq('id', bookingId)
+    .single()
+
+  if (error || !booking) {
+    throw new Error(`Drop-in booking not found: ${error?.message ?? 'unknown'}`)
+  }
+  if (!booking.parent_email) {
+    throw new Error('No parent email on this booking — generate a link with an email first.')
+  }
+  if (!booking.stripe_payment_link_id) {
+    throw new Error('No Stripe payment link attached to this booking.')
+  }
+
+  // 2. Fetch the actual hosted URL from Stripe (we only stored the link ID,
+  //    not the URL). Cheaper than denormalising and survives the rare case
+  //    where the URL has changed.
+  const stripe = getStripe()
+  const link = await stripe.paymentLinks.retrieve(booking.stripe_payment_link_id)
+  const paymentUrl = link.url
+  if (!paymentUrl) throw new Error('Stripe payment link is missing a URL')
+
+  // 3. Resolve the session date if there is one
+  let sessionDateStr = ''
+  if (booking.session_id) {
+    const { data: s } = await admin
+      .from('kids_sessions')
+      .select('session_date')
+      .eq('id', booking.session_id)
+      .single()
+    if (s?.session_date) {
+      sessionDateStr = new Date(s.session_date).toLocaleDateString('en-GB', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+      })
+    }
+  }
+
+  const category = booking.category as KidsCategory
+  const html = renderDropInEmail({
+    childName: booking.child_name ?? 'your child',
+    category,
+    sessionDateStr,
+    pricePence: booking.price_pence,
+    paymentUrl,
+  })
+
+  // 4. Send
+  const resend = getResend()
+  const { error: sendError } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: booking.parent_email,
+    replyTo: REPLY_TO,
+    subject: 'Your drop-in payment link — Northern Warrior Kids',
+    html,
+  })
+
+  if (sendError) {
+    throw new Error(`Resend failed: ${(sendError as { message?: string }).message ?? 'unknown'}`)
+  }
+
   return { ok: true }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Email template — drop-in payment link
+//
+// Inline HTML (no template engine) to match the convention used elsewhere in
+// this repo. Dark background, gold accents, single CTA. Avoids any external
+// CSS or images so it renders consistently in every mail client.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function renderDropInEmail(args: {
+  childName: string
+  category: KidsCategory
+  sessionDateStr: string
+  pricePence: number
+  paymentUrl: string
+}): string {
+  const time = CATEGORY_TIME[args.category]
+  const catLabel = CATEGORY_LABEL[args.category]
+  const price = formatPence(args.pricePence)
+  const sessionLine = args.sessionDateStr
+    ? `<tr><td style="padding:6px 0;color:#8a93a5;font-size:13px;">Session</td><td style="padding:6px 0;color:#fff;font-size:14px;text-align:right;">${escapeHtml(args.sessionDateStr)}</td></tr>`
+    : ''
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Your drop-in payment link</title>
+</head>
+<body style="margin:0;padding:0;background:#0b0e14;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#0b0e14;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="520" style="max-width:520px;background:#161c2a;border:1px solid rgba(212,160,23,0.18);border-radius:12px;overflow:hidden;">
+          <tr>
+            <td style="padding:28px 32px 0;">
+              <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#d4a017;margin-bottom:8px;">Northern Warrior Kids</div>
+              <h1 style="margin:0;font-size:22px;line-height:1.25;color:#fff;font-weight:700;">Your drop-in payment link</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 32px 0;color:#cdd5e3;font-size:14px;line-height:1.55;">
+              Hi — here&rsquo;s the payment link for <strong style="color:#fff;">${escapeHtml(args.childName)}</strong>&rsquo;s drop-in session at Northern Warrior. Click the button below to secure the spot.
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 32px 0;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#0b0e14;border:1px solid rgba(255,255,255,0.07);border-radius:10px;">
+                <tr><td style="padding:14px 18px;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                    <tr><td style="padding:6px 0;color:#8a93a5;font-size:13px;">Child</td><td style="padding:6px 0;color:#fff;font-size:14px;text-align:right;">${escapeHtml(args.childName)}</td></tr>
+                    <tr><td style="padding:6px 0;color:#8a93a5;font-size:13px;">Category</td><td style="padding:6px 0;color:#fff;font-size:14px;text-align:right;">${catLabel} &middot; ${time}</td></tr>
+                    ${sessionLine}
+                    <tr><td style="padding:6px 0;color:#8a93a5;font-size:13px;">Amount</td><td style="padding:6px 0;color:#f2cb55;font-size:14px;font-weight:700;text-align:right;">${price}</td></tr>
+                  </table>
+                </td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:28px 32px 8px;">
+              <a href="${args.paymentUrl}" style="display:inline-block;background:#d4a017;color:#0b0e14;text-decoration:none;font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px;letter-spacing:0.3px;">Pay now &rarr;</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 32px 0;color:#6b7587;font-size:11px;text-align:center;line-height:1.5;">
+              Or copy and paste this link:<br>
+              <a href="${args.paymentUrl}" style="color:#d4a017;word-break:break-all;">${args.paymentUrl}</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px 32px 28px;">
+              <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:18px;color:#8a93a5;font-size:12px;line-height:1.6;">
+                <strong style="color:#cdd5e3;">Where to find us</strong><br>
+                Northern Warrior Functional Fitness<br>
+                Reply to this email if you have any questions.
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
 }
 
 /**
