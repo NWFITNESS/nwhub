@@ -1,0 +1,137 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Kids & Teens — shared types
+//
+// Hand-rolled to avoid coupling to the Supabase generated types file (which
+// gets regenerated from time to time and may not be up to date when the page
+// renders). Mirrors the schema in 20260408000000_kids_teens_v2.sql.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type KidsCategory = 'minis' | 'littles' | 'teens'
+
+export type PaymentStatus = 'pending' | 'link_sent' | 'paid' | 'refunded' | 'cancelled'
+
+export interface KidsBlock {
+  id: string
+  name: string
+  start_date: string
+  session_count: number
+  is_recurring: boolean
+  is_active: boolean
+  created_at: string
+}
+
+export interface KidsSession {
+  id: string
+  block_id: string
+  session_date: string
+  session_number: number
+  is_break: boolean
+  break_label: string | null
+}
+
+export interface KidsBlockPricing {
+  id: string
+  block_id: string
+  category: KidsCategory
+  capacity: number
+  price_pence: number
+  stripe_price_id: string | null
+}
+
+export interface KidsParent {
+  id: string
+  email: string
+  name: string
+  phone: string | null
+  emergency_contact_name: string | null
+  emergency_contact_phone: string | null
+  emergency_contact_relation: string | null
+  created_at: string
+}
+
+export interface KidsChild {
+  id: string
+  parent_id: string
+  child_name: string
+  date_of_birth: string
+  medical_notes: string | null
+  authorised_pickups: string | null
+  photo_consent: boolean
+  created_at: string
+}
+
+export interface KidsBlockBooking {
+  id: string
+  block_id: string
+  child_id: string
+  parent_id: string
+  category: KidsCategory
+  waiver_signed: boolean
+  waiver_signed_at: string | null
+  stripe_checkout_session_id: string | null
+  payment_status: PaymentStatus
+  paid_at: string | null
+  created_at: string
+}
+
+export interface KidsDropInBooking {
+  id: string
+  session_id: string | null
+  child_id: string | null
+  parent_id: string | null
+  child_name: string | null
+  parent_email: string | null
+  category: KidsCategory
+  stripe_payment_link_id: string | null
+  payment_status: PaymentStatus
+  price_pence: number
+  created_at: string
+}
+
+// ── View types (joined / denormalised for the UI) ───────────────────────────
+
+export interface BlockWithDetails extends KidsBlock {
+  sessions: KidsSession[]
+  pricing: KidsBlockPricing[]
+}
+
+export interface RosterRow {
+  booking_id: string
+  block_id: string
+  child_id: string
+  child_name: string
+  date_of_birth: string
+  parent_id: string
+  parent_name: string
+  parent_email: string
+  category: KidsCategory
+  payment_status: PaymentStatus
+  photo_consent: boolean
+  waiver_signed: boolean
+}
+
+export interface DropInRow {
+  id: string
+  child_name: string
+  category: KidsCategory
+  price_pence: number
+  payment_status: PaymentStatus
+  created_at: string
+  session_date: string | null
+}
+
+export interface SearchResultRow {
+  child_id: string
+  child_name: string
+  category: KidsCategory
+  block_tags: { block_id: string; block_name: string }[]
+  dropin_tags: { dropin_id: string; session_date: string | null }[]
+}
+
+export interface KidsStats {
+  minis_enrolled: number
+  littles_enrolled: number
+  teens_enrolled: number
+  block_total: number
+  dropins_this_block: number
+}

@@ -128,9 +128,14 @@ function buildNav(unreadCount: number): NavSection[] {
           { label: 'Leads', href: '/leads/pipeline' },
           { label: 'KPIs', href: '/members/kpis' },
           { label: 'Calendar', href: '/calendar' },
-          { label: 'Kids & Teens', href: '/kids' },
         ]},
         { key: 'financials', label: 'Financials', icon: I.financials, href: '/financials' },
+      ],
+    },
+    {
+      label: 'KIDS & TEENS',
+      items: [
+        { key: 'kids', label: 'Kids & Teens', icon: I.kids, href: '/kids' },
       ],
     },
     {
@@ -199,7 +204,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
 
   const [openSections, setOpenSections] = useState<string[]>(() => {
     const auto: string[] = []
-    if (pathname.startsWith('/leads') || pathname.startsWith('/members') || pathname.startsWith('/calendar') || pathname.startsWith('/kids')) auto.push('members')
+    if (pathname.startsWith('/leads') || pathname.startsWith('/members') || pathname.startsWith('/calendar')) auto.push('members')
     if (pathname.startsWith('/email') || pathname.startsWith('/mailchimp')) auto.push('email')
     if (pathname.startsWith('/branding')) auto.push('branding')
     return auto
@@ -249,7 +254,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
   useEffect(() => {
     // Auto-expand sections containing active route
     const auto: string[] = []
-    if (pathname.startsWith('/leads') || pathname.startsWith('/members') || pathname.startsWith('/calendar') || pathname.startsWith('/kids')) auto.push('members')
+    if (pathname.startsWith('/leads') || pathname.startsWith('/members') || pathname.startsWith('/calendar')) auto.push('members')
     if (pathname.startsWith('/email') || pathname.startsWith('/mailchimp')) auto.push('email')
     if (pathname.startsWith('/branding')) auto.push('branding')
     if (auto.length) setOpenSections(prev => [...new Set([...prev, ...auto])])
