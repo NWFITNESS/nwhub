@@ -6,7 +6,7 @@ import { getStripe, siteUrl } from '@/lib/stripe'
 import { getResend, FROM_EMAIL, REPLY_TO } from '@/lib/resend'
 import { revalidatePath } from 'next/cache'
 import type { KidsCategory } from './types'
-import { CATEGORY_LABEL, CATEGORY_TIME, DROPIN_PRICE_PENCE, formatPence } from './constants'
+import { CATEGORY_LABEL, CATEGORY_TIME, DROPIN_PRICE_PENCE, categoryFromDob, formatPence } from './constants'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Kids & Teens — server actions
@@ -534,6 +534,233 @@ export async function setPhotoConsent(childId: string, allowed: boolean): Promis
     .eq('id', childId)
   if (error) throw new Error(`Failed to update photo consent: ${error.message}`)
   revalidatePath('/kids')
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Trials
+//
+// Trial workflow: a parent (new or returning) submits a free one-off session
+// request. We upsert the parent + child records, insert a kids_trials row,
+// and send a confirmation email. No payment, no Stripe.
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface SubmitTrialInput {
+  parent: {
+    name: string
+    email: string
+    phone: string
+    emergencyName: string
+    emergencyPhone: string
+    emergencyRelation?: string
+  }
+  child: {
+    firstName: string
+    lastName: string
+    dateOfBirth: string  // ISO yyyy-mm-dd
+    photoConsent: boolean
+    medicalNotes?: string
+  }
+  sessionId: string | null
+  notes?: string
+  source: 'web' | 'admin'
+}
+
+export async function submitTrialBooking(input: SubmitTrialInput): Promise<{ trialId: string }> {
+  const admin = createAdminClient()
+
+  const first = input.child.firstName.trim()
+  const last = input.child.lastName.trim()
+  if (!first || !last) throw new Error("Both the child's first name and surname are required.")
+  if (!input.parent.name.trim()) throw new Error('Parent name is required.')
+  if (!input.parent.email.trim()) throw new Error('Parent email is required.')
+  if (!input.child.dateOfBirth) throw new Error("Child's date of birth is required.")
+
+  const email = input.parent.email.toLowerCase().trim()
+  const childName = `${first} ${last}`
+  const category: KidsCategory = categoryFromDob(input.child.dateOfBirth)
+
+  // 1. Upsert parent
+  const { data: parent, error: parentError } = await admin
+    .from('kids_parents')
+    .upsert(
+      {
+        email,
+        name: input.parent.name.trim(),
+        phone: input.parent.phone.trim() || null,
+        emergency_contact_name: input.parent.emergencyName.trim() || null,
+        emergency_contact_phone: input.parent.emergencyPhone.trim() || null,
+        emergency_contact_relation: input.parent.emergencyRelation?.trim() || null,
+      },
+      { onConflict: 'email' },
+    )
+    .select('id, email, name')
+    .single()
+
+  if (parentError || !parent) throw new Error(`Failed to save parent: ${parentError?.message ?? 'unknown'}`)
+
+  // 2. Find or create child (match by name + dob to avoid duplicates if the
+  //    same parent submits multiple trial requests)
+  const { data: existingChild } = await admin
+    .from('kids_children')
+    .select('id')
+    .eq('parent_id', parent.id)
+    .eq('child_name', childName)
+    .eq('date_of_birth', input.child.dateOfBirth)
+    .maybeSingle()
+
+  let childId = existingChild?.id
+  if (!childId) {
+    const { data: newChild, error: childError } = await admin
+      .from('kids_children')
+      .insert({
+        parent_id: parent.id,
+        child_name: childName,
+        date_of_birth: input.child.dateOfBirth,
+        photo_consent: input.child.photoConsent,
+        medical_notes: input.child.medicalNotes?.trim() || null,
+      })
+      .select('id')
+      .single()
+    if (childError || !newChild) throw new Error(`Failed to save child: ${childError?.message ?? 'unknown'}`)
+    childId = newChild.id
+  }
+
+  // 3. Insert trial row
+  const { data: trial, error: trialError } = await admin
+    .from('kids_trials')
+    .insert({
+      parent_id: parent.id,
+      child_id: childId,
+      session_id: input.sessionId,
+      category,
+      notes: input.notes?.trim() || null,
+      source: input.source,
+    })
+    .select('id')
+    .single()
+
+  if (trialError || !trial) throw new Error(`Failed to create trial: ${trialError?.message ?? 'unknown'}`)
+
+  // 4. Send confirmation email (best-effort — log errors but don't fail the
+  //    booking, since the trial is in the DB and the admin can resend later)
+  try {
+    let sessionDateStr = ''
+    if (input.sessionId) {
+      const { data: s } = await admin
+        .from('kids_sessions')
+        .select('session_date')
+        .eq('id', input.sessionId)
+        .single()
+      if (s?.session_date) {
+        sessionDateStr = new Date(s.session_date).toLocaleDateString('en-GB', {
+          weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+        })
+      }
+    }
+
+    const html = renderTrialConfirmEmail({
+      parentName: parent.name,
+      childName,
+      category,
+      sessionDateStr,
+    })
+
+    const resend = getResend()
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: parent.email,
+      replyTo: REPLY_TO,
+      subject: 'Your Northern Warrior Kids trial is booked',
+      html,
+    })
+  } catch (e) {
+    console.error('[submitTrialBooking] confirmation email failed:', (e as Error).message)
+  }
+
+  revalidatePath('/kids')
+  return { trialId: trial.id }
+}
+
+/**
+ * Update a trial's status (mark attended / no-show / cancelled).
+ */
+export async function setTrialStatus(
+  trialId: string,
+  status: 'confirmed' | 'attended' | 'no_show' | 'cancelled',
+): Promise<void> {
+  const admin = createAdminClient()
+  const update: Record<string, unknown> = { status }
+  if (status === 'attended') update.attended_at = new Date().toISOString()
+  const { error } = await admin.from('kids_trials').update(update).eq('id', trialId)
+  if (error) throw new Error(`Failed to update trial: ${error.message}`)
+  revalidatePath('/kids')
+}
+
+/**
+ * Permanently delete a trial. Used by the NWHub admin to clean up cancelled
+ * or test entries.
+ */
+export async function deleteTrial(trialId: string): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin.from('kids_trials').delete().eq('id', trialId)
+  if (error) throw new Error(`Failed to delete trial: ${error.message}`)
+  revalidatePath('/kids')
+}
+
+function renderTrialConfirmEmail(args: {
+  parentName: string
+  childName: string
+  category: KidsCategory
+  sessionDateStr: string
+}): string {
+  const time = CATEGORY_TIME[args.category]
+  const catLabel = CATEGORY_LABEL[args.category]
+  const sessionLine = args.sessionDateStr
+    ? `<tr><td style="padding:6px 0;color:#8a93a5;font-size:13px;">Session</td><td style="padding:6px 0;color:#fff;font-size:14px;text-align:right;">${escapeHtml(args.sessionDateStr)}</td></tr>`
+    : ''
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Your trial is booked</title></head>
+<body style="margin:0;padding:0;background:#0b0e14;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#0b0e14;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="520" style="max-width:520px;background:#161c2a;border:1px solid rgba(212,160,23,0.18);border-radius:12px;overflow:hidden;">
+          <tr><td style="padding:28px 32px 0;">
+            <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#d4a017;margin-bottom:8px;">Northern Warrior Kids</div>
+            <h1 style="margin:0;font-size:22px;line-height:1.25;color:#fff;font-weight:700;">Your trial is booked</h1>
+          </td></tr>
+          <tr><td style="padding:20px 32px 0;color:#cdd5e3;font-size:14px;line-height:1.55;">
+            Hi ${escapeHtml(args.parentName)} — we&rsquo;ve booked a free trial session for <strong style="color:#fff;">${escapeHtml(args.childName)}</strong>. There&rsquo;s nothing to pay; just turn up at the session below and we&rsquo;ll take care of the rest.
+          </td></tr>
+          <tr><td style="padding:24px 32px 0;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#0b0e14;border:1px solid rgba(255,255,255,0.07);border-radius:10px;">
+              <tr><td style="padding:14px 18px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr><td style="padding:6px 0;color:#8a93a5;font-size:13px;">Child</td><td style="padding:6px 0;color:#fff;font-size:14px;text-align:right;">${escapeHtml(args.childName)}</td></tr>
+                  <tr><td style="padding:6px 0;color:#8a93a5;font-size:13px;">Group</td><td style="padding:6px 0;color:#fff;font-size:14px;text-align:right;">${catLabel} &middot; ${time}</td></tr>
+                  ${sessionLine}
+                  <tr><td style="padding:6px 0;color:#8a93a5;font-size:13px;">Cost</td><td style="padding:6px 0;color:#f2cb55;font-size:14px;font-weight:700;text-align:right;">Free trial</td></tr>
+                </table>
+              </td></tr>
+            </table>
+          </td></tr>
+          <tr><td style="padding:24px 32px 0;color:#cdd5e3;font-size:13px;line-height:1.55;">
+            <strong style="color:#fff;">What to bring:</strong><br>
+            Trainers, water, comfortable kit. We&rsquo;ll have everything else.
+          </td></tr>
+          <tr><td style="padding:24px 32px 28px;">
+            <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:18px;color:#8a93a5;font-size:12px;line-height:1.6;">
+              Reply to this email if anything comes up or you need to reschedule. We can&rsquo;t wait to meet you both.
+            </div>
+          </td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

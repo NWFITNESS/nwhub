@@ -88,6 +88,34 @@ export interface KidsDropInBooking {
   created_at: string
 }
 
+export type TrialStatus = 'confirmed' | 'attended' | 'no_show' | 'cancelled'
+
+export interface KidsTrial {
+  id: string
+  parent_id: string
+  child_id: string
+  session_id: string | null
+  category: KidsCategory
+  status: TrialStatus
+  notes: string | null
+  source: 'web' | 'admin'
+  created_at: string
+  confirmed_at: string | null
+  attended_at: string | null
+}
+
+export interface TrialRow {
+  id: string
+  child_name: string
+  parent_name: string
+  parent_email: string
+  category: KidsCategory
+  status: TrialStatus
+  session_date: string | null
+  source: 'web' | 'admin'
+  created_at: string
+}
+
 // ── View types (joined / denormalised for the UI) ───────────────────────────
 
 export interface BlockWithDetails extends KidsBlock {

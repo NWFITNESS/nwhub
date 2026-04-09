@@ -53,6 +53,10 @@ export function ageFromDob(dob: string, asOf: Date = new Date()): number {
   return age
 }
 
+export function categoryFromDob(dob: string): KidsCategory {
+  return categoryFromAge(ageFromDob(dob))
+}
+
 export function formatPence(pence: number): string {
   return `£${(pence / 100).toFixed(2).replace(/\.00$/, '')}`
 }

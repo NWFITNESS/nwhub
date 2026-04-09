@@ -10,6 +10,8 @@ import type {
   KidsSession,
   KidsStats,
   RosterRow,
+  TrialRow,
+  TrialStatus,
 } from './types'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -169,6 +171,58 @@ export async function getStatsForBlock(blockId: string): Promise<KidsStats> {
     block_total: counts.minis + counts.littles + counts.teens,
     dropins_this_block: dropinsRes.data?.length ?? 0,
   }
+}
+
+/**
+ * Fetch all kids trials with denormalised parent + child + session info,
+ * ordered most recent first. Limits to 50 — admin can filter later if it
+ * grows.
+ */
+export async function getKidsTrials(): Promise<TrialRow[]> {
+  const supabase = await createClient()
+  const { data: trials } = await supabase
+    .from('kids_trials')
+    .select('id, parent_id, child_id, session_id, category, status, source, created_at')
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  if (!trials?.length) return []
+
+  const childIds = [...new Set(trials.map((t) => t.child_id))]
+  const parentIds = [...new Set(trials.map((t) => t.parent_id))]
+  const sessionIds = [...new Set(trials.map((t) => t.session_id).filter(Boolean) as string[])]
+
+  const [childrenRes, parentsRes, sessionsRes] = await Promise.all([
+    supabase.from('kids_children').select('id, child_name').in('id', childIds),
+    supabase.from('kids_parents').select('id, name, email').in('id', parentIds),
+    sessionIds.length
+      ? supabase.from('kids_sessions').select('id, session_date').in('id', sessionIds)
+      : Promise.resolve({ data: [] as { id: string; session_date: string }[] }),
+  ])
+
+  const childById = new Map<string, string>()
+  for (const c of childrenRes.data ?? []) childById.set(c.id, c.child_name)
+
+  const parentById = new Map<string, { name: string; email: string }>()
+  for (const p of parentsRes.data ?? []) parentById.set(p.id, { name: p.name, email: p.email })
+
+  const sessionDateById = new Map<string, string>()
+  for (const s of sessionsRes.data ?? []) sessionDateById.set(s.id, s.session_date)
+
+  return trials.map((t): TrialRow => {
+    const parent = parentById.get(t.parent_id)
+    return {
+      id: t.id,
+      child_name: childById.get(t.child_id) ?? 'Unknown',
+      parent_name: parent?.name ?? 'Unknown',
+      parent_email: parent?.email ?? '',
+      category: t.category as KidsCategory,
+      status: t.status as TrialStatus,
+      session_date: t.session_id ? (sessionDateById.get(t.session_id) ?? null) : null,
+      source: t.source as 'web' | 'admin',
+      created_at: t.created_at,
+    }
+  })
 }
 
 /**

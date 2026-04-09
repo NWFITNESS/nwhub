@@ -8,15 +8,17 @@ import { BlockSettingsPanel } from '@/components/kids/BlockSettingsPanel'
 import { SessionScheduler } from '@/components/kids/SessionScheduler'
 import { RosterSection } from '@/components/kids/RosterSection'
 import { DropInSection } from '@/components/kids/DropInSection'
+import { TrialsSection } from '@/components/kids/TrialsSection'
 import { BlockModal } from '@/components/kids/BlockModal'
 import { CapacityPricingModal } from '@/components/kids/CapacityPricingModal'
 import { searchChildren } from './search-action'
-import type { BlockWithDetails, DropInRow, KidsStats, RosterRow, SearchResultRow } from '@/lib/kids/types'
+import type { BlockWithDetails, DropInRow, KidsStats, RosterRow, SearchResultRow, TrialRow } from '@/lib/kids/types'
 
 interface Props {
   blocks: BlockWithDetails[]
   rosterByBlock: Record<string, RosterRow[]>
   recentDropIns: DropInRow[]
+  trials: TrialRow[]
   initialStats: KidsStats
   initialActiveBlockId: string | null
 }
@@ -25,6 +27,7 @@ export function KidsPageClient({
   blocks,
   rosterByBlock,
   recentDropIns,
+  trials,
   initialStats,
   initialActiveBlockId,
 }: Props) {
@@ -84,6 +87,9 @@ export function KidsPageClient({
       <DropInDivider />
       <DropInSection blocks={blocks} recentDropIns={recentDropIns} />
 
+      <SectionDivider label="Free trials" />
+      <TrialsSection trials={trials} blocks={blocks} />
+
       <BlockModal
         open={newBlockOpen}
         onClose={() => setNewBlockOpen(false)}
@@ -101,11 +107,15 @@ export function KidsPageClient({
 }
 
 function DropInDivider() {
+  return <SectionDivider label="Drop-in bookings" />
+}
+
+function SectionDivider({ label }: { label: string }) {
   return (
     <div className="mt-2 flex items-center gap-3">
       <div className="h-px flex-1 bg-[rgba(255,255,255,0.07)]" />
       <span className="text-[10px] font-semibold uppercase tracking-[1.4px] text-nw-500">
-        Drop-in bookings
+        {label}
       </span>
       <div className="h-px flex-1 bg-[rgba(255,255,255,0.07)]" />
     </div>
