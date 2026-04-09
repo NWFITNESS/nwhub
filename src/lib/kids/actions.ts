@@ -81,6 +81,17 @@ export async function saveBlock(input: SaveBlockInput): Promise<{ id: string }> 
       .eq('id', blockId)
     if (error) throw new Error(`Failed to update block: ${error.message}`)
   } else {
+    // Auto-activate this block if there's no other active block. Avoids the
+    // common surprise where a freshly created block doesn't show on the
+    // public site because it was created inactive and the admin forgot to
+    // click "Make active". If another block IS active, we don't touch it —
+    // creating a future block shouldn't accidentally swap your live one.
+    const { count: activeCount } = await admin
+      .from('kids_blocks')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_active', true)
+    const shouldActivate = (activeCount ?? 0) === 0
+
     const { data, error } = await admin
       .from('kids_blocks')
       .insert({
@@ -88,7 +99,7 @@ export async function saveBlock(input: SaveBlockInput): Promise<{ id: string }> 
         start_date: input.start_date,
         session_count: input.session_count,
         is_recurring: input.is_recurring,
-        is_active: false,
+        is_active: shouldActivate,
       })
       .select('id')
       .single()
