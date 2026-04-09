@@ -560,12 +560,16 @@ interface SubmitTrialInput {
     photoConsent: boolean
     medicalNotes?: string
   }
+  /** Caller picks the category explicitly — auto-derived from DOB is only a UI hint. */
+  category: KidsCategory
   sessionId: string | null
   notes?: string
   source: 'web' | 'admin'
 }
 
-export async function submitTrialBooking(input: SubmitTrialInput): Promise<{ trialId: string }> {
+export async function submitTrialBooking(
+  input: SubmitTrialInput,
+): Promise<{ trialId: string; emailSent: boolean; emailError: string | null }> {
   const admin = createAdminClient()
 
   const first = input.child.firstName.trim()
@@ -574,10 +578,11 @@ export async function submitTrialBooking(input: SubmitTrialInput): Promise<{ tri
   if (!input.parent.name.trim()) throw new Error('Parent name is required.')
   if (!input.parent.email.trim()) throw new Error('Parent email is required.')
   if (!input.child.dateOfBirth) throw new Error("Child's date of birth is required.")
+  if (!input.category) throw new Error('Please pick a category (Minis / Littles / Teens).')
 
   const email = input.parent.email.toLowerCase().trim()
   const childName = `${first} ${last}`
-  const category: KidsCategory = categoryFromDob(input.child.dateOfBirth)
+  const category: KidsCategory = input.category
 
   // 1. Upsert parent
   const { data: parent, error: parentError } = await admin
@@ -641,9 +646,18 @@ export async function submitTrialBooking(input: SubmitTrialInput): Promise<{ tri
 
   if (trialError || !trial) throw new Error(`Failed to create trial: ${trialError?.message ?? 'unknown'}`)
 
-  // 4. Send confirmation email (best-effort — log errors but don't fail the
-  //    booking, since the trial is in the DB and the admin can resend later)
+  // 4. Send confirmation email. The booking is already saved, so an email
+  //    failure does NOT roll back — but we surface the error to the caller
+  //    so the UI can show a "booking saved, email failed" message instead of
+  //    silently lying about email delivery.
+  let emailSent = false
+  let emailError: string | null = null
+
   try {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY is not configured on this project')
+    }
+
     let sessionDateStr = ''
     if (input.sessionId) {
       const { data: s } = await admin
@@ -666,19 +680,25 @@ export async function submitTrialBooking(input: SubmitTrialInput): Promise<{ tri
     })
 
     const resend = getResend()
-    await resend.emails.send({
+    const { error: sendError } = await resend.emails.send({
       from: FROM_EMAIL,
       to: parent.email,
       replyTo: REPLY_TO,
       subject: 'Your Northern Warrior Kids trial is booked',
       html,
     })
+
+    if (sendError) {
+      throw new Error((sendError as { message?: string }).message ?? 'Resend returned an unknown error')
+    }
+    emailSent = true
   } catch (e) {
-    console.error('[submitTrialBooking] confirmation email failed:', (e as Error).message)
+    emailError = (e as Error).message
+    console.error('[submitTrialBooking] confirmation email failed:', emailError)
   }
 
   revalidatePath('/kids')
-  return { trialId: trial.id }
+  return { trialId: trial.id, emailSent, emailError }
 }
 
 /**

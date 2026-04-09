@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { submitTrialBooking } from '@/lib/kids/actions'
-import type { BlockWithDetails } from '@/lib/kids/types'
+import { CATEGORY_LABEL, CATEGORY_TIME, categoryFromDob } from '@/lib/kids/constants'
+import type { BlockWithDetails, KidsCategory } from '@/lib/kids/types'
 
 interface Props {
   open: boolean
@@ -26,10 +27,20 @@ export function TrialModal({ open, onClose, blocks }: Props) {
   const [childFirst, setChildFirst] = useState('')
   const [childLast, setChildLast] = useState('')
   const [childDob, setChildDob] = useState('')
+  const [category, setCategory] = useState<KidsCategory>('littles')
+  const [categoryAutoSuggested, setCategoryAutoSuggested] = useState(false)
   const [photoConsent, setPhotoConsent] = useState(true)
   const [sessionId, setSessionId] = useState('')
   const [notes, setNotes] = useState('')
   const [pending, startTransition] = useTransition()
+
+  // When DOB changes, suggest the matching category — but only if the user
+  // hasn't manually picked one yet. Once they touch the dropdown, their pick
+  // is sticky.
+  useEffect(() => {
+    if (!childDob || categoryAutoSuggested) return
+    setCategory(categoryFromDob(childDob))
+  }, [childDob, categoryAutoSuggested])
 
   // Build a flat list of upcoming non-break sessions across all active blocks
   const upcomingSessions = blocks
@@ -49,6 +60,8 @@ export function TrialModal({ open, onClose, blocks }: Props) {
     setChildFirst('')
     setChildLast('')
     setChildDob('')
+    setCategory('littles')
+    setCategoryAutoSuggested(false)
     setPhotoConsent(true)
     setSessionId('')
     setNotes('')
@@ -57,7 +70,7 @@ export function TrialModal({ open, onClose, blocks }: Props) {
   function handleSubmit() {
     startTransition(async () => {
       try {
-        await submitTrialBooking({
+        const result = await submitTrialBooking({
           parent: {
             name: parentName,
             email: parentEmail,
@@ -71,12 +84,16 @@ export function TrialModal({ open, onClose, blocks }: Props) {
             dateOfBirth: childDob,
             photoConsent,
           },
+          category,
           sessionId: sessionId || null,
           notes,
           source: 'admin',
         })
         reset()
         onClose()
+        if (!result.emailSent) {
+          alert(`Trial saved, but the confirmation email failed to send: ${result.emailError ?? 'unknown error'}`)
+        }
       } catch (e) {
         alert((e as Error).message)
       }
@@ -131,6 +148,20 @@ export function TrialModal({ open, onClose, blocks }: Props) {
               </select>
             </Field>
           </div>
+          <Field label="Category">
+            <select
+              value={category}
+              onChange={(e) => {
+                setCategory(e.target.value as KidsCategory)
+                setCategoryAutoSuggested(true)
+              }}
+              className={inputCls}
+            >
+              <option value="minis">{CATEGORY_LABEL.minis} · {CATEGORY_TIME.minis}</option>
+              <option value="littles">{CATEGORY_LABEL.littles} · {CATEGORY_TIME.littles}</option>
+              <option value="teens">{CATEGORY_LABEL.teens} · {CATEGORY_TIME.teens}</option>
+            </select>
+          </Field>
         </Section>
 
         <Section title="Session">
