@@ -142,6 +142,7 @@ export async function saveBlock(input: SaveBlockInput): Promise<{ id: string }> 
  * or removed first to avoid orphaning paid customers.
  */
 export async function deleteBlock(blockId: string): Promise<void> {
+  console.log('[deleteBlock] start', { blockId })
   const admin = createAdminClient()
 
   // Refuse if any block bookings exist for this block
@@ -149,18 +150,52 @@ export async function deleteBlock(blockId: string): Promise<void> {
     .from('kids_block_bookings')
     .select('id', { count: 'exact', head: true })
     .eq('block_id', blockId)
-  if (countError) throw new Error(`Failed to check bookings: ${countError.message}`)
+  if (countError) {
+    console.error('[deleteBlock] booking-count error:', countError)
+    throw new Error(`Failed to check bookings: ${countError.message}`)
+  }
   if ((bookingCount ?? 0) > 0) {
     throw new Error(
       `This block has ${bookingCount} booking(s) attached. Refund or remove them before deleting the block.`,
     )
   }
 
-  const { error } = await admin.from('kids_blocks').delete().eq('id', blockId)
-  if (error) throw new Error(`Failed to delete block: ${error.message}`)
+  // Pre-cascade cleanup: explicitly null any kids_dropin_bookings.session_id
+  // and kids_trials.session_id that reference sessions of this block. The FK
+  // SET NULL should handle this automatically, but we also do it explicitly
+  // here so any database edge case can't leave orphaned references that
+  // crash subsequent reads.
+  const { data: sessionRows, error: sessionsError } = await admin
+    .from('kids_sessions')
+    .select('id')
+    .eq('block_id', blockId)
+  if (sessionsError) {
+    console.error('[deleteBlock] sessions fetch error:', sessionsError)
+    throw new Error(`Failed to load sessions: ${sessionsError.message}`)
+  }
+  const sessionIds = (sessionRows ?? []).map((s) => s.id)
+  if (sessionIds.length) {
+    const dropinNullRes = await admin
+      .from('kids_dropin_bookings')
+      .update({ session_id: null })
+      .in('session_id', sessionIds)
+    if (dropinNullRes.error) console.error('[deleteBlock] dropin null error:', dropinNullRes.error)
 
+    const trialNullRes = await admin
+      .from('kids_trials')
+      .update({ session_id: null })
+      .in('session_id', sessionIds)
+    if (trialNullRes.error) console.error('[deleteBlock] trial null error:', trialNullRes.error)
+  }
+
+  const { error } = await admin.from('kids_blocks').delete().eq('id', blockId)
+  if (error) {
+    console.error('[deleteBlock] block delete error:', error)
+    throw new Error(`Failed to delete block: ${error.message}`)
+  }
+
+  console.log('[deleteBlock] success', { blockId, sessionIdsCleared: sessionIds.length })
   revalidatePath('/kids')
-  revalidatePath('/kids-teens')
 }
 
 /**

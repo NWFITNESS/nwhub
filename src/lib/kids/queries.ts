@@ -148,16 +148,35 @@ export async function getRecentDropIns(limit = 10): Promise<DropInRow[]> {
 
 export async function getStatsForBlock(blockId: string): Promise<KidsStats> {
   const supabase = await createClient()
-  const [bookingsRes, dropinsRes] = await Promise.all([
+
+  // Two-step query instead of an !inner join — Supabase's auto-detected
+  // relation joins occasionally fail in production with no useful error,
+  // and the cost of two round-trips here is negligible (~5ms each).
+  const [bookingsRes, sessionIdsRes] = await Promise.all([
     supabase
       .from('kids_block_bookings')
       .select('category')
       .eq('block_id', blockId),
     supabase
-      .from('kids_dropin_bookings')
-      .select('id, session_id, kids_sessions!inner(block_id)')
-      .eq('kids_sessions.block_id', blockId),
+      .from('kids_sessions')
+      .select('id')
+      .eq('block_id', blockId),
   ])
+
+  if (bookingsRes.error) console.error('[getStatsForBlock] bookings error:', bookingsRes.error.message)
+  if (sessionIdsRes.error) console.error('[getStatsForBlock] sessions error:', sessionIdsRes.error.message)
+
+  const sessionIds = (sessionIdsRes.data ?? []).map((s) => s.id)
+
+  let dropinCount = 0
+  if (sessionIds.length) {
+    const { count, error } = await supabase
+      .from('kids_dropin_bookings')
+      .select('id', { count: 'exact', head: true })
+      .in('session_id', sessionIds)
+    if (error) console.error('[getStatsForBlock] dropins error:', error.message)
+    dropinCount = count ?? 0
+  }
 
   const counts: Record<KidsCategory, number> = { minis: 0, littles: 0, teens: 0 }
   for (const b of (bookingsRes.data ?? []) as { category: KidsCategory }[]) {
@@ -169,7 +188,7 @@ export async function getStatsForBlock(blockId: string): Promise<KidsStats> {
     littles_enrolled: counts.littles,
     teens_enrolled: counts.teens,
     block_total: counts.minis + counts.littles + counts.teens,
-    dropins_this_block: dropinsRes.data?.length ?? 0,
+    dropins_this_block: dropinCount,
   }
 }
 
