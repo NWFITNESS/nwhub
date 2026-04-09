@@ -24,12 +24,20 @@ function GenerateLinkCard({ blocks }: { blocks: BlockWithDetails[] }) {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [category, setCategory] = useState<KidsCategory>('littles')
+  const [priceGbp, setPriceGbp] = useState<number>(DROPIN_PRICE_PENCE.littles / 100)
   const [sessionId, setSessionId] = useState<string>('')
   const [parentEmail, setParentEmail] = useState('')
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
   const [bookingId, setBookingId] = useState<string | null>(null)
   const [confirm, setConfirm] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
+
+  // When the category changes, reset the price to that category's default.
+  // The admin can still override it before clicking Generate.
+  function handleCategoryChange(next: KidsCategory) {
+    setCategory(next)
+    setPriceGbp(DROPIN_PRICE_PENCE[next] / 100)
+  }
 
   // Build a flat list of upcoming non-break sessions across all blocks
   const upcomingSessions = blocks
@@ -56,6 +64,10 @@ function GenerateLinkCard({ blocks }: { blocks: BlockWithDetails[] }) {
       alert('Parent email and session are required')
       return
     }
+    if (!Number.isFinite(priceGbp) || priceGbp < 0.5) {
+      alert('Amount must be at least £0.50.')
+      return
+    }
     startTransition(async () => {
       try {
         const { url, bookingId: id } = await createDropInPaymentLink({
@@ -63,6 +75,7 @@ function GenerateLinkCard({ blocks }: { blocks: BlockWithDetails[] }) {
           category,
           sessionId,
           parentEmail: parentEmail.trim(),
+          pricePence: Math.round(priceGbp * 100),
         })
         setGeneratedUrl(url)
         setBookingId(id)
@@ -127,7 +140,7 @@ function GenerateLinkCard({ blocks }: { blocks: BlockWithDetails[] }) {
           <Field label="Category">
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value as KidsCategory)}
+              onChange={(e) => handleCategoryChange(e.target.value as KidsCategory)}
               className="w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-sm text-nw-100 focus:border-gold-500 focus:outline-none"
             >
               <option value="minis">Minis</option>
@@ -135,9 +148,17 @@ function GenerateLinkCard({ blocks }: { blocks: BlockWithDetails[] }) {
               <option value="teens">Teens</option>
             </select>
           </Field>
-          <Field label="Amount">
-            <div className="flex items-center rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-sm text-gold-300">
-              {formatPence(DROPIN_PRICE_PENCE[category])}
+          <Field label="Amount (£)">
+            <div className="relative">
+              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-nw-500">£</span>
+              <input
+                type="number"
+                min={0.5}
+                step={0.5}
+                value={priceGbp}
+                onChange={(e) => setPriceGbp(Number(e.target.value))}
+                className="w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 pl-6 pr-3 py-2 text-sm text-gold-300 focus:border-gold-500 focus:outline-none"
+              />
             </div>
           </Field>
         </div>

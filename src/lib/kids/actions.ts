@@ -160,6 +160,8 @@ interface CreateDropInLinkInput {
   category: KidsCategory
   sessionId: string | null
   parentEmail: string
+  /** Override the default category price (in pence). Falls back to DROPIN_PRICE_PENCE if not provided. */
+  pricePence?: number
 }
 
 /**
@@ -169,12 +171,19 @@ interface CreateDropInLinkInput {
  * Payment Link metadata, then creates a one-off Price + Payment Link in
  * Stripe, then stores the link ID on the booking row. The Stripe webhook
  * marks the row as paid once the parent completes checkout.
+ *
+ * The price defaults to DROPIN_PRICE_PENCE for the category but can be
+ * overridden via input.pricePence — useful for one-off discounts or
+ * promotional rates without touching the global constant.
  */
 export async function createDropInPaymentLink(
   input: CreateDropInLinkInput,
 ): Promise<{ url: string; bookingId: string }> {
   const supabase = await createClient()
-  const pricePence = DROPIN_PRICE_PENCE[input.category]
+  const pricePence = input.pricePence ?? DROPIN_PRICE_PENCE[input.category]
+  if (!Number.isInteger(pricePence) || pricePence < 50) {
+    throw new Error('Drop-in price must be at least £0.50.')
+  }
   const parentEmail = input.parentEmail.toLowerCase().trim()
 
   // 1. Insert booking with status 'pending' so we have an ID for metadata
