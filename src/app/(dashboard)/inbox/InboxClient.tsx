@@ -41,9 +41,10 @@ interface Props {
   initialEmails: Email[]
   initialTasks: Task[]
   gmailConnected: boolean
+  outlookConnected: boolean
 }
 
-export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Props) {
+export function InboxClient({ initialEmails, initialTasks, gmailConnected, outlookConnected }: Props) {
   const [emails, setEmails] = useState<Email[]>(initialEmails)
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [processing, setProcessing] = useState(false)
@@ -158,26 +159,41 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
         description={`${totalCount} emails processed${needsActionCount > 0 ? ` · ${needsActionCount} need action` : ''}`}
         actions={
           <>
-            {/* Gmail status pill */}
-            <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-nw-800 border border-[rgba(255,255,255,0.07)]">
-              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${gmailConnected ? 'bg-green-400 animate-pulse' : 'bg-nw-600'}`} />
-              <span className="text-[11px] text-nw-500 whitespace-nowrap">
-                {gmailConnected ? 'Gmail live' : 'Not connected'}
-              </span>
+            {/* Provider status pills */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-nw-800 border border-[rgba(255,255,255,0.07)]">
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${gmailConnected ? 'bg-green-400 animate-pulse' : 'bg-nw-600'}`} />
+                <span className="text-[11px] text-nw-500 whitespace-nowrap">
+                  {gmailConnected ? 'Gmail' : 'Gmail off'}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-nw-800 border border-[rgba(255,255,255,0.07)]">
+                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${outlookConnected ? 'bg-blue-400 animate-pulse' : 'bg-nw-600'}`} />
+                <span className="text-[11px] text-nw-500 whitespace-nowrap">
+                  {outlookConnected ? 'Outlook' : 'Outlook off'}
+                </span>
+              </div>
             </div>
 
-            <a href="/api/gmail/connect">
-              <Button variant={gmailConnected ? 'secondary' : 'primary'} size="sm">
-                {gmailConnected ? 'Reconnect Gmail' : 'Connect Gmail'}
-              </Button>
-            </a>
+            <div className="flex items-center gap-1.5">
+              <a href="/api/gmail/connect">
+                <Button variant={gmailConnected ? 'ghost' : 'secondary'} size="sm">
+                  {gmailConnected ? 'Reconnect Gmail' : 'Connect Gmail'}
+                </Button>
+              </a>
+              <a href="/api/outlook/connect">
+                <Button variant={outlookConnected ? 'ghost' : 'secondary'} size="sm">
+                  {outlookConnected ? 'Reconnect Outlook' : 'Connect Outlook'}
+                </Button>
+              </a>
+            </div>
 
             <Button
               variant="secondary"
               size="sm"
               onClick={handleProcess}
               loading={processing}
-              disabled={!gmailConnected}
+              disabled={!gmailConnected && !outlookConnected}
             >
               <RefreshCw size={13} />
               Process New

@@ -6,13 +6,12 @@ export const dynamic = 'force-dynamic'
 export default async function InboxPage() {
   const supabase = createAdminClient()
 
-  const [{ data: emails }, { data: tasks }, { data: gmailStatus }] = await Promise.all([
+  const [{ data: emails }, { data: tasks }, { data: gmailStatus }, { data: outlookStatus }] = await Promise.all([
     supabase
       .from('email_classifications')
       .select('*')
-      .eq('archived', false)
       .order('received_at', { ascending: false })
-      .limit(100),
+      .limit(200),
     supabase
       .from('tasks')
       .select('*')
@@ -22,15 +21,22 @@ export default async function InboxPage() {
       .select('value')
       .eq('key', 'gmail_tokens')
       .single(),
+    supabase
+      .from('global_settings')
+      .select('value')
+      .eq('key', 'outlook_tokens')
+      .single(),
   ])
 
   const gmailConnected = !!(gmailStatus?.value)
+  const outlookConnected = !!(outlookStatus?.value)
 
   return (
     <InboxClient
       initialEmails={emails ?? []}
       initialTasks={tasks ?? []}
       gmailConnected={gmailConnected}
+      outlookConnected={outlookConnected}
     />
   )
 }

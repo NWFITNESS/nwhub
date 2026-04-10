@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { gmailFetch, extractEmailBody, ensureGmailLabels } from '@/lib/gmail'
+import { outlookFetch, getOutlookTokens } from '@/lib/outlook'
 import { classifyEmail } from '@/lib/email-classifier'
 
 // Vercel crons fire GET — UI button fires POST — both use the same handler
@@ -199,7 +200,161 @@ async function processEmails(request: Request, supabase: ReturnType<typeof creat
     }
   }
 
+  // ── Process Outlook emails (if connected) ───────────────────────────
+  const outlookTokens = await getOutlookTokens()
+  if (outlookTokens) {
+    try {
+      const outlookResult = await processOutlookEmails(supabase)
+      processed += outlookResult.processed
+      tasks_created += outlookResult.tasks_created
+      archived += outlookResult.archived
+    } catch (e) {
+      console.error('[inbox/process] Outlook processing failed:', (e as Error).message)
+    }
+  }
+
   return NextResponse.json({ processed, tasks_created, archived })
 }
 
-// Unused return type (ReturnType used in processEmails signature above)
+// ─────────────────────────────────────────────────────────────────────────────
+// Outlook email processor — mirrors the Gmail flow above but uses Microsoft
+// Graph API. The classifier is identical; only the fetch/flag/categorize
+// calls differ.
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function processOutlookEmails(
+  supabase: ReturnType<typeof createAdminClient>,
+): Promise<{ processed: number; tasks_created: number; archived: number }> {
+  // Fetch unread emails from Outlook inbox
+  const listRes = await outlookFetch(
+    "/me/mailFolders/inbox/messages?$filter=isRead eq false&$top=50&$select=id,subject,from,receivedDateTime,bodyPreview,importance&$orderby=receivedDateTime desc",
+  )
+
+  if (!listRes.ok) {
+    const text = await listRes.text()
+    throw new Error(`Outlook fetch failed (${listRes.status}): ${text}`)
+  }
+
+  const listData = await listRes.json()
+  const messages: Array<{
+    id: string
+    subject: string
+    from: { emailAddress: { name: string; address: string } }
+    receivedDateTime: string
+    bodyPreview: string
+    importance: string
+  }> = listData.value ?? []
+
+  if (!messages.length) return { processed: 0, tasks_created: 0, archived: 0 }
+
+  // Get already-processed Outlook IDs
+  const { data: existing } = await supabase
+    .from('email_classifications')
+    .select('outlook_message_id')
+    .not('outlook_message_id', 'is', null)
+  const existingIds = new Set((existing ?? []).map((r: { outlook_message_id: string }) => r.outlook_message_id))
+
+  const newMessages = messages.filter((m) => !existingIds.has(m.id))
+  let processed = 0, tasks_created = 0, archived = 0
+
+  for (const msg of newMessages) {
+    try {
+      const sender = msg.from?.emailAddress?.address ?? 'unknown'
+      const senderName = msg.from?.emailAddress?.name ?? sender
+      const subject = msg.subject ?? '(no subject)'
+      const preview = msg.bodyPreview ?? ''
+      const receivedAt = msg.receivedDateTime
+        ? new Date(msg.receivedDateTime).toISOString()
+        : new Date().toISOString()
+
+      // Classify with the same AI classifier used for Gmail
+      const result = await classifyEmail({
+        from: `${senderName} <${sender}>`,
+        subject,
+        preview,
+      })
+      if (!result) continue
+
+      const category = result.category
+
+      // Create task if needed
+      let task_id: string | undefined
+      if (result.create_task && result.task_title) {
+        const { data: task } = await supabase
+          .from('tasks')
+          .insert({
+            title: result.task_title,
+            notes: result.task_detail || null,
+            source: 'email',
+            email_id: msg.id,
+            due_date: result.task_due_date || null,
+            priority: result.task_priority ?? (category === 'needs_attention' ? 'high' : 'medium'),
+          })
+          .select('id')
+          .single()
+        if (task) { task_id = task.id; tasks_created++ }
+      }
+
+      // Store classification
+      await supabase.from('email_classifications').insert({
+        outlook_message_id: msg.id,
+        provider: 'outlook',
+        sender,
+        sender_name: senderName,
+        subject,
+        preview: preview.slice(0, 200),
+        received_at: receivedAt,
+        category,
+        ai_summary: result.ai_summary || null,
+        flagged: result.flagged ?? false,
+        archived: category === 'spam' || category === 'newsletter' || category === 'receipt_notification',
+        task_created: !!task_id,
+        task_id: task_id ?? null,
+      })
+
+      // Apply Outlook-specific actions based on classification
+      if (category === 'spam') {
+        // Move to junk and mark read
+        await outlookFetch(`/me/messages/${msg.id}/move`, {
+          method: 'POST',
+          body: JSON.stringify({ destinationId: 'junkemail' }),
+        })
+        archived++
+      } else if (category === 'needs_attention') {
+        // Flag the email in Outlook so it shows as important
+        await outlookFetch(`/me/messages/${msg.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            importance: 'high',
+            flag: { flagStatus: 'flagged' },
+            isRead: true,
+          }),
+        })
+      } else if (category === 'new_lead') {
+        // Flag it but lower importance
+        await outlookFetch(`/me/messages/${msg.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            flag: { flagStatus: 'flagged' },
+            isRead: true,
+          }),
+        })
+      } else {
+        // Mark as read for newsletters, receipts, etc.
+        await outlookFetch(`/me/messages/${msg.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ isRead: true }),
+        })
+        if (category === 'newsletter' || category === 'receipt_notification') {
+          archived++
+        }
+      }
+
+      processed++
+    } catch (e) {
+      console.error(`[inbox/process] Error processing Outlook message ${msg.id}:`, e)
+    }
+  }
+
+  return { processed, tasks_created, archived }
+}
