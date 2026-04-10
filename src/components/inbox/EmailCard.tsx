@@ -114,9 +114,15 @@ export function EmailCard({ email, onAddTask, onArchive, selected, onToggleSelec
 
           {/* Tags row */}
           <div className="flex items-center gap-2 mt-2 flex-wrap">
-            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${category.className}`}>
-              {category.label}
-            </span>
+            {email.archived ? (
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-green-500/15 text-green-400 border-green-500/25">
+                Handled ✓
+              </span>
+            ) : (
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${category.className}`}>
+                {category.label}
+              </span>
+            )}
             {email.task_created && (
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-[#967705]/15 text-[#f2ca50] border-[#967705]/25">
                 Task created

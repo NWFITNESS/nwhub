@@ -39,13 +39,19 @@ const FILTERS: { key: FilterType; label: string }[] = [
 ]
 
 export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive }: Props) {
-  const [filter, setFilter] = useState<FilterType>('all')
+  // Default to needs_attention so the admin lands on priority emails, not the
+  // full firehose including archives and newsletters.
+  const [filter, setFilter] = useState<FilterType>('needs_attention')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const filtered = useMemo(() => emails.filter(e => {
-    if (filter === 'all') return true
+    // "All" shows everything EXCEPT archived — it's the active inbox, not a
+    // full history dump. Archived emails live in their own tab.
+    if (filter === 'all') return !e.archived
     if (filter === 'spam') return e.archived
-    if (filter === 'newsletter') return e.category === 'newsletter' || e.category === 'receipt_notification'
+    if (filter === 'newsletter') return !e.archived && (e.category === 'newsletter' || e.category === 'receipt_notification')
+    if (filter === 'needs_attention') return !e.archived && e.category === 'needs_attention'
+    if (filter === 'new_lead') return !e.archived && e.category === 'new_lead'
     return e.category === filter
   }), [emails, filter])
 
@@ -87,9 +93,11 @@ export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive }: Prop
         </p>
         <div className="flex items-center gap-2 mt-3 flex-wrap">
           {FILTERS.map(f => {
-            const count = f.key === 'all' ? emails.length
+            const count = f.key === 'all' ? emails.filter(e => !e.archived).length
               : f.key === 'spam' ? emails.filter(e => e.archived).length
-              : f.key === 'newsletter' ? emails.filter(e => e.category === 'newsletter' || e.category === 'receipt_notification').length
+              : f.key === 'newsletter' ? emails.filter(e => !e.archived && (e.category === 'newsletter' || e.category === 'receipt_notification')).length
+              : f.key === 'needs_attention' ? emails.filter(e => !e.archived && e.category === 'needs_attention').length
+              : f.key === 'new_lead' ? emails.filter(e => !e.archived && e.category === 'new_lead').length
               : emails.filter(e => e.category === f.key).length
             return (
               <button
