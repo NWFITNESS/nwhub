@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Panel } from '@/components/ui/Card'
 import { RefreshCw, Send } from 'lucide-react'
-import { archiveEmail } from '@/app/actions/inbox'
+import { archiveEmail, bulkArchiveEmails } from '@/app/actions/inbox'
 
 interface Email {
   id: string
@@ -81,6 +81,16 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
     try {
       await archiveEmail(emailId)
       setEmails(prev => prev.map(e => e.id === emailId ? { ...e, archived: true } : e))
+    } catch (e) {
+      alert((e as Error).message)
+    }
+  }
+
+  async function handleBulkArchive(emailIds: string[]) {
+    try {
+      await bulkArchiveEmails(emailIds)
+      const idSet = new Set(emailIds)
+      setEmails(prev => prev.map(e => idSet.has(e.id) ? { ...e, archived: true } : e))
     } catch (e) {
       alert((e as Error).message)
     }
@@ -198,6 +208,7 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
               emails={emails}
               onAddTask={handleAddTask}
               onArchive={handleArchive}
+              onBulkArchive={handleBulkArchive}
               onRefresh={refreshEmails}
             />
           </Panel>

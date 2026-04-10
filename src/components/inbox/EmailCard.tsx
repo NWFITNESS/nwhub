@@ -21,6 +21,8 @@ interface Props {
   email: Email
   onAddTask: (title: string, due_date?: string) => void
   onArchive: (emailId: string) => void
+  selected?: boolean
+  onToggleSelect?: (emailId: string) => void
 }
 
 const CATEGORY_STYLES: Record<string, { label: string; className: string }> = {
@@ -56,7 +58,7 @@ function hashColor(str: string): string {
   return colors[Math.abs(hash)]
 }
 
-export function EmailCard({ email, onAddTask, onArchive }: Props) {
+export function EmailCard({ email, onAddTask, onArchive, selected, onToggleSelect }: Props) {
   const [summaryOpen, setSummaryOpen] = useState(false)
   const [archiving, startArchiveTransition] = useTransition()
   const category = CATEGORY_STYLES[email.category] ?? { label: email.category, className: 'bg-white/[0.05] text-white/40 border-white/[0.06]' }
@@ -76,6 +78,16 @@ export function EmailCard({ email, onAddTask, onArchive }: Props) {
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = isImportant ? 'rgba(150,119,5,0.25)' : 'var(--r-panel-border)' }}
     >
       <div className="flex items-start gap-3">
+        {/* Select checkbox */}
+        {onToggleSelect && (
+          <input
+            type="checkbox"
+            checked={selected ?? false}
+            onChange={() => onToggleSelect(email.id)}
+            className="mt-1.5 h-4 w-4 flex-shrink-0 accent-[#967705] cursor-pointer"
+          />
+        )}
+
         {/* Avatar */}
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-black flex-shrink-0 mt-0.5"

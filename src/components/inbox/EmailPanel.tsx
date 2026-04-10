@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { EmailCard } from './EmailCard'
+import { Check } from 'lucide-react'
 
 type FilterType = 'all' | 'needs_attention' | 'new_lead' | 'newsletter' | 'receipt_notification' | 'spam'
 
@@ -25,6 +26,7 @@ interface Props {
   emails: Email[]
   onAddTask: (title: string, due_date?: string) => void
   onArchive: (emailId: string) => void
+  onBulkArchive: (emailIds: string[]) => void
   onRefresh: () => void
 }
 
@@ -36,15 +38,45 @@ const FILTERS: { key: FilterType; label: string }[] = [
   { key: 'spam', label: 'Archived' },
 ]
 
-export function EmailPanel({ emails, onAddTask, onArchive }: Props) {
+export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive }: Props) {
   const [filter, setFilter] = useState<FilterType>('all')
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
-  const filtered = emails.filter(e => {
+  const filtered = useMemo(() => emails.filter(e => {
     if (filter === 'all') return true
     if (filter === 'spam') return e.archived
     if (filter === 'newsletter') return e.category === 'newsletter' || e.category === 'receipt_notification'
     return e.category === filter
-  })
+  }), [emails, filter])
+
+  // Only allow selection on non-archived emails (you can't "handle" what's already archived)
+  const selectableIds = useMemo(() => new Set(filtered.filter(e => !e.archived).map(e => e.id)), [filtered])
+  const allSelected = selectableIds.size > 0 && [...selectableIds].every(id => selectedIds.has(id))
+  const someSelected = selectedIds.size > 0
+
+  function toggleSelect(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function toggleSelectAll() {
+    if (allSelected) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(selectableIds))
+    }
+  }
+
+  function handleBulkHandled() {
+    const ids = [...selectedIds].filter(id => selectableIds.has(id))
+    if (!ids.length) return
+    onBulkArchive(ids)
+    setSelectedIds(new Set())
+  }
 
   return (
     <div className="flex flex-col">
@@ -77,6 +109,48 @@ export function EmailPanel({ emails, onAddTask, onArchive }: Props) {
         </div>
       </div>
 
+      {/* Bulk action bar — appears when any emails are selected */}
+      {someSelected && (
+        <div className="flex items-center justify-between gap-3 border-b border-white/[0.06] bg-[#967705]/10 px-5 py-2.5">
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 cursor-pointer text-[12px] text-white/60">
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={toggleSelectAll}
+                className="h-3.5 w-3.5 accent-[#967705]"
+              />
+              {allSelected ? 'Deselect all' : 'Select all'}
+            </label>
+            <span className="text-[11px] text-white/40">
+              {selectedIds.size} selected
+            </span>
+          </div>
+          <button
+            onClick={handleBulkHandled}
+            className="flex items-center gap-1.5 rounded-lg bg-[#967705]/20 border border-[#967705]/40 px-3 py-1.5 text-[12px] font-semibold text-[#f2ca50] transition-colors hover:bg-[#967705]/30"
+          >
+            <Check size={13} />
+            Mark {selectedIds.size} handled
+          </button>
+        </div>
+      )}
+
+      {/* Select-all toggle when no selection active (subtle, under the filter tabs) */}
+      {!someSelected && selectableIds.size > 0 && (
+        <div className="flex items-center gap-2 border-b border-white/[0.04] px-5 py-2">
+          <label className="flex items-center gap-2 cursor-pointer text-[11px] text-white/35 hover:text-white/55 transition-colors">
+            <input
+              type="checkbox"
+              checked={false}
+              onChange={toggleSelectAll}
+              className="h-3.5 w-3.5 accent-[#967705]"
+            />
+            Select all
+          </label>
+        </div>
+      )}
+
       {/* Email list */}
       <div className="p-4 space-y-2">
         {filtered.length === 0 ? (
@@ -85,7 +159,14 @@ export function EmailPanel({ emails, onAddTask, onArchive }: Props) {
           </div>
         ) : (
           filtered.map(email => (
-            <EmailCard key={email.id} email={email} onAddTask={onAddTask} onArchive={onArchive} />
+            <EmailCard
+              key={email.id}
+              email={email}
+              onAddTask={onAddTask}
+              onArchive={onArchive}
+              selected={selectedIds.has(email.id)}
+              onToggleSelect={email.archived ? undefined : toggleSelect}
+            />
           ))
         )}
       </div>

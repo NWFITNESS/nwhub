@@ -19,6 +19,21 @@ export async function archiveEmail(emailId: string): Promise<void> {
 }
 
 /**
+ * Bulk-archive multiple emails at once. Same as archiveEmail but for a
+ * list of IDs — one DB call instead of N.
+ */
+export async function bulkArchiveEmails(emailIds: string[]): Promise<void> {
+  if (!emailIds.length) return
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('email_classifications')
+    .update({ archived: true })
+    .in('id', emailIds)
+  if (error) throw new Error(`Failed to bulk-archive: ${error.message}`)
+  revalidatePath('/inbox')
+}
+
+/**
  * Un-archive an email — sets archived=false. Used if you accidentally
  * dismiss something you still need to action.
  */
