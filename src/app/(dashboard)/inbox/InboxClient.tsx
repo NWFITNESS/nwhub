@@ -6,7 +6,8 @@ import { TaskBoard } from '@/components/inbox/TaskBoard'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Panel } from '@/components/ui/Card'
-import { Zap, RefreshCw, Send } from 'lucide-react'
+import { RefreshCw, Send } from 'lucide-react'
+import { archiveEmail } from '@/app/actions/inbox'
 
 interface Email {
   id: string
@@ -46,7 +47,6 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
   const [emails, setEmails] = useState<Email[]>(initialEmails)
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [processing, setProcessing] = useState(false)
-  const [bulkSorting, setBulkSorting] = useState(false)
   const [sendingDigest, setSendingDigest] = useState(false)
   const [lastResult, setLastResult] = useState<string | null>(null)
 
@@ -77,23 +77,12 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
     }
   }
 
-  async function handleBulkSort() {
-    setBulkSorting(true)
-    setLastResult(null)
-    const progressInterval = setInterval(async () => {
-      const res = await fetch('/api/inbox/emails')
-      if (res.ok) setEmails(await res.json())
-    }, 3000)
+  async function handleArchive(emailId: string) {
     try {
-      const res = await fetch('/api/inbox/bulk-sort', { method: 'POST' })
-      const data = await res.json()
-      const errSuffix = data.errors?.length ? ` · Errors: ${data.errors[0]}` : ''
-      setLastResult(`Sorted ${data.processed} of ${data.total} emails · archived ${data.archived} · ${data.tasks_created} tasks created${errSuffix}`)
-      await refreshEmails()
-      await refreshTasks()
-    } finally {
-      clearInterval(progressInterval)
-      setBulkSorting(false)
+      await archiveEmail(emailId)
+      setEmails(prev => prev.map(e => e.id === emailId ? { ...e, archived: true } : e))
+    } catch (e) {
+      alert((e as Error).message)
     }
   }
 
@@ -185,17 +174,6 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
             </Button>
 
             <Button
-              variant="primary"
-              size="sm"
-              onClick={handleBulkSort}
-              loading={bulkSorting}
-              disabled={!gmailConnected}
-            >
-              <Zap size={13} />
-              {bulkSorting ? 'Sorting…' : 'Run Full Sort'}
-            </Button>
-
-            <Button
               variant="ghost"
               size="sm"
               onClick={handleSendDigest}
@@ -219,6 +197,7 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
             <EmailPanel
               emails={emails}
               onAddTask={handleAddTask}
+              onArchive={handleArchive}
               onRefresh={refreshEmails}
             />
           </Panel>

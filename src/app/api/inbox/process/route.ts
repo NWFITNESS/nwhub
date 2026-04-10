@@ -7,9 +7,58 @@ import { classifyEmail } from '@/lib/email-classifier'
 export async function GET(request: Request) { return handler(request) }
 export async function POST(request: Request) { return handler(request) }
 
+// In-memory label cache — labels almost never change, so we cache for 5
+// minutes to avoid a redundant Gmail API call on every process run.
+let labelCache: { map: Record<string, string>; fetchedAt: number } | null = null
+const LABEL_CACHE_TTL = 5 * 60 * 1000
+
+async function getCachedLabels(): Promise<Record<string, string>> {
+  if (labelCache && (Date.now() - labelCache.fetchedAt) < LABEL_CACHE_TTL) {
+    return labelCache.map
+  }
+  const map = await ensureGmailLabels(gmailFetch)
+  labelCache = { map, fetchedAt: Date.now() }
+  return map
+}
+
 async function handler(request: Request) {
   const supabase = createAdminClient()
 
+  // ── Mutex: prevent concurrent runs from burning duplicate Claude tokens ──
+  // Check if another run is in progress (started within the last 3 minutes).
+  // If so, skip. The 3-minute window auto-expires in case a prior run crashed
+  // without clearing the lock.
+  const LOCK_KEY = 'inbox_processing_lock'
+  const LOCK_TTL = 3 * 60 * 1000
+  const { data: lockData } = await supabase
+    .from('global_settings')
+    .select('value')
+    .eq('key', LOCK_KEY)
+    .single()
+  const lockTime = lockData?.value ? new Date(lockData.value).getTime() : 0
+  if (lockTime && (Date.now() - lockTime) < LOCK_TTL) {
+    return NextResponse.json({ skipped: true, reason: 'Another processing run is in progress' })
+  }
+  // Acquire the lock
+  await supabase.from('global_settings').upsert(
+    { key: LOCK_KEY, value: new Date().toISOString() },
+    { onConflict: 'key' },
+  )
+
+  try {
+    return await processEmails(request, supabase)
+  } finally {
+    // Release the lock — best-effort, don't throw if it fails
+    try {
+      await supabase.from('global_settings').upsert(
+        { key: LOCK_KEY, value: '' },
+        { onConflict: 'key' },
+      )
+    } catch { /* swallow */ }
+  }
+}
+
+async function processEmails(request: Request, supabase: ReturnType<typeof createAdminClient>) {
   // Check interval throttle (skip if called too soon, unless ?force=true)
   const url = new URL(request.url)
   const force = url.searchParams.get('force') === 'true'
@@ -24,9 +73,9 @@ async function handler(request: Request) {
       return NextResponse.json({ skipped: true, reason: `Last ran ${Math.round((Date.now() - lastRun.getTime()) / 60000)}m ago, interval is ${intervalMins}m` })
     }
   }
-  // Record this run and ensure NWHub labels exist in Gmail
+  // Record this run and get Gmail labels (cached)
   await supabase.from('global_settings').upsert({ key: 'inbox_last_processed', value: new Date().toISOString() }, { onConflict: 'key' })
-  const labelMap = await ensureGmailLabels(gmailFetch)
+  const labelMap = await getCachedLabels()
 
   // Fetch unread emails from Gmail
   let listData: { messages?: Array<{ id: string }> }
@@ -152,3 +201,5 @@ async function handler(request: Request) {
 
   return NextResponse.json({ processed, tasks_created, archived })
 }
+
+// Unused return type (ReturnType used in processEmails signature above)

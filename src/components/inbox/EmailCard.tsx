@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { ChevronDown, Plus } from 'lucide-react'
+import { useState, useTransition } from 'react'
+import { ChevronDown, Plus, Check } from 'lucide-react'
 
 interface Email {
   id: string
@@ -20,6 +20,7 @@ interface Email {
 interface Props {
   email: Email
   onAddTask: (title: string, due_date?: string) => void
+  onArchive: (emailId: string) => void
 }
 
 const CATEGORY_STYLES: Record<string, { label: string; className: string }> = {
@@ -55,12 +56,14 @@ function hashColor(str: string): string {
   return colors[Math.abs(hash)]
 }
 
-export function EmailCard({ email, onAddTask }: Props) {
+export function EmailCard({ email, onAddTask, onArchive }: Props) {
   const [summaryOpen, setSummaryOpen] = useState(false)
+  const [archiving, startArchiveTransition] = useTransition()
   const category = CATEGORY_STYLES[email.category] ?? { label: email.category, className: 'bg-white/[0.05] text-white/40 border-white/[0.06]' }
   const initials = getInitials(email.sender_name, email.sender)
   const avatarColor = hashColor(email.sender)
   const isImportant = email.flagged
+  const isActionable = email.category === 'needs_attention' || email.category === 'new_lead'
 
   return (
     <div
@@ -127,15 +130,33 @@ export function EmailCard({ email, onAddTask }: Props) {
             </div>
           )}
 
-          {/* Add task action */}
-          {!email.task_created && isImportant && (
-            <button
-              onClick={() => onAddTask(`Follow up: ${email.subject}`, undefined)}
-              className="mt-2 flex items-center gap-1 text-[11px] text-white/40 hover:text-[#f2ca50] transition-colors"
-            >
-              <Plus size={11} />
-              Add to tasks
-            </button>
+          {/* Actions row */}
+          {(isActionable || (isImportant && !email.task_created)) && (
+            <div className="mt-2 flex items-center gap-3">
+              {/* Add task action */}
+              {!email.task_created && isImportant && (
+                <button
+                  onClick={() => onAddTask(`Follow up: ${email.subject}`, undefined)}
+                  className="flex items-center gap-1 text-[11px] text-white/40 hover:text-[#f2ca50] transition-colors"
+                >
+                  <Plus size={11} />
+                  Add to tasks
+                </button>
+              )}
+
+              {/* Mark as handled — archives the email so it drops off the
+                  "Needs Action" filter */}
+              {isActionable && !email.archived && (
+                <button
+                  onClick={() => startArchiveTransition(() => onArchive(email.id))}
+                  disabled={archiving}
+                  className="flex items-center gap-1 text-[11px] text-white/40 hover:text-green-400 transition-colors disabled:opacity-50"
+                >
+                  <Check size={11} />
+                  {archiving ? 'Done…' : 'Mark handled'}
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>

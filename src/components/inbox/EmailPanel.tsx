@@ -24,6 +24,7 @@ interface Email {
 interface Props {
   emails: Email[]
   onAddTask: (title: string, due_date?: string) => void
+  onArchive: (emailId: string) => void
   onRefresh: () => void
 }
 
@@ -35,7 +36,7 @@ const FILTERS: { key: FilterType; label: string }[] = [
   { key: 'spam', label: 'Archived' },
 ]
 
-export function EmailPanel({ emails, onAddTask }: Props) {
+export function EmailPanel({ emails, onAddTask, onArchive }: Props) {
   const [filter, setFilter] = useState<FilterType>('all')
 
   const filtered = emails.filter(e => {
@@ -84,7 +85,7 @@ export function EmailPanel({ emails, onAddTask }: Props) {
           </div>
         ) : (
           filtered.map(email => (
-            <EmailCard key={email.id} email={email} onAddTask={onAddTask} />
+            <EmailCard key={email.id} email={email} onAddTask={onAddTask} onArchive={onArchive} />
           ))
         )}
       </div>
