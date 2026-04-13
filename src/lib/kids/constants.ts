@@ -14,9 +14,9 @@ export const CATEGORY_LABEL: Record<KidsCategory, string> = {
 }
 
 export const CATEGORY_AGE_RANGE: Record<KidsCategory, string> = {
-  minis: '4–7',
-  littles: '8–11',
-  teens: '12–17',
+  minis: '3–5',
+  littles: '5–10',
+  teens: '10–18',
 }
 
 export const CATEGORY_TIME: Record<KidsCategory, string> = {
@@ -40,8 +40,8 @@ export const CATEGORY_BADGE: Record<KidsCategory, { bg: string; fg: string }> = 
 }
 
 export function categoryFromAge(ageInYears: number): KidsCategory {
-  if (ageInYears <= 7) return 'minis'
-  if (ageInYears <= 11) return 'littles'
+  if (ageInYears <= 5) return 'minis'
+  if (ageInYears <= 10) return 'littles'
   return 'teens'
 }
 
