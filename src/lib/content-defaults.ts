@@ -350,10 +350,58 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
 
   'kids-teens': {
     hero: {
-      kicker: 'Kids & Teens',
-      heading: 'Warriors start young.',
-      subtext: 'Safe, coached, and seriously fun — building the next generation of athletes.',
-      image_url: '/feature-3.jpg',
+      kicker: 'Egremont, Cumbria · Est. 2021 · Classes Running Now',
+      titleStart: 'YOUNG',
+      titleEnd: 'WARRIORS',
+      subtext: 'Strength, fitness and confidence for kids and teens. Properly coached, age-appropriate, every Sunday at Northern Warrior.',
+    },
+    sessions_intro: {
+      background_image: '',
+      kicker: 'What are our sessions?',
+      heading: 'Functional fitness',
+      heading_sub: 'built for young athletes',
+      body1: 'Our kids and teens programme brings the best of functional fitness training to young people aged 3–18. Think running, jumping, climbing, lifting, throwing, and teamwork — all scaled to their age, ability, and confidence level. No experience needed. Just energy and a willingness to try.',
+      body2: 'Every session follows a structured warm-up, skill or strength focus, a workout, and a cool-down game. It\'s the same methodology used by elite athletes, adapted so kids develop coordination, strength, and discipline — all while having a blast.',
+    },
+    gallery: {
+      caption: '',
+    },
+    coaches: {
+      items: [
+        {
+          name: 'Mathew Tomkinson',
+          role: 'Head Coach & Owner',
+          avatarEmoji: '🏋️',
+          qualifications: ['Level 3 PT', 'CrossFit L2', 'Youth Fitness Specialist'],
+          bio: 'Mat founded Northern Warrior to build something the community was missing.',
+        },
+        {
+          name: 'Lauren',
+          role: 'Kids Lead Coach',
+          avatarEmoji: '⭐',
+          qualifications: ['Level 2 Fitness', 'Gymnastics Coach', 'First Aid'],
+          bio: 'Lauren runs the kids programme with patience, energy, and an infectious love of movement.',
+        },
+      ],
+    },
+    why_nw: {
+      items: [
+        { icon: '🛡️', title: 'Safe Environment', text: 'Purpose-built facility with qualified coaches at every session.' },
+        { icon: '📈', title: 'Real Progression', text: 'Structured blocks so kids see real improvement week to week.' },
+        { icon: '🤝', title: 'Community', text: 'A welcoming, inclusive space where every kid is part of the tribe.' },
+        { icon: '🎓', title: 'Life Skills', text: 'Discipline, resilience, teamwork, and confidence that goes beyond the gym.' },
+      ],
+      statValue: '100+',
+      statLabel: 'Young Warriors trained since 2021',
+      quote: 'My son has never looked forward to a class as much as this. He talks about it all week.',
+      attribution: '— Parent, Egremont',
+    },
+    testimonials: {
+      items: [
+        { name: 'Sarah M.', meta: 'Mum of 2', initials: 'SM', quote: 'Both my kids absolutely love it. They come out buzzing every Sunday.' },
+        { name: 'James T.', meta: 'Dad', initials: 'JT', quote: 'The coaches are brilliant — my daughter has grown in confidence massively.' },
+        { name: 'Lucy P.', meta: 'Mum', initials: 'LP', quote: 'Best thing we ever signed up for. Can\'t recommend it enough.' },
+      ],
     },
   },
 
