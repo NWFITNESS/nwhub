@@ -830,6 +830,23 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
     ]} />
   ),
 
+  // ── Kids & Teens sections ──────────────────────────────────────────────────
+  gallery: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'image_url', label: 'Photo' },
+      { key: 'alt', label: 'Alt text (accessibility)' },
+      { key: 'image_position', label: 'Focal point (e.g. 50% 30%)' },
+    ]} />
+  ),
+  sessions_intro: (p) => <SimpleContentEditor {...p} />,
+  why_nw: (p) => (
+    <HeaderWithItemsEditor {...p} fields={[
+      { key: 'icon', label: 'Icon emoji' },
+      { key: 'title', label: 'Title' },
+      { key: 'text', label: 'Description', multiline: true },
+    ]} itemLabel="Benefit" />
+  ),
+
   // ── Team sections ──────────────────────────────────────────────────────────
   intro: (p) => <SimpleContentEditor {...p} />,
 
