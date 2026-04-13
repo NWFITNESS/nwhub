@@ -147,7 +147,8 @@ export function CampaignsList({ campaigns: initialCampaigns }: { campaigns: Camp
             <div
               key={c.id}
               onClick={isDraft(c.status) ? () => openDraft(c) : undefined}
-              className={`border-b border-[rgba(255,255,255,0.05)] p-6 ${isDraft(c.status) ? 'cursor-pointer border-l-2 border-l-gold-400 bg-[rgba(212,160,23,0.03)]' : ''}`}
+              className={`border-b border-[rgba(255,255,255,0.05)] ${isDraft(c.status) ? 'cursor-pointer border-l-2 border-l-gold-400 bg-[rgba(212,160,23,0.03)]' : ''}`}
+              style={{ padding: 20 }}
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <p className="font-medium text-nw-200" style={{ fontSize: 14 }}>{c.settings.title || c.settings.subject_line}</p>

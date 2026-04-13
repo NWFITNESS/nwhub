@@ -87,7 +87,7 @@ export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive }: Prop
   return (
     <div className="flex flex-col">
       {/* Panel header */}
-      <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
+      <div className="border-b border-white/[0.06]" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 18, paddingBottom: 16 }}>
         <p className="text-[10px] font-semibold text-[#d4af37]/70 uppercase tracking-[0.2em]">
           Processed Emails
         </p>
@@ -119,7 +119,7 @@ export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive }: Prop
 
       {/* Bulk action bar — appears when any emails are selected */}
       {someSelected && (
-        <div className="flex items-center justify-between gap-3 border-b border-white/[0.06] bg-[#967705]/10 px-5 py-2.5">
+        <div className="flex items-center justify-between gap-3 border-b border-white/[0.06] bg-[#967705]/10" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 10, paddingBottom: 10 }}>
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 cursor-pointer text-[12px] text-white/60">
               <input
@@ -146,7 +146,7 @@ export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive }: Prop
 
       {/* Select-all toggle when no selection active (subtle, under the filter tabs) */}
       {!someSelected && selectableIds.size > 0 && (
-        <div className="flex items-center gap-2 border-b border-white/[0.04] px-5 py-2">
+        <div className="flex items-center gap-2 border-b border-white/[0.04]" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 8, paddingBottom: 8 }}>
           <label className="flex items-center gap-2 cursor-pointer text-[11px] text-white/35 hover:text-white/55 transition-colors">
             <input
               type="checkbox"
@@ -160,7 +160,7 @@ export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive }: Prop
       )}
 
       {/* Email list */}
-      <div className="p-4 space-y-2">
+      <div className="space-y-2" style={{ padding: 16 }}>
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-white/25 text-[13px]">
             No emails in this category

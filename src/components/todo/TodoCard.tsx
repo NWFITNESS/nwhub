@@ -107,7 +107,7 @@ export function TodoCard({ initialTodos }: TodoCardProps) {
   return (
     <div className="flex flex-col h-full bg-[#161616] border border-white/[0.06] rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="px-5 pt-5 pb-3 border-b border-white/[0.06]">
+      <div className="border-b border-white/[0.06]" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 18, paddingBottom: 12 }}>
         <div className="flex items-start justify-between gap-2 mb-3">
           <div>
             <p className="text-[10px] uppercase tracking-widest text-white/30 font-medium mb-0.5">Tasks</p>
@@ -146,12 +146,12 @@ export function TodoCard({ initialTodos }: TodoCardProps) {
       </div>
 
       {/* Quick Add */}
-      <div className="px-4 pt-3">
+      <div style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12 }}>
         <TodoQuickAdd onAdd={handleAdd} />
       </div>
 
       {/* Todo list */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1.5">
+      <div className="flex-1 overflow-y-auto space-y-1.5" style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }}>
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 gap-2">
             <CheckSquare2 size={28} className="text-white/10" />

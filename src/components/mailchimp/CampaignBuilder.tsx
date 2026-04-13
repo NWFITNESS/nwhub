@@ -204,7 +204,8 @@ function StepCard({ n, title, icon, complete, active, action, summary, onOpen, c
         tabIndex={active ? undefined : 0}
         onClick={active ? undefined : onOpen}
         onKeyDown={active ? undefined : (e) => { if (e.key === 'Enter' || e.key === ' ') onOpen() }}
-        className={`flex items-center justify-between px-6 py-4 ${active ? '' : 'cursor-pointer'}`}
+        className={`flex items-center justify-between ${active ? '' : 'cursor-pointer'}`}
+        style={{ paddingLeft: 20, paddingRight: 20, paddingTop: 16, paddingBottom: 16 }}
       >
         <div className="flex items-center gap-3">
           <StepDot n={n} complete={complete} active={active} />
@@ -219,14 +220,14 @@ function StepCard({ n, title, icon, complete, active, action, summary, onOpen, c
 
       {/* Collapsed summary */}
       {complete && !active && summary && (
-        <div className="px-6 pb-4 -mt-1 pl-[4.25rem]">
+        <div className="pb-4 -mt-1 pl-[4.25rem]" style={{ paddingLeft: 20, paddingRight: 20 }}>
           {summary}
         </div>
       )}
 
       {/* Expanded content */}
       {active && (
-        <div className="px-6 pb-6">
+        <div style={{ paddingLeft: 20, paddingRight: 20, paddingBottom: 20 }}>
           <div className="h-px bg-white/[0.06] mb-5" />
           {children}
         </div>
@@ -491,7 +492,7 @@ export function CampaignBuilder({ settings, campaign, designJson }: Props) {
   // Guard
   if (!settings.api_key || !settings.audience_id) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 py-24 text-center p-8">
+      <div className="flex flex-col items-center justify-center gap-4 py-24 text-center" style={{ padding: 28 }}>
         <div className="w-12 h-12 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
           <Mail size={20} className="text-white/20" />
         </div>
@@ -515,9 +516,9 @@ export function CampaignBuilder({ settings, campaign, designJson }: Props) {
 
       {/* ── Toast ── */}
       {toast && (
-        <div className={`fixed bottom-6 right-6 z-[60] flex items-center gap-2 px-4 py-3 rounded-xl border shadow-2xl text-sm font-medium ${
+        <div className={`fixed bottom-6 right-6 z-[60] flex items-center gap-2 rounded-xl border shadow-2xl text-sm font-medium ${
           toast.ok ? 'bg-green-500/15 border-green-500/30 text-green-400' : 'bg-red-500/15 border-red-500/30 text-red-400'
-        }`}>
+        }`} style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }}>
           {toast.ok ? <CheckCircle size={15} /> : <AlertCircle size={15} />}
           {toast.msg}
         </div>
@@ -527,7 +528,7 @@ export function CampaignBuilder({ settings, campaign, designJson }: Props) {
       {showDesignEditor && (
         <div ref={overlayRef} className="fixed inset-0 z-50 bg-[#080808] flex flex-col">
           {/* Overlay toolbar */}
-          <div className="h-16 flex-shrink-0 flex items-center justify-between px-6 border-b border-white/[0.08] bg-[#0d0d0d]">
+          <div className="h-16 flex-shrink-0 flex items-center justify-between border-b border-white/[0.08] bg-[#0d0d0d]" style={{ paddingLeft: 20, paddingRight: 20 }}>
             <div className="flex items-center gap-3">
               <button onClick={() => setShowDesignEditor(false)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white/50 border border-white/[0.08] bg-white/[0.03] hover:text-white hover:border-white/20 transition-all">
@@ -565,7 +566,7 @@ export function CampaignBuilder({ settings, campaign, designJson }: Props) {
       {/* ── Save as Template modal ── */}
       {showTemplateSave && (
         <div className="fixed inset-0 z-[55] bg-black/60 flex items-center justify-center p-4">
-          <div className="rounded-2xl border border-white/[0.08] bg-[#111] p-6 w-full max-w-sm space-y-4">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#111] w-full max-w-sm space-y-4" style={{ padding: 20 }}>
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-[#F0F0F0]">Save as Template</h3>
               <button onClick={() => setShowTemplateSave(false)} className="text-white/30 hover:text-white/60 transition-colors"><X size={16} /></button>
@@ -588,11 +589,11 @@ export function CampaignBuilder({ settings, campaign, designJson }: Props) {
       {showPreviewModal && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
           <div className="rounded-2xl border border-white/[0.08] bg-[#111] w-full max-w-3xl max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+            <div className="flex items-center justify-between border-b border-white/[0.06]" style={{ paddingLeft: 20, paddingRight: 20, paddingTop: 16, paddingBottom: 16 }}>
               <h3 className="text-sm font-semibold text-[#F0F0F0]">Preview & Test</h3>
               <button onClick={() => setShowPreviewModal(false)} className="text-white/30 hover:text-white/60 transition-colors"><X size={16} /></button>
             </div>
-            <div className="flex flex-1 gap-6 p-6 overflow-auto min-h-0">
+            <div className="flex flex-1 gap-6 overflow-auto min-h-0" style={{ padding: 20 }}>
               {/* Email preview */}
               <div className="flex-1 min-w-0 space-y-3">
                 <div className="flex items-center gap-1 p-1 rounded-lg bg-[#1a1a1a] border border-white/[0.06] w-fit">
@@ -603,7 +604,7 @@ export function CampaignBuilder({ settings, campaign, designJson }: Props) {
                     </button>
                   ))}
                 </div>
-                <div className="rounded-xl border border-white/[0.06] bg-[#0a0a0a] overflow-hidden flex justify-center p-4">
+                <div className="rounded-xl border border-white/[0.06] bg-[#0a0a0a] overflow-hidden flex justify-center" style={{ padding: 16 }}>
                   <iframe
                     srcDoc={exportedHtml || '<p style="color:#999;text-align:center;padding:40px;font-family:sans-serif;font-size:14px">No design saved yet.</p>'}
                     style={{ width: devicePreview === 'desktop' ? '600px' : '375px', height: '500px', border: 'none', background: '#fff', borderRadius: '4px', transition: 'width 0.25s ease', flexShrink: 0 }}
@@ -632,7 +633,7 @@ export function CampaignBuilder({ settings, campaign, designJson }: Props) {
       {/* ── Schedule modal ── */}
       {showScheduleModal && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-          <div className="rounded-2xl border border-white/[0.08] bg-[#111] w-full max-w-sm p-6 space-y-4">
+          <div className="rounded-2xl border border-white/[0.08] bg-[#111] w-full max-w-sm space-y-4" style={{ padding: 20 }}>
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-[#F0F0F0]">Schedule Campaign</h3>
               <button onClick={() => setShowScheduleModal(false)} className="text-white/30 hover:text-white/60 transition-colors"><X size={16} /></button>
@@ -810,7 +811,7 @@ export function CampaignBuilder({ settings, campaign, designJson }: Props) {
               <Checkbox checked={skipUnengaged} onChange={() => setSkipUnengaged(v => !v)} label="Don't send to unengaged contacts" />
 
               {selectedAudience && (
-                <div className="flex items-center gap-4 px-4 py-3 rounded-lg bg-[#111] border border-white/[0.06]">
+                <div className="flex items-center gap-4 rounded-lg bg-[#111] border border-white/[0.06]" style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }}>
                   <span className="text-sm font-semibold text-[#F0F0F0]">{recipientCount.toLocaleString()} recipients</span>
                   <span className="text-white/20">·</span>
                   <span className="text-xs text-white/35">from {selectedAudience.name}</span>
@@ -1012,7 +1013,7 @@ export function CampaignBuilder({ settings, campaign, designJson }: Props) {
 
         {/* ── Send row ── */}
         {canReadyToSend && (
-          <div className="mt-6 flex items-center justify-between px-6 py-5 rounded-xl border border-[#967705]/25 bg-[#967705]/5">
+          <div className="mt-6 flex items-center justify-between rounded-xl border border-[#967705]/25 bg-[#967705]/5" style={{ paddingLeft: 20, paddingRight: 20, paddingTop: 18, paddingBottom: 18 }}>
             <div>
               <p className="text-sm font-semibold text-[#F0F0F0]">Ready to send</p>
               <p className="text-xs text-white/35 mt-0.5">All steps complete — send now or schedule for later</p>

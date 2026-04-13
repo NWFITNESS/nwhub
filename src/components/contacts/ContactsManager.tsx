@@ -526,7 +526,7 @@ export function ContactsManager({ initialContacts }: Props) {
 
       {/* Bulk selection bar */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center flex-wrap gap-2 px-4 py-3 rounded-xl border border-[#967705]/25 bg-[#967705]/5 mb-4">
+        <div className="flex items-center flex-wrap gap-2 rounded-xl border border-[#967705]/25 bg-[#967705]/5 mb-4" style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }}>
           <span className="text-sm font-medium text-[#c9a70a]">{selectedIds.size} selected</span>
           <button onClick={() => setSelectedIds(new Set())} className="p-1 rounded text-white/30 hover:text-white transition-colors" aria-label="Clear selection">
             <X size={13} />
@@ -588,7 +588,7 @@ export function ContactsManager({ initialContacts }: Props) {
           {filtered.length === 0 ? (
             <p className="text-center text-nw-500 py-12">No contacts match your search</p>
           ) : filtered.map((c) => (
-            <div key={c.id} className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4" onClick={() => openEdit(c)}>
+            <div key={c.id} className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750" style={{ padding: 16 }} onClick={() => openEdit(c)}>
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
                   <p className="text-[14px] font-medium text-nw-200">{c.first_name} {c.last_name}</p>
@@ -808,7 +808,7 @@ export function ContactsManager({ initialContacts }: Props) {
         {/* Step 1 — Upload */}
         {importStep === 'upload' && (
           <div className="space-y-5">
-            <div className="rounded-lg bg-nw-900 border border-white/[0.07] p-4 text-sm text-white/50 space-y-1.5">
+            <div className="rounded-lg bg-nw-900 border border-white/[0.07] text-sm text-white/50 space-y-1.5" style={{ padding: 16 }}>
               <p className="font-medium text-white/70">Any CSV format works</p>
               <p>Upload your file and we&apos;ll let you map the columns to the right fields on the next step.</p>
               <p className="text-white/35">Download the template if you&apos;re starting fresh.</p>
@@ -817,7 +817,8 @@ export function ContactsManager({ initialContacts }: Props) {
               <Button variant="secondary" size="sm"><Download size={14} />Download template CSV</Button>
             </a>
             <div
-              className="rounded-xl border-2 border-dashed border-white/[0.1] hover:border-[#967705]/40 transition-colors p-8 flex flex-col items-center gap-3 cursor-pointer"
+              className="rounded-xl border-2 border-dashed border-white/[0.1] hover:border-[#967705]/40 transition-colors flex flex-col items-center gap-3 cursor-pointer"
+              style={{ padding: 28 }}
               onClick={() => fileRef.current?.click()}
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleFileSelect(f) }}
@@ -921,7 +922,7 @@ export function ContactsManager({ initialContacts }: Props) {
         {/* Step 3 — Result */}
         {importStep === 'result' && importResult && (
           <div className="space-y-5">
-            <div className="flex items-center gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+            <div className="flex items-center gap-3 rounded-lg bg-green-500/10 border border-green-500/20" style={{ padding: 16 }}>
               <span className="text-green-400 text-lg">✓</span>
               <p className="text-green-400 font-medium">
                 {importResult.inserted} contact{importResult.inserted !== 1 ? 's' : ''} imported

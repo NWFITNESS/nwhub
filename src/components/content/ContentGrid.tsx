@@ -112,7 +112,7 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
       </div>
 
       {/* Stats bar */}
-      <div className="flex items-center gap-6 overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 px-6 py-3">
+      <div className="flex items-center gap-6 overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750" style={{ paddingLeft: 20, paddingRight: 20, paddingTop: 12, paddingBottom: 12 }}>
         <div>
           <div className="text-[10px] uppercase text-nw-500 tracking-[1px]">Total Pages</div>
           <div className="text-[13px] font-medium text-nw-200">{allPages.length}</div>
@@ -161,7 +161,7 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
                   className="relative overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 transition-[background,border-color] duration-200 group hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700"
                 >
 
-                  <div className="relative z-10 p-6 flex flex-col gap-4">
+                  <div className="relative z-10 flex flex-col gap-4" style={{ padding: 20 }}>
                     {/* Icon + status badge */}
                     <div className="flex items-start justify-between">
                       <div

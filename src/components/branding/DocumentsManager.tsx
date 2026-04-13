@@ -57,7 +57,7 @@ export function DocumentsManager({ initialDocs }: Props) {
       {/* Upload section */}
       <Panel>
         <PanelHeader eyebrow="Upload" title="Add Document" />
-        <div className="p-6 flex flex-col gap-3">
+        <div className="flex flex-col gap-3" style={{ padding: 20 }}>
           <div className="flex flex-wrap gap-2">
             {DOC_CATEGORIES.map(cat => (
               <button
@@ -77,7 +77,8 @@ export function DocumentsManager({ initialDocs }: Props) {
             onClick={() => fileRef.current?.click()}
             onDragOver={e => e.preventDefault()}
             onDrop={e => { e.preventDefault(); if (e.dataTransfer.files[0]) handleUpload(e.dataTransfer.files[0]) }}
-            className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.02)] p-6 text-center transition-colors hover:border-[rgba(212,160,23,0.3)] hover:bg-[rgba(212,160,23,0.03)]"
+            className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.02)] text-center transition-colors hover:border-[rgba(212,160,23,0.3)] hover:bg-[rgba(212,160,23,0.03)]"
+            style={{ padding: 20 }}
           >
             {uploading ? (
               <p className="text-nw-400" style={{ fontSize: 13 }}>Uploading...</p>
@@ -104,7 +105,7 @@ export function DocumentsManager({ initialDocs }: Props) {
         ) : (
           <div>
             {docs.map(doc => (
-              <div key={doc.id} className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.05)] px-6 py-3 last:border-0">
+              <div key={doc.id} className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.05)] py-3 last:border-0" style={{ paddingLeft: 20, paddingRight: 20 }}>
                 <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-[8px] bg-[rgba(212,160,23,0.1)] border border-[rgba(212,160,23,0.22)]">
                   <FileText size={16} className="text-gold-400" />
                 </div>

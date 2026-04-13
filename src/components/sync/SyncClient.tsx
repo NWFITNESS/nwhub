@@ -63,13 +63,13 @@ export function SyncClient() {
       {/* How to */}
       <Panel>
         <PanelHeader eyebrow="How to sync" title="3 Steps" />
-        <div className="flex flex-col gap-3 p-6">
+        <div className="flex flex-col gap-3" style={{ padding: 20 }}>
           {[
             { step: '1', title: 'Export from WodBoard', desc: 'Go to WodBoard → Reports → Customer Overview → Export' },
             { step: '2', title: 'Download the CSV',     desc: 'Click the link in your email and save the CSV file to your computer' },
             { step: '3', title: 'Drop it below',        desc: 'Drag the file into the upload area — NWHub handles the rest automatically' },
           ].map((item) => (
-            <div key={item.step} className="flex items-start gap-3 rounded-2xl bg-nw-800 border border-[rgba(255,255,255,0.07)] p-4">
+            <div key={item.step} className="flex items-start gap-3 rounded-2xl bg-nw-800 border border-[rgba(255,255,255,0.07)]" style={{ padding: 16 }}>
               <div className="flex h-7 w-7 min-w-[28px] items-center justify-center rounded-full bg-[rgba(212,160,23,0.15)] border border-[rgba(212,160,23,0.3)]">
                 <span className="font-brand text-sm font-bold text-gold-300">{item.step}</span>
               </div>
@@ -144,7 +144,7 @@ export function SyncClient() {
               <PanelHeader eyebrow="Sync" title="Log" />
               <div className="max-h-64 overflow-y-auto">
                 {results.log.map((entry, i) => (
-                  <div key={i} className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.05)] px-6 py-3">
+                  <div key={i} className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.05)] py-3" style={{ paddingLeft: 20, paddingRight: 20 }}>
                     <div className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${
                       entry.includes('Error')     ? 'bg-red-400'
                       : entry.includes('Cancel')  ? 'bg-red-400'

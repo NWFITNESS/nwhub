@@ -87,7 +87,7 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
       {/* Block tabs */}
       <div className="flex border-b border-[rgba(255,255,255,0.07)] overflow-x-auto no-scrollbar">
         {blocks.length === 0 && (
-          <div className="px-6 py-3 text-xs text-nw-500">No blocks yet</div>
+          <div className="py-3 text-xs text-nw-500" style={{ paddingLeft: 20, paddingRight: 20 }}>No blocks yet</div>
         )}
         {blocks.map((b) => {
           const isActive = b.id === activeBlockId
@@ -107,7 +107,7 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
       </div>
 
       {/* Search + filter bar */}
-      <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] px-6 py-3">
+      <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] py-3" style={{ paddingLeft: 20, paddingRight: 20 }}>
         <SearchInput
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -135,7 +135,8 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
           {filterOpen && (
             <div
               ref={filterPanelRef}
-              className="absolute right-0 top-full mt-1 z-10 w-56 rounded-2xl border border-[rgba(255,255,255,0.13)] bg-nw-800 p-3 shadow-gold-md"
+              className="absolute right-0 top-full mt-1 z-10 w-56 rounded-2xl border border-[rgba(255,255,255,0.13)] bg-nw-800 shadow-gold-md"
+              style={{ padding: 12 }}
             >
               <FilterGroup label="Category" value={catFilter} onChange={(v) => setCatFilter(v as CategoryFilter)} options={[
                 { v: 'all', label: 'All' },
@@ -166,7 +167,7 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
 
       {/* Block info bar (only when not searching) */}
       {!searchResults && activeBlock && (
-        <div className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.05)] bg-nw-800/30 px-6 py-2 text-xs font-medium text-nw-400">
+        <div className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.05)] bg-nw-800/30 py-2 text-xs font-medium text-nw-400" style={{ paddingLeft: 20, paddingRight: 20 }}>
           <span>Starts {new Date(activeBlock.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
           <span>·</span>
           <span>{activeBlock.session_count} sessions</span>
@@ -181,7 +182,7 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
 
       {/* Search results panel OR roster table */}
       {searchResults ? (
-        <div className="p-6">
+        <div style={{ padding: 20 }}>
           {searching && <p className="text-xs text-nw-500">Searching…</p>}
           {!searching && searchResults.length === 0 && (
             <p className="text-xs text-nw-500">No children match &ldquo;{searchQuery}&rdquo;</p>
@@ -189,7 +190,7 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
           {!searching && searchResults.length > 0 && (
             <div className="flex flex-col gap-2">
               {searchResults.map((r) => (
-                <div key={r.child_id} className="flex flex-wrap items-center gap-2 rounded-[8px] border border-[rgba(255,255,255,0.07)] bg-nw-800 p-3">
+                <div key={r.child_id} className="flex flex-wrap items-center gap-2 rounded-[8px] border border-[rgba(255,255,255,0.07)] bg-nw-800" style={{ padding: 12 }}>
                   <span className="text-sm font-medium text-nw-100">{r.child_name}</span>
                   <CategoryBadge category={r.category} />
                   <div className="ml-auto flex flex-wrap gap-1">
@@ -293,7 +294,7 @@ function RosterTable({ rows, totalRows, onClearFilters }: { rows: RosterRow[]; t
 
   if (rows.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 px-6 py-12">
+      <div className="flex flex-col items-center gap-2 py-12" style={{ paddingLeft: 20, paddingRight: 20 }}>
         <p className="text-xs text-nw-500">
           {totalRows === 0 ? 'No bookings in this block yet' : 'No bookings match your filters'}
         </p>

@@ -81,7 +81,7 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
-      <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] px-6 py-3.5">
+      <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] py-3.5" style={{ paddingLeft: 20, paddingRight: 20 }}>
         <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">
           BLOCK
         </span>
@@ -111,7 +111,7 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
         )}
       </div>
 
-      <div className="flex flex-col gap-4 p-6">
+      <div className="flex flex-col gap-4" style={{ padding: 20 }}>
         <Field label="Block name">
           <input
             type="text"
@@ -153,7 +153,7 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
         </div>
 
         {/* Fixed times reference */}
-        <div className="mt-1 flex flex-col gap-1.5 rounded-[8px] border border-[rgba(255,255,255,0.07)] bg-nw-800/50 p-3">
+        <div className="mt-1 flex flex-col gap-1.5 rounded-[8px] border border-[rgba(255,255,255,0.07)] bg-nw-800/50" style={{ padding: 12 }}>
           <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">
             Fixed session times
           </span>

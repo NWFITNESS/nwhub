@@ -237,7 +237,7 @@ function ArrayField({ fieldKey, items, onChange }: {
               const stringKeys = Object.keys(obj).filter((k) => typeof obj[k] === 'string')
               if (stringKeys.length === 0) return null
               return (
-                <div key={i} className="bg-white/[0.03] rounded-lg p-3 border border-white/[0.06] space-y-3">
+                <div key={i} className="bg-white/[0.03] rounded-lg border border-white/[0.06] space-y-3" style={{ padding: 12 }}>
                   <p className="text-[10px] font-semibold text-[#967705]/60 uppercase tracking-widest">
                     Item {i + 1}
                   </p>
@@ -335,7 +335,7 @@ export function FloatingEditor({
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/[0.07]">
+      <div className="flex items-center justify-between py-3.5 border-b border-white/[0.07]" style={{ paddingLeft: 16, paddingRight: 16 }}>
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
             style={{ background: 'rgba(150,119,5,0.15)', border: '1px solid rgba(150,119,5,0.25)' }}>
@@ -364,7 +364,7 @@ export function FloatingEditor({
       </div>
 
       {/* Fields */}
-      <div className="p-4 space-y-4 max-h-[440px] overflow-y-auto editor-scroll-container">
+      <div className="space-y-4 max-h-[440px] overflow-y-auto editor-scroll-container" style={{ padding: 16 }}>
         {Object.entries(local).map(([key, value]) => {
           if (value === null || value === undefined) return null
 
@@ -431,7 +431,7 @@ export function FloatingEditor({
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-3.5 border-t border-white/[0.07]" style={{ background: 'rgba(0,0,0,0.25)' }}>
+      <div className="py-3.5 border-t border-white/[0.07]" style={{ background: 'rgba(0,0,0,0.25)', paddingLeft: 16, paddingRight: 16 }}>
         <button
           type="button"
           onClick={handleSave}

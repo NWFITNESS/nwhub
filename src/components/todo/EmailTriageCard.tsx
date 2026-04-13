@@ -133,7 +133,7 @@ export function EmailTriageCard({
   return (
     <div className="flex flex-col h-full bg-[#161616] border border-white/[0.06] rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="px-5 pt-5 pb-3 border-b border-white/[0.06]">
+      <div className="border-b border-white/[0.06]" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 18, paddingBottom: 12 }}>
         <div className="flex items-start justify-between gap-2 mb-1">
           <div>
             <p className="text-[10px] uppercase tracking-widest text-white/30 font-medium mb-0.5">Gmail Inbox</p>
@@ -183,7 +183,7 @@ export function EmailTriageCard({
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-1.5">
+      <div className="flex-1 overflow-y-auto space-y-1.5" style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }}>
         {!gmailConnected ? (
           /* Not connected */
           <div className="flex flex-col items-center justify-center h-full py-16 gap-4">
@@ -230,7 +230,7 @@ export function EmailTriageCard({
 
       {/* Footer: triage result */}
       {triageResult && (
-        <div className="px-5 py-2.5 border-t border-white/[0.06] bg-[#1a1a1a]">
+        <div className="border-t border-white/[0.06] bg-[#1a1a1a]" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 10, paddingBottom: 10 }}>
           <p className="text-[11px] text-white/40">
             Processed <span className="text-white/60">{triageResult.processed}</span> emails ·{' '}
             <span className="text-[#C9A70A]">{triageResult.todos_created}</span> tasks created ·{' '}
@@ -241,7 +241,7 @@ export function EmailTriageCard({
 
       {/* Triage button (bottom-right of card) */}
       {gmailConnected && (
-        <div className="px-5 py-3 border-t border-white/[0.06] flex justify-end">
+        <div className="border-t border-white/[0.06] flex justify-end" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 12, paddingBottom: 12 }}>
           <button
             onClick={handleRunTriage}
             disabled={triaging}

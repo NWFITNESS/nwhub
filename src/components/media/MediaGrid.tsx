@@ -54,11 +54,11 @@ function EditModal({ item, onSave, onClose }: {
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="bg-nw-900 border border-white/10 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.08]">
+        <div className="flex items-center justify-between border-b border-white/[0.08]" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 16, paddingBottom: 16 }}>
           <p className="text-sm font-semibold text-white">Edit image details</p>
           <button onClick={onClose} className="text-white/30 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/[0.06]"><X size={15} /></button>
         </div>
-        <div className="p-5 flex gap-4">
+        <div className="flex gap-4" style={{ padding: 18 }}>
           <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-black border border-white/[0.08]">
             <img src={item.url} alt="" className="w-full h-full object-cover" />
           </div>
@@ -78,7 +78,7 @@ function EditModal({ item, onSave, onClose }: {
             </div>
           </div>
         </div>
-        <div className="px-5 pb-5">
+        <div style={{ paddingLeft: 18, paddingRight: 18, paddingBottom: 18 }}>
           <label className="block text-xs font-semibold text-white/40 uppercase tracking-[0.1em] mb-1.5">Alt text — describe this image for the AI</label>
           <textarea
             value={alt}
@@ -89,7 +89,7 @@ function EditModal({ item, onSave, onClose }: {
           />
           <p className="text-xs text-white/20 mt-1.5">The AI uses this to understand what's in the image when building emails.</p>
         </div>
-        <div className="flex gap-3 px-5 py-4 border-t border-white/[0.06]">
+        <div className="flex gap-3 border-t border-white/[0.06]" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 16, paddingBottom: 16 }}>
           <button
             onClick={save}
             disabled={saving}
@@ -131,14 +131,14 @@ function BulkCategoryModal({ ids, onSave, onClose }: {
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
       <div className="bg-nw-900 border border-white/10 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.08]">
+        <div className="flex items-center justify-between border-b border-white/[0.08]" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 16, paddingBottom: 16 }}>
           <div>
             <p className="text-sm font-semibold text-white">Set category</p>
             <p className="text-xs text-white/30 mt-0.5">{ids.length} image{ids.length > 1 ? 's' : ''} selected</p>
           </div>
           <button onClick={onClose} className="text-white/30 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/[0.06]"><X size={15} /></button>
         </div>
-        <div className="p-5">
+        <div style={{ padding: 18 }}>
           <label className="block text-xs font-semibold text-white/40 uppercase tracking-[0.1em] mb-3">Category</label>
           <div className="grid grid-cols-2 gap-2">
             {CATEGORIES.map((c) => (
@@ -156,7 +156,7 @@ function BulkCategoryModal({ ids, onSave, onClose }: {
             ))}
           </div>
         </div>
-        <div className="flex gap-3 px-5 py-4 border-t border-white/[0.06]">
+        <div className="flex gap-3 border-t border-white/[0.06]" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 16, paddingBottom: 16 }}>
           <button
             onClick={save}
             disabled={saving}
@@ -292,7 +292,8 @@ export function MediaGrid({ initialMedia }: Props) {
     <div>
       {/* Upload zone */}
       <div
-        className="border-2 border-dashed border-white/10 rounded-xl p-8 text-center mb-6 hover:border-[#967705]/40 transition-colors cursor-pointer"
+        className="border-2 border-dashed border-white/10 rounded-xl text-center mb-6 hover:border-[#967705]/40 transition-colors cursor-pointer"
+        style={{ padding: 28 }}
         onClick={() => fileInput.current?.click()}
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => { e.preventDefault(); queueFiles(e.dataTransfer.files) }}
@@ -306,7 +307,7 @@ export function MediaGrid({ initialMedia }: Props) {
       {/* Pending uploads */}
       {pending.length > 0 && (
         <div className="mb-6 bg-nw-750 border border-white/[0.06] rounded-xl overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+          <div className="flex items-center justify-between border-b border-white/[0.06]" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 16, paddingBottom: 16 }}>
             <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.15em]">
               Ready to Upload — {pending.length} image{pending.length > 1 ? 's' : ''}
             </p>
@@ -314,7 +315,7 @@ export function MediaGrid({ initialMedia }: Props) {
           </div>
           <div className="divide-y divide-white/[0.04]">
             {pending.map((p, i) => (
-              <div key={i} className="flex gap-4 p-4 items-start">
+              <div key={i} className="flex gap-4 items-start" style={{ padding: 16 }}>
                 <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-white/[0.08]">
                   <img src={p.preview} alt="" className="w-full h-full object-cover" />
                 </div>
@@ -341,7 +342,7 @@ export function MediaGrid({ initialMedia }: Props) {
               </div>
             ))}
           </div>
-          <div className="flex gap-3 px-5 py-4 border-t border-white/[0.06]">
+          <div className="flex gap-3 border-t border-white/[0.06]" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 16, paddingBottom: 16 }}>
             <button
               onClick={uploadAll}
               disabled={uploading}
@@ -364,7 +365,7 @@ export function MediaGrid({ initialMedia }: Props) {
 
       {/* Bulk action bar */}
       {selecting ? (
-        <div className="flex items-center justify-between mb-4 px-4 py-3 bg-[#967705]/10 border border-[#967705]/25 rounded-xl">
+        <div className="flex items-center justify-between mb-4 bg-[#967705]/10 border border-[#967705]/25 rounded-xl" style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }}>
           <div className="flex items-center gap-3">
             <span className="text-sm font-semibold text-[#C9A70A]">{selected.size} selected</span>
             <button onClick={selectAll} className="text-xs text-white/40 hover:text-white/70 transition-colors">Select all</button>

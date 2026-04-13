@@ -30,7 +30,7 @@ export function WidgetShell({
       className={`rounded-2xl flex flex-col h-full overflow-hidden bg-nw-750 border border-[rgba(255,255,255,0.12)] shadow-[0_2px_12px_rgba(0,0,0,0.15)] ${isCustomising ? 'outline outline-1 outline-dashed outline-gold-600/20' : ''}`}
     >
       {hasHeader && (
-        <div className="flex items-center justify-between px-5 py-4 flex-shrink-0 border-b border-[rgba(255,255,255,0.08)]">
+        <div className="flex items-center justify-between flex-shrink-0 border-b border-[rgba(255,255,255,0.08)]" style={{ padding: '14px 18px' }}>
           <div className="flex items-center gap-3 min-w-0">
             {isCustomising && (
               <div className="widget-drag-handle cursor-grab active:cursor-grabbing flex-shrink-0 text-nw-600">
@@ -61,7 +61,7 @@ export function WidgetShell({
           </div>
         </div>
       )}
-      <div className={`flex-1 overflow-hidden ${noPad ? '' : 'p-5'}`}>
+      <div className="flex-1 overflow-hidden" style={noPad ? undefined : { padding: 16 }}>
         {children}
       </div>
     </div>

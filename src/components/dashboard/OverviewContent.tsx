@@ -78,7 +78,8 @@ function QuickAction({ href, title, desc, icon }: { href: string; title: string;
   return (
     <Link
       href={href}
-      className="group flex flex-col gap-2.5 bg-nw-750 p-5 transition-colors hover:bg-nw-700 no-underline"
+      className="group flex flex-col gap-2.5 bg-nw-750 transition-colors hover:bg-nw-700 no-underline"
+      style={{ padding: 18 }}
     >
       <div className="flex items-start justify-between">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[rgba(212,160,23,0.1)] border border-[rgba(212,160,23,0.22)]">
@@ -245,7 +246,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
               <div className="relative cursor-default overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.13)] bg-nw-750 shadow-gold-sm transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700 hover:shadow-gold-md h-full">
                 <div className="flex items-stretch h-full">
                   {/* Total Leads */}
-                  <div className="flex-1 p-5">
+                  <div className="flex-1" style={{ padding: 18 }}>
                     <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">Total Leads</span>
                     <div className="mt-1.5 font-brand text-[28px] font-bold leading-none tracking-[-0.5px] text-white">{data.leadCount}</div>
                     <div className="mt-1 text-[10px] text-nw-500">No membership</div>
@@ -253,7 +254,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
                   {/* Divider */}
                   <div className="w-px self-stretch my-2.5 bg-[rgba(255,255,255,0.09)]" />
                   {/* Converted */}
-                  <div className="flex-1 p-5">
+                  <div className="flex-1" style={{ padding: 18 }}>
                     <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">Converted</span>
                     <div className="mt-1.5 flex items-baseline gap-1.5">
                       <span className="font-brand text-[28px] font-bold leading-none tracking-[-0.5px] text-gold-300">{data.convertedLeads}</span>
@@ -295,7 +296,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
             <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
-              <div className="flex flex-shrink-0 items-center gap-2 border-b border-[rgba(255,255,255,0.07)] px-6 py-3.5">
+              <div className="flex flex-shrink-0 items-center gap-2 border-b border-[rgba(255,255,255,0.07)] py-3.5" style={{ paddingLeft: 20, paddingRight: 20 }}>
                 <span className="text-[10px] font-bold uppercase tracking-[1.6px] text-nw-400">Navigation</span>
                 <div className="h-3 w-px bg-[rgba(255,255,255,0.09)]" />
                 <span className="text-sm font-semibold text-nw-100">Quick Actions</span>
@@ -306,13 +307,13 @@ export function OverviewContent({ data, formattedDate }: Props) {
                 <QuickAction href="/blog/manage" title="Blog & Posts" desc="Write and publish posts to engage members and boost SEO." icon={<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--r-gold-400)" strokeWidth="1.7"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 9h4"/></svg>} />
                 <QuickAction href="/mailchimp" title="Email Campaigns" desc="Send newsletters to your subscriber list via Mailchimp." icon={<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--r-gold-400)" strokeWidth="1.7"><path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-4 3V3a1 1 0 011-1z"/></svg>} />
               </div>
-              <div className="flex flex-shrink-0 items-center gap-2 border-y border-[rgba(255,255,255,0.07)] px-6 py-3.5">
+              <div className="flex flex-shrink-0 items-center gap-2 border-y border-[rgba(255,255,255,0.07)] py-3.5" style={{ paddingLeft: 20, paddingRight: 20 }}>
                 <span className="text-[10px] font-bold uppercase tracking-[1.6px] text-nw-400">Inbound</span>
                 <div className="h-3 w-px bg-[rgba(255,255,255,0.09)]" />
                 <span className="text-sm font-semibold text-nw-100">Recent Enquiries</span>
               </div>
               {data.recentEnquiries.length === 0 ? (
-                <div className="flex flex-1 flex-col items-center justify-center gap-2 p-7 text-center text-xs text-nw-600">
+                <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center text-xs text-nw-600" style={{ padding: 24 }}>
                   <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)]">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-4 3V3a1 1 0 011-1z"/></svg>
                   </div>
@@ -321,7 +322,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
               ) : (
                 <div className="flex-1 overflow-y-auto">
                   {data.recentEnquiries.map(enq => (
-                    <div key={enq.id} className="flex flex-col gap-[3px] border-b border-[rgba(255,255,255,0.05)] px-6 py-[10px]">
+                    <div key={enq.id} className="flex flex-col gap-[3px] border-b border-[rgba(255,255,255,0.05)] py-[10px]" style={{ paddingLeft: 20, paddingRight: 20 }}>
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-nw-200">{enq.name}</span>
                         <span className="text-[10px] text-nw-600">{new Date(enq.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
@@ -340,7 +341,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
             <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
               {/* Header */}
-              <div className="flex-shrink-0 border-b border-[rgba(255,255,255,0.07)] px-6 py-[13px]">
+              <div className="flex-shrink-0 border-b border-[rgba(255,255,255,0.07)] py-[13px]" style={{ paddingLeft: 20, paddingRight: 20 }}>
                 <div className="flex items-center justify-between mb-[9px]">
                   <span className="text-sm font-semibold text-nw-100">Setup Checklist</span>
                   <div className="flex items-center gap-2">
@@ -464,7 +465,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
       case 'system-status':
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-            <div className="flex h-full flex-col gap-3 rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-5">
+            <div className="flex h-full flex-col gap-3 rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750" style={{ padding: 18 }}>
               <span className="text-[10px] font-bold uppercase tracking-[1.6px] text-nw-400">System Status</span>
               <div className="flex flex-col gap-2">
                 {[
@@ -498,7 +499,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
             <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
-              <div className="flex-shrink-0 border-b border-[rgba(255,255,255,0.07)] px-6 py-[13px]">
+              <div className="flex-shrink-0 border-b border-[rgba(255,255,255,0.07)] py-[13px]" style={{ paddingLeft: 20, paddingRight: 20 }}>
                 <span className="text-sm font-semibold text-nw-100">Website Visitors</span>
               </div>
               <div style={{ flex: 1, minHeight: 0, padding: '8px 0' }}>
@@ -513,7 +514,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
             <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
               {/* Header */}
-              <div className="flex flex-shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.07)] px-6 py-[13px]">
+              <div className="flex flex-shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.07)] py-[13px]" style={{ paddingLeft: 20, paddingRight: 20 }}>
                 <div>
                   <span className="text-sm font-semibold text-nw-100">To Do</span>
                   {tasks.filter(t => !t.completed).length > 0 && (
@@ -588,7 +589,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
             <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
-              <div className="flex flex-shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.07)] px-6 py-[13px]">
+              <div className="flex flex-shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.07)] py-[13px]" style={{ paddingLeft: 20, paddingRight: 20 }}>
                 <span className="text-sm font-semibold text-nw-100">Recent Blog Posts</span>
                 <Link href="/blog/manage" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--slate-500)', textDecoration: 'none' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--r-gold-400)' }}

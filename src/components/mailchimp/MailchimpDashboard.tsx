@@ -166,7 +166,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
       {/* Not configured warning */}
       {!isConfigured && (
         <Panel>
-          <div className="flex items-center gap-4 p-6">
+          <div className="flex items-center gap-4" style={{ padding: 20 }}>
             <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[8px] bg-[rgba(245,158,11,0.1)] border border-[rgba(245,158,11,0.2)]">
               <AlertCircle size={16} className="text-[#f59e0b]" />
             </div>
@@ -186,7 +186,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
       {/* Sync result */}
       {syncResult && (
         <Panel>
-          <div className="flex items-center gap-3 px-6 py-3">
+          <div className="flex items-center gap-3 py-3" style={{ paddingLeft: 20, paddingRight: 20 }}>
             <CheckCircle size={14} className="text-gold-300" />
             <p className="text-[13px] text-gold-300">
               Sync complete — <span className="font-semibold">{syncResult.synced}</span> synced, <span className="font-semibold">{syncResult.failed}</span> failed
@@ -260,7 +260,8 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
                 <div
                   key={c.id}
                   onClick={isDraft ? () => router.push(`/mailchimp/edit/${c.id}`) : undefined}
-                  className={`border-b border-[rgba(255,255,255,0.05)] px-6 py-4 transition-colors hover:bg-[rgba(255,255,255,0.03)] ${isDraft ? 'cursor-pointer' : ''}`}
+                  className={`border-b border-[rgba(255,255,255,0.05)] py-4 transition-colors hover:bg-[rgba(255,255,255,0.03)] ${isDraft ? 'cursor-pointer' : ''}`}
+                  style={{ paddingLeft: 20, paddingRight: 20 }}
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <Badge variant={statusBadgeVariant(c.status)}>{c.status}</Badge>
@@ -339,7 +340,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
           } />
           <div className="grid grid-cols-2 gap-[1px] bg-[rgba(255,255,255,0.05)] md:grid-cols-3 lg:grid-cols-4">
             {templates.map((t) => (
-              <div key={t.id} className="group flex flex-col gap-3 bg-nw-750 p-4">
+              <div key={t.id} className="group flex flex-col gap-3 bg-nw-750" style={{ padding: 16 }}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex h-9 w-9 items-center justify-center rounded-[8px] bg-[rgba(212,160,23,0.1)] border border-[rgba(212,160,23,0.22)]">
                     <FileText size={15} className="text-gold-400" />
@@ -363,7 +364,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
 
       {/* Settings (collapsible) */}
       <Panel>
-        <button onClick={() => setSettingsOpen((v) => !v)} className="flex w-full items-center gap-2 px-6 py-3.5 text-left">
+        <button onClick={() => setSettingsOpen((v) => !v)} className="flex w-full items-center gap-2 py-3.5 text-left" style={{ paddingLeft: 20, paddingRight: 20 }}>
           <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">Mailchimp</span>
           <div className="h-3 w-px bg-[rgba(255,255,255,0.09)]" />
           <span className="text-[13px] font-medium text-nw-200">Settings</span>
@@ -373,7 +374,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
         </button>
 
         {settingsOpen && (
-          <div className="border-t border-[rgba(255,255,255,0.07)] p-6 space-y-4">
+          <div className="border-t border-[rgba(255,255,255,0.07)] space-y-4" style={{ padding: 20 }}>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div className="space-y-2">
                 <label className="text-[11px] font-medium uppercase tracking-[1px] text-nw-500">API Key</label>

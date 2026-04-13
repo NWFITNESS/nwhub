@@ -108,13 +108,13 @@ function GenerateLinkCard({ blocks }: { blocks: BlockWithDetails[] }) {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
-      <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] px-6 py-3.5">
+      <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] py-3.5" style={{ paddingLeft: 20, paddingRight: 20 }}>
         <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">DROP-IN</span>
         <div className="h-3 w-px bg-[rgba(255,255,255,0.09)]" />
         <span className="text-[13px] font-medium text-nw-200">Generate payment link</span>
       </div>
 
-      <div className="flex flex-col gap-3 p-6">
+      <div className="flex flex-col gap-3" style={{ padding: 20 }}>
         <div className="grid grid-cols-2 gap-2">
           <Field label="Child first name">
             <input
@@ -188,7 +188,7 @@ function GenerateLinkCard({ blocks }: { blocks: BlockWithDetails[] }) {
         </Field>
 
         {/* Link preview */}
-        <div className="rounded-[7px] border border-[rgba(255,255,255,0.07)] bg-nw-800/50 p-3 font-mono text-[10px] text-nw-400 break-all min-h-[2.5rem]">
+        <div className="rounded-[7px] border border-[rgba(255,255,255,0.07)] bg-nw-800/50 font-mono text-[10px] text-nw-400 break-all min-h-[2.5rem]" style={{ padding: 12 }}>
           {generatedUrl ?? <span className="text-nw-600">Link preview will appear here…</span>}
         </div>
 
@@ -236,13 +236,13 @@ function RecentDropInsCard({ rows }: { rows: DropInRow[] }) {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
-      <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] px-6 py-3.5">
+      <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] py-3.5" style={{ paddingLeft: 20, paddingRight: 20 }}>
         <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">RECENT</span>
         <div className="h-3 w-px bg-[rgba(255,255,255,0.09)]" />
         <span className="text-[13px] font-medium text-nw-200">Drop-ins</span>
       </div>
       {rows.length === 0 ? (
-        <div className="px-6 py-12 text-center text-xs text-nw-500">No drop-ins yet</div>
+        <div className="py-12 text-center text-xs text-nw-500" style={{ paddingLeft: 20, paddingRight: 20 }}>No drop-ins yet</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

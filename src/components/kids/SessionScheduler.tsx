@@ -48,7 +48,7 @@ export function SessionScheduler({ block }: Props) {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
-      <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] px-6 py-3.5">
+      <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] py-3.5" style={{ paddingLeft: 20, paddingRight: 20 }}>
         <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">SESSIONS</span>
         <div className="h-3 w-px bg-[rgba(255,255,255,0.09)]" />
         <span className="text-[13px] font-medium text-nw-200">Session dates</span>
@@ -60,7 +60,7 @@ export function SessionScheduler({ block }: Props) {
         </button>
       </div>
 
-      <div className="p-6">
+      <div style={{ padding: 20 }}>
         <div className="flex flex-wrap gap-2">
           {sessions.map((s) =>
             s.is_break ? (
@@ -93,7 +93,7 @@ export function SessionScheduler({ block }: Props) {
 
         {/* Inline add-break panel */}
         {adding && (
-          <div className="mt-4 rounded-[8px] border border-[rgba(255,107,80,0.3)] bg-[rgba(255,107,80,0.04)] p-3">
+          <div className="mt-4 rounded-[8px] border border-[rgba(255,107,80,0.3)] bg-[rgba(255,107,80,0.04)]" style={{ padding: 12 }}>
             <div className="mb-3 grid grid-cols-2 gap-2">
               <label className="flex flex-col gap-1">
                 <span className="text-[9px] font-semibold uppercase tracking-[1.1px] text-nw-400">Session</span>

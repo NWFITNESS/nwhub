@@ -40,7 +40,8 @@ export function QuickActionsWidget() {
           <Link
             key={action.title}
             href={action.href}
-            className={`group bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 flex items-start gap-4 hover:border-[#967705]/40 hover:bg-[#1a1a1a] transition-all duration-200 cursor-pointer ${action.mobileHide ? 'hidden md:flex' : ''}`}
+            className={`group bg-white/[0.02] border border-white/[0.06] rounded-xl flex items-start gap-4 hover:border-[#967705]/40 hover:bg-[#1a1a1a] transition-all duration-200 cursor-pointer ${action.mobileHide ? 'hidden md:flex' : ''}`}
+            style={{ padding: 16 }}
           >
             <div className="w-10 h-10 rounded-lg bg-[#967705]/10 border border-[#967705]/20 flex items-center justify-center flex-shrink-0 group-hover:border-[#967705]/40 transition-colors duration-200">
               <Icon size={18} className="text-[#C9A70A]" strokeWidth={1.75} />

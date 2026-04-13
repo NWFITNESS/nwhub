@@ -111,7 +111,7 @@ export function SubscriberImporter() {
       {/* Source picker */}
       <Panel>
         <PanelHeader eyebrow="Step 1" title="Select Source" />
-        <div className="p-6 grid grid-cols-1 gap-2 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2" style={{ padding: 20 }}>
           {SOURCES.map(s => (
             <button
               key={s.id}
@@ -127,7 +127,7 @@ export function SubscriberImporter() {
             </button>
           ))}
         </div>
-        <div className="px-6 pb-6">
+        <div style={{ paddingLeft: 20, paddingRight: 20, paddingBottom: 20 }}>
           <label className="block text-nw-500 mb-1.5" style={{ fontSize: 11, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase' }}>Custom Tag (optional)</label>
           <input
             value={customTag}
@@ -143,20 +143,21 @@ export function SubscriberImporter() {
       {/* Upload */}
       <Panel>
         <PanelHeader eyebrow="Step 2" title="Upload CSV" />
-        <div className="p-6">
+        <div style={{ padding: 20 }}>
           {!fileName ? (
             <div
               onClick={() => fileRef.current?.click()}
               onDragOver={e => e.preventDefault()}
               onDrop={e => { e.preventDefault(); handleFile(e.dataTransfer.files[0]) }}
-              className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.02)] p-8 text-center transition-colors hover:border-[rgba(212,160,23,0.3)] hover:bg-[rgba(212,160,23,0.03)]"
+              className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.02)] text-center transition-colors hover:border-[rgba(212,160,23,0.3)] hover:bg-[rgba(212,160,23,0.03)]"
+              style={{ padding: 28 }}
             >
               <Upload size={24} className="text-nw-500" />
               <p className="text-nw-300 font-medium" style={{ fontSize: 13 }}>Drop your CSV here or click to browse</p>
               <p className="text-nw-500" style={{ fontSize: 11 }}>Must have an &quot;email&quot; column. First name and last name columns optional.</p>
             </div>
           ) : (
-            <div className="flex items-center gap-3 rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-800 p-3">
+            <div className="flex items-center gap-3 rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-800" style={{ padding: 12 }}>
               <FileText size={18} className="text-gold-400 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-nw-200 font-medium truncate" style={{ fontSize: 13 }}>{fileName}</p>
@@ -196,7 +197,7 @@ export function SubscriberImporter() {
               <p className="px-6 py-2 text-nw-500" style={{ fontSize: 11 }}>...and {parsed.length - 20} more</p>
             )}
           </div>
-          <div className="p-6 flex items-center justify-between">
+          <div className="flex items-center justify-between" style={{ padding: 20 }}>
             <p className="text-nw-500" style={{ fontSize: 11 }}>
               Source: <span className="text-gold-300">{source}</span>
               {customTag && <> · Tag: <span className="text-gold-300">{customTag}</span></>}

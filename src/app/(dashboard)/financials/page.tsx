@@ -25,7 +25,7 @@ function NotConnected() {
 
 function SkeletonCard() {
   return (
-    <div className="rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 p-6 min-h-[100px]">
+    <div className="rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 min-h-[100px]" style={{ padding: 20 }}>
       <div className="h-3 w-24 rounded bg-nw-700 mb-4 animate-pulse" />
       <div className="h-8 w-20 rounded bg-nw-700 mb-2 animate-pulse" />
       <div className="h-2 w-32 rounded bg-nw-700 animate-pulse" />
@@ -103,7 +103,7 @@ export default function FinancialsPage() {
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
           </div>
-          <div className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6 min-h-[320px]">
+          <div className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 min-h-[320px]" style={{ padding: 20 }}>
             <div className="h-4 w-40 rounded bg-nw-700 mb-6 animate-pulse" />
             <div className="w-full h-[280px] rounded bg-nw-700 animate-pulse" />
           </div>

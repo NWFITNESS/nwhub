@@ -139,7 +139,7 @@ export function TaskBoard({ tasks, onToggle, onAdd, onDelete, onBulkComplete, on
   return (
     <div className="flex flex-col">
       {/* Panel header */}
-      <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
+      <div className="border-b border-white/[0.06]" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 18, paddingBottom: 16 }}>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[10px] font-semibold text-[#d4af37]/70 uppercase tracking-[0.2em]">
@@ -213,7 +213,7 @@ export function TaskBoard({ tasks, onToggle, onAdd, onDelete, onBulkComplete, on
 
       {/* Quick add — hidden in select mode */}
       {!selectMode && (
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06]">
+        <div className="flex items-center gap-2 border-b border-white/[0.06]" style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }}>
           <input
             value={newTitle}
             onChange={e => setNewTitle(e.target.value)}
@@ -237,7 +237,7 @@ export function TaskBoard({ tasks, onToggle, onAdd, onDelete, onBulkComplete, on
       )}
 
       {/* Task list */}
-      <div className="p-4">
+      <div style={{ padding: 16 }}>
         {filter === 'done' && !selectMode ? (
           <div className="space-y-1">
             {doneTasks.length === 0 ? (
@@ -283,7 +283,7 @@ export function TaskBoard({ tasks, onToggle, onAdd, onDelete, onBulkComplete, on
 
       {/* Bulk action bar — floats inside the panel when items are selected */}
       {selectMode && someSelected && (
-        <div className="mx-4 mb-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-nw-800 border border-gold-600/20 shadow-lg">
+        <div className="mx-4 mb-4 flex items-center gap-2 rounded-xl bg-nw-800 border border-gold-600/20 shadow-lg" style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }}>
           <span className="text-[12px] font-semibold text-gold-300 flex-1">
             {selectedIds.size} task{selectedIds.size !== 1 ? 's' : ''} selected
           </span>

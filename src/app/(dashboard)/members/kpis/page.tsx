@@ -82,7 +82,7 @@ export default async function MemberKPIsPage() {
       <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.13)] bg-nw-750 shadow-gold-sm">
         <div className="flex flex-col md:flex-row md:items-stretch">
           {/* Total Leads */}
-          <div className="flex-1 p-6">
+          <div className="flex-1" style={{ padding: 20 }}>
             <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">Total Leads</span>
             <div className="mt-2 font-brand text-[36px] font-bold leading-none tracking-[-0.5px] text-white">{leadCount}</div>
             <p className="mt-2 text-xs font-medium text-nw-400">Contacts without a membership</p>
@@ -92,7 +92,7 @@ export default async function MemberKPIsPage() {
           <div className="h-px w-full md:h-auto md:w-px self-stretch mx-4 md:mx-0 my-0 md:my-3 bg-[rgba(255,255,255,0.09)]" />
 
           {/* Converted */}
-          <div className="flex-1 p-6">
+          <div className="flex-1" style={{ padding: 20 }}>
             <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">Converted</span>
             <div className="mt-2 flex items-baseline gap-2">
               <span className="font-brand text-[36px] font-bold leading-none tracking-[-0.5px] text-gold-300">{convertedLeads}</span>
@@ -109,7 +109,7 @@ export default async function MemberKPIsPage() {
           <div className="h-px w-full md:h-auto md:w-px self-stretch mx-4 md:mx-0 my-0 md:my-3 bg-[rgba(255,255,255,0.09)]" />
 
           {/* Conversion rate visual */}
-          <div className="flex-1 p-6 flex flex-col justify-between">
+          <div className="flex-1 flex flex-col justify-between" style={{ padding: 20 }}>
             <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">Conversion Rate</span>
             <div className="mt-2">
               <div className="flex items-center justify-between mb-1.5">
@@ -133,7 +133,7 @@ export default async function MemberKPIsPage() {
       {/* Membership Groups config */}
       <Panel>
         <PanelHeader eyebrow="Configuration" title="Membership Groups" />
-        <div className="p-6">
+        <div style={{ padding: 20 }}>
           <MembershipGroups initialGroups={memberGroups} />
         </div>
       </Panel>

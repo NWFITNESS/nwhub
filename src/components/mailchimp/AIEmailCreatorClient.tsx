@@ -83,7 +83,7 @@ function ImagePicker({ onSelect }: { onSelect: (images: MediaItem[]) => void }) 
   )
 
   return (
-    <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl p-6">
+    <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl" style={{ padding: 20 }}>
       <p className="text-xs font-semibold text-gold-600 uppercase tracking-[0.15em] mb-4">SELECT IMAGES</p>
 
       {/* Logo — always included */}
@@ -339,7 +339,7 @@ export function AIEmailCreatorClient() {
           {mode === 'ai' ? (
             <>
               {/* Prompt */}
-              <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl p-6">
+              <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl" style={{ padding: 20 }}>
                 <p className="text-xs font-semibold text-gold-600 uppercase tracking-[0.15em] mb-4">DESCRIBE YOUR EMAIL</p>
                 <textarea
                   value={prompt}
@@ -354,7 +354,7 @@ export function AIEmailCreatorClient() {
               </div>
 
               {/* Options */}
-              <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl p-6">
+              <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl" style={{ padding: 20 }}>
                 <p className="text-xs font-semibold text-gold-600 uppercase tracking-[0.15em] mb-4">OPTIONS</p>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -384,7 +384,7 @@ export function AIEmailCreatorClient() {
               <ImagePicker onSelect={setSelectedImages} />
 
               {/* Quick prompts */}
-              <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl p-6">
+              <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl" style={{ padding: 20 }}>
                 <p className="text-xs font-semibold text-gold-600 uppercase tracking-[0.15em] mb-4">QUICK START</p>
                 <div className="flex flex-col gap-2">
                   {QUICK_PROMPTS.map((qp, i) => (
@@ -418,7 +418,7 @@ export function AIEmailCreatorClient() {
           ) : (
             <>
               {/* Import mode — Campaign details */}
-              <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl p-6">
+              <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl" style={{ padding: 20 }}>
                 <p className="text-xs font-semibold text-gold-600 uppercase tracking-[0.15em] mb-4">CAMPAIGN DETAILS</p>
                 <div className="flex flex-col gap-4">
                   <div>
@@ -443,7 +443,7 @@ export function AIEmailCreatorClient() {
               </div>
 
               {/* Import mode — HTML input */}
-              <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl p-6">
+              <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-xl" style={{ padding: 20 }}>
                 <p className="text-xs font-semibold text-gold-600 uppercase tracking-[0.15em] mb-4">PASTE HTML CODE</p>
                 <textarea
                   value={importHtml}
@@ -475,7 +475,7 @@ export function AIEmailCreatorClient() {
 
           {/* AI-generated title + preview text (AI mode only — import mode has these on the left) */}
           {mode === 'ai' && html && campaignTitle && (
-            <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-2xl p-4 flex flex-col gap-3">
+            <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-2xl flex flex-col gap-3" style={{ padding: 16 }}>
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500 mb-1.5">Campaign Title</label>
                 <input
@@ -598,7 +598,7 @@ export function AIEmailCreatorClient() {
 
             {/* HTML source */}
             {html && activeTab === 'html' && (
-              <div className="flex-1 overflow-auto p-5">
+              <div className="flex-1 overflow-auto" style={{ padding: 18 }}>
                 <pre className="text-xs text-green-400/80 font-mono leading-relaxed whitespace-pre-wrap break-all">
                   {html}
                 </pre>

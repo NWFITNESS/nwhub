@@ -38,7 +38,7 @@ function StatCard({ label, value, sub, icon: Icon }: {
   label: string; value: string | number; sub?: string; icon: React.ComponentType<{ size?: number; className?: string }>
 }) {
   return (
-    <div className="rounded-xl border border-white/[0.08] bg-[#0f0f0f] p-6 flex items-start gap-4">
+    <div className="rounded-xl border border-white/[0.08] bg-[#0f0f0f] flex items-start gap-4" style={{ padding: 20 }}>
       <div className="w-9 h-9 rounded-lg bg-[#967705]/15 border border-[#967705]/20 flex items-center justify-center shrink-0">
         <Icon size={16} className="text-[#c9a70a]" />
       </div>
@@ -127,11 +127,11 @@ export function AiChatDashboard({ initialSettings, initialSessions }: Props) {
     <div className="space-y-6">
       {/* Toast */}
       {toast && (
-        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl border shadow-2xl text-sm font-medium ${
+        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-xl border shadow-2xl text-sm font-medium ${
           toast.ok
             ? 'bg-green-500/15 border-green-500/30 text-green-400'
             : 'bg-red-500/15 border-red-500/30 text-red-400'
-        }`}>
+        }`} style={{ paddingLeft: 16, paddingRight: 16, paddingTop: 12, paddingBottom: 12 }}>
           {toast.ok ? <CheckCircle size={15} /> : <AlertCircle size={15} />}
           {toast.msg}
         </div>
@@ -156,7 +156,7 @@ export function AiChatDashboard({ initialSettings, initialSessions }: Props) {
 
       {/* ── Settings tab ─────────────────────────────────────────────────── */}
       {activeTab === 'settings' && (
-        <div className="rounded-xl border border-white/[0.08] bg-[#0f0f0f] p-6 space-y-5 max-w-2xl">
+        <div className="rounded-xl border border-white/[0.08] bg-[#0f0f0f] space-y-5 max-w-2xl" style={{ padding: 20 }}>
           {/* Enable toggle */}
           <div className="flex items-center gap-3 pb-4 border-b border-white/[0.08]">
             <button

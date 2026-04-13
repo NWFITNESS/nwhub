@@ -105,7 +105,7 @@ export function EmailSubscribersTable({ initialSubscribers }: Props) {
         {filtered.length === 0 ? (
           <p className="text-center text-nw-500 py-12">No subscribers</p>
         ) : filtered.map(s => (
-          <div key={s.id} className="border-b border-[rgba(255,255,255,0.05)] p-4">
+          <div key={s.id} className="border-b border-[rgba(255,255,255,0.05)]" style={{ padding: 16 }}>
             <div className="flex items-start justify-between gap-2 mb-1">
               <p className="text-nw-200 font-medium" style={{ fontSize: 13 }}>{s.email}</p>
               <Badge variant={statusToBadge(s.status)}>{s.status}</Badge>
