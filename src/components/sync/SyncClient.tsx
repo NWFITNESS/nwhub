@@ -75,7 +75,7 @@ export function SyncClient() {
               </div>
               <div>
                 <p className="text-[13px] font-medium text-nw-200">{item.title}</p>
-                <p className="text-[11px] text-nw-500 mt-0.5">{item.desc}</p>
+                <p className="text-xs font-medium text-nw-400 mt-0.5">{item.desc}</p>
               </div>
             </div>
           ))}
@@ -162,7 +162,7 @@ export function SyncClient() {
       )}
 
       {/* Footer hint */}
-      <div className="flex items-center gap-1.5 text-[11px] text-nw-500">
+      <div className="flex items-center gap-1.5 text-xs font-medium text-nw-400">
         <Clock size={12} className="flex-shrink-0" />
         Recommended: sync once a week. All automations pick up new members automatically.
       </div>

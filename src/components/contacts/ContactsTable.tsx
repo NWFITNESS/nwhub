@@ -73,7 +73,7 @@ export function ContactsTable({ initialEnquiries }: Props) {
           <thead>
             <tr>
               {visibleCols.map((col) => (
-                <th key={col.key} className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">
+                <th key={col.key} className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">
                   {col.label}
                 </th>
               ))}
@@ -94,7 +94,7 @@ export function ContactsTable({ initialEnquiries }: Props) {
                   {visible.has('email') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-nw-400">{e.email}</td>}
                   {visible.has('type') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-nw-400">{e.enquiry_type}</td>}
                   {visible.has('status') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3"><Badge variant={statusToBadge(e.status)}>{e.status}</Badge></td>}
-                  {visible.has('date') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-[11px] text-nw-500">{format(new Date(e.created_at), 'dd MMM yyyy')}</td>}
+                  {visible.has('date') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-xs font-medium text-nw-400">{format(new Date(e.created_at), 'dd MMM yyyy')}</td>}
                   <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-right">
                     <Button variant="ghost" size="sm" onClick={(ev) => { ev.stopPropagation(); setSelected(e) }}>
                       View
@@ -112,24 +112,24 @@ export function ContactsTable({ initialEnquiries }: Props) {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-[13px]">
               <div>
-                <p className="text-[11px] text-nw-500 mb-1">Email</p>
+                <p className="text-xs font-medium text-nw-400 mb-1">Email</p>
                 <a href={`mailto:${selected.email}`} className="text-gold-300">{selected.email}</a>
               </div>
               <div>
-                <p className="text-[11px] text-nw-500 mb-1">Phone</p>
+                <p className="text-xs font-medium text-nw-400 mb-1">Phone</p>
                 <p className="text-nw-200">{selected.phone || '—'}</p>
               </div>
               <div>
-                <p className="text-[11px] text-nw-500 mb-1">Type</p>
+                <p className="text-xs font-medium text-nw-400 mb-1">Type</p>
                 <p className="text-nw-200">{selected.enquiry_type}</p>
               </div>
               <div>
-                <p className="text-[11px] text-nw-500 mb-1">Date</p>
+                <p className="text-xs font-medium text-nw-400 mb-1">Date</p>
                 <p className="text-nw-200">{format(new Date(selected.created_at), 'dd MMM yyyy HH:mm')}</p>
               </div>
             </div>
             <div>
-              <p className="text-[11px] text-nw-500 mb-2">Message</p>
+              <p className="text-xs font-medium text-nw-400 mb-2">Message</p>
               <p className="text-[13px] text-nw-300 rounded-[7px] bg-nw-800 p-3 whitespace-pre-wrap">{selected.message}</p>
             </div>
             <div className="flex items-center gap-2 pt-2 border-t border-[rgba(255,255,255,0.07)]">

@@ -164,25 +164,25 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
         <div className="hidden md:block">
           {/* Header */}
           <div className="grid gap-4 border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5" style={{ gridTemplateColumns: gridTemplate }}>
-            <button onClick={() => handleSort('title')} className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500 hover:text-nw-300 transition-colors text-left">
+            <button onClick={() => handleSort('title')} className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500 hover:text-nw-300 transition-colors text-left">
               Title <SortIcon col="title" />
             </button>
             {visible.has('status') && (
-              <button onClick={() => handleSort('status')} className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500 hover:text-nw-300 transition-colors">
+              <button onClick={() => handleSort('status')} className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500 hover:text-nw-300 transition-colors">
                 Status <SortIcon col="status" />
               </button>
             )}
             {visible.has('category') && (
-              <button onClick={() => handleSort('category')} className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500 hover:text-nw-300 transition-colors">
+              <button onClick={() => handleSort('category')} className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500 hover:text-nw-300 transition-colors">
                 Category <SortIcon col="category" />
               </button>
             )}
             {visible.has('published') && (
-              <button onClick={() => handleSort('published_at')} className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500 hover:text-nw-300 transition-colors">
+              <button onClick={() => handleSort('published_at')} className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500 hover:text-nw-300 transition-colors">
                 Published <SortIcon col="published_at" />
               </button>
             )}
-            <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Actions</span>
+            <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Actions</span>
           </div>
 
           {/* Rows */}
@@ -197,7 +197,7 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
                   <Link href={`/blog/manage/${post.id}`} className="text-[13px] font-medium text-nw-200 hover:text-gold-300 transition-colors truncate block">
                     {post.title}
                   </Link>
-                  {post.slug && <span className="text-[11px] text-nw-500 font-mono">/blog/{post.slug}</span>}
+                  {post.slug && <span className="text-xs font-medium text-nw-400 font-mono">/blog/{post.slug}</span>}
                 </div>
                 {visible.has('status') && (
                   <div className="flex items-center gap-2">
@@ -214,7 +214,7 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
                 )}
                 {visible.has('category') && <span className="text-[13px] text-nw-400">{post.category?.name ?? <span className="text-nw-600">—</span>}</span>}
                 {visible.has('published') && (
-                  <span className="text-[11px] text-nw-500 whitespace-nowrap">
+                  <span className="text-xs font-medium text-nw-400 whitespace-nowrap">
                     {post.published_at ? format(new Date(post.published_at), 'dd MMM yyyy') : <span className="text-nw-600">—</span>}
                   </span>
                 )}
@@ -242,9 +242,9 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
                   </Link>
                   <Badge variant={post.status === 'published' ? 'sent' : 'draft'}>{post.status}</Badge>
                 </div>
-                {post.slug && <p className="text-[11px] text-nw-500 font-mono mb-2">/blog/{post.slug}</p>}
+                {post.slug && <p className="text-xs font-medium text-nw-400 font-mono mb-2">/blog/{post.slug}</p>}
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-nw-500">
+                  <span className="text-xs font-medium text-nw-400">
                     {post.published_at ? format(new Date(post.published_at), 'dd MMM yyyy') : 'Draft'}
                   </span>
                   <Link href={`/blog/manage/${post.id}`}><Button variant="ghost" size="sm">Edit</Button></Link>
@@ -256,7 +256,7 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
       </Panel>
 
       {filtered.length > 0 && (
-        <p className="text-[11px] text-nw-500 text-right">{filtered.length} of {posts.length} posts</p>
+        <p className="text-xs font-medium text-nw-400 text-right">{filtered.length} of {posts.length} posts</p>
       )}
     </div>
   )

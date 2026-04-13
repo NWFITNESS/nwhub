@@ -233,7 +233,7 @@ export function TopBar({ title, actions }: TopBarProps) {
                           className="block border-b border-[rgba(255,255,255,0.05)] px-4 py-2.5 transition-colors hover:bg-[rgba(255,255,255,0.03)] no-underline"
                         >
                           <p className="text-[13px] text-nw-200">{r.label}</p>
-                          {r.sub && <p className="text-[11px] text-nw-500 mt-0.5">{r.sub}</p>}
+                          {r.sub && <p className="text-xs font-medium text-nw-400 mt-0.5">{r.sub}</p>}
                         </Link>
                       ))}
                     </div>

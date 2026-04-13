@@ -114,7 +114,7 @@ function GenerateLinkCard({ blocks }: { blocks: BlockWithDetails[] }) {
         <span className="text-[13px] font-medium text-nw-200">Generate payment link</span>
       </div>
 
-      <div className="flex flex-col gap-3 p-[17px]">
+      <div className="flex flex-col gap-3 p-6">
         <div className="grid grid-cols-2 gap-2">
           <Field label="Child first name">
             <input
@@ -248,11 +248,11 @@ function RecentDropInsCard({ rows }: { rows: DropInRow[] }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[rgba(255,255,255,0.05)]">
-                <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Child</th>
-                <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Cat.</th>
-                <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Amount</th>
-                <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Status</th>
-                <th className="px-3 py-2.5 text-right text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Actions</th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Child</th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Cat.</th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Amount</th>
+                <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Status</th>
+                <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -317,7 +317,7 @@ function StatusPill({ status }: { status: DropInRow['payment_status'] }) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">{label}</span>
+      <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">{label}</span>
       {children}
     </label>
   )

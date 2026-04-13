@@ -193,7 +193,7 @@ function ValuesSection({ values, editing, onChange, onAdd, onRemove }: {
               <>
                 <div className="flex h-8 w-8 items-center justify-center rounded-[7px] bg-[rgba(212,160,23,0.1)] text-xl">{v.emoji}</div>
                 <p className="text-[13px] font-medium text-nw-200">{v.title}</p>
-                <p className="text-[11px] text-nw-500 leading-relaxed">{v.description}</p>
+                <p className="text-xs font-medium text-nw-400 leading-relaxed">{v.description}</p>
               </>
             )}
           </div>

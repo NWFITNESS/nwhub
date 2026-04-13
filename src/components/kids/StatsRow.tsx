@@ -22,7 +22,7 @@ export function StatsRow({ stats }: Props) {
           <div className="font-brand text-[28px] font-bold leading-none tracking-[-0.5px] text-white">
             {it.value}
           </div>
-          <div className="mt-2 text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">
+          <div className="mt-2 text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">
             {it.label}
           </div>
         </div>

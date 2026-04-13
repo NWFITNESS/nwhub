@@ -48,7 +48,7 @@ export function MembershipGroups({ initialGroups }: Props) {
         <p className="text-[11px] font-medium uppercase tracking-[1px] text-nw-500 mb-2">
           Membership groups that count as &quot;Member&quot;
         </p>
-        <p className="text-[11px] text-nw-500 mb-3">
+        <p className="text-xs font-medium text-nw-400 mb-3">
           Contacts with any of these group tags will count toward your Total Members stat on the dashboard. These are matched against the WodBoard membership type after a sync.
         </p>
       </div>
@@ -96,7 +96,7 @@ export function MembershipGroups({ initialGroups }: Props) {
       {/* Reset to defaults */}
       <button
         onClick={() => { setGroups(DEFAULT_GROUPS); setSaved(false) }}
-        className="text-[11px] text-nw-500 hover:text-nw-300 transition-colors self-start"
+        className="text-xs font-medium text-nw-400 hover:text-nw-300 transition-colors self-start"
       >
         Reset to defaults
       </button>

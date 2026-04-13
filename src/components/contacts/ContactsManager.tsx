@@ -593,7 +593,7 @@ export function ContactsManager({ initialContacts }: Props) {
                 <div>
                   <p className="text-[14px] font-medium text-nw-200">{c.first_name} {c.last_name}</p>
                   {c.email && <p className="text-[12px] text-nw-400 mt-0.5">{c.email}</p>}
-                  {c.phone && <p className="text-[11px] text-nw-500 font-mono mt-0.5">{c.phone}</p>}
+                  {c.phone && <p className="text-xs font-medium text-nw-400 font-mono mt-0.5">{c.phone}</p>}
                 </div>
                 <MembershipDot groups={c.groups} />
               </div>
@@ -628,7 +628,7 @@ export function ContactsManager({ initialContacts }: Props) {
                   />
                 </th>
                 {['Name', 'Email', 'Phone', 'Groups', 'Source', 'Added', 'Status', ''].map((h) => (
-                  <th key={h} className="px-6 py-3 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">{h}</th>
+                  <th key={h} className="px-6 py-3 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">{h}</th>
                 ))}
               </tr>
               {/* Column filters */}
@@ -843,9 +843,9 @@ export function ContactsManager({ initialContacts }: Props) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/[0.08]">
-                    <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500 w-36">Our field</th>
-                    <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Your CSV column</th>
-                    <th className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500 w-48">Preview (first row)</th>
+                    <th className="px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500 w-36">Our field</th>
+                    <th className="px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Your CSV column</th>
+                    <th className="px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500 w-48">Preview (first row)</th>
                   </tr>
                 </thead>
                 <tbody>

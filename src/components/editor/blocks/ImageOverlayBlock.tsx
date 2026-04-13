@@ -48,7 +48,7 @@ export function ImageOverlayBlockView({ node, updateAttributes, deleteNode }: No
       >
         {/* Mini toolbar */}
         <div className="flex items-center gap-1.5 px-3 py-2 bg-black/70 border-b border-white/10 backdrop-blur-sm">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-white/30 mr-1">Image Overlay</span>
+          <span className="text-[11px] font-bold uppercase tracking-widest text-white/30 mr-1">Image Overlay</span>
           {(['light', 'medium', 'dark'] as const).map((o) => (
             <button
               key={o}

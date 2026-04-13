@@ -91,7 +91,7 @@ export default function FinancialsPage() {
             <Receipt size={22} className="text-red-400" strokeWidth={1.75} />
           </div>
           <p className="text-[13px] font-medium text-red-400">Failed to load Xero data</p>
-          <p className="text-[11px] text-nw-500 text-center max-w-[360px]">{apiError}</p>
+          <p className="text-xs font-medium text-nw-400 text-center max-w-[360px]">{apiError}</p>
           <Button variant="default" size="sm" onClick={load}>
             <RefreshCw size={12} /> Retry
           </Button>

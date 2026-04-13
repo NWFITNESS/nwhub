@@ -40,7 +40,7 @@ export function TwoColumnBlockView({ node, updateAttributes, deleteNode }: NodeV
       <div className="border border-white/10 rounded-lg overflow-hidden mb-4 bg-[#111111]">
         {/* Mini toolbar */}
         <div className="flex items-center gap-1.5 px-3 py-2 bg-[#161616] border-b border-white/10">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-white/30 mr-1">Two-Column</span>
+          <span className="text-[11px] font-bold uppercase tracking-widest text-white/30 mr-1">Two-Column</span>
           {(['50/50', '60/40', '40/60'] as const).map((l) => (
             <button
               key={l}

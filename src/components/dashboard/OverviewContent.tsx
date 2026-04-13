@@ -245,16 +245,16 @@ export function OverviewContent({ data, formattedDate }: Props) {
               <div className="relative cursor-default overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.13)] bg-nw-750 shadow-gold-sm transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700 hover:shadow-gold-md h-full">
                 <div className="flex items-stretch h-full">
                   {/* Total Leads */}
-                  <div className="flex-1 p-[13px_15px_11px]">
-                    <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">Total Leads</span>
+                  <div className="flex-1 p-5">
+                    <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">Total Leads</span>
                     <div className="mt-1.5 font-brand text-[28px] font-bold leading-none tracking-[-0.5px] text-white">{data.leadCount}</div>
                     <div className="mt-1 text-[10px] text-nw-500">No membership</div>
                   </div>
                   {/* Divider */}
                   <div className="w-px self-stretch my-2.5 bg-[rgba(255,255,255,0.09)]" />
                   {/* Converted */}
-                  <div className="flex-1 p-[13px_15px_11px]">
-                    <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">Converted</span>
+                  <div className="flex-1 p-5">
+                    <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">Converted</span>
                     <div className="mt-1.5 flex items-baseline gap-1.5">
                       <span className="font-brand text-[28px] font-bold leading-none tracking-[-0.5px] text-gold-300">{data.convertedLeads}</span>
                       {convRate > 0 && (
@@ -326,7 +326,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
                         <span className="text-xs font-medium text-nw-200">{enq.name}</span>
                         <span className="text-[10px] text-nw-600">{new Date(enq.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
                       </div>
-                      <span className="truncate text-[11px] text-nw-500">{enq.message ?? enq.enquiry_type}</span>
+                      <span className="truncate text-xs font-medium text-nw-400">{enq.message ?? enq.enquiry_type}</span>
                     </div>
                   ))}
                 </div>
@@ -464,7 +464,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
       case 'system-status':
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-            <div className="flex h-full flex-col gap-3 rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-[14px_17px]">
+            <div className="flex h-full flex-col gap-3 rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-5">
               <span className="text-[10px] font-bold uppercase tracking-[1.6px] text-nw-400">System Status</span>
               <div className="flex flex-col gap-2">
                 {[
@@ -640,7 +640,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
         {/* Page header */}
         <div className="flex items-start justify-between gap-6">
           <div className="flex flex-col gap-[3px]">
-            <span className="text-[10px] font-semibold uppercase tracking-[1.8px] text-nw-500">Admin Panel</span>
+            <span className="text-[11px] font-bold uppercase tracking-[2px] text-nw-500">Admin Panel</span>
             <h1 className="font-brand text-[28px] font-bold leading-none tracking-[0.3px] text-white">
               Northern Warrior <span className="text-gold-400">Hub</span>
             </h1>

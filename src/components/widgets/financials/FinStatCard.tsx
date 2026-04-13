@@ -24,14 +24,14 @@ export function FinStatCard({ label, value, iconBg, icon: Icon, sub, trend, nega
           £{value.toLocaleString()}
         </div>
         {trend != null ? (
-          <div className="mt-1.5 flex items-center gap-1 text-[11px] text-nw-500">
+          <div className="mt-1.5 flex items-center gap-1 text-xs font-medium text-nw-400">
             {trend >= 0
               ? <ArrowUpRight size={10} className="text-[#4ade80]" />
               : <ArrowDownRight size={10} className="text-red-400" />}
             {Math.abs(trend)}% vs last month
           </div>
         ) : sub ? (
-          <div className="mt-1.5 text-[11px] text-nw-500">{sub}</div>
+          <div className="mt-1.5 text-xs font-medium text-nw-400">{sub}</div>
         ) : null}
       </div>
       <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-nw-600 to-transparent" />

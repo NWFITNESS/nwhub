@@ -111,7 +111,7 @@ export function BlockModal({ open, onClose, onCreated }: Props) {
         </label>
 
         <div className="mt-2 rounded-[8px] border border-[rgba(255,255,255,0.07)] p-3">
-          <div className="mb-2 text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">
+          <div className="mb-2 text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">
             Capacity & pricing
           </div>
           <div className="flex flex-col gap-2">
@@ -154,7 +154,7 @@ export function BlockModal({ open, onClose, onCreated }: Props) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">{label}</span>
+      <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">{label}</span>
       {children}
     </label>
   )

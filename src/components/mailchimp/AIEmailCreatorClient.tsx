@@ -477,7 +477,7 @@ export function AIEmailCreatorClient() {
           {mode === 'ai' && html && campaignTitle && (
             <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-2xl p-4 flex flex-col gap-3">
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500 mb-1.5">Campaign Title</label>
+                <label className="block text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500 mb-1.5">Campaign Title</label>
                 <input
                   value={campaignTitle}
                   onChange={e => setCampaignTitle(e.target.value)}
@@ -486,7 +486,7 @@ export function AIEmailCreatorClient() {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500 mb-1.5">Preview Text</label>
+                <label className="block text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500 mb-1.5">Preview Text</label>
                 <input
                   value={previewText}
                   onChange={e => setPreviewText(e.target.value)}

@@ -130,7 +130,7 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
         {latestUpdate && (
           <>
             <span className="text-nw-600">·</span>
-            <div className="ml-auto flex items-center gap-1.5 text-[11px] text-nw-500">
+            <div className="ml-auto flex items-center gap-1.5 text-xs font-medium text-nw-400">
               <Clock size={11} />
               Last updated {timeAgo(latestUpdate)}
             </div>
@@ -188,7 +188,7 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
                       <p className="text-[13px] font-medium text-nw-200 group-hover:text-white transition-colors leading-tight">
                         {label}
                       </p>
-                      <p className="text-[11px] text-nw-500 mt-1 flex items-center gap-1">
+                      <p className="text-xs font-medium text-nw-400 mt-1 flex items-center gap-1">
                         <Clock size={10} />
                         {updated ? `Updated ${timeAgo(updated)} ago` : 'Not yet seeded'}
                       </p>
@@ -229,7 +229,7 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
               <Search size={16} className="text-nw-500" />
             </div>
             <p className="text-[13px] font-medium text-nw-400">No pages found</p>
-            <p className="text-[11px] text-nw-500 text-center max-w-[220px]">
+            <p className="text-xs font-medium text-nw-400 text-center max-w-[220px]">
               No pages match &ldquo;{search}&rdquo;. Try a different search term.
             </p>
           </motion.div>

@@ -163,13 +163,13 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected, outlo
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-nw-800 border border-[rgba(255,255,255,0.07)]">
                 <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${gmailConnected ? 'bg-green-400 animate-pulse' : 'bg-nw-600'}`} />
-                <span className="text-[11px] text-nw-500 whitespace-nowrap">
+                <span className="text-xs font-medium text-nw-400 whitespace-nowrap">
                   {gmailConnected ? 'Gmail' : 'Gmail off'}
                 </span>
               </div>
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-nw-800 border border-[rgba(255,255,255,0.07)]">
                 <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${outlookConnected ? 'bg-blue-400 animate-pulse' : 'bg-nw-600'}`} />
-                <span className="text-[11px] text-nw-500 whitespace-nowrap">
+                <span className="text-xs font-medium text-nw-400 whitespace-nowrap">
                   {outlookConnected ? 'Outlook' : 'Outlook off'}
                 </span>
               </div>

@@ -63,7 +63,7 @@ export function BlockInsertMenu({ editor }: Props) {
 
       {open && (
         <div className="absolute top-full left-0 mt-1 z-50 bg-[#1e1e1e] border border-white/15 rounded-lg shadow-2xl overflow-hidden min-w-[210px]">
-          <p className="px-3 pt-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-white/30 border-b border-white/10">
+          <p className="px-3 pt-2.5 pb-1.5 text-[11px] font-bold uppercase tracking-widest text-white/30 border-b border-white/10">
             Insert Layout Block
           </p>
 

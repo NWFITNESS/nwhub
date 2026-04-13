@@ -82,18 +82,18 @@ export default async function MemberKPIsPage() {
       <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.13)] bg-nw-750 shadow-gold-sm">
         <div className="flex flex-col md:flex-row md:items-stretch">
           {/* Total Leads */}
-          <div className="flex-1 p-[17px_20px_15px]">
-            <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">Total Leads</span>
+          <div className="flex-1 p-6">
+            <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">Total Leads</span>
             <div className="mt-2 font-brand text-[36px] font-bold leading-none tracking-[-0.5px] text-white">{leadCount}</div>
-            <p className="mt-2 text-[11px] text-nw-500">Contacts without a membership</p>
+            <p className="mt-2 text-xs font-medium text-nw-400">Contacts without a membership</p>
           </div>
 
           {/* Divider */}
           <div className="h-px w-full md:h-auto md:w-px self-stretch mx-4 md:mx-0 my-0 md:my-3 bg-[rgba(255,255,255,0.09)]" />
 
           {/* Converted */}
-          <div className="flex-1 p-[17px_20px_15px]">
-            <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">Converted</span>
+          <div className="flex-1 p-6">
+            <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">Converted</span>
             <div className="mt-2 flex items-baseline gap-2">
               <span className="font-brand text-[36px] font-bold leading-none tracking-[-0.5px] text-gold-300">{convertedLeads}</span>
               {conversionRate > 0 && (
@@ -102,15 +102,15 @@ export default async function MemberKPIsPage() {
                 </span>
               )}
             </div>
-            <p className="mt-2 text-[11px] text-nw-500">Leads who became members</p>
+            <p className="mt-2 text-xs font-medium text-nw-400">Leads who became members</p>
           </div>
 
           {/* Divider */}
           <div className="h-px w-full md:h-auto md:w-px self-stretch mx-4 md:mx-0 my-0 md:my-3 bg-[rgba(255,255,255,0.09)]" />
 
           {/* Conversion rate visual */}
-          <div className="flex-1 p-[17px_20px_15px] flex flex-col justify-between">
-            <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">Conversion Rate</span>
+          <div className="flex-1 p-6 flex flex-col justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">Conversion Rate</span>
             <div className="mt-2">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="font-brand text-[20px] font-bold text-white">{conversionRate}%</span>
@@ -122,7 +122,7 @@ export default async function MemberKPIsPage() {
                 />
               </div>
             </div>
-            <p className="mt-2 text-[11px] text-nw-500">Lead → member pipeline</p>
+            <p className="mt-2 text-xs font-medium text-nw-400">Lead → member pipeline</p>
           </div>
         </div>
 

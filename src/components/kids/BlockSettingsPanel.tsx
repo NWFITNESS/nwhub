@@ -111,7 +111,7 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
         )}
       </div>
 
-      <div className="flex flex-col gap-4 p-[17px]">
+      <div className="flex flex-col gap-4 p-6">
         <Field label="Block name">
           <input
             type="text"
@@ -186,7 +186,7 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
 function Field({ label, children, className = '' }: { label: string; children: React.ReactNode; className?: string }) {
   return (
     <label className={`flex flex-col gap-1.5 ${className}`}>
-      <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">{label}</span>
+      <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">{label}</span>
       {children}
     </label>
   )

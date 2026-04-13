@@ -80,7 +80,7 @@ export function MobileBlogManager({ posts }: Props) {
                           {post.category.name}
                         </span>
                       )}
-                      <span className="text-[11px] text-nw-500">
+                      <span className="text-xs font-medium text-nw-400">
                         {new Date(post.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                     </div>

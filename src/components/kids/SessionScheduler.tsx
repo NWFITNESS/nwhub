@@ -60,7 +60,7 @@ export function SessionScheduler({ block }: Props) {
         </button>
       </div>
 
-      <div className="p-[17px]">
+      <div className="p-6">
         <div className="flex flex-wrap gap-2">
           {sessions.map((s) =>
             s.is_break ? (

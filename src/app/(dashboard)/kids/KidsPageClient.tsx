@@ -114,7 +114,7 @@ function SectionDivider({ label }: { label: string }) {
   return (
     <div className="mt-2 flex items-center gap-3">
       <div className="h-px flex-1 bg-[rgba(255,255,255,0.07)]" />
-      <span className="text-[10px] font-semibold uppercase tracking-[1.4px] text-nw-500">
+      <span className="text-[11px] font-bold uppercase tracking-[1.5px] text-nw-500">
         {label}
       </span>
       <div className="h-px flex-1 bg-[rgba(255,255,255,0.07)]" />

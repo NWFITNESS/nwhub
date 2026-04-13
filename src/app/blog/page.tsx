@@ -84,7 +84,7 @@ export default async function PublicBlogPage() {
                 {/* Card body */}
                 <div className="p-5">
                   {post.category && (
-                    <span className="inline-block text-[10px] font-semibold uppercase tracking-widest text-[#c9a70a] border border-[#967705]/30 px-2 py-0.5 rounded-full mb-3">
+                    <span className="inline-block text-[11px] font-bold uppercase tracking-widest text-[#c9a70a] border border-[#967705]/30 px-2 py-0.5 rounded-full mb-3">
                       {post.category.name}
                     </span>
                   )}

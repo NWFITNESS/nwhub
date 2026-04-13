@@ -172,7 +172,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-medium text-[#f59e0b]">Mailchimp not configured</p>
-              <p className="text-[11px] text-nw-500 mt-0.5">
+              <p className="text-xs font-medium text-nw-400 mt-0.5">
                 {!initialSettings.api_key ? 'Add your API key in Settings below.' : 'Select and save an audience in Settings below.'}
               </p>
             </div>
@@ -265,7 +265,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
                   <div className="flex items-center gap-2 mb-1">
                     <Badge variant={statusBadgeVariant(c.status)}>{c.status}</Badge>
                     {c.send_time && (
-                      <span className="text-[11px] text-nw-500">{format(new Date(c.send_time), 'dd MMM yyyy')}</span>
+                      <span className="text-xs font-medium text-nw-400">{format(new Date(c.send_time), 'dd MMM yyyy')}</span>
                     )}
                   </div>
 
@@ -273,7 +273,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
                     {c.settings.title || c.settings.subject_line}
                   </p>
                   {c.settings.title && c.settings.subject_line && c.settings.title !== c.settings.subject_line && (
-                    <p className="text-[11px] text-nw-500 truncate mt-0.5">{c.settings.subject_line}</p>
+                    <p className="text-xs font-medium text-nw-400 truncate mt-0.5">{c.settings.subject_line}</p>
                   )}
 
                   {/* Sent metrics */}
@@ -350,7 +350,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
                 </div>
                 <div>
                   <p className="text-[13px] font-medium text-nw-200 truncate">{t.name}</p>
-                  <p className="text-[11px] text-nw-500 mt-0.5">{format(new Date(t.created_at), 'dd MMM yyyy')}</p>
+                  <p className="text-xs font-medium text-nw-400 mt-0.5">{format(new Date(t.created_at), 'dd MMM yyyy')}</p>
                 </div>
                 <Button variant="gold" size="sm" className="w-full" onClick={() => router.push(`/mailchimp/create?template=${t.id}`)}>
                   <Plus size={12} /> Start Campaign

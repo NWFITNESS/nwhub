@@ -166,7 +166,7 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
 
       {/* Block info bar (only when not searching) */}
       {!searchResults && activeBlock && (
-        <div className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.05)] bg-nw-800/30 px-6 py-2 text-[11px] text-nw-500">
+        <div className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.05)] bg-nw-800/30 px-6 py-2 text-xs font-medium text-nw-400">
           <span>Starts {new Date(activeBlock.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
           <span>·</span>
           <span>{activeBlock.session_count} sessions</span>
@@ -181,7 +181,7 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
 
       {/* Search results panel OR roster table */}
       {searchResults ? (
-        <div className="p-[17px]">
+        <div className="p-6">
           {searching && <p className="text-xs text-nw-500">Searching…</p>}
           {!searching && searchResults.length === 0 && (
             <p className="text-xs text-nw-500">No children match &ldquo;{searchQuery}&rdquo;</p>
@@ -312,14 +312,14 @@ function RosterTable({ rows, totalRows, onClearFilters }: { rows: RosterRow[]; t
         <thead>
           <tr className="border-b border-[rgba(255,255,255,0.05)]">
             <th className="w-10 px-3 py-2.5" />
-            <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Child</th>
-            <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Category</th>
-            <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Age</th>
-            <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Parent</th>
-            <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Payment</th>
-            <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Photo</th>
-            <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Waiver</th>
-            <th className="px-3 py-2.5 text-right text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Actions</th>
+            <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Child</th>
+            <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Category</th>
+            <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Age</th>
+            <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Parent</th>
+            <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Payment</th>
+            <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Photo</th>
+            <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Waiver</th>
+            <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Actions</th>
           </tr>
         </thead>
         <tbody>

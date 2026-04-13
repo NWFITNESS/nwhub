@@ -33,11 +33,11 @@ export function BankTransactionsWidget({ transactions }: Props) {
       <table className="w-full border-collapse text-[13px]">
         <thead>
           <tr>
-            <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Contact</th>
-            <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Reference</th>
-            <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Date</th>
-            <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Type</th>
-            <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-right text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Amount</th>
+            <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Contact</th>
+            <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Reference</th>
+            <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Date</th>
+            <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Type</th>
+            <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-right text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Amount</th>
           </tr>
         </thead>
         <tbody>
@@ -50,7 +50,7 @@ export function BankTransactionsWidget({ transactions }: Props) {
               <tr key={i} className="transition-colors hover:bg-[rgba(255,255,255,0.03)]">
                 <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-nw-200">{txn.contact}</td>
                 <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-nw-400">{txn.reference}</td>
-                <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-[11px] text-nw-500">{formatDate(txn.date)}</td>
+                <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-xs font-medium text-nw-400">{formatDate(txn.date)}</td>
                 <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3">
                   <Badge variant={txn.type === 'IN' ? 'active' : 'danger'}>
                     {txn.type === 'IN' ? 'Income' : 'Expense'}

@@ -26,7 +26,7 @@ export default async function SettingsPage() {
       <Panel>
         <PanelHeader eyebrow="CMS" title="Global Settings" />
         <div className="p-4">
-          <p className="text-[11px] text-nw-500 mb-4">Navigation, footer, contact info, and social links used across the site.</p>
+          <p className="text-xs font-medium text-nw-400 mb-4">Navigation, footer, contact info, and social links used across the site.</p>
           <GlobalSettingsEditor initialSettings={settingsMap} />
         </div>
       </Panel>
@@ -34,7 +34,7 @@ export default async function SettingsPage() {
       <Panel>
         <PanelHeader eyebrow="Integrations" title="Social Media" />
         <div className="p-4">
-          <p className="text-[11px] text-nw-500 mb-4">Connect Facebook, Instagram, and LinkedIn to publish branded posts directly from the Branding Studio.</p>
+          <p className="text-xs font-medium text-nw-400 mb-4">Connect Facebook, Instagram, and LinkedIn to publish branded posts directly from the Branding Studio.</p>
           <SocialConnections />
         </div>
       </Panel>
@@ -42,7 +42,7 @@ export default async function SettingsPage() {
       <Panel id="digest-preferences" className="scroll-mt-24">
         <PanelHeader eyebrow="Automation" title="Digest Preferences" />
         <div className="p-4">
-          <p className="text-[11px] text-nw-500 mb-4">Configure your daily morning digest email — who receives it and whether it&apos;s enabled.</p>
+          <p className="text-xs font-medium text-nw-400 mb-4">Configure your daily morning digest email — who receives it and whether it&apos;s enabled.</p>
           <DigestPreferences
             initialRecipient={settingsMap['digest_recipient'] ?? 'info@northernwarrior.co.uk'}
             initialEnabled={settingsMap['digest_enabled'] !== 'false'}
@@ -55,7 +55,7 @@ export default async function SettingsPage() {
       <Panel>
         <PanelHeader eyebrow="Auth" title="Account &amp; Security" />
         <div className="p-4">
-          <p className="text-[11px] text-nw-500 mb-4">Manage your password, email address, and active sessions.</p>
+          <p className="text-xs font-medium text-nw-400 mb-4">Manage your password, email address, and active sessions.</p>
           <AccountSecuritySettings />
         </div>
       </Panel>

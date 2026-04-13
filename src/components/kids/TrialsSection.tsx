@@ -60,13 +60,13 @@ export function TrialsSection({ trials, blocks }: Props) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[rgba(255,255,255,0.05)]">
-                  <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Child</th>
-                  <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Cat.</th>
-                  <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Parent</th>
-                  <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Session</th>
-                  <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Source</th>
-                  <th className="px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Status</th>
-                  <th className="px-3 py-2.5 text-right text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">Actions</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Child</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Cat.</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Parent</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Session</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Source</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Status</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Actions</th>
                 </tr>
               </thead>
               <tbody>

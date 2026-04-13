@@ -127,7 +127,7 @@ export function EmailSubscribersTable({ initialSubscribers }: Props) {
           <thead>
             <tr>
               {visibleCols.map((col) => (
-                <th key={col.key} className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">
+                <th key={col.key} className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">
                   {col.label}
                 </th>
               ))}
@@ -143,7 +143,7 @@ export function EmailSubscribersTable({ initialSubscribers }: Props) {
                   {visible.has('email') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 font-medium text-nw-200">{s.email}</td>}
                   {visible.has('name') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-nw-400">{[s.first_name, s.last_name].filter(Boolean).join(' ') || '—'}</td>}
                   {visible.has('status') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3"><Badge variant={statusToBadge(s.status)}>{s.status}</Badge></td>}
-                  {visible.has('subscribed') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-[11px] text-nw-500">{format(new Date(s.subscribed_at), 'dd MMM yyyy')}</td>}
+                  {visible.has('subscribed') && <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-xs font-medium text-nw-400">{format(new Date(s.subscribed_at), 'dd MMM yyyy')}</td>}
                   <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-right">
                     {s.status === 'subscribed' && (
                       <Button variant="ghost" size="sm" onClick={() => handleUnsubscribe(s.id)}>Unsubscribe</Button>

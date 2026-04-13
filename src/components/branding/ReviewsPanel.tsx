@@ -59,7 +59,7 @@ function ReviewCard({ review, isActive, onSelect }: { review: Review; isActive: 
           <p className="text-[13px] font-medium text-nw-200 truncate">{review.author_name}</p>
           <div className="flex items-center gap-2 mt-0.5">
             <StarRow rating={review.rating} />
-            <span className="text-[11px] text-nw-500">{review.relative_time_description}</span>
+            <span className="text-xs font-medium text-nw-400">{review.relative_time_description}</span>
           </div>
         </div>
       </div>

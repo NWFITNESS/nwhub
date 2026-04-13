@@ -69,12 +69,12 @@ export function MobileEmailCampaigns({ campaigns }: Props) {
                       <p className="text-[12px] text-nw-400 truncate">{c.subject}</p>
                     )}
                     {c.stats?.sent != null && (
-                      <p className="text-[11px] text-nw-500 mt-0.5">
+                      <p className="text-xs font-medium text-nw-400 mt-0.5">
                         {c.stats.sent} sent · {c.stats.opened ?? 0} opened
                       </p>
                     )}
                   </div>
-                  <span className="text-[11px] text-nw-500 flex-shrink-0">
+                  <span className="text-xs font-medium text-nw-400 flex-shrink-0">
                     {new Date(c.sent_at ?? c.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                   </span>
                 </div>
