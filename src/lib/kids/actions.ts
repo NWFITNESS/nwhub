@@ -947,6 +947,29 @@ export async function refundBlockBooking(bookingId: string): Promise<void> {
 }
 
 /**
+ * Delete a pending (unpaid) block booking. Only bookings with
+ * payment_status='pending' can be deleted — paid or refunded rows
+ * must use refundBlockBooking instead.
+ */
+export async function deletePendingBooking(bookingId: string): Promise<void> {
+  const admin = createAdminClient()
+
+  const { data: booking, error } = await admin
+    .from('kids_block_bookings')
+    .select('id, payment_status')
+    .eq('id', bookingId)
+    .single()
+
+  if (error || !booking) throw new Error(`Booking not found: ${error?.message ?? 'unknown'}`)
+  if (booking.payment_status !== 'pending') {
+    throw new Error('Only pending (unpaid) bookings can be deleted.')
+  }
+
+  await admin.from('kids_block_bookings').delete().eq('id', bookingId)
+  revalidatePath('/kids')
+}
+
+/**
  * Refund a paid drop-in booking via Stripe and mark the row as refunded.
  */
 export async function refundDropIn(bookingId: string): Promise<void> {

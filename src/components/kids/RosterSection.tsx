@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useRef, useEffect, useTransition } from 'react'
 import { CATEGORY_BADGE, CATEGORY_LABEL, ageFromDob } from '@/lib/kids/constants'
-import { refundBlockBooking } from '@/lib/kids/actions'
+import { refundBlockBooking, deletePendingBooking } from '@/lib/kids/actions'
 import type { BlockWithDetails, KidsCategory, RosterRow, SearchResultRow } from '@/lib/kids/types'
 
 interface Props {
@@ -288,6 +288,17 @@ function RosterTable({ rows, totalRows, onClearFilters }: { rows: RosterRow[]; t
     })
   }
 
+  function handleDeletePending(bookingId: string, childName: string) {
+    if (!window.confirm(`Delete the pending (unpaid) booking for ${childName}? This cannot be undone.`)) return
+    startTransition(async () => {
+      try {
+        await deletePendingBooking(bookingId)
+      } catch (e) {
+        alert((e as Error).message)
+      }
+    })
+  }
+
   if (rows.length === 0) {
     return (
       <div className="flex flex-col items-center gap-2 px-[17px] py-12">
@@ -338,7 +349,7 @@ function RosterTable({ rows, totalRows, onClearFilters }: { rows: RosterRow[]; t
               </td>
               <td className="px-3 py-3 text-[12px]">{r.photo_consent ? <span className="text-[#4ade80]">✓ Yes</span> : <span className="text-[#f87171]">✗ No</span>}</td>
               <td className="px-3 py-3 text-[12px]">{r.waiver_signed ? <span className="text-[#4ade80]">✓</span> : <span className="text-[#f87171]">✗</span>}</td>
-              <td className="px-3 py-3 text-right">
+              <td className="px-3 py-3 text-right flex items-center justify-end gap-2">
                 {r.payment_status === 'paid' && (
                   <button
                     onClick={() => handleRefund(r.booking_id, r.child_name)}
@@ -346,6 +357,15 @@ function RosterTable({ rows, totalRows, onClearFilters }: { rows: RosterRow[]; t
                     className="text-[11px] font-medium text-nw-400 hover:text-[#f87171] disabled:opacity-50 transition-colors"
                   >
                     Refund
+                  </button>
+                )}
+                {r.payment_status === 'pending' && (
+                  <button
+                    onClick={() => handleDeletePending(r.booking_id, r.child_name)}
+                    disabled={pending}
+                    className="text-[11px] font-medium text-nw-400 hover:text-[#f87171] disabled:opacity-50 transition-colors"
+                  >
+                    Delete
                   </button>
                 )}
               </td>
