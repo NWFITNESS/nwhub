@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { type DashboardData } from '@/components/widgets/DashboardWidgetGrid'
 import { MobileDashboard } from '@/components/mobile/MobileDashboard'
 import { OverviewContent } from '@/components/dashboard/OverviewContent'
@@ -71,7 +71,7 @@ function buildMonthlyVisitors(rows: Array<{ created_at: string }>, months: numbe
 // ---------------------------------------------------------------------------
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // Load member_groups setting to filter Total Members count
   const { data: memberGroupsSetting } = await supabase
