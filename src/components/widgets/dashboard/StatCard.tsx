@@ -20,7 +20,7 @@ export function StatCard({ label, value, sub, icon, iconBg, gold = false, trend,
       iconElement = icon
     } else {
       const Icon = icon as React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>
-      iconElement = <Icon size={16} className="text-nw-300" strokeWidth={1.7} />
+      iconElement = <Icon size={17} className="text-nw-200" strokeWidth={1.8} />
     }
   }
 
@@ -31,27 +31,27 @@ export function StatCard({ label, value, sub, icon, iconBg, gold = false, trend,
       : null)
 
   return (
-    <div className="relative cursor-default overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.13)] bg-nw-750 p-[15px_17px_13px] shadow-gold-sm transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700 hover:shadow-gold-md">
+    <div className="relative cursor-default overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 p-6 shadow-gold-sm transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700 hover:shadow-gold-md">
       <div className="flex items-start justify-between">
-        <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">{label}</span>
+        <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">{label}</span>
         {iconElement && (
           <div
-            className="flex h-7 w-7 items-center justify-center rounded-[7px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.06)]"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.06)]"
             style={iconBg ? { background: iconBg } : undefined}
           >
             {iconElement}
           </div>
         )}
       </div>
-      <div className={`mt-2 font-brand text-[32px] font-bold leading-none tracking-[-0.5px] ${gold ? 'text-gold-300' : 'text-white'}`}>
+      <div className={`mt-3 font-brand text-[34px] font-bold leading-none tracking-[-0.5px] ${gold ? 'text-gold-300' : 'text-white'}`}>
         {value}
       </div>
       {subText && (
-        <div className="mt-1.5 flex items-center gap-1 text-[11px] text-nw-500">
+        <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-nw-400">
           {alert ? (
-            <><ArrowUpRight size={10} className="text-red-400" />{subText}</>
+            <><ArrowUpRight size={11} className="text-red-400" />{subText}</>
           ) : trend != null ? (
-            <>{trend >= 0 ? <ArrowUpRight size={10} className="text-[#4ade80]" /> : <ArrowDownRight size={10} className="text-red-400" />}{subText}</>
+            <>{trend >= 0 ? <ArrowUpRight size={11} className="text-[#4ade80]" /> : <ArrowDownRight size={11} className="text-red-400" />}{subText}</>
           ) : (
             subText
           )}

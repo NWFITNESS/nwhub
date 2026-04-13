@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { Pencil, Trash2, Upload, Plus, Search, X, Download } from 'lucide-react'
+import { SearchInput } from '@/components/ui/SearchInput'
 import { Button } from '@/components/ui/Button'
 import { Modal, ConfirmModal } from '@/components/ui/Modal'
 import { format } from 'date-fns'
@@ -500,16 +501,13 @@ export function ContactsManager({ initialContacts }: Props) {
     <div>
       {/* Top bar */}
       <div className="flex flex-wrap items-center gap-3 mb-5">
-        <div className="relative flex-1 min-w-[200px]">
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Quick search by name, email or phone…"
-            style={{ paddingLeft: '2.25rem' }}
-            className="w-full pr-4 py-2 rounded-lg bg-nw-800 border border-[rgba(255,255,255,0.09)] text-[13px] text-nw-200 placeholder:text-nw-500 outline-none focus:border-[rgba(212,160,23,0.4)] focus:bg-nw-750 transition-colors"
-          />
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-nw-500 pointer-events-none z-10" />
-        </div>
+        <SearchInput
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onClear={() => setSearch('')}
+          placeholder="Quick search by name, email or phone…"
+          className="flex-1 min-w-[200px]"
+        />
         {hasColFilters && (
           <button
             onClick={() => setColFilters({ nameSort: '', email: '', phone: '', group: 'all', source: 'all', dateFrom: '', status: 'all' })}

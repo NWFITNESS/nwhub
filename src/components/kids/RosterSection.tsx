@@ -4,6 +4,7 @@ import { useMemo, useState, useRef, useEffect, useTransition } from 'react'
 import { CATEGORY_BADGE, CATEGORY_LABEL, ageFromDob } from '@/lib/kids/constants'
 import { refundBlockBooking, deletePendingBooking } from '@/lib/kids/actions'
 import type { BlockWithDetails, KidsCategory, RosterRow, SearchResultRow } from '@/lib/kids/types'
+import { SearchInput } from '@/components/ui/SearchInput'
 
 interface Props {
   blocks: BlockWithDetails[]
@@ -107,22 +108,13 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
 
       {/* Search + filter bar */}
       <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] px-[17px] py-3">
-        <div className="relative flex-1">
-          <svg
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-nw-500"
-            width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"
-          >
-            <circle cx="7" cy="7" r="5" />
-            <path d="M11 11l3 3" strokeLinecap="round" />
-          </svg>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search child name…"
-            className="w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 pl-9 pr-3 py-2 text-sm text-nw-100 focus:border-gold-500 focus:outline-none"
-          />
-        </div>
+        <SearchInput
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onClear={() => setSearchQuery('')}
+          placeholder="Search child name…"
+          className="flex-1"
+        />
         <div className="relative">
           <button
             ref={filterBtnRef}

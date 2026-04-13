@@ -9,6 +9,7 @@ import {
   Edit3, Eye, Clock, CheckCircle2, Circle, Search,
   LucideIcon,
 } from 'lucide-react'
+import { SearchInput } from '@/components/ui/SearchInput'
 
 interface ContentPage {
   slug: string
@@ -86,19 +87,13 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
     <div className="flex flex-col gap-5">
       {/* Search + Filter row */}
       <div className="flex gap-3 items-center">
-        <div className="flex-1 relative group">
-          <Search
-            size={15}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-nw-500 group-focus-within:text-gold-400 transition-colors duration-200"
-          />
-          <input
-            type="text"
-            placeholder="Search pages…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 h-9 rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 text-[13px] text-nw-200 placeholder:text-nw-500 outline-none transition-colors focus:border-[rgba(212,160,23,0.4)] focus:bg-nw-750"
-          />
-        </div>
+        <SearchInput
+          placeholder="Search pages…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          onClear={() => setSearch('')}
+          className="flex-1"
+        />
         <div className="flex gap-1.5">
           {FILTERS.map(f => (
             <button

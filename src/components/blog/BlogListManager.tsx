@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { SearchInput } from '@/components/ui/SearchInput'
 import { Panel, PanelHeader } from '@/components/ui/Card'
 import { ColumnToggle } from '@/components/ui/ColumnToggle'
 import { useColumnVisibility } from '@/lib/use-column-visibility'
@@ -123,11 +124,12 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
       <Panel>
         <PanelHeader eyebrow="Posts" title="All Articles" action={
           <div className="flex items-center gap-2">
-            <Input
+            <SearchInput
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onClear={() => setSearch('')}
               placeholder="Search posts..."
-              className="w-44"
+              className="w-52"
             />
             <div className="flex gap-0.5">
               {(['all', 'published', 'draft'] as const).map((s) => (

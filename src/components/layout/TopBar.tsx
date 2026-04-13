@@ -196,7 +196,7 @@ export function TopBar({ title, actions }: TopBarProps) {
               onFocus={() => { setSearchVisible(true); if (results && query.length >= 2) setSearchOpen(true) }}
               onKeyDown={e => { if (e.key === 'Escape') { setSearchOpen(false); setSearchVisible(false); setQuery('') } }}
               placeholder="Search members, posts, campaigns…"
-              className="h-[36px] w-full rounded-[10px] border border-[rgba(255,255,255,0.08)] bg-nw-800 pl-10 pr-10 text-[13px] text-nw-200 placeholder:text-nw-500 outline-none transition-all focus:border-[rgba(212,160,23,0.35)] focus:bg-nw-750 focus:shadow-[0_0_0_3px_rgba(212,160,23,0.08)]"
+              className="h-10 w-full rounded-xl border border-[rgba(255,255,255,0.1)] bg-nw-800 pl-10 pr-10 text-sm text-nw-100 placeholder:text-nw-500 outline-none transition-all focus:border-[rgba(212,160,23,0.4)] focus:bg-nw-750 focus:shadow-[0_0_0_3px_rgba(212,160,23,0.08)]"
             />
             {query && (
               <button onClick={() => { setQuery(''); setSearchOpen(false) }} className="absolute right-3 top-1/2 -translate-y-1/2 text-nw-500 hover:text-nw-300 transition-colors">
