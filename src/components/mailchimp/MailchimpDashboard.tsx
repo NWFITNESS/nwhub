@@ -197,7 +197,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
 
       {/* Stat cards */}
       {stats && (
-        <div className="grid grid-cols-2 gap-[10px] md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <StatCard label="Subscribers" value={stats.audience.member_count.toLocaleString()} icon={Users} iconBg="rgba(212,160,23,0.15)" />
           <StatCard label="Campaigns Sent" value={campaigns.filter(c => c.status === 'sent').length} icon={Send} iconBg="rgba(74,222,128,0.15)" />
           <StatCard label="Avg Open Rate" value={`${(stats.audience.open_rate * 100).toFixed(1)}%`} icon={Mail} iconBg="rgba(59,130,246,0.15)" />

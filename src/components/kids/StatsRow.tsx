@@ -13,7 +13,7 @@ export function StatsRow({ stats }: Props) {
     { label: 'Drop-ins this block', value: stats.dropins_this_block },
   ]
   return (
-    <div className="grid grid-cols-2 gap-[10px] sm:grid-cols-3 md:grid-cols-5">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
       {items.map((it) => (
         <div
           key={it.label}

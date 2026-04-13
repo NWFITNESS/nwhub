@@ -132,7 +132,7 @@ export function SyncClient() {
       {/* Results */}
       {results && (
         <>
-          <div className="grid grid-cols-2 gap-[10px]">
+          <div className="grid grid-cols-2 gap-4">
             <StatCard label="New Members" value={results.created} icon={UserPlus} iconBg="rgba(34,197,94,0.15)" />
             <StatCard label="Updated" value={results.updated} icon={RefreshCw} iconBg="rgba(59,130,246,0.15)" />
             <StatCard label="Cancelled" value={results.cancelled} icon={UserMinus} iconBg="rgba(239,68,68,0.15)" />

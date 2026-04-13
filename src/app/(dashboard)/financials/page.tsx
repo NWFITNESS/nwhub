@@ -100,7 +100,7 @@ export default function FinancialsPage() {
 
       {loading && !notConnected && (
         <>
-          <div className="grid grid-cols-2 gap-[10px] md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
           </div>
           <div className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6 min-h-[320px]">
