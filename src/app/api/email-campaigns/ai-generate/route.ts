@@ -4,8 +4,8 @@ import { requireAuth } from '@/lib/auth-guard'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-// Streaming keeps the connection alive — no Vercel timeout
-export const maxDuration = 60
+// Allow up to 2 minutes for complex email generation
+export const maxDuration = 120
 
 const NW_BRAND = `
 NORTHERN WARRIOR FITNESS — EMAIL DESIGN SYSTEM
@@ -184,51 +184,95 @@ HTML:
 
 Start with TITLE: on line 1. No markdown, no code fences, no explanation.`
 
-    // Stream to keep the Vercel connection alive, collect into final text
+    // Stream text deltas to the client so the connection stays alive
+    // and the client can show progress. Collect the full response and
+    // parse it at the end.
     const stream = anthropic.messages.stream({
       model: 'claude-sonnet-4-6',
-      max_tokens: 5000,
+      max_tokens: 8000,
       messages: [{ role: 'user', content: userContent }],
     })
 
-    let raw = ''
-    try {
-      const finalMessage = await stream.finalMessage()
-      raw = finalMessage.content[0].type === 'text' ? finalMessage.content[0].text.trim() : ''
-    } catch (streamErr) {
-      const msg = streamErr instanceof Error ? streamErr.message : String(streamErr)
-      return NextResponse.json({ error: `AI stream failed: ${msg}` }, { status: 500 })
-    }
+    // Use a ReadableStream to pipe text_delta events to the client
+    const encoder = new TextEncoder()
+    const readable = new ReadableStream({
+      async start(controller) {
+        let full = ''
+        try {
+          for await (const event of stream) {
+            if (
+              event.type === 'content_block_delta' &&
+              event.delta.type === 'text_delta'
+            ) {
+              full += event.delta.text
+              // Send each chunk as an SSE-style line so the client knows
+              // it's still generating
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ chunk: event.delta.text })}\n\n`)
+              )
+            }
+          }
 
-    if (!raw) {
-      return NextResponse.json({ error: 'AI returned empty response. Try again.' }, { status: 500 })
-    }
+          // Generation complete — parse and send final result
+          const raw = full.trim()
+          if (!raw) {
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify({ error: 'AI returned empty response. Try again.' })}\n\n`)
+            )
+            controller.close()
+            return
+          }
 
-    // Parse the structured response — be very forgiving
-    let html = '', title = '', preview_text = ''
+          let html = '', title = '', preview_text = ''
+          const titleMatch = raw.match(/^TITLE:\s*(.+)/m)
+          const previewMatch = raw.match(/^PREVIEW:\s*(.+)/m)
+          const htmlMatch = raw.match(/<!DOCTYPE\s+html[\s\S]*<\/html>/i)
+            ?? raw.match(/<html[\s\S]*<\/html>/i)
 
-    const titleMatch = raw.match(/^TITLE:\s*(.+)/m)
-    const previewMatch = raw.match(/^PREVIEW:\s*(.+)/m)
+          if (htmlMatch) {
+            html = htmlMatch[0].trim()
+              .replace(/^TITLE:.*$/gm, '')
+              .replace(/^PREVIEW:.*$/gm, '')
+              .replace(/^HTML:\s*$/gm, '')
+              .trim()
+          } else if (raw.includes('<') && raw.includes('>')) {
+            html = raw
+              .replace(/^TITLE:.*$/gm, '')
+              .replace(/^PREVIEW:.*$/gm, '')
+              .replace(/^HTML:\s*$/gm, '')
+              .trim()
+          } else {
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify({ error: 'AI did not return valid HTML. Try again with a clearer prompt.' })}\n\n`)
+            )
+            controller.close()
+            return
+          }
 
-    // Try to find HTML in the response
-    const htmlMatch = raw.match(/<!DOCTYPE\s+html[\s\S]*<\/html>/i)
-      ?? raw.match(/<html[\s\S]*<\/html>/i)
+          title = titleMatch?.[1]?.trim() ?? prompt.slice(0, 60)
+          preview_text = previewMatch?.[1]?.trim() ?? prompt.slice(0, 150)
 
-    if (htmlMatch) {
-      html = htmlMatch[0].trim()
-      // Strip any metadata lines the AI left inside
-      html = html.replace(/^TITLE:.*$/gm, '').replace(/^PREVIEW:.*$/gm, '').replace(/^HTML:\s*$/gm, '').trim()
-    } else if (raw.includes('<') && raw.includes('>')) {
-      // Looks like HTML even without DOCTYPE
-      html = raw.replace(/^TITLE:.*$/gm, '').replace(/^PREVIEW:.*$/gm, '').replace(/^HTML:\s*$/gm, '').trim()
-    } else {
-      return NextResponse.json({ error: 'AI did not return valid HTML. Try again with a clearer prompt.' }, { status: 500 })
-    }
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify({ done: true, html, title, preview_text })}\n\n`)
+          )
+          controller.close()
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err)
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify({ error: `AI generation failed: ${msg}` })}\n\n`)
+          )
+          controller.close()
+        }
+      },
+    })
 
-    title = titleMatch?.[1]?.trim() ?? prompt.slice(0, 60)
-    preview_text = previewMatch?.[1]?.trim() ?? prompt.slice(0, 150)
-
-    return NextResponse.json({ html, title, preview_text })
+    return new Response(readable, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+      },
+    })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
     return NextResponse.json({ error: `AI generation failed: ${msg}` }, { status: 500 })

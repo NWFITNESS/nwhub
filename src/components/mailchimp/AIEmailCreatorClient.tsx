@@ -218,17 +218,54 @@ export function AIEmailCreatorClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, tone, audience, selectedImages, logoUrl }),
       })
-      const text = await res.text()
-      if (!text) throw new Error('Empty response — the AI generation may have timed out. Try again with a shorter prompt.')
-      let data: { html: string; title?: string; preview_text?: string; error?: string }
-      try { data = JSON.parse(text) } catch { throw new Error('Invalid response from server. Please try again.') }
-      if (!res.ok) throw new Error(data.error ?? 'Generation failed')
-      // Clean any leftover TITLE:/PREVIEW: lines from the HTML
-      const cleanHtml = (data.html ?? '').replace(/^TITLE:.*$/gm, '').replace(/^PREVIEW:.*$/gm, '').replace(/^HTML:\s*$/gm, '').trim()
-      setHtml(cleanHtml)
-      setCampaignTitle(data.title ?? prompt.slice(0, 60))
-      setPreviewText(data.preview_text ?? prompt.slice(0, 150))
-      setActiveTab('preview')
+
+      if (!res.ok) {
+        // Non-streaming error (e.g. 400/401)
+        const text = await res.text()
+        let msg = 'Generation failed'
+        try { msg = JSON.parse(text).error ?? msg } catch {}
+        throw new Error(msg)
+      }
+
+      // Read the SSE stream
+      const reader = res.body?.getReader()
+      if (!reader) throw new Error('No response stream')
+
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+
+        // Process complete SSE lines
+        const lines = buffer.split('\n\n')
+        buffer = lines.pop() ?? '' // keep incomplete line in buffer
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const json = line.slice(6)
+          try {
+            const msg = JSON.parse(json)
+            if (msg.error) throw new Error(msg.error)
+            if (msg.done) {
+              const cleanHtml = (msg.html ?? '')
+                .replace(/^TITLE:.*$/gm, '')
+                .replace(/^PREVIEW:.*$/gm, '')
+                .replace(/^HTML:\s*$/gm, '')
+                .trim()
+              setHtml(cleanHtml)
+              setCampaignTitle(msg.title ?? prompt.slice(0, 60))
+              setPreviewText(msg.preview_text ?? prompt.slice(0, 150))
+              setActiveTab('preview')
+            }
+            // chunk events are just keepalives — no UI update needed
+          } catch (parseErr) {
+            if (parseErr instanceof Error && parseErr.message !== json) throw parseErr
+          }
+        }
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong')
     } finally {
