@@ -260,7 +260,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
                 <div
                   key={c.id}
                   onClick={isDraft ? () => router.push(`/mailchimp/edit/${c.id}`) : undefined}
-                  className={`border-b border-[rgba(255,255,255,0.05)] px-[17px] py-4 transition-colors hover:bg-[rgba(255,255,255,0.03)] ${isDraft ? 'cursor-pointer' : ''}`}
+                  className={`border-b border-[rgba(255,255,255,0.05)] px-6 py-4 transition-colors hover:bg-[rgba(255,255,255,0.03)] ${isDraft ? 'cursor-pointer' : ''}`}
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <Badge variant={statusBadgeVariant(c.status)}>{c.status}</Badge>
@@ -363,7 +363,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
 
       {/* Settings (collapsible) */}
       <Panel>
-        <button onClick={() => setSettingsOpen((v) => !v)} className="flex w-full items-center gap-2 px-[17px] py-[11px] text-left">
+        <button onClick={() => setSettingsOpen((v) => !v)} className="flex w-full items-center gap-2 px-6 py-3.5 text-left">
           <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">Mailchimp</span>
           <div className="h-3 w-px bg-[rgba(255,255,255,0.09)]" />
           <span className="text-[13px] font-medium text-nw-200">Settings</span>

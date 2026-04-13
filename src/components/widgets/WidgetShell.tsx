@@ -27,7 +27,7 @@ export function WidgetShell({
 
   return (
     <div
-      className={`rounded-xl flex flex-col h-full overflow-hidden bg-nw-750 border border-[rgba(255,255,255,0.11)] ${isCustomising ? 'outline outline-1 outline-dashed outline-gold-600/20' : ''}`}
+      className={`rounded-2xl flex flex-col h-full overflow-hidden bg-nw-750 border border-[rgba(255,255,255,0.12)] shadow-[0_2px_12px_rgba(0,0,0,0.15)] ${isCustomising ? 'outline outline-1 outline-dashed outline-gold-600/20' : ''}`}
     >
       {hasHeader && (
         <div className="flex items-center justify-between px-5 py-4 flex-shrink-0 border-b border-[rgba(255,255,255,0.08)]">

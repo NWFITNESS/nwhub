@@ -102,7 +102,7 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
       {/* Stats row */}
       <Panel>
         <PanelHeader eyebrow="Stats" title="Blog Overview" />
-        <div className="flex items-center gap-6 px-[17px] py-3">
+        <div className="flex items-center gap-6 px-6 py-3">
           <div>
             <div className="text-[10px] uppercase text-nw-500 tracking-[1px]">Posts</div>
             <div className="text-[13px] font-medium text-nw-200">{posts.length}</div>

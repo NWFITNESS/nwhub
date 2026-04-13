@@ -87,7 +87,7 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
       {/* Block tabs */}
       <div className="flex border-b border-[rgba(255,255,255,0.07)] overflow-x-auto no-scrollbar">
         {blocks.length === 0 && (
-          <div className="px-[17px] py-3 text-xs text-nw-500">No blocks yet</div>
+          <div className="px-6 py-3 text-xs text-nw-500">No blocks yet</div>
         )}
         {blocks.map((b) => {
           const isActive = b.id === activeBlockId
@@ -95,7 +95,7 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
             <button
               key={b.id}
               onClick={() => onActiveBlockChange(b.id)}
-              className={`relative whitespace-nowrap px-[17px] py-3 text-[12px] font-medium transition-colors ${
+              className={`relative whitespace-nowrap px-6 py-3 text-[12px] font-medium transition-colors ${
                 isActive ? 'text-gold-300' : 'text-nw-400 hover:text-nw-200'
               }`}
             >
@@ -107,7 +107,7 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
       </div>
 
       {/* Search + filter bar */}
-      <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] px-[17px] py-3">
+      <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] px-6 py-3">
         <SearchInput
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -166,7 +166,7 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
 
       {/* Block info bar (only when not searching) */}
       {!searchResults && activeBlock && (
-        <div className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.05)] bg-nw-800/30 px-[17px] py-2 text-[11px] text-nw-500">
+        <div className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.05)] bg-nw-800/30 px-6 py-2 text-[11px] text-nw-500">
           <span>Starts {new Date(activeBlock.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
           <span>·</span>
           <span>{activeBlock.session_count} sessions</span>
@@ -293,7 +293,7 @@ function RosterTable({ rows, totalRows, onClearFilters }: { rows: RosterRow[]; t
 
   if (rows.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 px-[17px] py-12">
+      <div className="flex flex-col items-center gap-2 px-6 py-12">
         <p className="text-xs text-nw-500">
           {totalRows === 0 ? 'No bookings in this block yet' : 'No bookings match your filters'}
         </p>

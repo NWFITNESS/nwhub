@@ -144,7 +144,7 @@ export function SyncClient() {
               <PanelHeader eyebrow="Sync" title="Log" />
               <div className="max-h-64 overflow-y-auto">
                 {results.log.map((entry, i) => (
-                  <div key={i} className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.05)] px-[17px] py-3">
+                  <div key={i} className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.05)] px-6 py-3">
                     <div className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${
                       entry.includes('Error')     ? 'bg-red-400'
                       : entry.includes('Cancel')  ? 'bg-red-400'

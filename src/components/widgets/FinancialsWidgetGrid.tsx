@@ -56,25 +56,25 @@ export function FinancialsWidgetGrid({ data }: Props) {
     switch (id) {
       case 'fin-kpi-month-income':
         return (
-          <WidgetShell key={id} id={id} isCustomising={isCustomising} onRemove={onRemove}>
+          <WidgetShell key={id} id={id} isCustomising={isCustomising} onRemove={onRemove} noPad>
             <FinStatCard label="This Month" value={thisMonth.income} icon={TrendingUp} iconBg="rgba(34,197,94,0.15)" trend={revenueVsLastMonth} />
           </WidgetShell>
         )
       case 'fin-kpi-year-income':
         return (
-          <WidgetShell key={id} id={id} isCustomising={isCustomising} onRemove={onRemove}>
+          <WidgetShell key={id} id={id} isCustomising={isCustomising} onRemove={onRemove} noPad>
             <FinStatCard label="Annual Income" value={yearIncome} icon={PoundSterling} iconBg="rgba(201,167,10,0.15)" sub="Last 12 months" />
           </WidgetShell>
         )
       case 'fin-kpi-expenses':
         return (
-          <WidgetShell key={id} id={id} isCustomising={isCustomising} onRemove={onRemove}>
+          <WidgetShell key={id} id={id} isCustomising={isCustomising} onRemove={onRemove} noPad>
             <FinStatCard label="This Month Expenses" value={thisMonth.expenses} icon={Receipt} iconBg="rgba(168,85,247,0.15)" sub="From Xero P&L" />
           </WidgetShell>
         )
       case 'fin-kpi-profit':
         return (
-          <WidgetShell key={id} id={id} isCustomising={isCustomising} onRemove={onRemove}>
+          <WidgetShell key={id} id={id} isCustomising={isCustomising} onRemove={onRemove} noPad>
             <FinStatCard label="Net Profit" value={thisMonth.profit} icon={TrendingUp} iconBg="rgba(59,130,246,0.15)" sub="This month" negative />
           </WidgetShell>
         )

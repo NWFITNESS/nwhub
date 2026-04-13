@@ -295,10 +295,10 @@ export function OverviewContent({ data, formattedDate }: Props) {
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
             <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
-              <div className="flex flex-shrink-0 items-center gap-2 border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[11px]">
-                <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">Navigation</span>
+              <div className="flex flex-shrink-0 items-center gap-2 border-b border-[rgba(255,255,255,0.07)] px-6 py-3.5">
+                <span className="text-[10px] font-bold uppercase tracking-[1.6px] text-nw-400">Navigation</span>
                 <div className="h-3 w-px bg-[rgba(255,255,255,0.09)]" />
-                <span className="text-[13px] font-medium text-nw-200">Quick Actions</span>
+                <span className="text-sm font-semibold text-nw-100">Quick Actions</span>
               </div>
               <div className="grid grid-cols-2 flex-shrink-0" style={{ gap: 1, background: 'rgba(255,255,255,0.07)' }}>
                 <QuickAction href="/enquiries" title="Contacts & Enquiries" desc="Track inbound leads, AI chat messages, and contact records." icon={<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--r-gold-400)" strokeWidth="1.7"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M1 5l7 5 7-5"/></svg>} />
@@ -306,10 +306,10 @@ export function OverviewContent({ data, formattedDate }: Props) {
                 <QuickAction href="/blog/manage" title="Blog & Posts" desc="Write and publish posts to engage members and boost SEO." icon={<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--r-gold-400)" strokeWidth="1.7"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 9h4"/></svg>} />
                 <QuickAction href="/mailchimp" title="Email Campaigns" desc="Send newsletters to your subscriber list via Mailchimp." icon={<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--r-gold-400)" strokeWidth="1.7"><path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-4 3V3a1 1 0 011-1z"/></svg>} />
               </div>
-              <div className="flex flex-shrink-0 items-center gap-2 border-y border-[rgba(255,255,255,0.07)] px-[17px] py-[11px]">
-                <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">Inbound</span>
+              <div className="flex flex-shrink-0 items-center gap-2 border-y border-[rgba(255,255,255,0.07)] px-6 py-3.5">
+                <span className="text-[10px] font-bold uppercase tracking-[1.6px] text-nw-400">Inbound</span>
                 <div className="h-3 w-px bg-[rgba(255,255,255,0.09)]" />
-                <span className="text-[13px] font-medium text-nw-200">Recent Enquiries</span>
+                <span className="text-sm font-semibold text-nw-100">Recent Enquiries</span>
               </div>
               {data.recentEnquiries.length === 0 ? (
                 <div className="flex flex-1 flex-col items-center justify-center gap-2 p-7 text-center text-xs text-nw-600">
@@ -321,7 +321,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
               ) : (
                 <div className="flex-1 overflow-y-auto">
                   {data.recentEnquiries.map(enq => (
-                    <div key={enq.id} className="flex flex-col gap-[3px] border-b border-[rgba(255,255,255,0.05)] px-[17px] py-[10px]">
+                    <div key={enq.id} className="flex flex-col gap-[3px] border-b border-[rgba(255,255,255,0.05)] px-6 py-[10px]">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-nw-200">{enq.name}</span>
                         <span className="text-[10px] text-nw-600">{new Date(enq.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
@@ -340,9 +340,9 @@ export function OverviewContent({ data, formattedDate }: Props) {
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
             <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
               {/* Header */}
-              <div className="flex-shrink-0 border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[13px]">
+              <div className="flex-shrink-0 border-b border-[rgba(255,255,255,0.07)] px-6 py-[13px]">
                 <div className="flex items-center justify-between mb-[9px]">
-                  <span className="text-[13px] font-medium text-nw-200">Setup Checklist</span>
+                  <span className="text-sm font-semibold text-nw-100">Setup Checklist</span>
                   <div className="flex items-center gap-2">
                     <span className="font-brand text-[16px] font-bold text-gold-300">
                       {doneCount} / {effectiveChecklist.length}
@@ -465,7 +465,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
             <div className="flex h-full flex-col gap-3 rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-[14px_17px]">
-              <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">System Status</span>
+              <span className="text-[10px] font-bold uppercase tracking-[1.6px] text-nw-400">System Status</span>
               <div className="flex flex-col gap-2">
                 {[
                   { name: 'Supabase',      status: 'Operational', color: '#4ade80' },
@@ -498,8 +498,8 @@ export function OverviewContent({ data, formattedDate }: Props) {
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
             <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
-              <div className="flex-shrink-0 border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[13px]">
-                <span className="text-[13px] font-medium text-nw-200">Website Visitors</span>
+              <div className="flex-shrink-0 border-b border-[rgba(255,255,255,0.07)] px-6 py-[13px]">
+                <span className="text-sm font-semibold text-nw-100">Website Visitors</span>
               </div>
               <div style={{ flex: 1, minHeight: 0, padding: '8px 0' }}>
                 <WebsiteVisitorsChart data24h={data.data24h} data7d={data.data7d} data30d={data.data30d} data1y={data.data1y} />
@@ -513,9 +513,9 @@ export function OverviewContent({ data, formattedDate }: Props) {
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
             <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
               {/* Header */}
-              <div className="flex flex-shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[13px]">
+              <div className="flex flex-shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.07)] px-6 py-[13px]">
                 <div>
-                  <span className="text-[13px] font-medium text-nw-200">To Do</span>
+                  <span className="text-sm font-semibold text-nw-100">To Do</span>
                   {tasks.filter(t => !t.completed).length > 0 && (
                     <span className="ml-2 text-[10px] font-bold text-[#f2ca50]">
                       {tasks.filter(t => !t.completed).length} pending
@@ -588,8 +588,8 @@ export function OverviewContent({ data, formattedDate }: Props) {
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
             <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
-              <div className="flex flex-shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[13px]">
-                <span className="text-[13px] font-medium text-nw-200">Recent Blog Posts</span>
+              <div className="flex flex-shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.07)] px-6 py-[13px]">
+                <span className="text-sm font-semibold text-nw-100">Recent Blog Posts</span>
                 <Link href="/blog/manage" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--slate-500)', textDecoration: 'none' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--r-gold-400)' }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--slate-500)' }}

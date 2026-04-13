@@ -48,7 +48,7 @@ export function SessionScheduler({ block }: Props) {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
-      <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[11px]">
+      <div className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.07)] px-6 py-3.5">
         <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">SESSIONS</span>
         <div className="h-3 w-px bg-[rgba(255,255,255,0.09)]" />
         <span className="text-[13px] font-medium text-nw-200">Session dates</span>
