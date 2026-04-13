@@ -358,7 +358,7 @@ function LogoSection({ media, logoIds, editing, onToggle }: {
 function TypographySection() {
   return (
     <div className="space-y-6">
-      <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6 space-y-4">
+      <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6 space-y-4">
         <div className="flex items-center gap-3 mb-2">
           <div>
             <p className="text-[9px] font-semibold text-gold-500 uppercase tracking-[0.15em]">Display / Headings</p>
@@ -370,7 +370,7 @@ function TypographySection() {
         <p style={{ fontFamily: 'Rajdhani, sans-serif' }} className="text-lg text-white/60">ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
         <p style={{ fontFamily: 'Rajdhani, sans-serif' }} className="text-lg text-white/40">abcdefghijklmnopqrstuvwxyz 0123456789</p>
       </div>
-      <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6 space-y-4">
+      <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6 space-y-4">
         <div>
           <p className="text-[9px] font-semibold text-gold-500 uppercase tracking-[0.15em]">Body / UI</p>
           <p className="text-xs text-white/40">Inter — Neutral Sans-Serif</p>
@@ -574,7 +574,7 @@ export function BrandPage({ identity: initial, media, placeId, guideOnly = false
         <div className="space-y-6">
 
           {/* Brand Identity */}
-          <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
+          <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
             <div className="flex items-start justify-between gap-4 mb-4">
               <SectionHeader icon={Target} label="Brand Guide" title="Brand Identity" />
               <EditButton editing={editing('identity')} onToggle={() => toggleSection('identity')} />
@@ -587,7 +587,7 @@ export function BrandPage({ identity: initial, media, placeId, guideOnly = false
           </div>
 
           {/* Core Values */}
-          <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
+          <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
             <div className="flex items-start justify-between gap-4 mb-4">
               <SectionHeader icon={Sparkles} label="Brand Guide" title="Core Values" />
               <EditButton editing={editing('values')} onToggle={() => toggleSection('values')} />
@@ -604,7 +604,7 @@ export function BrandPage({ identity: initial, media, placeId, guideOnly = false
           </div>
 
           {/* Brand Colours */}
-          <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
+          <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
             <div className="flex items-start justify-between gap-4 mb-4">
               <SectionHeader icon={Palette} label="Brand Guide" title="Brand Colours" />
               <EditButton editing={editing('colours')} onToggle={() => toggleSection('colours')} />
@@ -621,7 +621,7 @@ export function BrandPage({ identity: initial, media, placeId, guideOnly = false
           </div>
 
           {/* Logo Library */}
-          <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
+          <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
             <div className="flex items-start justify-between gap-4 mb-4">
               <SectionHeader icon={ImageIcon} label="Brand Guide" title="Logo Library" />
               <EditButton editing={editing('logos')} onToggle={() => toggleSection('logos')} />
@@ -640,13 +640,13 @@ export function BrandPage({ identity: initial, media, placeId, guideOnly = false
           </div>
 
           {/* Typography */}
-          <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
+          <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
             <SectionHeader icon={Type} label="Brand Guide" title="Typography" />
             <TypographySection />
           </div>
 
           {/* Voice & Tone */}
-          <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
+          <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6">
             <div className="flex items-start justify-between gap-4 mb-4">
               <SectionHeader icon={Mic} label="Brand Guide" title="Voice &amp; Tone" />
               <EditButton editing={editing('voice')} onToggle={() => toggleSection('voice')} />

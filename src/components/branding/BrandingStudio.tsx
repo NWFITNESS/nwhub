@@ -16,7 +16,7 @@ export function BrandingStudio({ placeId: _ }: BrandingStudioProps) {
     <>
       {/* Desktop: side-by-side split */}
       <div
-        className="hidden md:flex overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750"
+        className="hidden md:flex overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750"
         style={{ height: 'calc(100vh - 13rem)', minHeight: 600 }}
       >
         <div className="w-[30%] flex-shrink-0 border-r border-[rgba(255,255,255,0.07)] flex flex-col overflow-hidden">
@@ -44,7 +44,7 @@ export function BrandingStudio({ placeId: _ }: BrandingStudioProps) {
           </button>
         </div>
 
-        <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750">
+        <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
           {showEditor ? (
             <PostEditorPanel review={activeReview} onClearReview={() => setActiveReview(null)} />
           ) : (

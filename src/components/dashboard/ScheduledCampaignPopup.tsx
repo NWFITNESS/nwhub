@@ -91,7 +91,7 @@ export function ScheduledCampaignPopup() {
             const timeStr = scheduledDate.toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
 
             return (
-              <div key={c.campaign_id} className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4">
+              <div key={c.campaign_id} className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <p className="text-nw-200 font-medium" style={{ fontSize: 14 }}>{c.name}</p>
                   <button onClick={() => dismiss(c.campaign_id)} className="text-nw-600 hover:text-nw-400 transition-colors flex-shrink-0">

@@ -17,7 +17,7 @@ export function StatsRow({ stats }: Props) {
       {items.map((it) => (
         <div
           key={it.label}
-          className="rounded-[10px] border border-[rgba(255,255,255,0.13)] bg-nw-750 p-[15px_17px_13px] shadow-gold-sm"
+          className="rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 p-5 shadow-gold-sm"
         >
           <div className="font-brand text-[28px] font-bold leading-none tracking-[-0.5px] text-white">
             {it.value}

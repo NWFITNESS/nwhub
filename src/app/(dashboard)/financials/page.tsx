@@ -9,7 +9,7 @@ import { FinancialsWidgetGrid, type FinancialsData } from '@/components/widgets/
 function NotConnected() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[500px] gap-4">
-      <div className="flex h-14 w-14 items-center justify-center rounded-[10px] bg-[rgba(212,160,23,0.1)] border border-[rgba(212,160,23,0.22)]">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[rgba(212,160,23,0.1)] border border-[rgba(212,160,23,0.22)]">
         <DollarSign size={28} className="text-gold-400" />
       </div>
       <h3 className="font-brand text-xl font-bold text-nw-100">Connect Xero to get started</h3>
@@ -25,7 +25,7 @@ function NotConnected() {
 
 function SkeletonCard() {
   return (
-    <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-[15px_17px_13px] min-h-[100px]">
+    <div className="rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 p-6 min-h-[100px]">
       <div className="h-3 w-24 rounded bg-nw-700 mb-4 animate-pulse" />
       <div className="h-8 w-20 rounded bg-nw-700 mb-2 animate-pulse" />
       <div className="h-2 w-32 rounded bg-nw-700 animate-pulse" />
@@ -87,7 +87,7 @@ export default function FinancialsPage() {
 
       {!notConnected && apiError && (
         <div className="flex flex-col items-center justify-center min-h-[300px] gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-[10px] bg-[rgba(248,113,113,0.1)] border border-[rgba(248,113,113,0.2)]">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[rgba(248,113,113,0.1)] border border-[rgba(248,113,113,0.2)]">
             <Receipt size={22} className="text-red-400" strokeWidth={1.75} />
           </div>
           <p className="text-[13px] font-medium text-red-400">Failed to load Xero data</p>
@@ -103,7 +103,7 @@ export default function FinancialsPage() {
           <div className="grid grid-cols-2 gap-[10px] md:grid-cols-4">
             {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
           </div>
-          <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6 min-h-[320px]">
+          <div className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-6 min-h-[320px]">
             <div className="h-4 w-40 rounded bg-nw-700 mb-6 animate-pulse" />
             <div className="w-full h-[280px] rounded bg-nw-700 animate-pulse" />
           </div>

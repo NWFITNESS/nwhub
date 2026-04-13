@@ -475,7 +475,7 @@ export function AIEmailCreatorClient() {
 
           {/* AI-generated title + preview text (AI mode only — import mode has these on the left) */}
           {mode === 'ai' && html && campaignTitle && (
-            <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-[10px] p-4 flex flex-col gap-3">
+            <div className="bg-nw-750 border border-[rgba(255,255,255,0.11)] rounded-2xl p-4 flex flex-col gap-3">
               <div>
                 <label className="block text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500 mb-1.5">Campaign Title</label>
                 <input

@@ -71,15 +71,15 @@ export default async function MemberKPIsPage() {
       {/* Stats overview */}
       <div className="grid grid-cols-2 gap-[10px] md:grid-cols-4">
         {stats.map(s => (
-          <div key={s.label} className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.13)] bg-nw-750 p-[15px_17px_13px] shadow-gold-sm">
-            <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">{s.label}</span>
-            <div className="mt-2 font-brand text-[28px] font-bold leading-none tracking-[-0.5px] text-white">{s.value}</div>
+          <div key={s.label} className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 p-6 shadow-gold-sm">
+            <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">{s.label}</span>
+            <div className="mt-3 font-brand text-[30px] font-bold leading-none tracking-[-0.5px] text-white">{s.value}</div>
           </div>
         ))}
       </div>
 
       {/* Lead conversion widget */}
-      <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.13)] bg-nw-750 shadow-gold-sm">
+      <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.13)] bg-nw-750 shadow-gold-sm">
         <div className="flex flex-col md:flex-row md:items-stretch">
           {/* Total Leads */}
           <div className="flex-1 p-[17px_20px_15px]">

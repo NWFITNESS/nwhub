@@ -12,9 +12,9 @@ interface FinStatCardProps {
 
 export function FinStatCard({ label, value, iconBg, icon: Icon, sub, trend, negative }: FinStatCardProps) {
   return (
-    <div className="relative cursor-default overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.13)] bg-nw-750 p-[15px_17px_13px] shadow-gold-sm transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700 hover:shadow-gold-md h-full flex flex-col justify-between">
+    <div className="relative cursor-default overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 p-6 shadow-gold-sm transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700 hover:shadow-gold-md h-full flex flex-col justify-between">
       <div className="flex items-start justify-between">
-        <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">{label}</span>
+        <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">{label}</span>
         <div className="flex h-7 w-7 items-center justify-center rounded-[7px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.06)]" style={iconBg ? { background: iconBg } : undefined}>
           <Icon size={16} className="text-nw-300" strokeWidth={1.7} />
         </div>

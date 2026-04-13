@@ -155,7 +155,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
     <div className="flex flex-col gap-4">
       {/* Toast */}
       {toast && (
-        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-[10px] border px-4 py-3 text-sm font-medium shadow-2xl ${
+        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium shadow-2xl ${
           toast.ok ? 'border-[rgba(74,222,128,0.2)] bg-[rgba(74,222,128,0.1)] text-[#4ade80]' : 'border-[rgba(248,113,113,0.2)] bg-[rgba(248,113,113,0.1)] text-red-400'
         }`}>
           {toast.ok ? <CheckCircle size={15} /> : <AlertCircle size={15} />}

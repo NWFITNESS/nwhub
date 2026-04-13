@@ -79,7 +79,7 @@ export function KidsPageClient({
           />
         </>
       ) : (
-        <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-12 text-center text-sm text-nw-500">
+        <div className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-12 text-center text-sm text-nw-500">
           No blocks yet. Click <span className="text-gold-300">+ New block</span> to create your first one.
         </div>
       )}

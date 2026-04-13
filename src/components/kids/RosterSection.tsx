@@ -83,7 +83,7 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
   }
 
   return (
-    <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750">
+    <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
       {/* Block tabs */}
       <div className="flex border-b border-[rgba(255,255,255,0.07)] overflow-x-auto no-scrollbar">
         {blocks.length === 0 && (
@@ -135,7 +135,7 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
           {filterOpen && (
             <div
               ref={filterPanelRef}
-              className="absolute right-0 top-full mt-1 z-10 w-56 rounded-[10px] border border-[rgba(255,255,255,0.13)] bg-nw-800 p-3 shadow-gold-md"
+              className="absolute right-0 top-full mt-1 z-10 w-56 rounded-2xl border border-[rgba(255,255,255,0.13)] bg-nw-800 p-3 shadow-gold-md"
             >
               <FilterGroup label="Category" value={catFilter} onChange={(v) => setCatFilter(v as CategoryFilter)} options={[
                 { v: 'all', label: 'All' },

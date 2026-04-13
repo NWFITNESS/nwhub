@@ -190,7 +190,7 @@ function TextInput({ value, onChange, placeholder, type = 'text' }: {
 // ---------------------------------------------------------------------------
 function EmptyContacts({ onAdd }: { onAdd: () => void }) {
   return (
-    <div className="overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 px-8 py-16 flex flex-col items-center gap-4 text-center">
+    <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 px-8 py-16 flex flex-col items-center gap-4 text-center">
       <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.04)]">
         <Search size={16} className="text-nw-500" />
       </div>
@@ -588,7 +588,7 @@ export function ContactsManager({ initialContacts }: Props) {
           {filtered.length === 0 ? (
             <p className="text-center text-nw-500 py-12">No contacts match your search</p>
           ) : filtered.map((c) => (
-            <div key={c.id} className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4" onClick={() => openEdit(c)}>
+            <div key={c.id} className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4" onClick={() => openEdit(c)}>
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
                   <p className="text-[14px] font-medium text-nw-200">{c.first_name} {c.last_name}</p>

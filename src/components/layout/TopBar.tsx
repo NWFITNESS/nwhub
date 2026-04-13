@@ -188,7 +188,7 @@ export function TopBar({ title, actions }: TopBarProps) {
       <div className="flex-1 flex justify-center px-6">
         <div ref={wrapperRef} className="relative w-full max-w-[480px]">
           <div className="relative">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-nw-500 pointer-events-none" />
+            <Search size={16} strokeWidth={2} className="absolute left-3.5 top-1/2 z-10 -translate-y-1/2 text-nw-400 pointer-events-none" />
             <input
               ref={inputRef}
               value={query}

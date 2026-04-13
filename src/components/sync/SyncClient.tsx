@@ -69,7 +69,7 @@ export function SyncClient() {
             { step: '2', title: 'Download the CSV',     desc: 'Click the link in your email and save the CSV file to your computer' },
             { step: '3', title: 'Drop it below',        desc: 'Drag the file into the upload area — NWHub handles the rest automatically' },
           ].map((item) => (
-            <div key={item.step} className="flex items-start gap-3 rounded-[10px] bg-nw-800 border border-[rgba(255,255,255,0.07)] p-4">
+            <div key={item.step} className="flex items-start gap-3 rounded-2xl bg-nw-800 border border-[rgba(255,255,255,0.07)] p-4">
               <div className="flex h-7 w-7 min-w-[28px] items-center justify-center rounded-full bg-[rgba(212,160,23,0.15)] border border-[rgba(212,160,23,0.3)]">
                 <span className="font-brand text-sm font-bold text-gold-300">{item.step}</span>
               </div>
@@ -85,7 +85,7 @@ export function SyncClient() {
       {/* Drop zone */}
       <div
         {...getRootProps()}
-        className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-[10px] border-2 border-dashed p-10 text-center transition-colors ${
+        className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-10 text-center transition-colors ${
           isDragOver
             ? 'border-[rgba(212,160,23,0.3)] bg-[rgba(212,160,23,0.03)]'
             : 'border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.02)] hover:border-[rgba(212,160,23,0.3)] hover:bg-[rgba(212,160,23,0.03)]'

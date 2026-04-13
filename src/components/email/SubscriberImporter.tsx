@@ -149,14 +149,14 @@ export function SubscriberImporter() {
               onClick={() => fileRef.current?.click()}
               onDragOver={e => e.preventDefault()}
               onDrop={e => { e.preventDefault(); handleFile(e.dataTransfer.files[0]) }}
-              className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-[10px] border-2 border-dashed border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.02)] p-8 text-center transition-colors hover:border-[rgba(212,160,23,0.3)] hover:bg-[rgba(212,160,23,0.03)]"
+              className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.02)] p-8 text-center transition-colors hover:border-[rgba(212,160,23,0.3)] hover:bg-[rgba(212,160,23,0.03)]"
             >
               <Upload size={24} className="text-nw-500" />
               <p className="text-nw-300 font-medium" style={{ fontSize: 13 }}>Drop your CSV here or click to browse</p>
               <p className="text-nw-500" style={{ fontSize: 11 }}>Must have an &quot;email&quot; column. First name and last name columns optional.</p>
             </div>
           ) : (
-            <div className="flex items-center gap-3 rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-800 p-3">
+            <div className="flex items-center gap-3 rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-800 p-3">
               <FileText size={18} className="text-gold-400 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-nw-200 font-medium truncate" style={{ fontSize: 13 }}>{fileName}</p>

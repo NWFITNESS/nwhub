@@ -60,13 +60,13 @@ function StatCard({ label, value, sub, gold, icon }: {
   label: string; value: number | string; sub: string; gold?: boolean; icon: React.ReactNode
 }) {
   return (
-    <div className="relative cursor-default overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.13)] bg-nw-750 p-[15px_17px_13px] shadow-gold-sm transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700 hover:shadow-gold-md h-full">
+    <div className="relative cursor-default overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 p-6 shadow-gold-sm transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700 hover:shadow-gold-md h-full">
       <div className="flex items-start justify-between">
-        <span className="text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-400">{label}</span>
-        <div className="flex h-7 w-7 items-center justify-center rounded-[7px] border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.06)]">{icon}</div>
+        <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">{label}</span>
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.06)]">{icon}</div>
       </div>
-      <div className={`mt-2 font-brand text-[32px] font-bold leading-none tracking-[-0.5px] ${gold ? 'text-gold-300' : 'text-white'}`}>{value}</div>
-      <div className="mt-1.5 text-[11px] text-nw-500">{sub}</div>
+      <div className={`mt-3 font-brand text-[34px] font-bold leading-none tracking-[-0.5px] ${gold ? 'text-gold-300' : 'text-white'}`}>{value}</div>
+      <div className="mt-2 text-xs font-medium text-nw-400">{sub}</div>
       <div className={`absolute bottom-0 left-0 right-0 h-[2px] ${gold ? 'bg-gradient-to-r from-[rgba(212,160,23,0.65)] to-transparent' : 'bg-gradient-to-r from-nw-600 to-transparent'}`} />
     </div>
   )
@@ -78,16 +78,16 @@ function QuickAction({ href, title, desc, icon }: { href: string; title: string;
   return (
     <Link
       href={href}
-      className="group flex flex-col gap-2 bg-nw-750 p-[15px_17px] transition-colors hover:bg-nw-700 no-underline"
+      className="group flex flex-col gap-2.5 bg-nw-750 p-5 transition-colors hover:bg-nw-700 no-underline"
     >
       <div className="flex items-start justify-between">
-        <div className="flex h-[33px] w-[33px] items-center justify-center rounded-[8px] bg-[rgba(212,160,23,0.1)] border border-[rgba(212,160,23,0.22)]">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[rgba(212,160,23,0.1)] border border-[rgba(212,160,23,0.22)]">
           {icon}
         </div>
-        <span className="text-[14px] text-nw-600 transition-[color,transform] duration-150 group-hover:text-gold-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">↗</span>
+        <span className="text-sm text-nw-600 transition-[color,transform] duration-150 group-hover:text-gold-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">↗</span>
       </div>
-      <div className="text-[12.5px] font-medium text-nw-200 transition-colors group-hover:text-white">{title}</div>
-      <div className="text-[11px] text-nw-500 leading-relaxed">{desc}</div>
+      <div className="text-sm font-semibold text-nw-200 transition-colors group-hover:text-white">{title}</div>
+      <div className="text-xs text-nw-400 leading-relaxed">{desc}</div>
     </Link>
   )
 }
@@ -242,7 +242,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
             : 0
           return (
             <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-              <div className="relative cursor-default overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.13)] bg-nw-750 shadow-gold-sm transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700 hover:shadow-gold-md h-full">
+              <div className="relative cursor-default overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.13)] bg-nw-750 shadow-gold-sm transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700 hover:shadow-gold-md h-full">
                 <div className="flex items-stretch h-full">
                   {/* Total Leads */}
                   <div className="flex-1 p-[13px_15px_11px]">
@@ -294,7 +294,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
       case 'main-panel':
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-            <div className="flex h-full flex-col overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750">
+            <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
               <div className="flex flex-shrink-0 items-center gap-2 border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[11px]">
                 <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">Navigation</span>
                 <div className="h-3 w-px bg-[rgba(255,255,255,0.09)]" />
@@ -338,7 +338,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
       case 'checklist':
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-            <div className="flex h-full flex-col overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750">
+            <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
               {/* Header */}
               <div className="flex-shrink-0 border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[13px]">
                 <div className="flex items-center justify-between mb-[9px]">
@@ -464,7 +464,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
       case 'system-status':
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-            <div className="flex h-full flex-col gap-3 rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-[14px_17px]">
+            <div className="flex h-full flex-col gap-3 rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-[14px_17px]">
               <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">System Status</span>
               <div className="flex flex-col gap-2">
                 {[
@@ -497,7 +497,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
       case 'visitor-chart':
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-            <div className="flex h-full flex-col overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750">
+            <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
               <div className="flex-shrink-0 border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[13px]">
                 <span className="text-[13px] font-medium text-nw-200">Website Visitors</span>
               </div>
@@ -511,7 +511,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
       case 'todo':
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-            <div className="flex h-full flex-col overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750">
+            <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
               {/* Header */}
               <div className="flex flex-shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[13px]">
                 <div>
@@ -587,7 +587,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
       case 'recent-posts':
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-            <div className="flex h-full flex-col overflow-hidden rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750">
+            <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
               <div className="flex flex-shrink-0 items-center justify-between border-b border-[rgba(255,255,255,0.07)] px-[17px] py-[13px]">
                 <span className="text-[13px] font-medium text-nw-200">Recent Blog Posts</span>
                 <Link href="/blog/manage" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--slate-500)', textDecoration: 'none' }}

@@ -340,7 +340,7 @@ export function CampaignSendModal({ open, onClose, html, title, previewText, exi
             {step === 'preview' && (
               <div className="flex flex-col gap-4">
                 <p className="text-nw-500" style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase' }}>Inbox Preview</p>
-                <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-800 p-4">
+                <div className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-800 p-4">
                   <div className="flex items-start gap-3">
                     <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gold-500 font-brand font-bold text-nw-950" style={{ fontSize: 12 }}>NW</div>
                     <div className="flex-1 min-w-0">
@@ -360,7 +360,7 @@ export function CampaignSendModal({ open, onClose, html, title, previewText, exi
                     <Users size={10} /> Sending to: {selectedLabels || 'All'} ({recipientCount})
                   </span>
                 </div>
-                <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] overflow-hidden bg-white" style={{ maxHeight: 400 }}>
+                <div className="rounded-2xl border border-[rgba(255,255,255,0.11)] overflow-hidden bg-white" style={{ maxHeight: 400 }}>
                   <iframe srcDoc={html} className="w-full border-0" style={{ height: 380 }} title="Email Preview" sandbox="allow-same-origin" />
                 </div>
 
@@ -375,7 +375,7 @@ export function CampaignSendModal({ open, onClose, html, title, previewText, exi
             {step === 'send' && (
               <div className="flex flex-col gap-4">
                 {/* Summary */}
-                <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4 flex items-center gap-3">
+                <div className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4 flex items-center gap-3">
                   <Users size={16} className="text-gold-400 flex-shrink-0" />
                   <div>
                     <p className="text-nw-200 font-medium" style={{ fontSize: 13 }}>Sending to: {selectedLabels || 'All Contacts'}</p>
@@ -384,7 +384,7 @@ export function CampaignSendModal({ open, onClose, html, title, previewText, exi
                 </div>
 
                 {/* Test send */}
-                <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4">
+                <div className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4">
                   <p className="text-nw-200 font-medium mb-3" style={{ fontSize: 13 }}>Test Send</p>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
@@ -398,7 +398,7 @@ export function CampaignSendModal({ open, onClose, html, title, previewText, exi
                 </div>
 
                 {/* Schedule */}
-                <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4">
+                <div className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4">
                   <p className="text-nw-200 font-medium mb-1" style={{ fontSize: 13 }}>Schedule for Later</p>
                   <p className="text-nw-500 mb-3" style={{ fontSize: 11 }}>Saves draft + creates a to-do reminder. You&apos;ll get a popup when it&apos;s time to send.</p>
                   <div className="flex gap-2 mb-3">
@@ -411,7 +411,7 @@ export function CampaignSendModal({ open, onClose, html, title, previewText, exi
                 </div>
 
                 {/* Save draft */}
-                <div className="rounded-[10px] border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4">
+                <div className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4">
                   <p className="text-nw-200 font-medium mb-2" style={{ fontSize: 13 }}>Save as Draft</p>
                   <p className="text-nw-500 mb-3" style={{ fontSize: 11 }}>Save to Mailchimp without sending. You can send it later.</p>
                   <Button variant="default" size="sm" onClick={handleSaveDraft} loading={savingDraft} className="w-full">
@@ -420,7 +420,7 @@ export function CampaignSendModal({ open, onClose, html, title, previewText, exi
                 </div>
 
                 {/* Send now */}
-                <div className="rounded-[10px] border border-[rgba(212,160,23,0.2)] bg-[rgba(212,160,23,0.05)] p-4">
+                <div className="rounded-2xl border border-[rgba(212,160,23,0.2)] bg-[rgba(212,160,23,0.05)] p-4">
                   <p className="text-nw-200 font-medium mb-2" style={{ fontSize: 13 }}>Send Now</p>
                   <p className="text-nw-500 mb-3" style={{ fontSize: 11 }}>Send to {recipientCount} {selectedLabels.toLowerCase() || 'contacts'} immediately.</p>
                   <Button variant="gold" size="sm" onClick={handleSendNow} loading={sending} className="w-full">
