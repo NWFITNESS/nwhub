@@ -133,7 +133,7 @@ export default async function MemberKPIsPage() {
       {/* Membership Groups config */}
       <Panel>
         <PanelHeader eyebrow="Configuration" title="Membership Groups" />
-        <div className="p-4">
+        <div className="p-6">
           <MembershipGroups initialGroups={memberGroups} />
         </div>
       </Panel>

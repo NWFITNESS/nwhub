@@ -63,7 +63,7 @@ export function SyncClient() {
       {/* How to */}
       <Panel>
         <PanelHeader eyebrow="How to sync" title="3 Steps" />
-        <div className="flex flex-col gap-3 p-4">
+        <div className="flex flex-col gap-3 p-6">
           {[
             { step: '1', title: 'Export from WodBoard', desc: 'Go to WodBoard → Reports → Customer Overview → Export' },
             { step: '2', title: 'Download the CSV',     desc: 'Click the link in your email and save the CSV file to your computer' },

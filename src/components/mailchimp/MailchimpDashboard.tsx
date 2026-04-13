@@ -166,7 +166,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
       {/* Not configured warning */}
       {!isConfigured && (
         <Panel>
-          <div className="flex items-center gap-4 p-4">
+          <div className="flex items-center gap-4 p-6">
             <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-[8px] bg-[rgba(245,158,11,0.1)] border border-[rgba(245,158,11,0.2)]">
               <AlertCircle size={16} className="text-[#f59e0b]" />
             </div>
@@ -186,7 +186,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
       {/* Sync result */}
       {syncResult && (
         <Panel>
-          <div className="flex items-center gap-3 px-4 py-3">
+          <div className="flex items-center gap-3 px-6 py-3">
             <CheckCircle size={14} className="text-gold-300" />
             <p className="text-[13px] text-gold-300">
               Sync complete — <span className="font-semibold">{syncResult.synced}</span> synced, <span className="font-semibold">{syncResult.failed}</span> failed
@@ -373,7 +373,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
         </button>
 
         {settingsOpen && (
-          <div className="border-t border-[rgba(255,255,255,0.07)] p-4 space-y-4">
+          <div className="border-t border-[rgba(255,255,255,0.07)] p-6 space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div className="space-y-2">
                 <label className="text-[11px] font-medium uppercase tracking-[1px] text-nw-500">API Key</label>

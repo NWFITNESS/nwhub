@@ -57,7 +57,7 @@ export function DocumentsManager({ initialDocs }: Props) {
       {/* Upload section */}
       <Panel>
         <PanelHeader eyebrow="Upload" title="Add Document" />
-        <div className="p-4 flex flex-col gap-3">
+        <div className="p-6 flex flex-col gap-3">
           <div className="flex flex-wrap gap-2">
             {DOC_CATEGORIES.map(cat => (
               <button
@@ -104,7 +104,7 @@ export function DocumentsManager({ initialDocs }: Props) {
         ) : (
           <div>
             {docs.map(doc => (
-              <div key={doc.id} className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.05)] px-4 py-3 last:border-0">
+              <div key={doc.id} className="flex items-center gap-3 border-b border-[rgba(255,255,255,0.05)] px-6 py-3 last:border-0">
                 <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-[8px] bg-[rgba(212,160,23,0.1)] border border-[rgba(212,160,23,0.22)]">
                   <FileText size={16} className="text-gold-400" />
                 </div>

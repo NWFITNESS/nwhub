@@ -111,7 +111,7 @@ export function SubscriberImporter() {
       {/* Source picker */}
       <Panel>
         <PanelHeader eyebrow="Step 1" title="Select Source" />
-        <div className="p-4 grid grid-cols-1 gap-2 md:grid-cols-2">
+        <div className="p-6 grid grid-cols-1 gap-2 md:grid-cols-2">
           {SOURCES.map(s => (
             <button
               key={s.id}
@@ -127,7 +127,7 @@ export function SubscriberImporter() {
             </button>
           ))}
         </div>
-        <div className="px-4 pb-4">
+        <div className="px-6 pb-6">
           <label className="block text-nw-500 mb-1.5" style={{ fontSize: 11, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase' }}>Custom Tag (optional)</label>
           <input
             value={customTag}
@@ -143,7 +143,7 @@ export function SubscriberImporter() {
       {/* Upload */}
       <Panel>
         <PanelHeader eyebrow="Step 2" title="Upload CSV" />
-        <div className="p-4">
+        <div className="p-6">
           {!fileName ? (
             <div
               onClick={() => fileRef.current?.click()}
@@ -187,16 +187,16 @@ export function SubscriberImporter() {
           <PanelHeader eyebrow="Step 3" title={`Preview (${parsed.length} subscribers)`} />
           <div className="max-h-[200px] overflow-y-auto">
             {parsed.slice(0, 20).map((r, i) => (
-              <div key={i} className="flex items-center gap-4 border-b border-[rgba(255,255,255,0.05)] px-4 py-2">
+              <div key={i} className="flex items-center gap-4 border-b border-[rgba(255,255,255,0.05)] px-6 py-2">
                 <span className="text-nw-200 flex-1 truncate" style={{ fontSize: 12 }}>{r.email}</span>
                 <span className="text-nw-400" style={{ fontSize: 11 }}>{[r.first_name, r.last_name].filter(Boolean).join(' ') || '—'}</span>
               </div>
             ))}
             {parsed.length > 20 && (
-              <p className="px-4 py-2 text-nw-500" style={{ fontSize: 11 }}>...and {parsed.length - 20} more</p>
+              <p className="px-6 py-2 text-nw-500" style={{ fontSize: 11 }}>...and {parsed.length - 20} more</p>
             )}
           </div>
-          <div className="p-4 flex items-center justify-between">
+          <div className="p-6 flex items-center justify-between">
             <p className="text-nw-500" style={{ fontSize: 11 }}>
               Source: <span className="text-gold-300">{source}</span>
               {customTag && <> · Tag: <span className="text-gold-300">{customTag}</span></>}

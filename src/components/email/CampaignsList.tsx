@@ -85,39 +85,39 @@ export function CampaignsList({ campaigns: initialCampaigns }: { campaigns: Camp
             <thead>
               <tr>
                 {['Name', 'Status', 'Sent', 'Opens', 'Clicks', 'Date', ''].map(h => (
-                  <th key={h} className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-nw-500" style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.1px', textTransform: 'uppercase' }}>{h}</th>
+                  <th key={h} className="border-b border-[rgba(255,255,255,0.07)] px-6 py-2.5 text-left text-nw-500" style={{ fontSize: 10, fontWeight: 600, letterSpacing: '1.1px', textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {campaigns.length === 0 ? (
-                <tr><td colSpan={7} className="px-4 py-12 text-center text-nw-500">No campaigns yet</td></tr>
+                <tr><td colSpan={7} className="px-6 py-12 text-center text-nw-500">No campaigns yet</td></tr>
               ) : campaigns.map(c => (
                 <tr
                   key={c.id}
                   onClick={isDraft(c.status) ? () => openDraft(c) : undefined}
                   className={`transition-colors ${isDraft(c.status) ? 'cursor-pointer hover:bg-[rgba(212,160,23,0.04)] border-l-2 border-l-gold-400' : 'hover:bg-[rgba(255,255,255,0.03)]'}`}
                 >
-                  <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3">
+                  <td className="border-b border-[rgba(255,255,255,0.05)] px-6 py-3">
                     <p className="font-medium text-nw-200 truncate" style={{ maxWidth: 240 }}>{c.settings.title || c.settings.subject_line}</p>
                     {c.settings.title && c.settings.subject_line && c.settings.title !== c.settings.subject_line && (
                       <p className="text-nw-500 truncate mt-0.5" style={{ fontSize: 11 }}>{c.settings.subject_line}</p>
                     )}
                   </td>
-                  <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3">
+                  <td className="border-b border-[rgba(255,255,255,0.05)] px-6 py-3">
                     <Badge variant={statusVariant(c.status)}>{statusLabel(c.status)}</Badge>
                   </td>
-                  <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-nw-300">{c.emails_sent > 0 ? c.emails_sent.toLocaleString() : '—'}</td>
-                  <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3">
+                  <td className="border-b border-[rgba(255,255,255,0.05)] px-6 py-3 text-nw-300">{c.emails_sent > 0 ? c.emails_sent.toLocaleString() : '—'}</td>
+                  <td className="border-b border-[rgba(255,255,255,0.05)] px-6 py-3">
                     {c.opens ? <span className="text-[#4ade80] font-medium">{(c.opens.open_rate * 100).toFixed(1)}%</span> : '—'}
                   </td>
-                  <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3">
+                  <td className="border-b border-[rgba(255,255,255,0.05)] px-6 py-3">
                     {c.clicks ? <span className="text-gold-300 font-medium">{(c.clicks.click_rate * 100).toFixed(1)}%</span> : '—'}
                   </td>
-                  <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-nw-500" style={{ fontSize: 11 }}>
+                  <td className="border-b border-[rgba(255,255,255,0.05)] px-6 py-3 text-nw-500" style={{ fontSize: 11 }}>
                     {c.send_time ? format(new Date(c.send_time), 'dd MMM yyyy') : 'Draft'}
                   </td>
-                  <td className="border-b border-[rgba(255,255,255,0.05)] px-4 py-3">
+                  <td className="border-b border-[rgba(255,255,255,0.05)] px-6 py-3">
                     {isDraft(c.status) && (
                       <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
                         <Button variant="gold" size="sm" onClick={() => openDraft(c)}>
@@ -142,12 +142,12 @@ export function CampaignsList({ campaigns: initialCampaigns }: { campaigns: Camp
         {/* Mobile card rows */}
         <div className="md:hidden">
           {campaigns.length === 0 ? (
-            <div className="px-4 py-12 text-center text-nw-500">No campaigns yet</div>
+            <div className="px-6 py-12 text-center text-nw-500">No campaigns yet</div>
           ) : campaigns.map(c => (
             <div
               key={c.id}
               onClick={isDraft(c.status) ? () => openDraft(c) : undefined}
-              className={`border-b border-[rgba(255,255,255,0.05)] p-4 ${isDraft(c.status) ? 'cursor-pointer border-l-2 border-l-gold-400 bg-[rgba(212,160,23,0.03)]' : ''}`}
+              className={`border-b border-[rgba(255,255,255,0.05)] p-6 ${isDraft(c.status) ? 'cursor-pointer border-l-2 border-l-gold-400 bg-[rgba(212,160,23,0.03)]' : ''}`}
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <p className="font-medium text-nw-200" style={{ fontSize: 14 }}>{c.settings.title || c.settings.subject_line}</p>

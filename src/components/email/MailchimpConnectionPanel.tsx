@@ -98,7 +98,7 @@ export function MailchimpConnectionPanel({
   return (
     <Panel>
       <PanelHeader eyebrow="Integration" title="Mailchimp Connection" />
-      <div className="p-4 flex flex-col gap-4">
+      <div className="p-6 flex flex-col gap-4">
         {/* Status row */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-2">

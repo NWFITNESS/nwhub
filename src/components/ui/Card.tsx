@@ -12,12 +12,17 @@ export function PanelHeader({ eyebrow, title, action, children }: { eyebrow?: st
   const trailing = action ?? children
   return (
     <div className="flex flex-shrink-0 items-center gap-3 border-b border-[rgba(255,255,255,0.08)] px-6 py-3.5">
-      {eyebrow && <span className="text-[10px] font-bold uppercase tracking-[1.6px] text-nw-400">{eyebrow}</span>}
+      {eyebrow && <span className="text-[11px] font-bold uppercase tracking-[1.6px] text-nw-400">{eyebrow}</span>}
       {eyebrow && <div className="h-3.5 w-px bg-[rgba(255,255,255,0.12)]" />}
       <span className="text-sm font-semibold text-nw-100">{title}</span>
       {trailing && <div className="ml-auto">{trailing}</div>}
     </div>
   )
+}
+
+// Panel body — consistent padding below PanelHeader
+export function PanelBody({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <div className={`p-6 ${className ?? ''}`}>{children}</div>
 }
 
 interface CardProps {
