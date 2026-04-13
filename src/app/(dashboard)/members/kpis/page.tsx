@@ -71,7 +71,7 @@ export default async function MemberKPIsPage() {
       {/* Stats overview */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {stats.map(s => (
-          <div key={s.label} className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 shadow-gold-sm" style={{ padding: 32 }}>
+          <div key={s.label} className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 shadow-gold-sm" style={{ padding: 16 }}>
             <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">{s.label}</span>
             <div className="mt-3 font-brand text-[30px] font-bold leading-none tracking-[-0.5px] text-white">{s.value}</div>
           </div>

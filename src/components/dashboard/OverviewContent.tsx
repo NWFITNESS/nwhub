@@ -60,7 +60,7 @@ function StatCard({ label, value, sub, gold, icon }: {
   label: string; value: number | string; sub: string; gold?: boolean; icon: React.ReactNode
 }) {
   return (
-    <div className="relative cursor-default overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 p-8 shadow-gold-sm transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700 hover:shadow-gold-md h-full">
+    <div className="relative cursor-default overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 shadow-gold-sm transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700 hover:shadow-gold-md h-full" style={{ padding: 16 }}>
       <div className="flex items-start justify-between">
         <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">{label}</span>
         <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.06)]">{icon}</div>

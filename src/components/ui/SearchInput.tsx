@@ -14,20 +14,23 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
       <div className={`relative ${className}`}>
         <Search
           size={16}
-          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-nw-500 pointer-events-none"
+          className="absolute top-1/2 -translate-y-1/2 text-nw-400 pointer-events-none"
           strokeWidth={2}
+          style={{ left: 12, zIndex: 1 }}
         />
         <input
           ref={ref}
           value={value}
-          className="h-10 w-full rounded-xl border border-[rgba(255,255,255,0.1)] bg-nw-800 pl-10 pr-9 text-sm text-nw-100 placeholder:text-nw-500 outline-none transition-all focus:border-[rgba(212,160,23,0.45)] focus:bg-nw-750 focus:shadow-[0_0_0_3px_rgba(212,160,23,0.08)]"
+          className="h-10 w-full rounded-xl border border-[rgba(255,255,255,0.1)] bg-nw-800 text-sm text-nw-100 placeholder:text-nw-500 outline-none transition-all focus:border-[rgba(212,160,23,0.45)] focus:bg-nw-750 focus:shadow-[0_0_0_3px_rgba(212,160,23,0.08)]"
+          style={{ paddingLeft: 38, paddingRight: 36 }}
           {...props}
         />
         {hasValue && onClear && (
           <button
             type="button"
             onClick={onClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-nw-500 hover:text-nw-300 transition-colors"
+            className="absolute top-1/2 -translate-y-1/2 text-nw-500 hover:text-nw-300 transition-colors"
+            style={{ right: 12 }}
           >
             <X size={14} />
           </button>
