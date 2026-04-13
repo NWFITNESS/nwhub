@@ -364,7 +364,17 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
       body2: 'Every session follows a structured warm-up, skill or strength focus, a workout, and a cool-down game. It\'s the same methodology used by elite athletes, adapted so kids develop coordination, strength, and discipline — all while having a blast.',
     },
     gallery: {
-      caption: '',
+      kicker: 'In the gym',
+      heading: 'Warriors in action',
+      caption: 'Real photos of your young warriors — sessions run every Sunday at Northern Warrior, Egremont.',
+      images: [
+        { url: '', alt: 'Kids session photo 1', image_position: '50% 50%' },
+        { url: '', alt: 'Kids session photo 2', image_position: '50% 50%' },
+        { url: '', alt: 'Kids session photo 3', image_position: '50% 50%' },
+        { url: '', alt: 'Kids session photo 4', image_position: '50% 50%' },
+        { url: '', alt: 'Kids session photo 5', image_position: '50% 50%' },
+        { url: '', alt: 'Kids session photo 6', image_position: '50% 50%' },
+      ],
     },
     coaches: {
       items: [
