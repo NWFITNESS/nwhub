@@ -374,6 +374,8 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
         { image_url: '', alt: 'Kids session photo 4', image_position: '50% 50%' },
         { image_url: '', alt: 'Kids session photo 5', image_position: '50% 50%' },
         { image_url: '', alt: 'Kids session photo 6', image_position: '50% 50%' },
+        { image_url: '', alt: 'Kids session photo 7', image_position: '50% 50%' },
+        { image_url: '', alt: 'Kids session photo 8', image_position: '50% 50%' },
       ],
     },
     coaches: {
