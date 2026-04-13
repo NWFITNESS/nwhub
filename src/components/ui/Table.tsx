@@ -3,15 +3,15 @@ import { EmptyState } from './EmptyState'
 import { SkeletonTable } from './Skeleton'
 
 export function Th({ children }: { children: React.ReactNode }) {
-  return <th className="border-b border-[rgba(255,255,255,0.07)] px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[1.1px] text-nw-500">{children}</th>
+  return <th className="border-b border-[rgba(255,255,255,0.08)] px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[1.2px] text-nw-400">{children}</th>
 }
 
 export function Td({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <td className={`border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-nw-300 ${className ?? ''}`}>{children}</td>
+  return <td className={`border-b border-[rgba(255,255,255,0.05)] px-5 py-3.5 text-sm text-nw-200 ${className ?? ''}`}>{children}</td>
 }
 
 export function TrRow({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
-  return <tr onClick={onClick} className={`transition-colors hover:bg-[rgba(255,255,255,0.03)] ${onClick ? 'cursor-pointer' : ''}`}>{children}</tr>
+  return <tr onClick={onClick} className={`transition-colors hover:bg-[rgba(255,255,255,0.04)] ${onClick ? 'cursor-pointer' : ''}`}>{children}</tr>
 }
 
 interface Column<T> {
@@ -44,7 +44,7 @@ export function Table<T extends Record<string, unknown>>({
 }: TableProps<T>) {
   return (
     <div className="w-full overflow-x-auto">
-      <table className="w-full border-collapse text-[13px]">
+      <table className="w-full border-collapse text-sm">
         <thead>
           <tr>
             {columns.map((col) => (
@@ -63,7 +63,7 @@ export function Table<T extends Record<string, unknown>>({
                 {emptyIcon ? (
                   <EmptyState icon={emptyIcon} title={emptyMessage} action={emptyAction} />
                 ) : (
-                  <p className="px-4 py-12 text-center text-nw-500">{emptyMessage}</p>
+                  <p className="px-5 py-14 text-center text-nw-400">{emptyMessage}</p>
                 )}
               </td>
             </tr>

@@ -11,23 +11,22 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean
 }
 
-const base = 'inline-flex items-center justify-center gap-1.5 rounded-[7px] border font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
+const base = 'inline-flex items-center justify-center gap-2 rounded-xl border font-semibold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
 
 const variantMap: Record<Variant, string> = {
-  default:     'border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] text-nw-300 hover:bg-[rgba(255,255,255,0.08)] hover:text-nw-100 hover:border-[rgba(255,255,255,0.14)]',
-  gold:        'border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-gold-300 hover:bg-[rgba(212,160,23,0.22)]',
-  ghost:       'border-transparent bg-transparent text-nw-400 hover:bg-[rgba(255,255,255,0.04)] hover:text-nw-200',
-  danger:      'border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-red-400 hover:bg-[rgba(239,68,68,0.18)]',
-  // Aliases for backward compat
-  primary:     'border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-gold-300 hover:bg-[rgba(212,160,23,0.22)]',
-  secondary:   'border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] text-nw-300 hover:bg-[rgba(255,255,255,0.08)] hover:text-nw-100 hover:border-[rgba(255,255,255,0.14)]',
-  destructive: 'border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-red-400 hover:bg-[rgba(239,68,68,0.18)]',
+  default:     'border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.05)] text-nw-200 hover:bg-[rgba(255,255,255,0.1)] hover:text-nw-100 hover:border-[rgba(255,255,255,0.16)]',
+  gold:        'border-[rgba(212,160,23,0.3)] bg-[rgba(212,160,23,0.14)] text-gold-300 hover:bg-[rgba(212,160,23,0.24)] hover:border-[rgba(212,160,23,0.4)]',
+  ghost:       'border-transparent bg-transparent text-nw-300 hover:bg-[rgba(255,255,255,0.06)] hover:text-nw-100',
+  danger:      'border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.12)] text-red-400 hover:bg-[rgba(239,68,68,0.2)]',
+  primary:     'border-[rgba(212,160,23,0.3)] bg-[rgba(212,160,23,0.14)] text-gold-300 hover:bg-[rgba(212,160,23,0.24)] hover:border-[rgba(212,160,23,0.4)]',
+  secondary:   'border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.05)] text-nw-200 hover:bg-[rgba(255,255,255,0.1)] hover:text-nw-100 hover:border-[rgba(255,255,255,0.16)]',
+  destructive: 'border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.12)] text-red-400 hover:bg-[rgba(239,68,68,0.2)]',
 }
 
 const sizes: Record<Size, string> = {
-  sm: 'px-3 py-[5px] text-xs',
-  md: 'px-4 py-2 text-sm',
-  lg: 'px-5 py-2.5 text-sm',
+  sm: 'px-3.5 py-1.5 text-xs',
+  md: 'px-5 py-2.5 text-sm',
+  lg: 'px-6 py-3 text-sm',
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
