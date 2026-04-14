@@ -685,9 +685,10 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
     <GenericArrayEditor {...p} fields={[
       { key: 'name', label: 'Name' },
       { key: 'role', label: 'Role' },
-      { key: 'excerpt', label: 'Short bio (card)', multiline: true },
-      { key: 'bio', label: 'Full bio (modal)', multiline: true },
-      { key: 'image_url', label: 'Image' },
+      { key: 'avatarEmoji', label: 'Emoji (fallback if no photo)' },
+      { key: 'bio', label: 'Bio', multiline: true },
+      { key: 'image_url', label: 'Photo' },
+      { key: 'image_position', label: 'Focal point (e.g. 50% 30%)' },
     ]} />
   ),
   facilities: (p) => (
