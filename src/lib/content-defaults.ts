@@ -367,6 +367,7 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
       kicker: 'In the gym',
       heading: 'Warriors in action',
       caption: 'Real photos of your young warriors — sessions run every Sunday at Northern Warrior, Egremont.',
+      layout: 'masonry',
       items: [
         { image_url: '', alt: 'Kids session photo 1', image_position: '50% 50%' },
         { image_url: '', alt: 'Kids session photo 2', image_position: '50% 50%' },

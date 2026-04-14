@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
-import { Input, Textarea, Field } from '@/components/ui/Input'
+import { Input, Textarea, Select, Field } from '@/components/ui/Input'
 import { ImageField } from '@/components/media/MediaPicker'
 import { Plus, Trash2, GripVertical } from 'lucide-react'
 
@@ -832,12 +832,23 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
   ),
 
   // ── Kids & Teens sections ──────────────────────────────────────────────────
-  gallery: (p) => (
-    <GenericArrayEditor {...p} fields={[
-      { key: 'image_url', label: 'Photo' },
-      { key: 'alt', label: 'Alt text (accessibility)' },
-      { key: 'image_position', label: 'Focal point (e.g. 50% 30%)' },
-    ]} />
+  gallery: ({ content, onChange }) => (
+    <div className="space-y-4">
+      <Field label="Gallery Layout">
+        <Select value={String(content.layout ?? 'masonry')} onChange={(e) => onChange({ ...content, layout: e.target.value })}>
+          <option value="masonry">Masonry (3-column parallax)</option>
+          <option value="grid">Grid (uniform tiles)</option>
+          <option value="carousel">Carousel (one at a time with arrows)</option>
+          <option value="filmstrip">Filmstrip (horizontal scroll)</option>
+          <option value="spotlight">Spotlight (large image + thumbnails)</option>
+        </Select>
+      </Field>
+      <GenericArrayEditor content={content} onChange={onChange} fields={[
+        { key: 'image_url', label: 'Photo' },
+        { key: 'alt', label: 'Alt text (accessibility)' },
+        { key: 'image_position', label: 'Focal point (e.g. 50% 30%)' },
+      ]} />
+    </div>
   ),
   sessions_intro: (p) => <SimpleContentEditor {...p} />,
   why_nw: (p) => (
