@@ -1,6 +1,6 @@
-import { getAllBlocks, getRosterForBlock, getRecentDropIns, getStatsForBlock, getKidsTrials } from '@/lib/kids/queries'
+import { getAllBlocks, getRosterForBlock, getRecentDropIns, getStatsForBlock, getKidsTrials, getAllDiscounts } from '@/lib/kids/queries'
 import { KidsPageClient } from './KidsPageClient'
-import type { BlockWithDetails, DropInRow, KidsStats, RosterRow, TrialRow } from '@/lib/kids/types'
+import type { BlockWithDetails, DropInRow, KidsDiscount, KidsStats, RosterRow, TrialRow } from '@/lib/kids/types'
 
 const EMPTY_STATS: KidsStats = {
   minis_enrolled: 0,
@@ -36,9 +36,10 @@ export default async function KidsPage() {
   )
   const rosterByBlock: Record<string, RosterRow[]> = Object.fromEntries(rosterEntries)
 
-  const [recentDropIns, trials] = await Promise.all([
+  const [recentDropIns, trials, discounts] = await Promise.all([
     safe<DropInRow[]>('getRecentDropIns', () => getRecentDropIns(10), []),
     safe<TrialRow[]>('getKidsTrials', getKidsTrials, []),
+    safe<KidsDiscount[]>('getAllDiscounts', getAllDiscounts, []),
   ])
 
   const stats: KidsStats = activeBlock
@@ -51,6 +52,7 @@ export default async function KidsPage() {
       rosterByBlock={rosterByBlock}
       recentDropIns={recentDropIns}
       trials={trials}
+      discounts={discounts}
       initialStats={stats}
       initialActiveBlockId={activeBlock?.id ?? null}
     />

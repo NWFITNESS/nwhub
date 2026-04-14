@@ -374,6 +374,7 @@ interface CreateBlockCheckoutInput {
   blockId: string
   bookingIds: string[]   // one or more kids_block_bookings IDs (multi-child support)
   parentEmail: string
+  discountCode?: string  // optional discount code entered by parent
 }
 
 /**
@@ -382,6 +383,11 @@ interface CreateBlockCheckoutInput {
  * Looks up each booking, finds the matching block pricing, and builds a
  * Checkout Session with one line item per booking. Stores the session ID on
  * every booking so the webhook can flip them all to 'paid' at once.
+ *
+ * Discounts:
+ * - Auto-applies sibling discount if 2+ children and an auto_apply discount exists
+ * - Accepts an optional discount code from the parent
+ * - Only one discount per checkout (code takes priority over auto-apply)
  *
  * Bookings must already exist in kids_block_bookings with payment_status
  * 'pending' before this is called — the public register form / returning
@@ -426,6 +432,60 @@ export async function createBlockCheckoutSession(
   const childById = new Map<string, string>()
   for (const c of childrenRes.data ?? []) childById.set(c.id, c.child_name)
 
+  // ── Resolve discount ──────────────────────────────────────────────────
+  type AppliedDiscount = { code: string; description: string; discount_type: 'percentage' | 'fixed'; value: number }
+  let appliedDiscount: AppliedDiscount | null = null
+
+  // Try manual code first
+  if (input.discountCode?.trim()) {
+    const { data: codeDiscount } = await admin
+      .from('kids_discounts')
+      .select('*')
+      .eq('is_active', true)
+      .eq('auto_apply', false)
+      .ilike('code', input.discountCode.trim())
+      .maybeSingle()
+
+    if (codeDiscount) {
+      const now = new Date()
+      const valid =
+        (!codeDiscount.valid_from || new Date(codeDiscount.valid_from) <= now) &&
+        (!codeDiscount.valid_until || new Date(codeDiscount.valid_until) >= now) &&
+        (codeDiscount.max_uses == null || codeDiscount.times_used < codeDiscount.max_uses) &&
+        bookings.length >= codeDiscount.min_children
+      if (valid) {
+        appliedDiscount = {
+          code: codeDiscount.code,
+          description: codeDiscount.description,
+          discount_type: codeDiscount.discount_type,
+          value: codeDiscount.value,
+        }
+      }
+    }
+  }
+
+  // Fall back to auto-apply sibling discount
+  if (!appliedDiscount && bookings.length >= 2) {
+    const { data: autoDiscount } = await admin
+      .from('kids_discounts')
+      .select('*')
+      .eq('is_active', true)
+      .eq('auto_apply', true)
+      .lte('min_children', bookings.length)
+      .order('value', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (autoDiscount) {
+      appliedDiscount = {
+        code: autoDiscount.code,
+        description: autoDiscount.description,
+        discount_type: autoDiscount.discount_type,
+        value: autoDiscount.value,
+      }
+    }
+  }
+
   // Build line items
   const lineItems = bookings.map((b) => {
     const pricePence = priceByCategory.get(b.category as KidsCategory)
@@ -443,10 +503,42 @@ export async function createBlockCheckoutSession(
     }
   })
 
+  // ── Create Stripe coupon if discount applies ──────────────────────────
   const stripe = getStripe()
+  let stripeCouponId: string | undefined
+
+  if (appliedDiscount) {
+    const couponParams: Record<string, unknown> = {
+      duration: 'once' as const,
+      name: appliedDiscount.description || appliedDiscount.code,
+    }
+    if (appliedDiscount.discount_type === 'percentage') {
+      couponParams.percent_off = appliedDiscount.value
+    } else {
+      couponParams.amount_off = appliedDiscount.value
+      couponParams.currency = 'gbp'
+    }
+    const coupon = await stripe.coupons.create(couponParams as Parameters<typeof stripe.coupons.create>[0])
+    stripeCouponId = coupon.id
+  }
+
+  // ── Calculate discount per booking for record-keeping ─────────────────
+  let discountPerBookingPence = 0
+  if (appliedDiscount) {
+    const totalPence = lineItems.reduce((sum, li) => sum + li.price_data.unit_amount, 0)
+    let totalDiscountPence: number
+    if (appliedDiscount.discount_type === 'percentage') {
+      totalDiscountPence = Math.round(totalPence * (appliedDiscount.value / 100))
+    } else {
+      totalDiscountPence = Math.min(appliedDiscount.value, totalPence)
+    }
+    discountPerBookingPence = Math.round(totalDiscountPence / bookings.length)
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     line_items: lineItems,
+    ...(stripeCouponId ? { discounts: [{ coupon: stripeCouponId }] } : {}),
     customer_email: input.parentEmail.toLowerCase().trim(),
     success_url: `${siteUrl()}/kids-teens/confirmed?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${siteUrl()}/kids-teens`,
@@ -454,16 +546,39 @@ export async function createBlockCheckoutSession(
       type: 'block',
       block_id: input.blockId,
       booking_ids: bookings.map((b) => b.id).join(','),
+      ...(appliedDiscount ? { discount_code: appliedDiscount.code } : {}),
     },
   })
 
   if (!session.url) throw new Error('Stripe did not return a checkout URL')
 
-  // Store the session ID on every booking so the webhook can flip them all
+  // Store the session ID + discount info on every booking
   await admin
     .from('kids_block_bookings')
-    .update({ stripe_checkout_session_id: session.id })
+    .update({
+      stripe_checkout_session_id: session.id,
+      ...(appliedDiscount
+        ? { discount_code: appliedDiscount.code, discount_amount_pence: discountPerBookingPence }
+        : {}),
+    })
     .in('id', bookings.map((b) => b.id))
+
+  // Increment usage counter (non-critical)
+  if (appliedDiscount) {
+    try {
+      const { data } = await admin
+        .from('kids_discounts')
+        .select('times_used')
+        .ilike('code', appliedDiscount.code)
+        .single()
+      if (data) {
+        await admin
+          .from('kids_discounts')
+          .update({ times_used: data.times_used + 1 })
+          .ilike('code', appliedDiscount.code)
+      }
+    } catch { /* non-critical */ }
+  }
 
   return { url: session.url, sessionId: session.id }
 }
@@ -1042,5 +1157,82 @@ export async function cancelDropIn(bookingId: string): Promise<void> {
 
   if (deleteError) throw new Error(`Failed to delete drop-in: ${deleteError.message}`)
 
+  revalidatePath('/kids')
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Discount management
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface SaveDiscountInput {
+  id?: string
+  code: string
+  description: string
+  discount_type: 'percentage' | 'fixed'
+  value: number
+  is_active: boolean
+  valid_from: string | null
+  valid_until: string | null
+  max_uses: number | null
+  min_children: number
+  auto_apply: boolean
+}
+
+export async function saveDiscount(input: SaveDiscountInput): Promise<{ id: string }> {
+  const admin = createAdminClient()
+  if (!input.code.trim()) throw new Error('Code is required.')
+  if (input.value <= 0) throw new Error('Discount value must be greater than 0.')
+  if (input.discount_type === 'percentage' && input.value > 100) throw new Error('Percentage cannot exceed 100.')
+
+  const row = {
+    code: input.code.trim().toUpperCase(),
+    description: input.description.trim(),
+    discount_type: input.discount_type,
+    value: input.value,
+    is_active: input.is_active,
+    valid_from: input.valid_from || null,
+    valid_until: input.valid_until || null,
+    max_uses: input.max_uses,
+    min_children: input.min_children,
+    auto_apply: input.auto_apply,
+  }
+
+  if (input.id) {
+    const { error } = await admin
+      .from('kids_discounts')
+      .update(row)
+      .eq('id', input.id)
+    if (error) throw new Error(`Failed to update discount: ${error.message}`)
+    revalidatePath('/kids')
+    return { id: input.id }
+  }
+
+  const { data, error } = await admin
+    .from('kids_discounts')
+    .insert(row)
+    .select('id')
+    .single()
+  if (error || !data) throw new Error(`Failed to create discount: ${error?.message ?? 'unknown'}`)
+  revalidatePath('/kids')
+  return { id: data.id }
+}
+
+export async function toggleDiscount(discountId: string, isActive: boolean): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('kids_discounts')
+    .update({ is_active: isActive })
+    .eq('id', discountId)
+  if (error) throw new Error(`Failed to toggle discount: ${error.message}`)
+  revalidatePath('/kids')
+}
+
+export async function deleteDiscount(discountId: string): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('kids_discounts')
+    .delete()
+    .eq('id', discountId)
+  if (error) throw new Error(`Failed to delete discount: ${error.message}`)
   revalidatePath('/kids')
 }

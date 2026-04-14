@@ -6,6 +6,7 @@ import type {
   KidsBlockPricing,
   KidsCategory,
   KidsChild,
+  KidsDiscount,
   KidsParent,
   KidsSession,
   KidsStats,
@@ -298,4 +299,16 @@ export async function searchChildren(query: string) {
       })),
     }
   })
+}
+
+/**
+ * Fetch all discount codes, ordered by created_at desc.
+ */
+export async function getAllDiscounts(): Promise<KidsDiscount[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('kids_discounts')
+    .select('*')
+    .order('created_at', { ascending: false })
+  return (data ?? []) as KidsDiscount[]
 }

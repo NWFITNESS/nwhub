@@ -9,16 +9,18 @@ import { SessionScheduler } from '@/components/kids/SessionScheduler'
 import { RosterSection } from '@/components/kids/RosterSection'
 import { DropInSection } from '@/components/kids/DropInSection'
 import { TrialsSection } from '@/components/kids/TrialsSection'
+import { DiscountsSection } from '@/components/kids/DiscountsSection'
 import { BlockModal } from '@/components/kids/BlockModal'
 import { CapacityPricingModal } from '@/components/kids/CapacityPricingModal'
 import { searchChildren } from './search-action'
-import type { BlockWithDetails, DropInRow, KidsStats, RosterRow, SearchResultRow, TrialRow } from '@/lib/kids/types'
+import type { BlockWithDetails, DropInRow, KidsDiscount, KidsStats, RosterRow, SearchResultRow, TrialRow } from '@/lib/kids/types'
 
 interface Props {
   blocks: BlockWithDetails[]
   rosterByBlock: Record<string, RosterRow[]>
   recentDropIns: DropInRow[]
   trials: TrialRow[]
+  discounts: KidsDiscount[]
   initialStats: KidsStats
   initialActiveBlockId: string | null
 }
@@ -28,6 +30,7 @@ export function KidsPageClient({
   rosterByBlock,
   recentDropIns,
   trials,
+  discounts,
   initialStats,
   initialActiveBlockId,
 }: Props) {
@@ -89,6 +92,9 @@ export function KidsPageClient({
 
       <SectionDivider label="Free trials" />
       <TrialsSection trials={trials} blocks={blocks} />
+
+      <SectionDivider label="Discounts" />
+      <DiscountsSection discounts={discounts} />
 
       <BlockModal
         open={newBlockOpen}

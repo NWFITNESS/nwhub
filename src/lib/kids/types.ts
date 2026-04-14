@@ -156,6 +156,24 @@ export interface SearchResultRow {
   dropin_tags: { dropin_id: string; session_date: string | null }[]
 }
 
+export type DiscountType = 'percentage' | 'fixed'
+
+export interface KidsDiscount {
+  id: string
+  code: string
+  description: string
+  discount_type: DiscountType
+  value: number          // percentage (0–100) or pence for fixed
+  is_active: boolean
+  valid_from: string | null
+  valid_until: string | null
+  max_uses: number | null
+  times_used: number
+  min_children: number
+  auto_apply: boolean
+  created_at: string
+}
+
 export interface KidsStats {
   minis_enrolled: number
   littles_enrolled: number
