@@ -149,6 +149,25 @@ function StringField({ fieldKey, value, onChange, imageUrl }: {
   if (isFocalPointKey(fieldKey)) {
     return <FocalPointPicker imageUrl={imageUrl ?? ''} value={value} onChange={onChange} />
   }
+  if (fieldKey === 'layout') {
+    return (
+      <div>
+        <FieldLabel label={fieldKey} />
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={INPUT_BASE}
+          style={{ paddingLeft: 14, paddingRight: 14 }}
+        >
+          <option value="masonry">Masonry (3-column parallax)</option>
+          <option value="grid">Grid (uniform tiles)</option>
+          <option value="carousel">Carousel (one at a time with arrows)</option>
+          <option value="filmstrip">Filmstrip (horizontal scroll)</option>
+          <option value="spotlight">Spotlight (large image + thumbnails)</option>
+        </select>
+      </div>
+    )
+  }
   if (isImageKey(fieldKey, value)) {
     return (
       <div>
