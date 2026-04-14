@@ -223,21 +223,25 @@ function GenericArrayEditor({ content, onChange, fields }: {
       {items.map((item, i) => (
         <ArrayItemWrapper key={i} index={i} onRemove={() => removeItem(i)}>
           <div className="space-y-3">
-            {fields.map((f) =>
-              f.key === 'image_url' ? (
+            {fields.map((f) => {
+              // Convert array values to comma-separated string for editing
+              const raw = item[f.key]
+              const displayValue = Array.isArray(raw) ? raw.join(', ') : (raw ?? '')
+
+              return f.key === 'image_url' ? (
                 <Field key={f.key} label={f.label}>
-                  <ImageField value={item[f.key] ?? ''} onChange={(url) => updateItem(i, f.key, url)} />
+                  <ImageField value={String(displayValue)} onChange={(url) => updateItem(i, f.key, url)} />
                 </Field>
               ) : f.multiline ? (
                 <Field key={f.key} label={f.label}>
-                  <Textarea value={item[f.key] ?? ''} onChange={(e) => updateItem(i, f.key, e.target.value)} />
+                  <Textarea value={String(displayValue)} onChange={(e) => updateItem(i, f.key, e.target.value)} />
                 </Field>
               ) : (
                 <Field key={f.key} label={f.label}>
-                  <Input value={item[f.key] ?? ''} onChange={(e) => updateItem(i, f.key, e.target.value)} />
+                  <Input value={String(displayValue)} onChange={(e) => updateItem(i, f.key, e.target.value)} />
                 </Field>
               )
-            )}
+            })}
           </div>
         </ArrayItemWrapper>
       ))}

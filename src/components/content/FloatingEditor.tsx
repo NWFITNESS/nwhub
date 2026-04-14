@@ -253,22 +253,26 @@ function ArrayField({ fieldKey, items, onChange }: {
             }
             if (item && typeof item === 'object' && !Array.isArray(item)) {
               const obj = item as Record<string, unknown>
-              const stringKeys = Object.keys(obj).filter((k) => typeof obj[k] === 'string')
+              const stringKeys = Object.keys(obj).filter((k) => typeof obj[k] === 'string' || Array.isArray(obj[k]))
               if (stringKeys.length === 0) return null
               return (
                 <div key={i} className="bg-white/[0.03] rounded-lg border border-white/[0.06] space-y-3" style={{ padding: 12 }}>
                   <p className="text-[10px] font-semibold text-[#967705]/60 uppercase tracking-widest">
                     Item {i + 1}
                   </p>
-                  {stringKeys.map((k) => (
-                    <StringField
-                      key={k}
-                      fieldKey={k}
-                      value={obj[k] as string}
-                      onChange={(v) => updateItemField(i, k, v)}
-                      imageUrl={isFocalPointKey(k) ? (obj['image_url'] as string | undefined) ?? '' : undefined}
-                    />
-                  ))}
+                  {stringKeys.map((k) => {
+                    const val = obj[k]
+                    const displayVal = Array.isArray(val) ? val.join(', ') : String(val ?? '')
+                    return (
+                      <StringField
+                        key={k}
+                        fieldKey={k}
+                        value={displayVal}
+                        onChange={(v) => updateItemField(i, k, v)}
+                        imageUrl={isFocalPointKey(k) ? (obj['image_url'] as string | undefined) ?? '' : undefined}
+                      />
+                    )
+                  })}
                 </div>
               )
             }
