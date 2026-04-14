@@ -686,6 +686,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'name', label: 'Name' },
       { key: 'role', label: 'Role' },
       { key: 'avatarEmoji', label: 'Emoji (fallback if no photo)' },
+      { key: 'qualifications', label: 'Qualifications (comma-separated, e.g. DBS Checked, First Aid)' },
       { key: 'bio', label: 'Bio', multiline: true },
       { key: 'image_url', label: 'Photo' },
       { key: 'image_position', label: 'Focal point (e.g. 50% 30%)' },
