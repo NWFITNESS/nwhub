@@ -31,8 +31,10 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient()
 
-  // Get today's date in YYYY-MM-DD format (UTC)
-  const today = new Date().toISOString().slice(0, 10)
+  // Allow a ?date=YYYY-MM-DD override for testing (only works with the
+  // cron secret, so it's not publicly exploitable)
+  const { searchParams } = new URL(req.url)
+  const today = searchParams.get('date') || new Date().toISOString().slice(0, 10)
 
   // Find sessions happening today
   const { data: todaySessions } = await admin
