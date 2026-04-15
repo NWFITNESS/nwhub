@@ -85,9 +85,9 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
   return (
     <div className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750">
       {/* Block tabs */}
-      <div className="flex border-b border-[rgba(255,255,255,0.07)] overflow-x-auto no-scrollbar">
+      <div className="flex border-b border-[rgba(255,255,255,0.07)] overflow-x-auto no-scrollbar" style={{ paddingLeft: 8 }}>
         {blocks.length === 0 && (
-          <div className="py-3 text-xs text-nw-500" style={{ paddingLeft: 20, paddingRight: 20 }}>No blocks yet</div>
+          <div className="text-xs text-nw-500" style={{ padding: '12px 12px' }}>No blocks yet</div>
         )}
         {blocks.map((b) => {
           const isActive = b.id === activeBlockId
@@ -95,7 +95,8 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
             <button
               key={b.id}
               onClick={() => onActiveBlockChange(b.id)}
-              className={`relative whitespace-nowrap px-6 py-3 text-[12px] font-medium transition-colors ${
+              style={{ padding: '12px 20px' }}
+              className={`relative whitespace-nowrap text-[12px] font-medium transition-colors ${
                 isActive ? 'text-gold-300' : 'text-nw-400 hover:text-nw-200'
               }`}
             >
