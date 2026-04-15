@@ -32,11 +32,11 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Validate file size (50 MB max)
-    const MAX_FILE_SIZE = 50 * 1024 * 1024
+    // Validate file size (120 MB max)
+    const MAX_FILE_SIZE = 120 * 1024 * 1024
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { error: 'File too large. Maximum size is 50 MB.' },
+        { error: 'File too large. Maximum size is 120 MB.' },
         { status: 413 }
       )
     }

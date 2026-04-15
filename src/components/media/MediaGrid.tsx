@@ -300,7 +300,7 @@ export function MediaGrid({ initialMedia }: Props) {
       >
         <Upload size={24} className="mx-auto text-white/20 mb-2" />
         <p className="text-sm text-white/40">Drag & drop images or click to upload</p>
-        <p className="text-xs text-white/20 mt-1">PNG, JPG, WebP — max 50MB</p>
+        <p className="text-xs text-white/20 mt-1">PNG, JPG, WebP — max 120MB</p>
         <input ref={fileInput} type="file" accept="image/*" multiple className="hidden" onChange={(e) => queueFiles(e.target.files)} />
       </div>
 
