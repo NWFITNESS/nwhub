@@ -60,32 +60,32 @@ export function TrialsSection({ trials, blocks }: Props) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[rgba(255,255,255,0.05)]">
-                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Child</th>
-                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Cat.</th>
-                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Parent</th>
-                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Session</th>
-                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Source</th>
-                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Status</th>
-                  <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Actions</th>
+                  <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Child</th>
+                  <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Cat.</th>
+                  <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Parent</th>
+                  <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Session</th>
+                  <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Source</th>
+                  <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Status</th>
+                  <th className="text-right text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {trials.map((t) => (
                   <tr key={t.id} className="border-b border-[rgba(255,255,255,0.04)] last:border-0 hover:bg-[rgba(255,255,255,0.02)] transition-colors">
-                    <td className="px-3 py-3 font-medium text-nw-100">{t.child_name}</td>
-                    <td className="px-3 py-3 text-xs text-nw-400">{CATEGORY_LABEL[t.category]}</td>
-                    <td className="px-3 py-3 text-xs text-nw-400">
+                    <td className="font-medium text-nw-100" style={{ padding: '12px 12px' }}>{t.child_name}</td>
+                    <td className="text-xs text-nw-400" style={{ padding: '12px 12px' }}>{CATEGORY_LABEL[t.category]}</td>
+                    <td className="text-xs text-nw-400" style={{ padding: '12px 12px' }}>
                       {t.parent_name}
                       <div className="text-[10px] text-nw-500">{t.parent_email}</div>
                     </td>
-                    <td className="px-3 py-3 text-xs text-nw-400">
+                    <td className="text-xs text-nw-400" style={{ padding: '12px 12px' }}>
                       {t.session_date
                         ? new Date(t.session_date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
                         : <span className="text-nw-600">—</span>}
                     </td>
-                    <td className="px-3 py-3 text-xs text-nw-500">{t.source === 'admin' ? 'NWHub' : 'Website'}</td>
-                    <td className="px-3 py-3"><StatusPill status={t.status} /></td>
-                    <td className="px-3 py-3 text-right">
+                    <td className="text-xs text-nw-500" style={{ padding: '12px 12px' }}>{t.source === 'admin' ? 'NWHub' : 'Website'}</td>
+                    <td style={{ padding: '12px 12px' }}><StatusPill status={t.status} /></td>
+                    <td className="text-right" style={{ padding: '12px 12px' }}>
                       <div className="flex justify-end gap-2">
                         {t.status === 'confirmed' && (
                           <>

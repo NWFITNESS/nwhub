@@ -248,11 +248,11 @@ function RecentDropInsCard({ rows }: { rows: DropInRow[] }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[rgba(255,255,255,0.05)]">
-                <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Child</th>
-                <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Cat.</th>
-                <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Amount</th>
-                <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Status</th>
-                <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Actions</th>
+                <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Child</th>
+                <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Cat.</th>
+                <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Amount</th>
+                <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Status</th>
+                <th className="text-right text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -261,13 +261,13 @@ function RecentDropInsCard({ rows }: { rows: DropInRow[] }) {
                 const canRefund = r.payment_status === 'paid'
                 return (
                   <tr key={r.id} className="border-b border-[rgba(255,255,255,0.04)] last:border-0">
-                    <td className="px-3 py-2.5 text-nw-100">{r.child_name}</td>
-                    <td className="px-3 py-2.5 text-xs text-nw-400">{CATEGORY_LABEL[r.category]}</td>
-                    <td className="px-3 py-2.5 text-xs text-nw-300">{formatPence(r.price_pence)}</td>
-                    <td className="px-3 py-2.5">
+                    <td className="text-nw-100" style={{ padding: '10px 12px' }}>{r.child_name}</td>
+                    <td className="text-xs text-nw-400" style={{ padding: '10px 12px' }}>{CATEGORY_LABEL[r.category]}</td>
+                    <td className="text-xs text-nw-300" style={{ padding: '10px 12px' }}>{formatPence(r.price_pence)}</td>
+                    <td style={{ padding: '10px 12px' }}>
                       <StatusPill status={r.payment_status} />
                     </td>
-                    <td className="px-3 py-2.5 text-right">
+                    <td className="text-right" style={{ padding: '10px 12px' }}>
                       {canCancel && (
                         <button
                           onClick={() => handleCancel(r.id, r.child_name)}

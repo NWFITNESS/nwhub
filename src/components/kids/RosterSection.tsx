@@ -312,26 +312,26 @@ function RosterTable({ rows, totalRows, onClearFilters }: { rows: RosterRow[]; t
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-[rgba(255,255,255,0.05)]">
-            <th className="w-10 px-3 py-2.5" />
-            <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Child</th>
-            <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Category</th>
-            <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Age</th>
-            <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Parent</th>
-            <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Payment</th>
-            <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Photo</th>
-            <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Waiver</th>
-            <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Actions</th>
+            <th className="w-10" style={{ padding: '10px 12px' }} />
+            <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Child</th>
+            <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Category</th>
+            <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Age</th>
+            <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Parent</th>
+            <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Payment</th>
+            <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Photo</th>
+            <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Waiver</th>
+            <th className="text-right text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((r) => (
             <tr key={r.booking_id} className="border-b border-[rgba(255,255,255,0.04)] last:border-0 hover:bg-[rgba(255,255,255,0.02)] transition-colors">
-              <td className="px-3 py-3 text-center"><CameraIcon active={r.photo_consent} /></td>
-              <td className="px-3 py-3 font-medium text-nw-100">{r.child_name}</td>
-              <td className="px-3 py-3"><CategoryBadge category={r.category} /></td>
-              <td className="px-3 py-3 text-xs text-nw-400">{r.date_of_birth ? `${ageFromDob(r.date_of_birth)}y` : '—'}</td>
-              <td className="px-3 py-3 text-xs text-nw-400">{r.parent_name}</td>
-              <td className="px-3 py-3">
+              <td className="text-center" style={{ padding: '12px 12px' }}><CameraIcon active={r.photo_consent} /></td>
+              <td className="font-medium text-nw-100" style={{ padding: '12px 12px' }}>{r.child_name}</td>
+              <td style={{ padding: '12px 12px' }}><CategoryBadge category={r.category} /></td>
+              <td className="text-xs text-nw-400" style={{ padding: '12px 12px' }}>{r.date_of_birth ? `${ageFromDob(r.date_of_birth)}y` : '—'}</td>
+              <td className="text-xs text-nw-400" style={{ padding: '12px 12px' }}>{r.parent_name}</td>
+              <td style={{ padding: '12px 12px' }}>
                 {r.payment_status === 'paid' ? (
                   <span className="rounded-full bg-[rgba(74,222,128,0.12)] px-2 py-0.5 text-[10px] font-semibold text-[#4ade80]">Paid</span>
                 ) : r.payment_status === 'refunded' ? (
@@ -340,9 +340,9 @@ function RosterTable({ rows, totalRows, onClearFilters }: { rows: RosterRow[]; t
                   <span className="rounded-full bg-[rgba(245,158,11,0.12)] px-2 py-0.5 text-[10px] font-semibold text-[#f59e0b]">Pending</span>
                 )}
               </td>
-              <td className="px-3 py-3 text-[12px]">{r.photo_consent ? <span className="text-[#4ade80]">✓ Yes</span> : <span className="text-[#f87171]">✗ No</span>}</td>
-              <td className="px-3 py-3 text-[12px]">{r.waiver_signed ? <span className="text-[#4ade80]">✓</span> : <span className="text-[#f87171]">✗</span>}</td>
-              <td className="px-3 py-3 text-right flex items-center justify-end gap-2">
+              <td className="text-[12px]" style={{ padding: '12px 12px' }}>{r.photo_consent ? <span className="text-[#4ade80]">✓ Yes</span> : <span className="text-[#f87171]">✗ No</span>}</td>
+              <td className="text-[12px]" style={{ padding: '12px 12px' }}>{r.waiver_signed ? <span className="text-[#4ade80]">✓</span> : <span className="text-[#f87171]">✗</span>}</td>
+              <td className="text-right flex items-center justify-end gap-2" style={{ padding: '12px 12px' }}>
                 {r.payment_status === 'paid' && (
                   <button
                     onClick={() => handleRefund(r.booking_id, r.child_name)}

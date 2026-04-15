@@ -57,19 +57,19 @@ export function DiscountsSection({ discounts }: Props) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[rgba(255,255,255,0.05)]">
-                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Code</th>
-                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Description</th>
-                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Value</th>
-                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Min kids</th>
-                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Uses</th>
-                  <th className="px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Status</th>
-                  <th className="px-3 py-2.5 text-right text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Actions</th>
+                  <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Code</th>
+                  <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Description</th>
+                  <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Value</th>
+                  <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Min kids</th>
+                  <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Uses</th>
+                  <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Status</th>
+                  <th className="text-right text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 12px' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {discounts.map((d) => (
                   <tr key={d.id} className="border-b border-[rgba(255,255,255,0.04)] last:border-0 hover:bg-[rgba(255,255,255,0.02)] transition-colors">
-                    <td className="px-3 py-3 font-medium text-nw-100">
+                    <td className="font-medium text-nw-100" style={{ padding: '12px 12px' }}>
                       <span className="font-mono text-xs">{d.code}</span>
                       {d.auto_apply && (
                         <span className="ml-2 rounded-full px-1.5 py-0.5 text-[9px] font-semibold" style={{ background: 'rgba(59,130,246,0.12)', color: '#60a5fa' }}>
@@ -77,15 +77,15 @@ export function DiscountsSection({ discounts }: Props) {
                         </span>
                       )}
                     </td>
-                    <td className="px-3 py-3 text-xs text-nw-400 max-w-[200px] truncate">{d.description}</td>
-                    <td className="px-3 py-3 text-xs text-nw-300 font-medium">
+                    <td className="text-xs text-nw-400 max-w-[200px] truncate" style={{ padding: '12px 12px' }}>{d.description}</td>
+                    <td className="text-xs text-nw-300 font-medium" style={{ padding: '12px 12px' }}>
                       {d.discount_type === 'percentage' ? `${d.value}%` : formatPence(d.value)}
                     </td>
-                    <td className="px-3 py-3 text-xs text-nw-400">{d.min_children}</td>
-                    <td className="px-3 py-3 text-xs text-nw-400">
+                    <td className="text-xs text-nw-400" style={{ padding: '12px 12px' }}>{d.min_children}</td>
+                    <td className="text-xs text-nw-400" style={{ padding: '12px 12px' }}>
                       {d.times_used}{d.max_uses != null ? ` / ${d.max_uses}` : ''}
                     </td>
-                    <td className="px-3 py-3">
+                    <td style={{ padding: '12px 12px' }}>
                       <button
                         onClick={() => handleToggle(d)}
                         disabled={pending}
@@ -98,7 +98,7 @@ export function DiscountsSection({ discounts }: Props) {
                         {d.is_active ? 'Active' : 'Inactive'}
                       </button>
                     </td>
-                    <td className="px-3 py-3 text-right">
+                    <td className="text-right" style={{ padding: '12px 12px' }}>
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => setEditing(d)}
