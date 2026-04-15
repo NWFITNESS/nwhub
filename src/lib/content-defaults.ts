@@ -222,6 +222,7 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
       kicker: 'HYROX',
       heading: 'We Are An Official HYROX Affiliate.',
       subtext: 'Train for the race. Compete with confidence.',
+      video_url: '',
       image_url: '/feature-2.jpg',
     },
     what_is_hyrox: {
