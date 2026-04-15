@@ -8,6 +8,9 @@ const EMPTY_STATS: KidsStats = {
   teens_enrolled: 0,
   block_total: 0,
   dropins_this_block: 0,
+  gross_pence: 0,
+  stripe_fees_pence: 0,
+  net_pence: 0,
 }
 
 // Generic safe-fetch wrapper. If a query throws, log it and return the
@@ -42,9 +45,14 @@ export default async function KidsPage() {
     safe<KidsDiscount[]>('getAllDiscounts', getAllDiscounts, []),
   ])
 
-  const stats: KidsStats = activeBlock
-    ? await safe(`getStatsForBlock(${activeBlock.id})`, () => getStatsForBlock(activeBlock.id), EMPTY_STATS)
-    : EMPTY_STATS
+  // Pre-fetch stats for every block so tab switching updates financials instantly
+  const statsEntries = await Promise.all(
+    blocks.map(
+      async (b) =>
+        [b.id, await safe(`getStatsForBlock(${b.id})`, () => getStatsForBlock(b.id), EMPTY_STATS)] as const,
+    ),
+  )
+  const statsByBlock: Record<string, KidsStats> = Object.fromEntries(statsEntries)
 
   return (
     <KidsPageClient
@@ -53,7 +61,7 @@ export default async function KidsPage() {
       recentDropIns={recentDropIns}
       trials={trials}
       discounts={discounts}
-      initialStats={stats}
+      statsByBlock={statsByBlock}
       initialActiveBlockId={activeBlock?.id ?? null}
     />
   )

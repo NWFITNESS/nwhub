@@ -180,4 +180,7 @@ export interface KidsStats {
   teens_enrolled: number
   block_total: number
   dropins_this_block: number
+  gross_pence: number          // total paid (blocks + drop-ins)
+  stripe_fees_pence: number    // estimated Stripe fees (1.5% + 20p per txn)
+  net_pence: number            // gross - fees
 }

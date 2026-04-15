@@ -150,13 +150,15 @@ export async function getRecentDropIns(limit = 10): Promise<DropInRow[]> {
 export async function getStatsForBlock(blockId: string): Promise<KidsStats> {
   const supabase = await createClient()
 
-  // Two-step query instead of an !inner join — Supabase's auto-detected
-  // relation joins occasionally fail in production with no useful error,
-  // and the cost of two round-trips here is negligible (~5ms each).
-  const [bookingsRes, sessionIdsRes] = await Promise.all([
+  // Fetch bookings with pricing + payment info, and sessions in parallel
+  const [bookingsRes, pricingRes, sessionIdsRes] = await Promise.all([
     supabase
       .from('kids_block_bookings')
-      .select('category')
+      .select('category, payment_status, discount_amount_pence, stripe_checkout_session_id')
+      .eq('block_id', blockId),
+    supabase
+      .from('kids_block_pricing')
+      .select('category, price_pence')
       .eq('block_id', blockId),
     supabase
       .from('kids_sessions')
@@ -165,24 +167,61 @@ export async function getStatsForBlock(blockId: string): Promise<KidsStats> {
   ])
 
   if (bookingsRes.error) console.error('[getStatsForBlock] bookings error:', bookingsRes.error.message)
+  if (pricingRes.error) console.error('[getStatsForBlock] pricing error:', pricingRes.error.message)
   if (sessionIdsRes.error) console.error('[getStatsForBlock] sessions error:', sessionIdsRes.error.message)
 
   const sessionIds = (sessionIdsRes.data ?? []).map((s) => s.id)
 
+  // Drop-in count + revenue
   let dropinCount = 0
+  let dropinRevenuePence = 0
   if (sessionIds.length) {
-    const { count, error } = await supabase
+    const { data: dropins, error } = await supabase
+      .from('kids_dropin_bookings')
+      .select('id, price_pence, payment_status')
+      .in('session_id', sessionIds)
+    if (error) console.error('[getStatsForBlock] dropins error:', error.message)
+    dropinCount = dropins?.length ?? 0
+    for (const d of dropins ?? []) {
+      if (d.payment_status === 'paid') dropinRevenuePence += d.price_pence
+    }
+  }
+
+  // Block booking counts + revenue
+  const priceByCategory = new Map<string, number>()
+  for (const p of pricingRes.data ?? []) priceByCategory.set(p.category, p.price_pence)
+
+  const counts: Record<KidsCategory, number> = { minis: 0, littles: 0, teens: 0 }
+  let blockRevenuePence = 0
+  // Count unique checkout sessions to estimate Stripe transaction count
+  const paidSessionIds = new Set<string>()
+
+  for (const b of (bookingsRes.data ?? []) as { category: KidsCategory; payment_status: string; discount_amount_pence: number; stripe_checkout_session_id: string | null }[]) {
+    counts[b.category]++
+    if (b.payment_status === 'paid') {
+      const price = priceByCategory.get(b.category) ?? 0
+      const discount = b.discount_amount_pence ?? 0
+      blockRevenuePence += Math.max(0, price - discount)
+      if (b.stripe_checkout_session_id) paidSessionIds.add(b.stripe_checkout_session_id)
+    }
+  }
+
+  const grossPence = blockRevenuePence + dropinRevenuePence
+
+  // Stripe fees: 1.5% + 20p per transaction (UK domestic cards)
+  // Each unique checkout session = 1 transaction, each paid drop-in = 1 transaction
+  const paidDropinCount = (await (async () => {
+    if (!sessionIds.length) return 0
+    const { count } = await supabase
       .from('kids_dropin_bookings')
       .select('id', { count: 'exact', head: true })
       .in('session_id', sessionIds)
-    if (error) console.error('[getStatsForBlock] dropins error:', error.message)
-    dropinCount = count ?? 0
-  }
-
-  const counts: Record<KidsCategory, number> = { minis: 0, littles: 0, teens: 0 }
-  for (const b of (bookingsRes.data ?? []) as { category: KidsCategory }[]) {
-    counts[b.category]++
-  }
+      .eq('payment_status', 'paid')
+    return count ?? 0
+  })())
+  const txnCount = paidSessionIds.size + paidDropinCount
+  const stripeFeesPence = Math.round(grossPence * 0.015) + (txnCount * 20)
+  const netPence = grossPence - stripeFeesPence
 
   return {
     minis_enrolled: counts.minis,
@@ -190,6 +229,9 @@ export async function getStatsForBlock(blockId: string): Promise<KidsStats> {
     teens_enrolled: counts.teens,
     block_total: counts.minis + counts.littles + counts.teens,
     dropins_this_block: dropinCount,
+    gross_pence: grossPence,
+    stripe_fees_pence: stripeFeesPence,
+    net_pence: netPence,
   }
 }
 

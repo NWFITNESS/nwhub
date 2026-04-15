@@ -15,13 +15,19 @@ import { CapacityPricingModal } from '@/components/kids/CapacityPricingModal'
 import { searchChildren } from './search-action'
 import type { BlockWithDetails, DropInRow, KidsDiscount, KidsStats, RosterRow, SearchResultRow, TrialRow } from '@/lib/kids/types'
 
+const EMPTY_STATS: KidsStats = {
+  minis_enrolled: 0, littles_enrolled: 0, teens_enrolled: 0,
+  block_total: 0, dropins_this_block: 0,
+  gross_pence: 0, stripe_fees_pence: 0, net_pence: 0,
+}
+
 interface Props {
   blocks: BlockWithDetails[]
   rosterByBlock: Record<string, RosterRow[]>
   recentDropIns: DropInRow[]
   trials: TrialRow[]
   discounts: KidsDiscount[]
-  initialStats: KidsStats
+  statsByBlock: Record<string, KidsStats>
   initialActiveBlockId: string | null
 }
 
@@ -31,7 +37,7 @@ export function KidsPageClient({
   recentDropIns,
   trials,
   discounts,
-  initialStats,
+  statsByBlock,
   initialActiveBlockId,
 }: Props) {
   const [activeBlockId, setActiveBlockId] = useState<string | null>(initialActiveBlockId)
@@ -61,7 +67,7 @@ export function KidsPageClient({
         }
       />
 
-      <StatsRow stats={initialStats} />
+      <StatsRow stats={selectedBlock ? (statsByBlock[selectedBlock.id] ?? EMPTY_STATS) : EMPTY_STATS} />
 
       {selectedBlock ? (
         <>
