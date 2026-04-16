@@ -93,6 +93,9 @@ function HeroEditor({ content, onChange }: { content: Record<string, unknown>; o
       <Field label="Background Image (fallback when no video)">
         <ImageField value={s.image_url ?? ''} onChange={(url) => onChange({ ...content, image_url: url })} />
       </Field>
+      <Field label="Image Focus Point (e.g. 50% 30%)">
+        <Input value={(content.image_position as string) ?? ''} onChange={(e) => onChange({ ...content, image_position: e.target.value })} placeholder="center" />
+      </Field>
     </div>
   )
 }
@@ -483,6 +486,9 @@ function OptionsEditor({
             <Field label="Image">
               <ImageField value={item.image_url ?? ''} onChange={(url) => updateItem(i, 'image_url', url)} />
             </Field>
+            <Field label="Image Focus Point">
+              <Input value={(item as Record<string, unknown>).image_position as string ?? ''} onChange={(e) => updateItem(i, 'image_position', e.target.value)} placeholder="e.g. 50% 30%" />
+            </Field>
             <div>
               <p className="text-xs text-white/40 mb-2">Buttons</p>
               <div className="space-y-2 pl-3 border-l border-white/10">
@@ -701,6 +707,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'title', label: 'Title' },
       { key: 'desc', label: 'Description', multiline: true },
       { key: 'image_url', label: 'Image URL' },
+      { key: 'image_position', label: 'Image focus point' },
     ]} />
   ),
   icon_row: (p) => (
@@ -714,6 +721,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'title', label: 'Title' },
       { key: 'desc', label: 'Description', multiline: true },
       { key: 'image_url', label: 'Image URL' },
+      { key: 'image_position', label: 'Image focus point' },
     ]} />
   ),
   social_carousel: (p) => <SocialCarouselEditor {...p} />,
@@ -724,6 +732,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'type', label: 'Type (e.g. Coached)' },
       { key: 'desc', label: 'Description', multiline: true },
       { key: 'image_url', label: 'Image' },
+      { key: 'image_position', label: 'Image focus point' },
       { key: 'link', label: 'Link URL' },
     ]} />
   ),
@@ -733,6 +742,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'type', label: 'Type' },
       { key: 'desc', label: 'Description', multiline: true },
       { key: 'image_url', label: 'Image' },
+      { key: 'image_position', label: 'Image focus point' },
       { key: 'link', label: 'Link URL' },
     ]} />
   ),
@@ -743,6 +753,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'title', label: 'Title' },
       { key: 'desc', label: 'Description', multiline: true },
       { key: 'image_url', label: 'Image' },
+      { key: 'image_position', label: 'Image focus point' },
     ]} />
   ),
   age_groups: (p) => (
@@ -751,6 +762,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'ages', label: 'Age Range' },
       { key: 'desc', label: 'Description', multiline: true },
       { key: 'image_url', label: 'Image' },
+      { key: 'image_position', label: 'Image focus point' },
     ]} />
   ),
   how_it_works: (p) => <StringArrayEditor {...p} label="Step" />,
@@ -877,6 +889,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'stat_before', label: 'Before stat' },
       { key: 'stat_after', label: 'After stat' },
       { key: 'image_url', label: 'Image' },
+      { key: 'image_position', label: 'Image focus point' },
     ]} />
   ),
   competition_results: (p) => (
