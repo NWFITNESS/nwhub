@@ -833,6 +833,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'desc', label: 'Short description', multiline: true },
       { key: 'detail', label: 'Detail paragraph', multiline: true },
       { key: 'image_url', label: 'Image' },
+      { key: 'image_position', label: 'Image focus point' },
     ]} />
   ),
 
