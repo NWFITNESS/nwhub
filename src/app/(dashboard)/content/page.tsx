@@ -16,6 +16,7 @@ const PAGES = [
   { slug: 'why-us',           label: 'Why Us'           },
   { slug: 'results',          label: 'Results'          },
   { slug: 'contact',          label: 'Contact'          },
+  { slug: 'physio',           label: 'Advanced Physio'  },
   { slug: 'timetable',        label: 'Timetable'        },
   { slug: 'blog',             label: 'Blog'             },
   { slug: 'membership-terms', label: 'Membership Terms' },

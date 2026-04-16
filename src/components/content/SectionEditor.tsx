@@ -900,6 +900,84 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'year', label: 'Year' },
     ]} />
   ),
+
+  // ── Physio sections ───────────────────────────────────────────────────────
+  about: ({ content, onChange }) => {
+    const s = content as Record<string, string>
+    return (
+      <div className="space-y-4">
+        <Field label="Kicker (small text above heading)">
+          <Input value={s.kicker ?? ''} onChange={(e) => onChange({ ...content, kicker: e.target.value })} />
+        </Field>
+        <Field label="Heading">
+          <Input value={s.heading ?? ''} onChange={(e) => onChange({ ...content, heading: e.target.value })} />
+        </Field>
+        <Field label="Sub-heading">
+          <Input value={s.subheading ?? ''} onChange={(e) => onChange({ ...content, subheading: e.target.value })} />
+        </Field>
+        <Field label="Body text">
+          <Textarea value={s.body ?? ''} onChange={(e) => onChange({ ...content, body: e.target.value })} className="min-h-[120px]" />
+        </Field>
+        <Field label="Portrait Image">
+          <ImageField value={s.image_url ?? ''} onChange={(url) => onChange({ ...content, image_url: url })} />
+        </Field>
+        <Field label="Image Focus Point (e.g. 50% 30%)">
+          <Input value={s.image_position ?? ''} onChange={(e) => onChange({ ...content, image_position: e.target.value })} placeholder="50% 30%" />
+        </Field>
+      </div>
+    )
+  },
+  techniques: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'title', label: 'Technique Name' },
+      { key: 'desc', label: 'Description', multiline: true },
+      { key: 'image_url', label: 'Image' },
+    ]} />
+  ),
+  specialisations: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'title', label: 'Title' },
+      { key: 'desc', label: 'Description', multiline: true },
+      { key: 'image_url', label: 'Image' },
+      { key: 'image_position', label: 'Image focus point' },
+    ]} />
+  ),
+  case_studies: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'kicker', label: 'Eyebrow label (e.g. Case Study)' },
+      { key: 'heading', label: 'Heading' },
+      { key: 'body', label: 'Story text', multiline: true },
+      { key: 'video_url', label: 'Reel Video URL' },
+      { key: 'image_url', label: 'Fallback Image' },
+      { key: 'image_position', label: 'Image focus point' },
+    ]} />
+  ),
+  member_discount: (p) => <SimpleContentEditor {...p} />,
+  physio_contact: ({ content, onChange }) => {
+    const s = content as Record<string, string>
+    return (
+      <div className="space-y-4">
+        <Field label="Heading">
+          <Input value={s.heading ?? ''} onChange={(e) => onChange({ ...content, heading: e.target.value })} />
+        </Field>
+        <Field label="Subtext">
+          <Textarea value={s.subtext ?? ''} onChange={(e) => onChange({ ...content, subtext: e.target.value })} />
+        </Field>
+        <Field label="Booking URL">
+          <Input value={s.booking_url ?? ''} onChange={(e) => onChange({ ...content, booking_url: e.target.value })} />
+        </Field>
+        <Field label="WhatsApp Number">
+          <Input value={s.whatsapp ?? ''} onChange={(e) => onChange({ ...content, whatsapp: e.target.value })} placeholder="+447503497554" />
+        </Field>
+        <Field label="Email">
+          <Input value={s.email ?? ''} onChange={(e) => onChange({ ...content, email: e.target.value })} />
+        </Field>
+        <Field label="Instagram Handle (without @)">
+          <Input value={s.instagram ?? ''} onChange={(e) => onChange({ ...content, instagram: e.target.value })} placeholder="advanced_physiome" />
+        </Field>
+      </div>
+    )
+  },
 }
 
 export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave, onContentChange, saveLabel = 'Save Section' }: SectionEditorProps) {

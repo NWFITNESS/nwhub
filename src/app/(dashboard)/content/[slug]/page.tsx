@@ -17,6 +17,7 @@ const PAGE_LABELS: Record<string, string> = {
   'start-here': 'Start Here',
   team: 'The Team',
   contact: 'Contact',
+  physio: 'Advanced Physio',
   timetable: 'Timetable',
   blog: 'Blog',
   'membership-terms': 'Membership Terms',

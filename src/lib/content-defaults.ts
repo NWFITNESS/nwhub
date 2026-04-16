@@ -489,4 +489,84 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
       image_url: '/feature-1.jpg',
     },
   },
+
+  physio: {
+    hero: {
+      kicker: 'In-house Physiotherapy',
+      heading: 'Advanced Physio',
+      subtext: 'Expert physiotherapy by Marek Emilianowicz — 19+ years of clinical experience, MSc Physiotherapy. Exclusively at Northern Warrior.',
+      image_url: '/feature-1.jpg',
+    },
+    about: {
+      kicker: 'Meet Your Physio',
+      heading: 'Marek Emilianowicz',
+      subheading: 'MSc Physiotherapy — 19+ years experience',
+      body: 'With over 19 years of clinical experience and a Master\'s degree in Physiotherapy, Marek brings an evidence-based, hands-on approach to injury treatment and rehabilitation. Incorporating advanced techniques such as manual therapy, dry needling, and Kinesio taping, he provides tailored care to keep you pain-free and performing at your best. Based in-house at Northern Warrior, he works closely with coaches and athletes to ensure you stay strong, recover faster, and train without limits.',
+      image_url: '',
+      image_position: '50% 30%',
+    },
+    techniques: {
+      heading: 'Treatment Techniques',
+      subtext: 'A comprehensive toolkit for diagnosis, treatment and recovery.',
+      items: [
+        { title: 'Manual Therapy', desc: 'Hands-on joint mobilisation and soft tissue techniques to restore range of motion and reduce pain.', image_url: '' },
+        { title: 'Dry Needling', desc: 'Targeted trigger point therapy using fine needles to release deep muscle tension and accelerate recovery.', image_url: '' },
+        { title: 'Kinesio Taping', desc: 'Therapeutic taping to support joints, reduce swelling and enhance proprioceptive feedback during training.', image_url: '' },
+        { title: 'Sports Massage', desc: 'Deep tissue and sports-specific massage to improve circulation, break down adhesions and speed up recovery.', image_url: '' },
+        { title: 'TENS Therapy', desc: 'Transcutaneous electrical nerve stimulation for effective pain management and muscle activation.', image_url: '' },
+      ],
+    },
+    specialisations: {
+      heading: 'Areas of Expertise',
+      subtext: 'Specialist treatment across a wide range of musculoskeletal conditions.',
+      items: [
+        { title: 'Sports Injuries', desc: 'From acute sprains and strains to chronic overuse injuries — diagnosis, treatment and return-to-sport planning.' },
+        { title: 'Joint Pain', desc: 'Assessment and treatment of shoulder, knee, hip, ankle and spinal joint pain using manual therapy and exercise prescription.' },
+        { title: 'Post-Surgery Rehabilitation', desc: 'Structured rehabilitation programmes following ACL reconstruction, Achilles tendon repair, hip and knee replacements.' },
+        { title: 'Performance Optimisation', desc: 'Prehabilitation, movement screening and targeted treatment to push you beyond your limits.' },
+      ],
+    },
+    case_studies: {
+      heading: 'Recovery Stories',
+      subtext: 'Real results from real athletes.',
+      items: [
+        {
+          kicker: 'Case Study',
+          heading: 'Back to Running in 6 Weeks',
+          body: 'A Northern Warrior athlete came in with chronic knee pain that had kept them sidelined for months. Through manual therapy, dry needling and a supervised return-to-running programme, they were back in class within 6 weeks — stronger and pain-free.',
+          video_url: '',
+          image_url: '',
+        },
+        {
+          kicker: 'Case Study',
+          heading: 'Post-Surgery Shoulder Rehab',
+          body: 'Following shoulder surgery, this athlete worked with Marek over 12 weeks to rebuild strength and mobility. A combination of manual therapy, progressive loading and movement coaching got them back to overhead lifts with full confidence.',
+          video_url: '',
+          image_url: '',
+        },
+      ],
+    },
+    member_discount: {
+      kicker: 'NW Members',
+      heading: 'Exclusive member discount.',
+      subtext: 'Northern Warrior members receive a discount on all physiotherapy treatments. Book through the link below or ask at the front desk.',
+    },
+    testimonials: {
+      items: [
+        {
+          quote: 'I went to see Marek with an injury I\'d gotten while running. Marek was brilliant in checking all possible causes of the injury, until it was identified. I was then given exercises and advice on what to do to help in my recovery. The movements helped a tremendous amount. After a couple of weeks I was feeling much better — the care Marek gave and attention to my recovery was brilliant. I really recommend Marek.',
+          name: 'George Cowen',
+          role: 'NW Coach | Athlete',
+        },
+      ],
+    },
+    physio_contact: {
+      heading: 'Book an Appointment',
+      subtext: 'Get in touch with Advanced Physio directly — or book online.',
+      booking_url: 'https://advancedphysiobyemilianowicz.as.me/schedule/b844fe3a',
+      whatsapp: '+447503497554',
+      email: 'advanced.physiome@gmail.com',
+      instagram: 'advanced_physiome',
+    },
+  },
 }
