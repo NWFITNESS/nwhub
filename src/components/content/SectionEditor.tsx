@@ -932,6 +932,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'title', label: 'Technique Name' },
       { key: 'desc', label: 'Description', multiline: true },
       { key: 'image_url', label: 'Image' },
+      { key: 'image_position', label: 'Image focus point (e.g. 50% 30%)' },
     ]} />
   ),
   specialisations: (p) => (
