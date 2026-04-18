@@ -586,7 +586,7 @@ export function MediaGrid({ initialMedia }: Props) {
               {previewing.width && previewing.height ? (
                 <span>{previewing.width} × {previewing.height}</span>
               ) : null}
-              <span>{(previewing.size / 1024).toFixed(0)} KB</span>
+              {previewing.size != null && <span>{(previewing.size / 1024).toFixed(0)} KB</span>}
               <button
                 onClick={() => { navigator.clipboard.writeText(previewing.url); setCopied(previewing.url); setTimeout(() => setCopied(null), 2000) }}
                 className="flex items-center gap-1 text-white/40 hover:text-white/70 transition-colors"
