@@ -780,6 +780,88 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
   form: (p) => <FormEnquiryEditor {...p} />,
   details: (p) => <ContactDetailsEditor {...p} />,
 
+  // ── Membership sections ────────────────────────────────────────────────────
+  included: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'title', label: 'Feature Title' },
+      { key: 'desc', label: 'Description', multiline: true },
+      { key: 'image_url', label: 'Icon Image (optional — falls back to auto icon)' },
+    ]} />
+  ),
+  partner_discounts: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'name', label: 'Partner Name' },
+      { key: 'discount', label: 'Discount (e.g. 20% off)' },
+      { key: 'method', label: 'How to Redeem (e.g. Online code)' },
+      { key: 'url', label: 'Partner Website URL' },
+    ]} />
+  ),
+  service_discounts: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'text', label: 'Discount Description' },
+    ]} />
+  ),
+  photo_strip: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'image_url', label: 'Photo' },
+      { key: 'image_position', label: 'Focal Point (e.g. 50% 30%)' },
+    ]} />
+  ),
+  wodboard: ({ content, onChange }) => {
+    const s = content as { heading?: string; subtext?: string; logo_url?: string; app_screenshot_url?: string; ios_url?: string; android_url?: string; features?: string[] }
+    return (
+      <div className="space-y-4">
+        <Field label="Heading">
+          <Input value={s.heading ?? ''} onChange={(e) => onChange({ ...content, heading: e.target.value })} />
+        </Field>
+        <Field label="Description">
+          <Textarea value={s.subtext ?? ''} onChange={(e) => onChange({ ...content, subtext: e.target.value })} />
+        </Field>
+        <Field label="WodBoard Logo">
+          <ImageField value={s.logo_url ?? ''} onChange={(url) => onChange({ ...content, logo_url: url })} />
+        </Field>
+        <Field label="App Screenshot">
+          <ImageField value={s.app_screenshot_url ?? ''} onChange={(url) => onChange({ ...content, app_screenshot_url: url })} />
+        </Field>
+        <Field label="iOS App Store URL">
+          <Input value={s.ios_url ?? ''} onChange={(e) => onChange({ ...content, ios_url: e.target.value })} placeholder="https://apps.apple.com/..." />
+        </Field>
+        <Field label="Android Play Store URL">
+          <Input value={s.android_url ?? ''} onChange={(e) => onChange({ ...content, android_url: e.target.value })} placeholder="https://play.google.com/..." />
+        </Field>
+        <Field label="Features (one per line)">
+          <Textarea
+            value={(s.features ?? []).join('\n')}
+            onChange={(e) => onChange({ ...content, features: e.target.value.split('\n').filter(Boolean) })}
+            className="min-h-[100px]"
+            placeholder="Book & manage class bookings&#10;Purchase session packs&#10;Track your workouts"
+          />
+        </Field>
+      </div>
+    )
+  },
+  terms_list: (p) => <StringArrayEditor {...p} label="Term" />,
+  cancellation: ({ content, onChange }) => {
+    const s = content as { heading?: string; subtext?: string; items?: string[] }
+    return (
+      <div className="space-y-4">
+        <Field label="Heading">
+          <Input value={s.heading ?? ''} onChange={(e) => onChange({ ...content, heading: e.target.value })} />
+        </Field>
+        <Field label="Description">
+          <Textarea value={s.subtext ?? ''} onChange={(e) => onChange({ ...content, subtext: e.target.value })} />
+        </Field>
+        <Field label="Cancellation Steps (one per line)">
+          <Textarea
+            value={(s.items ?? []).join('\n')}
+            onChange={(e) => onChange({ ...content, items: e.target.value.split('\n').filter(Boolean) })}
+            className="min-h-[80px]"
+          />
+        </Field>
+      </div>
+    )
+  },
+
   // ── Homepage sections ──────────────────────────────────────────────────────
   trust_bar: (p) => <StringArrayEditor {...p} label="Marquee item" />,
   programs: (p) => (

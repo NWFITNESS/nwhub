@@ -449,6 +449,82 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
       subtext: 'No contracts. No pressure. Just great training.',
       image_url: '/feature-1.jpg',
     },
+    plans: {
+      cards: [
+        { title: '2 Sessions / week', price: '£51', period: '/month', desc: '', highlight: false },
+        { title: 'Unlimited', price: '£66', period: '/month', desc: '', highlight: true },
+        { title: 'Unlimited + 24/7', price: '£71', period: '/month', desc: '', highlight: false },
+        { title: '10 Session Pack', price: '£84', period: 'one-off', desc: '', highlight: false },
+        { title: '20 Session Pack', price: '£156', period: 'one-off', desc: '', highlight: false },
+      ],
+    },
+    included: {
+      items: [
+        { title: 'Open Gym Access', desc: 'Included with every membership — train on your own schedule outside coached sessions.', image_url: '' },
+        { title: 'Coached Group Sessions', desc: 'Expert-led sessions with structured programming, scaled to your ability.', image_url: '' },
+        { title: 'Scalable Programming', desc: 'Every workout is adapted for all levels — from beginners to experienced athletes.', image_url: '' },
+        { title: 'Supportive Community', desc: 'Train alongside a motivated community that pushes each other to improve.', image_url: '' },
+        { title: 'Flexible Scheduling', desc: 'Multiple session times throughout the day to fit around your life.', image_url: '' },
+        { title: 'Fully Equipped Facility', desc: 'Rigs, rowers, bikes, dumbbells, barbells and more — everything you need under one roof.', image_url: '' },
+      ],
+    },
+    partner_discounts: {
+      items: [
+        { name: 'LSKD', discount: '20% off', method: 'Online code', url: 'https://us.lskd.co/' },
+        { name: 'The Protein Bakehouse', discount: '10% off', method: 'Online code', url: 'https://www.proteinbakehouse.co.uk/' },
+        { name: 'Velites', discount: '10% off', method: 'Purchase at the gym only', url: 'https://eu.velitessport.com/' },
+        { name: 'Advanced Physio', discount: '10% off', method: 'Online code', url: '' },
+      ],
+    },
+    service_discounts: {
+      items: [
+        { text: '10% Forces Discount' },
+        { text: '10% NHS Discount' },
+        { text: '10% Emergency Services Discount' },
+        { text: '10% Sibling Discount (Kids & Teens)' },
+      ],
+    },
+    photo_strip: {
+      items: [
+        { image_url: '/ig/3.png', image_position: '' },
+        { image_url: '/ig/5.png', image_position: '' },
+        { image_url: '/ig/7.png', image_position: '' },
+        { image_url: '/ig/9.png', image_position: '' },
+        { image_url: '/ig/11.png', image_position: '' },
+        { image_url: '/ig/13.png', image_position: '' },
+      ],
+    },
+    wodboard: {
+      heading: 'Manage Your Membership',
+      subtext: 'Book classes, track your progress, purchase session packs, and manage your membership — all in one app. WodBoard is your all-in-one gym companion.',
+      logo_url: '/partners/wodboard-dark.png',
+      app_screenshot_url: '',
+      ios_url: 'https://apps.apple.com/app/wodboard/id1474452762',
+      android_url: 'https://play.google.com/store/apps/details?id=com.wodboard.member',
+      features: [
+        'Book & manage class bookings',
+        'Purchase session packs',
+        'Track your workouts & progress',
+        'Manage your membership anytime',
+      ],
+    },
+    terms_list: {
+      items: [
+        '2-month initial commitment on monthly memberships',
+        'Rolling 30-day notice period after commitment',
+        'No joining fees',
+        'Session packs — no commitment, use at your own pace',
+      ],
+    },
+    cancellation: {
+      heading: 'Need to Cancel?',
+      subtext: 'We make cancellation straightforward. Simply contact us to begin the process.',
+      items: [
+        '30-day notice period required',
+        'This may result in a pro-rata payment',
+        'Contact us directly or via the WodBoard app',
+      ],
+    },
   },
 
   'start-here': {
