@@ -7,8 +7,11 @@ import { Save, Send, Eye, EyeOff, RotateCcw, Monitor, Smartphone } from 'lucide-
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
+type DisplayMode = 'first_visit' | 'once_per_session' | 'every_page' | 'every_refresh'
+
 interface PopupData {
   enabled: boolean
+  display_mode: DisplayMode
   image_url: string
   image_focus_x: number // 0–100
   image_focus_y: number // 0–100
@@ -21,8 +24,16 @@ interface PopupData {
   dismiss_text: string
 }
 
+const DISPLAY_MODE_OPTIONS: { value: DisplayMode; label: string; desc: string }[] = [
+  { value: 'first_visit', label: 'First visit only', desc: 'Shows once per browser — never again after dismissed' },
+  { value: 'once_per_session', label: 'Once per session', desc: 'Shows once per browsing session (resets when browser closes)' },
+  { value: 'every_page', label: 'Every page', desc: 'Shows once on each new page the visitor opens' },
+  { value: 'every_refresh', label: 'Every page load', desc: 'Shows on every page load including refreshes' },
+]
+
 const DEFAULTS: PopupData = {
   enabled: true,
+  display_mode: 'first_visit',
   image_url: '',
   image_focus_x: 50,
   image_focus_y: 50,
@@ -264,6 +275,45 @@ export default function PopupAdmin() {
             >
               {draft.enabled ? <><EyeOff size={14} /> Disable</> : <><Eye size={14} /> Enable</>}
             </button>
+          </div>
+        </div>
+
+        {/* Display mode */}
+        <div style={{
+          padding: 20, background: cardBg, borderRadius: 14,
+          border: `1px solid ${borderCol}`,
+        }}>
+          <p style={{ fontSize: 14, fontWeight: 700, color: textPrimary, marginBottom: 6 }}>Display Frequency</p>
+          <p style={{ fontSize: 11, color: textMuted, marginBottom: 14 }}>Control when the popup appears for visitors</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {DISPLAY_MODE_OPTIONS.map(opt => {
+              const selected = (draft.display_mode ?? 'first_visit') === opt.value
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => update('display_mode', opt.value)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 16px', borderRadius: 10, cursor: 'pointer',
+                    border: `1px solid ${selected ? goldBorder : borderCol}`,
+                    background: selected ? goldDim : 'transparent',
+                    textAlign: 'left', transition: 'all 0.15s',
+                  }}
+                >
+                  <div style={{
+                    width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
+                    border: `2px solid ${selected ? gold : textMuted}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {selected && <div style={{ width: 8, height: 8, borderRadius: '50%', background: gold }} />}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: selected ? textPrimary : textSecondary }}>{opt.label}</div>
+                    <div style={{ fontSize: 11, color: textMuted, marginTop: 2 }}>{opt.desc}</div>
+                  </div>
+                </button>
+              )
+            })}
           </div>
         </div>
 
