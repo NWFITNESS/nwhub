@@ -190,6 +190,7 @@ export function MediaGrid({ initialMedia }: Props) {
   const [selected, setSelected]   = useState<Set<string>>(new Set())
   const [bulkOpen, setBulkOpen]   = useState(false)
   const [filter, setFilter]       = useState<'all' | 'images' | 'videos'>('all')
+  const [previewing, setPreviewing] = useState<Media | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
 
   const selecting = selected.size > 0
@@ -434,7 +435,7 @@ export function MediaGrid({ initialMedia }: Props) {
           return (
             <div
               key={item.id}
-              onClick={() => toggleSelect(item.id)}
+              onClick={() => selecting ? toggleSelect(item.id) : setPreviewing(item)}
               className={`group relative aspect-square bg-nw-750 rounded-lg overflow-hidden cursor-pointer transition-all ${
                 isSelected
                   ? 'ring-2 ring-[#C9A70A] border-transparent'
@@ -534,6 +535,64 @@ export function MediaGrid({ initialMedia }: Props) {
           }}
           onClose={() => setBulkOpen(false)}
         />
+      )}
+
+      {/* Preview modal */}
+      {previewing && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center"
+          style={{ padding: 24 }}
+          onClick={() => setPreviewing(null)}
+        >
+          <div
+            className="relative max-w-4xl w-full max-h-[85vh] flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setPreviewing(null)}
+              className="absolute -top-2 -right-2 z-10 w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors"
+            >
+              <X size={16} />
+            </button>
+
+            {/* Media */}
+            {isVideo(previewing.url) ? (
+              <video
+                src={previewing.url}
+                controls
+                autoPlay
+                className="max-h-[75vh] max-w-full rounded-xl border border-white/10"
+              />
+            ) : (
+              <img
+                src={previewing.url}
+                alt={previewing.alt ?? previewing.filename}
+                className="max-h-[75vh] max-w-full rounded-xl border border-white/10 object-contain"
+              />
+            )}
+
+            {/* Info bar */}
+            <div className="mt-3 flex items-center gap-3 text-xs text-white/50">
+              <span className="truncate max-w-[200px]">{previewing.filename}</span>
+              {previewing.category && (
+                <span className="px-2 py-0.5 rounded bg-[#C9A70A]/15 text-[#C9A70A] text-[10px] font-semibold uppercase">
+                  {previewing.category}
+                </span>
+              )}
+              {previewing.width && previewing.height ? (
+                <span>{previewing.width} × {previewing.height}</span>
+              ) : null}
+              <span>{(previewing.size / 1024).toFixed(0)} KB</span>
+              <button
+                onClick={() => { navigator.clipboard.writeText(previewing.url); setCopied(previewing.url); setTimeout(() => setCopied(null), 2000) }}
+                className="flex items-center gap-1 text-white/40 hover:text-white/70 transition-colors"
+              >
+                {copied === previewing.url ? <><Check size={10} className="text-green-400" /> Copied</> : <><Clipboard size={10} /> Copy URL</>}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
