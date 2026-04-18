@@ -224,7 +224,7 @@ export default function PopupAdmin() {
   }
 
   return (
-    <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }} className="lg:!flex-row lg:!items-start">
       {/* ── LEFT: Form ────────────────────────────────────────────────────── */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
 
@@ -286,10 +286,10 @@ export default function PopupAdmin() {
               Click on the image to set the focus point, or adjust manually below.
             </p>
             {draft.image_url ? (
-              <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-start' }}>
                 <div
                   style={{
-                    position: 'relative', width: 200, height: 130, borderRadius: 10,
+                    position: 'relative', width: 200, maxWidth: '100%', height: 130, borderRadius: 10,
                     overflow: 'hidden', border: `1px solid ${borderCol}`, cursor: 'crosshair',
                     flexShrink: 0,
                   }}
@@ -369,8 +369,8 @@ export default function PopupAdmin() {
             </div>
 
             {/* Heading */}
-            <div style={{ display: 'flex', gap: 12 }}>
-              <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+              <div style={{ flex: 1, minWidth: 140 }}>
                 <label style={labelStyle}>Heading</label>
                 <input
                   value={draft.heading}
@@ -379,7 +379,7 @@ export default function PopupAdmin() {
                   style={inputStyle}
                 />
               </div>
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, minWidth: 140 }}>
                 <label style={labelStyle}>
                   Heading <span style={{ color: gold }}>(Gold text)</span>
                 </label>
@@ -413,8 +413,8 @@ export default function PopupAdmin() {
           <p style={{ fontSize: 14, fontWeight: 700, color: textPrimary, marginBottom: 16 }}>Button & Link</p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ display: 'flex', gap: 12 }}>
-              <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+              <div style={{ flex: 1, minWidth: 140 }}>
                 <label style={labelStyle}>Button Text</label>
                 <input
                   value={draft.button_text}
@@ -423,7 +423,7 @@ export default function PopupAdmin() {
                   style={inputStyle}
                 />
               </div>
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, minWidth: 140 }}>
                 <label style={labelStyle}>Button Link</label>
                 <input
                   value={draft.button_link}
@@ -448,7 +448,7 @@ export default function PopupAdmin() {
 
         {/* Action buttons */}
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 10, padding: '16px 20px',
+          display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, padding: 16,
           background: cardBg, borderRadius: 14, border: `1px solid ${borderCol}`,
           position: 'sticky', bottom: 0, zIndex: 10,
         }}>
@@ -503,7 +503,7 @@ export default function PopupAdmin() {
       </div>
 
       {/* ── RIGHT: Preview ──────────────────────────────────────────────────── */}
-      <div style={{ width: 420, flexShrink: 0, position: 'sticky', top: 24 }}>
+      <div style={{ flexShrink: 0 }} className="w-full lg:w-[420px] lg:sticky lg:top-6">
         {/* Preview header */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
