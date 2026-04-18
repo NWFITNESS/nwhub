@@ -193,7 +193,8 @@ export function MediaGrid({ initialMedia }: Props) {
   const [previewing, setPreviewing] = useState<Media | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
 
-  const selecting = selected.size > 0
+  const [selectMode, setSelectMode] = useState(false)
+  const selecting = selectMode
 
   function toggleSelect(id: string) {
     setSelected((prev) => {
@@ -204,11 +205,13 @@ export function MediaGrid({ initialMedia }: Props) {
   }
 
   function selectAll() {
+    setSelectMode(true)
     setSelected(new Set(media.map((m) => m.id)))
   }
 
   function clearSelection() {
     setSelected(new Set())
+    setSelectMode(false)
   }
 
   async function queueFiles(files: FileList | null) {
@@ -396,8 +399,8 @@ export function MediaGrid({ initialMedia }: Props) {
         </div>
       ) : (
         media.length > 0 && (
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xs text-white/20">Click images to select for bulk categorising</p>
+          <div className="flex items-center justify-end gap-3 mb-4">
+            <button onClick={() => setSelectMode(true)} className="text-xs text-white/30 hover:text-white/60 transition-colors">Select files</button>
             <button onClick={selectAll} className="text-xs text-white/30 hover:text-white/60 transition-colors">Select all</button>
           </div>
         )
