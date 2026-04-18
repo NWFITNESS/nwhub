@@ -470,10 +470,10 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
     },
     partner_discounts: {
       items: [
-        { name: 'LSKD', discount: '20% off', method: 'Online code', url: 'https://us.lskd.co/' },
-        { name: 'The Protein Bakehouse', discount: '10% off', method: 'Online code', url: 'https://www.proteinbakehouse.co.uk/' },
-        { name: 'Velites', discount: '10% off', method: 'Purchase at the gym only', url: 'https://eu.velitessport.com/' },
-        { name: 'Advanced Physio', discount: '10% off', method: 'Online code', url: '' },
+        { name: 'LSKD', discount: '20% off', method: 'Online code', url: 'https://us.lskd.co/', logo_url: '/partners/lskd.svg' },
+        { name: 'The Protein Bakehouse', discount: '10% off', method: 'Online code', url: 'https://www.proteinbakehouse.co.uk/', logo_url: '/partners/protein-bakehouse.png' },
+        { name: 'Velites', discount: '10% off', method: 'Purchase at the gym only', url: 'https://eu.velitessport.com/', logo_url: '/partners/velites.svg' },
+        { name: 'Advanced Physio', discount: '10% off', method: 'Online code', url: '', logo_url: '/partners/advanced-physio.png' },
       ],
     },
     service_discounts: {

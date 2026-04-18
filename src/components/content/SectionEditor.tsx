@@ -794,6 +794,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'discount', label: 'Discount (e.g. 20% off)' },
       { key: 'method', label: 'How to Redeem (e.g. Online code)' },
       { key: 'url', label: 'Partner Website URL' },
+      { key: 'image_url', label: 'Partner Logo' },
     ]} />
   ),
   service_discounts: (p) => (
