@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     // Validate file type
     const ALLOWED_MIME_TYPES = [
       'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml',
-      'video/mp4', 'video/webm',
+      'video/mp4', 'video/webm', 'video/quicktime',
       'application/pdf',
     ]
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {

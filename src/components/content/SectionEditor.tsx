@@ -231,7 +231,7 @@ function GenericArrayEditor({ content, onChange, fields }: {
               const raw = item[f.key]
               const displayValue = Array.isArray(raw) ? raw.join(', ') : (raw ?? '')
 
-              return f.key === 'image_url' ? (
+              return (f.key === 'image_url' || f.key === 'video_url') ? (
                 <Field key={f.key} label={f.label}>
                   <ImageField value={String(displayValue)} onChange={(url) => updateItem(i, f.key, url)} />
                 </Field>
@@ -568,7 +568,7 @@ function HeaderWithItemsEditor({ content, onChange, fields, itemLabel = 'Item' }
             <ArrayItemWrapper key={i} index={i} onRemove={() => removeItem(i)}>
               <div className="space-y-3">
                 {fields.map((f) =>
-                  f.key === 'image_url' ? (
+                  (f.key === 'image_url' || f.key === 'video_url') ? (
                     <Field key={f.key} label={f.label}>
                       <ImageField value={item[f.key] ?? ''} onChange={(url) => updateItem(i, f.key, url)} />
                     </Field>
