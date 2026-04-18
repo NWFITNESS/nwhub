@@ -451,11 +451,11 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
     },
     plans: {
       cards: [
-        { title: '2 Sessions / week', price: '£51', period: '/month', desc: '', highlight: false },
-        { title: 'Unlimited', price: '£66', period: '/month', desc: '', highlight: true },
-        { title: 'Unlimited + 24/7', price: '£71', period: '/month', desc: '', highlight: false },
-        { title: '10 Session Pack', price: '£84', period: 'one-off', desc: '', highlight: false },
-        { title: '20 Session Pack', price: '£156', period: 'one-off', desc: '', highlight: false },
+        { title: '2 Sessions / week', price: '£51', period: '/month', desc: '2 sessions per week across any of our coached classes or Open Gym. Perfect for building consistency.', highlight: false },
+        { title: 'Unlimited', price: '£66', period: '/month', desc: 'Unlimited access to all coached sessions and Open Gym. Train as often as you like.', highlight: true },
+        { title: 'Unlimited + 24/7', price: '£71', period: '/month', desc: 'Unlimited sessions plus 24/7 fob access to the facility. Train whenever it suits you.', highlight: false },
+        { title: '10 Session Pack', price: '£84', period: 'one-off', desc: 'Ten sessions to use at your own pace across any coached class or Open Gym. No monthly commitment.', highlight: false },
+        { title: '20 Session Pack', price: '£156', period: 'one-off', desc: 'Twenty sessions at a better per-session rate. Use across any coached class or Open Gym.', highlight: false },
       ],
     },
     included: {
