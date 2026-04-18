@@ -500,7 +500,7 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
       logo_url: '/partners/wodboard-dark.png',
       app_screenshot_url: '',
       ios_url: 'https://apps.apple.com/app/wodboard/id1474452762',
-      android_url: 'https://play.google.com/store/apps/details?id=com.wodboard.member',
+      android_url: 'https://play.google.com/store/apps/details?id=com.wodboard.app',
       features: [
         'Book & manage class bookings',
         'Purchase session packs',
