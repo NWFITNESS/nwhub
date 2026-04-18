@@ -231,7 +231,7 @@ function GenericArrayEditor({ content, onChange, fields }: {
               const raw = item[f.key]
               const displayValue = Array.isArray(raw) ? raw.join(', ') : (raw ?? '')
 
-              return (f.key === 'image_url' || f.key === 'video_url') ? (
+              return (f.key.includes('image_url') || f.key.includes('video_url')) ? (
                 <Field key={f.key} label={f.label}>
                   <ImageField value={String(displayValue)} onChange={(url) => updateItem(i, f.key, url)} />
                 </Field>
