@@ -541,62 +541,99 @@ export function MediaGrid({ initialMedia }: Props) {
       )}
 
       {/* Preview modal */}
-      {previewing && (
-        <div
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center"
-          style={{ padding: 24 }}
-          onClick={() => setPreviewing(null)}
-        >
-          <div
-            className="relative max-w-4xl w-full max-h-[85vh] flex flex-col items-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close button */}
-            <button
-              onClick={() => setPreviewing(null)}
-              className="absolute -top-2 -right-2 z-10 w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors"
-            >
-              <X size={16} />
-            </button>
+      {previewing && (() => {
+        const filtered = media.filter(item => {
+          if (filter === 'images') return !isVideo(item.url)
+          if (filter === 'videos') return isVideo(item.url)
+          return true
+        })
+        const idx = filtered.findIndex(m => m.id === previewing.id)
+        const hasPrev = idx > 0
+        const hasNext = idx < filtered.length - 1
+        const goPrev = () => { if (hasPrev) setPreviewing(filtered[idx - 1]) }
+        const goNext = () => { if (hasNext) setPreviewing(filtered[idx + 1]) }
 
-            {/* Media */}
-            {isVideo(previewing.url) ? (
-              <video
-                src={previewing.url}
-                controls
-                autoPlay
-                className="max-h-[75vh] max-w-full rounded-xl border border-white/10"
-              />
-            ) : (
-              <img
-                src={previewing.url}
-                alt={previewing.alt ?? previewing.filename}
-                className="max-h-[75vh] max-w-full rounded-xl border border-white/10 object-contain"
-              />
+        return (
+          <div
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center"
+            style={{ padding: 24 }}
+            onClick={() => setPreviewing(null)}
+            onKeyDown={(e) => { if (e.key === 'ArrowLeft') goPrev(); if (e.key === 'ArrowRight') goNext(); if (e.key === 'Escape') setPreviewing(null) }}
+            tabIndex={0}
+          >
+            {/* Left arrow */}
+            {hasPrev && (
+              <button
+                onClick={(e) => { e.stopPropagation(); goPrev() }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 12L6 8l4-4" /></svg>
+              </button>
             )}
 
-            {/* Info bar */}
-            <div className="mt-3 flex items-center gap-3 text-xs text-white/50">
-              <span className="truncate max-w-[200px]">{previewing.filename}</span>
-              {previewing.category && (
-                <span className="px-2 py-0.5 rounded bg-[#C9A70A]/15 text-[#C9A70A] text-[10px] font-semibold uppercase">
-                  {previewing.category}
-                </span>
-              )}
-              {previewing.width && previewing.height ? (
-                <span>{previewing.width} × {previewing.height}</span>
-              ) : null}
-              {previewing.size != null && <span>{(previewing.size / 1024).toFixed(0)} KB</span>}
+            {/* Right arrow */}
+            {hasNext && (
               <button
-                onClick={() => { navigator.clipboard.writeText(previewing.url); setCopied(previewing.url); setTimeout(() => setCopied(null), 2000) }}
-                className="flex items-center gap-1 text-white/40 hover:text-white/70 transition-colors"
+                onClick={(e) => { e.stopPropagation(); goNext() }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors"
               >
-                {copied === previewing.url ? <><Check size={10} className="text-green-400" /> Copied</> : <><Clipboard size={10} /> Copy URL</>}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 4l4 4-4 4" /></svg>
               </button>
+            )}
+
+            <div
+              className="relative max-w-4xl w-full max-h-[85vh] flex flex-col items-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setPreviewing(null)}
+                className="absolute -top-2 -right-2 z-10 w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-colors"
+              >
+                <X size={16} />
+              </button>
+
+              {/* Media */}
+              {isVideo(previewing.url) ? (
+                <video
+                  key={previewing.id}
+                  src={previewing.url}
+                  controls
+                  autoPlay
+                  className="max-h-[75vh] max-w-full rounded-xl border border-white/10"
+                />
+              ) : (
+                <img
+                  src={previewing.url}
+                  alt={previewing.alt ?? previewing.filename}
+                  className="max-h-[75vh] max-w-full rounded-xl border border-white/10 object-contain"
+                />
+              )}
+
+              {/* Info bar */}
+              <div className="mt-3 flex items-center gap-3 text-xs text-white/50">
+                <span className="text-white/30">{idx + 1}/{filtered.length}</span>
+                <span className="truncate max-w-[200px]">{previewing.filename}</span>
+                {previewing.category && (
+                  <span className="px-2 py-0.5 rounded bg-[#C9A70A]/15 text-[#C9A70A] text-[10px] font-semibold uppercase">
+                    {previewing.category}
+                  </span>
+                )}
+                {previewing.width && previewing.height ? (
+                  <span>{previewing.width} × {previewing.height}</span>
+                ) : null}
+                {previewing.size != null && <span>{(previewing.size / 1024).toFixed(0)} KB</span>}
+                <button
+                  onClick={() => { navigator.clipboard.writeText(previewing.url); setCopied(previewing.url); setTimeout(() => setCopied(null), 2000) }}
+                  className="flex items-center gap-1 text-white/40 hover:text-white/70 transition-colors"
+                >
+                  {copied === previewing.url ? <><Check size={10} className="text-green-400" /> Copied</> : <><Clipboard size={10} /> Copy URL</>}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
     </div>
   )
 }
