@@ -1,11 +1,16 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Upload, Clipboard, Trash2, X, Check, Pencil, Tag } from 'lucide-react'
+import { Upload, Clipboard, Trash2, X, Check, Pencil, Tag, Play } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { Media } from '@/lib/types'
 
 const CATEGORIES = ['logo', 'hero', 'team', 'gym', 'classes', 'kids', 'hyrox', 'general'] as const
+
+function isVideo(url?: string): boolean {
+  if (!url) return false
+  return /\.(mp4|webm|mov|m4v|avi|mkv)(\?.*)?$/i.test(url)
+}
 
 interface PendingFile {
   file: File
@@ -184,6 +189,7 @@ export function MediaGrid({ initialMedia }: Props) {
   const [editing, setEditing]     = useState<Media | null>(null)
   const [selected, setSelected]   = useState<Set<string>>(new Set())
   const [bulkOpen, setBulkOpen]   = useState(false)
+  const [filter, setFilter]       = useState<'all' | 'images' | 'videos'>('all')
   const fileInput = useRef<HTMLInputElement>(null)
 
   const selecting = selected.size > 0
@@ -299,9 +305,9 @@ export function MediaGrid({ initialMedia }: Props) {
         onDrop={(e) => { e.preventDefault(); queueFiles(e.dataTransfer.files) }}
       >
         <Upload size={24} className="mx-auto text-white/20 mb-2" />
-        <p className="text-sm text-white/40">Drag & drop images or click to upload</p>
-        <p className="text-xs text-white/20 mt-1">PNG, JPG, WebP — max 120MB</p>
-        <input ref={fileInput} type="file" accept="image/*" multiple className="hidden" onChange={(e) => queueFiles(e.target.files)} />
+        <p className="text-sm text-white/40">Drag & drop files or click to upload</p>
+        <p className="text-xs text-white/20 mt-1">Images (PNG, JPG, WebP) · Videos (MP4, WebM, MOV) — max 120MB</p>
+        <input ref={fileInput} type="file" accept="image/*,video/mp4,video/webm,video/quicktime" multiple className="hidden" onChange={(e) => queueFiles(e.target.files)} />
       </div>
 
       {/* Pending uploads */}
@@ -309,21 +315,30 @@ export function MediaGrid({ initialMedia }: Props) {
         <div className="mb-6 bg-nw-750 border border-white/[0.06] rounded-xl overflow-hidden">
           <div className="flex items-center justify-between border-b border-white/[0.06]" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 16, paddingBottom: 16 }}>
             <p className="text-xs font-semibold text-[#967705] uppercase tracking-[0.15em]">
-              Ready to Upload — {pending.length} image{pending.length > 1 ? 's' : ''}
+              Ready to Upload — {pending.length} file{pending.length > 1 ? 's' : ''}
             </p>
             <p className="text-xs text-white/30">Add a description and category before uploading</p>
           </div>
           <div className="divide-y divide-white/[0.04]">
             {pending.map((p, i) => (
               <div key={i} className="flex gap-4 items-start" style={{ padding: 16 }}>
-                <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-white/[0.08]">
-                  <img src={p.preview} alt="" className="w-full h-full object-cover" />
+                <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-white/[0.08] relative">
+                  {p.file.type.startsWith('video/') ? (
+                    <>
+                      <video src={p.preview} className="w-full h-full object-cover" preload="metadata" muted />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                        <Play size={16} className="text-white fill-white" />
+                      </div>
+                    </>
+                  ) : (
+                    <img src={p.preview} alt="" className="w-full h-full object-cover" />
+                  )}
                 </div>
                 <div className="flex-1 flex flex-col gap-2.5">
                   <p className="text-xs text-white/50 truncate">{p.file.name}</p>
                   <input
                     type="text"
-                    placeholder="Alt text — describe this image for the AI"
+                    placeholder="Alt text — describe this file for the AI"
                     value={p.alt}
                     onChange={(e) => updatePending(i, 'alt', e.target.value)}
                     className="w-full bg-[#1a1a1a] border border-white/[0.08] rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-[#967705]/60 focus:ring-1 focus:ring-[#967705]/30 transition-colors"
@@ -350,7 +365,7 @@ export function MediaGrid({ initialMedia }: Props) {
             >
               {uploading
                 ? <><div className="w-4 h-4 border-2 border-black/40 border-t-black rounded-full animate-spin" /> Uploading...</>
-                : <><Upload size={14} /> Upload {pending.length > 1 ? `${pending.length} images` : 'image'}</>
+                : <><Upload size={14} /> Upload {pending.length > 1 ? `${pending.length} files` : 'file'}</>
               }
             </button>
             <button
@@ -387,9 +402,34 @@ export function MediaGrid({ initialMedia }: Props) {
         )
       )}
 
+      {/* Filter tabs */}
+      <div className="flex items-center gap-2 mb-4">
+        {(['all', 'images', 'videos'] as const).map((tab) => {
+          const count = tab === 'all' ? media.length : tab === 'images' ? media.filter(m => !isVideo(m.url)).length : media.filter(m => isVideo(m.url)).length
+          return (
+            <button
+              key={tab}
+              onClick={() => setFilter(tab)}
+              className={`flex items-center gap-1.5 rounded-lg text-xs font-semibold transition-all capitalize ${
+                filter === tab
+                  ? 'bg-[#967705]/20 text-[#C9A70A] border border-[#967705]/40'
+                  : 'text-white/40 border border-white/[0.08] hover:text-white/70 hover:border-white/20'
+              }`}
+              style={{ padding: '6px 12px' }}
+            >
+              {tab} <span className="text-[10px] opacity-60">({count})</span>
+            </button>
+          )
+        })}
+      </div>
+
       {/* Grid */}
       <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-        {media.map((item) => {
+        {media.filter(item => {
+          if (filter === 'images') return !isVideo(item.url)
+          if (filter === 'videos') return isVideo(item.url)
+          return true
+        }).map((item) => {
           const isSelected = selected.has(item.id)
           return (
             <div
@@ -401,7 +441,16 @@ export function MediaGrid({ initialMedia }: Props) {
                   : 'border border-white/[0.08]'
               }`}
             >
-              <img src={item.url} alt={item.alt ?? item.filename} className="w-full h-full object-cover" />
+              {isVideo(item.url) ? (
+                <>
+                  <video src={item.url} className="w-full h-full object-cover" preload="metadata" muted />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center pointer-events-none">
+                    <Play size={12} className="text-white fill-white ml-0.5" />
+                  </div>
+                </>
+              ) : (
+                <img src={item.url} alt={item.alt ?? item.filename} className="w-full h-full object-cover" />
+              )}
 
               {/* Category badge */}
               {item.category && (
@@ -465,7 +514,7 @@ export function MediaGrid({ initialMedia }: Props) {
       </div>
 
       {media.length === 0 && pending.length === 0 && (
-        <p className="text-center text-white/30 text-sm py-12">No media yet. Upload your first image.</p>
+        <p className="text-center text-white/30 text-sm py-12">No media yet. Upload your first file.</p>
       )}
 
       {editing && (
