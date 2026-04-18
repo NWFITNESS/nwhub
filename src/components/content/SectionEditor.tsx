@@ -1031,7 +1031,9 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'kicker', label: 'Eyebrow label (e.g. Case Study)' },
       { key: 'heading', label: 'Heading' },
       { key: 'body', label: 'Story text', multiline: true },
-      { key: 'video_url', label: 'Reel Video URL' },
+      { key: 'video_url_1', label: 'Video 1' },
+      { key: 'video_url_2', label: 'Video 2' },
+      { key: 'video_url_3', label: 'Video 3 (leave empty for 2-video layout)' },
       { key: 'image_url', label: 'Fallback Image' },
       { key: 'image_position', label: 'Image focus point' },
     ]} />
