@@ -499,7 +499,7 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
       subtext: 'Book classes, track your progress, purchase session packs, and manage your membership — all in one app. WodBoard is your all-in-one gym companion.',
       logo_url: '/partners/wodboard-dark.png',
       app_screenshot_url: '',
-      ios_url: 'https://apps.apple.com/app/wodboard/id1474452762',
+      ios_url: 'https://apps.apple.com/us/app/wodboard/id1477992244',
       android_url: 'https://play.google.com/store/apps/details?id=com.wodboard.app',
       features: [
         'Book & manage class bookings',
