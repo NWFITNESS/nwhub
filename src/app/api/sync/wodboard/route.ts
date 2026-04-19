@@ -53,15 +53,28 @@ interface MemberRow {
 }
 
 function extractMember(row: Record<string, string>): MemberRow {
+  // Handle combined "Name" column — split into first/last
+  let firstName = pick(row, 'first name', 'firstname', 'first_name', 'forename', 'given name')
+  let lastName  = pick(row, 'last name',  'lastname',  'last_name',  'surname',  'family name')
+
+  if (!firstName && !lastName) {
+    const fullName = pick(row, 'name', 'full name', 'fullname', 'customer name')
+    if (fullName) {
+      const parts = fullName.trim().split(/\s+/)
+      firstName = parts[0] ?? ''
+      lastName = parts.slice(1).join(' ')
+    }
+  }
+
   return {
-    firstName:    pick(row, 'first name', 'firstname', 'first_name', 'forename', 'given name'),
-    lastName:     pick(row, 'last name',  'lastname',  'last_name',  'surname',  'family name'),
+    firstName,
+    lastName,
     email:        pick(row, 'email', 'email address', 'e-mail'),
     phone:        pick(row, 'phone', 'mobile', 'telephone', 'phone number', 'mobile number'),
-    status:       pick(row, 'status', 'membership status', 'member status'),
-    membershipType: pick(row, 'membership type', 'membership', 'plan', 'product'),
-    startDate:    pick(row, 'start date', 'start_date', 'joined', 'join date', 'member since'),
-    lastAttended: pick(row, 'last attended', 'last_attended', 'last visit', 'last class'),
+    status:       pick(row, 'status', 'membership status', 'member status', 'state'),
+    membershipType: pick(row, 'primary product', 'membership type', 'membership', 'plan', 'product'),
+    startDate:    pick(row, 'start date', 'start_date', 'joined', 'join date', 'member since', 'first activated'),
+    lastAttended: pick(row, 'last attended', 'last_attended', 'last visit', 'last class', 'last active'),
     dateOfBirth:  pick(row, 'date of birth', 'dob', 'birthday', 'birth date'),
   }
 }
@@ -69,10 +82,13 @@ function extractMember(row: Record<string, string>): MemberRow {
 function mapStatus(status: string, membershipType: string): string {
   const s = status?.toLowerCase() ?? ''
   const t = membershipType?.toLowerCase() ?? ''
-  if (s.includes('cancel') || s.includes('terminat') || s.includes('inactive') || s.includes('lapsed')) return 'cancelled'
+  if (s.includes('cancel') || s.includes('terminat') || s.includes('lapsed')) return 'cancelled'
   if (s.includes('trial') || t.includes('trial')) return 'trial'
+  // If they have a primary product/membership, they're a member
+  if (t && !t.includes('drop')) return 'member'
   if (s.includes('active') || s.includes('member') || s.includes('paid')) return 'member'
   if (s.includes('enquir') || s.includes('lead') || s.includes('prospect')) return 'inactive'
+  // No membership type = lead/inactive
   return 'inactive'
 }
 
@@ -129,7 +145,7 @@ export async function POST(req: NextRequest) {
   // Load all existing contacts (not just wodboard — email is unique across all)
   const { data: existingContacts } = await supabase
     .from('contacts')
-    .select('id, email, status, last_attendance, source')
+    .select('id, email, status, last_attendance, source, first_name, groups')
 
   const existingByEmail = new Map(
     (existingContacts ?? []).map((c) => [c.email?.toLowerCase(), c])
@@ -143,6 +159,11 @@ export async function POST(req: NextRequest) {
       const existing = existingByEmail.get(email)
       const status = mapStatus(member.status, member.membershipType)
       const programme = mapProgramme(member.membershipType)
+
+      // Build groups array from membership type
+      const groups: string[] = []
+      if (member.membershipType) groups.push(member.membershipType)
+      if (status === 'inactive' && !member.membershipType) groups.push('lead')
 
       if (!existing) {
         // New contact
@@ -158,7 +179,7 @@ export async function POST(req: NextRequest) {
           trial_start_date:  status === 'trial'  ? parseDate(member.startDate) : null,
           trial_end_date:    status === 'trial'  ? datePlusDays(member.startDate, 14) : null,
           last_attendance:   parseDate(member.lastAttended),
-          groups:            [],
+          groups,
         })
         results.created++
         results.log.push(`Created: ${member.firstName} ${member.lastName} (${email}) — ${status}`)
@@ -186,8 +207,20 @@ export async function POST(req: NextRequest) {
           updates.last_attendance = newAttendance
         }
 
-        // Always refresh programme
+        // Always refresh programme and groups
         if (programme) updates.programme = programme
+        if (groups.length > 0) updates.groups = groups
+
+        // Track member → non-member (lost members)
+        if ((existing.status === 'member') && (status === 'inactive' || status === 'cancelled')) {
+          results.log.push(`⚠️ Lost member: ${member.firstName} ${member.lastName} (was member → now ${status})`)
+        }
+
+        // Update name if it was "Unknown" and we now have a real name
+        if (existing.first_name === 'Unknown' && member.firstName) {
+          updates.first_name = member.firstName
+          updates.last_name = member.lastName
+        }
 
         // Backfill source if it was imported from somewhere else
         if (existing.source !== 'wodboard') updates.source = 'wodboard'

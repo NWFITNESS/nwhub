@@ -40,6 +40,12 @@ export default async function MemberKPIsPage() {
   const leadCount = contacts.filter(c => isLead(c.groups ?? [])).length
   const cancelledCount = contacts.filter(c => c.status === 'cancelled').length
 
+  // Lost members = had a real membership group but status is now cancelled or inactive
+  const lostMembers = contacts.filter(c => {
+    const g: string[] = c.groups ?? []
+    return hasRealMembership(g) && (c.status === 'cancelled' || c.status === 'inactive')
+  }).length
+
   // Converted leads = contacts who have "lead" in groups AND also a real membership group
   const convertedLeads = contacts.filter(c => {
     const g: string[] = c.groups ?? []
@@ -57,6 +63,7 @@ export default async function MemberKPIsPage() {
     { label: 'Members', value: memberCount },
     { label: 'Trials', value: trialCount },
     { label: 'Cancelled', value: cancelledCount },
+    { label: 'Lost Members', value: lostMembers },
   ]
 
   return (
@@ -69,13 +76,24 @@ export default async function MemberKPIsPage() {
       />
 
       {/* Stats overview */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        {stats.map(s => (
-          <div key={s.label} className="overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 shadow-gold-sm" style={{ padding: 16 }}>
-            <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">{s.label}</span>
-            <div className="mt-3 font-brand text-[30px] font-bold leading-none tracking-[-0.5px] text-white">{s.value}</div>
-          </div>
-        ))}
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+        {stats.map(s => {
+          const isLost = s.label === 'Lost Members'
+          return (
+            <div
+              key={s.label}
+              className="overflow-hidden rounded-2xl shadow-gold-sm"
+              style={{
+                padding: 16,
+                border: isLost ? '1px solid rgba(239,68,68,0.3)' : '1px solid rgba(255,255,255,0.12)',
+                background: isLost ? 'rgba(239,68,68,0.06)' : undefined,
+              }}
+            >
+              <span className={`text-[11px] font-bold uppercase tracking-[1.3px] ${isLost ? 'text-red-400' : 'text-nw-400'}`}>{s.label}</span>
+              <div className={`mt-3 font-brand text-[30px] font-bold leading-none tracking-[-0.5px] ${isLost ? 'text-red-400' : 'text-white'}`}>{s.value}</div>
+            </div>
+          )
+        })}
       </div>
 
       {/* Lead conversion widget */}
