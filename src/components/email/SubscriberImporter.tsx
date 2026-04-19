@@ -11,6 +11,13 @@ const SOURCES = [
   { id: 'squarespace', label: 'Squarespace Import', desc: 'Exported from old Squarespace website' },
   { id: 'mailchimp', label: 'Mailchimp Export', desc: 'Exported audience from Mailchimp' },
   { id: 'manual', label: 'Manual List', desc: 'Spreadsheet or other source' },
+  { id: 'kids-parents', label: 'Kids & Teens Parents', desc: 'Parents from previous booking system or kids forms' },
+]
+
+const PRESET_TAGS = [
+  { id: 'kids-parents', label: 'Kids & Teens Parents' },
+  { id: 'newsletter', label: 'Newsletter' },
+  { id: 'hyrox-interest', label: 'HYROX Interest' },
 ]
 
 interface ParsedRow {
@@ -80,7 +87,8 @@ export function SubscriberImporter() {
     setError('')
 
     const tags = [source]
-    if (customTag.trim()) tags.push(customTag.trim().toLowerCase())
+    if (source === 'kids-parents') tags.push('kids-parents')
+    if (customTag.trim() && !tags.includes(customTag.trim().toLowerCase())) tags.push(customTag.trim().toLowerCase())
 
     const res = await fetch('/api/email/import', {
       method: 'POST',
@@ -128,15 +136,32 @@ export function SubscriberImporter() {
           ))}
         </div>
         <div style={{ paddingLeft: 20, paddingRight: 20, paddingBottom: 20 }}>
-          <label className="block text-nw-500 mb-1.5" style={{ fontSize: 11, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase' }}>Custom Tag (optional)</label>
+          <label className="block text-nw-500 mb-1.5" style={{ fontSize: 11, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase' }}>Tag (for campaign targeting)</label>
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {PRESET_TAGS.map(t => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setCustomTag(t.id)}
+                className={`rounded-full border text-xs font-medium transition-colors ${
+                  customTag === t.id
+                    ? 'border-[rgba(212,160,23,0.4)] bg-[rgba(212,160,23,0.12)] text-gold-300'
+                    : 'border-[rgba(255,255,255,0.1)] text-nw-400 hover:border-[rgba(255,255,255,0.2)]'
+                }`}
+                style={{ padding: '4px 12px' }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
           <input
             value={customTag}
             onChange={e => setCustomTag(e.target.value)}
-            placeholder="e.g. april-2026, vip, hyrox-interest"
+            placeholder="or type a custom tag..."
             className="h-9 w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 text-nw-200 placeholder:text-nw-500 outline-none transition-colors focus:border-[rgba(212,160,23,0.4)] focus:bg-nw-750"
             style={{ fontSize: 13 }}
           />
-          <p className="text-nw-500 mt-1" style={{ fontSize: 10 }}>This tag will be added to all imported subscribers for easy targeting in campaigns</p>
+          <p className="text-nw-500 mt-1" style={{ fontSize: 10 }}>Select a preset or type your own. This tag will be added to all imported subscribers.</p>
         </div>
       </Panel>
 

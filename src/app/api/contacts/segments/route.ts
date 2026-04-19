@@ -47,6 +47,14 @@ export async function GET() {
     }
   }
 
+  // Also include subscribers tagged 'kids-parents' in the kids segment
+  for (const s of allSubs) {
+    if (s.tags?.includes('kids-parents') && s.email) kidsEmails.add(s.email.toLowerCase())
+  }
+
+  // Newsletter subscribers
+  const newsletterSubs = allSubs.filter(s => s.tags?.includes('newsletter'))
+
   // Source-based subscriber segments
   const websiteSubs = allSubs.filter(s => s.source === 'website' || s.tags?.includes('website'))
   const squarespaceSubs = allSubs.filter(s => s.source === 'squarespace' || s.tags?.includes('squarespace'))
@@ -79,6 +87,7 @@ export async function GET() {
     { id: 'kids', label: 'Kids & Teens Parents', count: kidsEmails.size, emails: [...kidsEmails], category: 'membership' },
 
     // Source segments
+    { id: 'newsletter', label: 'Newsletter', count: newsletterSubs.length, emails: newsletterSubs.map(s => s.email), category: 'source', tags: ['newsletter'] },
     { id: 'website', label: 'Website Subscribers', count: websiteSubs.length, emails: websiteSubs.map(s => s.email), category: 'source' },
     { id: 'squarespace', label: 'Squarespace Import', count: squarespaceSubs.length, emails: squarespaceSubs.map(s => s.email), category: 'source' },
 
