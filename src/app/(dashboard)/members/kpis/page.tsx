@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Panel, PanelHeader } from '@/components/ui/Card'
 import { MembershipGroups } from '@/components/settings/MembershipGroups'
 
 export default async function MemberKPIsPage() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   const [
     { data: memberGroupsSetting },
