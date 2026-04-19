@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { EmailSubscribersTable } from '@/components/email/EmailSubscribersTable'
 import { SyncContactsButton } from '@/components/email/SyncContactsButton'
 
 export default async function EmailPage() {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const [{ data: subscribers }, { count: total }, { count: contactsWithEmail }] = await Promise.all([
     supabase.from('email_subscribers').select('*').order('subscribed_at', { ascending: false }),
     supabase.from('email_subscribers').select('*', { count: 'exact', head: true }).eq('status', 'subscribed'),
