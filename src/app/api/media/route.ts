@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAuth } from '@/lib/auth-guard'
 
+// Increase Vercel body size limit for file uploads
+export const runtime = 'nodejs'
+export const maxDuration = 60
+
 // POST /api/media — upload a file
 export async function POST(req: NextRequest) {
   try {
