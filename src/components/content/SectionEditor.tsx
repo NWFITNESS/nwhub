@@ -687,21 +687,137 @@ function SocialCarouselEditor({ content, onChange }: { content: Record<string, u
   )
 }
 
+// ── Coaches editor — clickable cards with individual editing ─────────────────
+interface CoachItem {
+  name: string
+  role: string
+  image_url: string
+  image_position: string
+  excerpt: string
+  bio: string
+  credentials: string[]
+  avatarEmoji?: string
+}
+
+function CoachesEditor({ content, onChange }: { content: Record<string, unknown>; onChange: (v: Record<string, unknown>) => void }) {
+  const items = (content.items as CoachItem[]) ?? []
+  const [editingIdx, setEditingIdx] = useState<number | null>(null)
+
+  function updateCoach(i: number, field: string, value: unknown) {
+    const next = items.map((c, idx) => (idx === i ? { ...c, [field]: value } : c))
+    onChange({ ...content, items: next })
+  }
+
+  function addCoach() {
+    onChange({ ...content, items: [...items, { name: '', role: '', image_url: '', image_position: '50% 30%', excerpt: '', bio: '', credentials: [], avatarEmoji: '' }] })
+    setEditingIdx(items.length)
+  }
+
+  function removeCoach(i: number) {
+    onChange({ ...content, items: items.filter((_, idx) => idx !== i) })
+    if (editingIdx === i) setEditingIdx(null)
+    else if (editingIdx !== null && editingIdx > i) setEditingIdx(editingIdx - 1)
+  }
+
+  function moveCoach(i: number, dir: -1 | 1) {
+    const j = i + dir
+    if (j < 0 || j >= items.length) return
+    const next = [...items]
+    ;[next[i], next[j]] = [next[j], next[i]]
+    onChange({ ...content, items: next })
+    if (editingIdx === i) setEditingIdx(j)
+    else if (editingIdx === j) setEditingIdx(i)
+  }
+
+  const editing = editingIdx !== null ? items[editingIdx] : null
+
+  return (
+    <div className="space-y-3">
+      {/* Coach card grid */}
+      <div className="grid grid-cols-2 gap-2">
+        {items.map((coach, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => setEditingIdx(editingIdx === i ? null : i)}
+            className={`flex items-center gap-3 rounded-lg border text-left transition-all ${
+              editingIdx === i
+                ? 'border-[rgba(212,160,23,0.4)] bg-[rgba(212,160,23,0.08)]'
+                : 'border-[rgba(255,255,255,0.09)] hover:border-[rgba(255,255,255,0.18)]'
+            }`}
+            style={{ padding: 10 }}
+          >
+            {coach.image_url ? (
+              <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-white/10">
+                <img src={coach.image_url} alt={coach.name} className="w-full h-full object-cover" style={{ objectPosition: coach.image_position || 'center' }} />
+              </div>
+            ) : (
+              <div className="w-10 h-10 rounded-full shrink-0 bg-white/[0.06] border border-white/10 flex items-center justify-center text-lg">
+                {coach.avatarEmoji || '👤'}
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white truncate">{coach.name || 'New Coach'}</p>
+              <p className="text-[11px] text-white/40 truncate">{coach.role || 'No role set'}</p>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      <Button variant="ghost" size="sm" onClick={addCoach} type="button">
+        <Plus size={14} /> Add Team Member
+      </Button>
+
+      {/* Individual coach editor */}
+      {editing && editingIdx !== null && (
+        <div className="border border-[rgba(212,160,23,0.3)] rounded-lg bg-[rgba(212,160,23,0.04)]" style={{ padding: 16 }}>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-xs font-bold uppercase tracking-[1px] text-gold-300">
+              Editing: {editing.name || 'New Coach'}
+            </span>
+            <div className="flex gap-1">
+              <button type="button" onClick={() => moveCoach(editingIdx, -1)} disabled={editingIdx === 0} className="text-white/30 hover:text-white/60 disabled:opacity-20 p-1"><GripVertical size={12} /></button>
+              <button type="button" onClick={() => removeCoach(editingIdx)} className="text-white/30 hover:text-red-400 p-1"><Trash2 size={12} /></button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <Field label="Name">
+              <Input value={editing.name} onChange={(e) => updateCoach(editingIdx, 'name', e.target.value)} placeholder="Coach name" />
+            </Field>
+            <Field label="Role">
+              <Input value={editing.role} onChange={(e) => updateCoach(editingIdx, 'role', e.target.value)} placeholder="e.g. Head Coach & Owner" />
+            </Field>
+            <Field label="Photo">
+              <ImageField value={editing.image_url} onChange={(url) => updateCoach(editingIdx, 'image_url', url)} />
+            </Field>
+            <Field label="Photo Focus Point">
+              <Input value={editing.image_position} onChange={(e) => updateCoach(editingIdx, 'image_position', e.target.value)} placeholder="50% 30%" />
+            </Field>
+            <Field label="Short Excerpt">
+              <Textarea value={editing.excerpt ?? ''} onChange={(e) => updateCoach(editingIdx, 'excerpt', e.target.value)} placeholder="One-liner shown on hover..." />
+            </Field>
+            <Field label="Full Bio">
+              <Textarea value={editing.bio ?? ''} onChange={(e) => updateCoach(editingIdx, 'bio', e.target.value)} className="min-h-[100px]" placeholder="Full biography..." />
+            </Field>
+            <Field label="Credentials (comma-separated)">
+              <Input value={(editing.credentials ?? []).join(', ')} onChange={(e) => updateCoach(editingIdx, 'credentials', e.target.value.split(',').map(s => s.trim()).filter(Boolean))} placeholder="DBS Checked, First Aid, Level 3 PT" />
+            </Field>
+            <Field label="Fallback Emoji (if no photo)">
+              <Input value={editing.avatarEmoji ?? ''} onChange={(e) => updateCoach(editingIdx, 'avatarEmoji', e.target.value)} placeholder="🏋️" />
+            </Field>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>; onChange: (v: Record<string, unknown>) => void }) => React.ReactNode> = {
   hero: (p) => <HeroEditor {...p} />,
   faq: (p) => <FaqEditor {...p} />,
   memberships: (p) => <MembershipsEditor {...p} />,
-  coaches: (p) => (
-    <GenericArrayEditor {...p} fields={[
-      { key: 'name', label: 'Name' },
-      { key: 'role', label: 'Role' },
-      { key: 'avatarEmoji', label: 'Emoji (fallback if no photo)' },
-      { key: 'qualifications', label: 'Qualifications (comma-separated, e.g. DBS Checked, First Aid)' },
-      { key: 'bio', label: 'Bio', multiline: true },
-      { key: 'image_url', label: 'Photo' },
-      { key: 'image_position', label: 'Focal point (e.g. 50% 30%)' },
-    ]} />
-  ),
+  coaches: ({ content, onChange }) => <CoachesEditor content={content} onChange={onChange} />,
   facilities: (p) => (
     <GenericArrayEditor {...p} fields={[
       { key: 'title', label: 'Title' },

@@ -555,7 +555,10 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
       image_url: '/feature-1.jpg',
     },
     coaches: {
-      items: [],
+      items: [
+        { name: 'Mathew Tomkinson', role: 'Head Coach & Owner', image_url: '', image_position: '50% 30%', excerpt: 'Mat founded Northern Warrior to build something the community was missing.', bio: '', credentials: ['Level 3 Personal Training', 'DBS Checked', 'First Aid'], avatarEmoji: '🏋️' },
+        { name: 'Joe', role: 'Coach', image_url: '', image_position: '50% 30%', excerpt: '', bio: '', credentials: ['DBS Checked', 'First Aid'], avatarEmoji: '💪' },
+      ],
     },
   },
 
