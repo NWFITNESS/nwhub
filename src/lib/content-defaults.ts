@@ -385,6 +385,13 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
       body1: 'Our kids and teens programme brings the best of functional fitness training to young people aged 3–18. Think running, jumping, climbing, lifting, throwing, and teamwork — all scaled to their age, ability, and confidence level. No experience needed. Just energy and a willingness to try.',
       body2: 'Every session follows a structured warm-up, skill or strength focus, a workout, and a cool-down game. It\'s the same methodology used by elite athletes, adapted so kids develop coordination, strength, and discipline — all while having a blast.',
     },
+    age_groups: {
+      items: [
+        { name: 'Minis', ages: 'Ages 3–5', desc: 'Fun-based movement, coordination, confidence, and listening skills.', image_url: '', image_position: '50% 50%' },
+        { name: 'Littles', ages: 'Ages 5–10', desc: 'Movement foundations: running, jumping, pulling, squatting, throwing and teamwork.', image_url: '', image_position: '50% 50%' },
+        { name: 'Teens', ages: 'Ages 10–18', desc: 'Strength, conditioning and confidence. Learn safe lifting and how to train with intent.', image_url: '', image_position: '50% 50%' },
+      ],
+    },
     gallery: {
       kicker: 'In the gym',
       heading: 'Warriors in action',
