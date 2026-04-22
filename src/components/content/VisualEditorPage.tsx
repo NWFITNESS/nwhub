@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, Upload, Trash2 } from 'lucide-react'
+import { ChevronLeft, Upload, Trash2, Construction } from 'lucide-react'
 import { IframeCanvas } from './IframeCanvas'
 import { FloatingEditor } from './FloatingEditor'
 
@@ -31,6 +31,8 @@ interface VisualEditorPageProps {
     slug: string,
     edits: Record<string, Record<string, unknown>>
   ) => Promise<void>
+  toggleConstructionAction?: (slug: string, enabled: boolean) => Promise<void>
+  isUnderConstruction?: boolean
 }
 
 interface EditorPos {
@@ -46,6 +48,8 @@ export function VisualEditorPage({
   defaults = {},
   saveDraftAction,
   saveAndPublishAction,
+  toggleConstructionAction,
+  isUnderConstruction: initialConstruction = false,
 }: VisualEditorPageProps) {
   const router = useRouter()
   const [liveEdits, setLiveEdits] = useState<Record<string, Record<string, unknown>>>({})
@@ -53,6 +57,8 @@ export function VisualEditorPage({
   const [editorPos, setEditorPos] = useState<EditorPos | null>(null)
   const [publishing, startPublish] = useTransition()
   const [discarding, startDiscard] = useTransition()
+  const [construction, setConstruction] = useState(initialConstruction)
+  const [togglingConstruction, startToggleConstruction] = useTransition()
 
   const hasLiveEdits = Object.keys(liveEdits).length > 0
   const hasChanges = hasLiveEdits || draftCount > 0
@@ -169,9 +175,36 @@ export function VisualEditorPage({
               {hasLiveEdits ? 'unsaved changes' : `${draftCount} draft${draftCount !== 1 ? 's' : ''}`}
             </span>
           )}
+          {construction && (
+            <span className="px-2 py-0.5 rounded-full bg-orange-500/20 border border-orange-500/40 text-[10px] text-orange-400 font-semibold">
+              Under Construction
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
+          {toggleConstructionAction && (
+            <button
+              type="button"
+              onClick={() => {
+                const next = !construction
+                setConstruction(next)
+                startToggleConstruction(async () => {
+                  await toggleConstructionAction(slug, next)
+                  router.refresh()
+                })
+              }}
+              disabled={togglingConstruction}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                construction
+                  ? 'border-orange-500/40 bg-orange-500/10 text-orange-400 hover:bg-orange-500/20'
+                  : 'border-white/10 text-white/40 hover:border-orange-400/40 hover:text-orange-400'
+              }`}
+            >
+              <Construction size={12} />
+              {togglingConstruction ? 'Saving…' : construction ? 'Live: Off' : 'Live: On'}
+            </button>
+          )}
           {hasChanges && (
             <button
               type="button"

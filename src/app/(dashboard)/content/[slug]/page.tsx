@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { VisualEditorPage } from '@/components/content/VisualEditorPage'
-import { saveDraftAction, publishPageAction, saveAndPublishAction } from './actions'
+import { saveDraftAction, publishPageAction, saveAndPublishAction, toggleConstructionAction } from './actions'
 import { PAGE_SECTION_DEFAULTS } from '@/lib/content-defaults'
 
 interface Props {
@@ -53,6 +54,16 @@ export default async function ContentEditorPage({ params }: Props) {
 
   const defaults = PAGE_SECTION_DEFAULTS[slug] ?? {}
 
+  // Check construction mode
+  const admin = createAdminClient()
+  const { data: constructionData } = await admin
+    .from('global_settings')
+    .select('value')
+    .eq('key', 'page_construction')
+    .single()
+  const constructionMap = (constructionData?.value as Record<string, boolean>) ?? {}
+  const isUnderConstruction = constructionMap[slug] ?? false
+
   return (
     <>
       <VisualEditorPage
@@ -64,6 +75,8 @@ export default async function ContentEditorPage({ params }: Props) {
         saveDraftAction={saveDraftAction}
         publishPageAction={publishPageAction}
         saveAndPublishAction={saveAndPublishAction}
+        toggleConstructionAction={toggleConstructionAction}
+        isUnderConstruction={isUnderConstruction}
       />
     </>
   )

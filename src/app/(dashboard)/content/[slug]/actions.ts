@@ -84,6 +84,33 @@ export async function saveDraftAction(
 }
 
 /**
+ * Toggle construction mode for a page.
+ * Stores in global_settings under key "page_construction".
+ */
+export async function toggleConstructionAction(slug: string, enabled: boolean) {
+  const admin = createAdminClient()
+
+  // Fetch current construction map
+  const { data } = await admin
+    .from('global_settings')
+    .select('value')
+    .eq('key', 'page_construction')
+    .single()
+
+  const current = (data?.value as Record<string, boolean>) ?? {}
+  const updated = { ...current, [slug]: enabled }
+
+  await admin
+    .from('global_settings')
+    .upsert(
+      { key: 'page_construction', value: updated, updated_at: new Date().toISOString() },
+      { onConflict: 'key' }
+    )
+
+  revalidatePath(`/content/${slug}`)
+}
+
+/**
  * Publish all pending drafts for a page:
  * copies draft_content → content, then clears draft_content.
  */
