@@ -1006,6 +1006,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'name', label: 'Name' },
       { key: 'role', label: 'Role / Member since' },
       { key: 'category', label: 'Category (optional — e.g. PT, Nutrition, Programming)' },
+      { key: 'image_url', label: 'Background Image (faded, optional)' },
     ]} />
   ),
   scroll_story: (p) => (
@@ -1186,6 +1187,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
     <GenericArrayEditor {...p} fields={[
       { key: 'title', label: 'Title' },
       { key: 'desc', label: 'Description', multiline: true },
+      { key: 'image_url', label: 'Background Image (faded)' },
     ]} />
   ),
   services: (p) => (
