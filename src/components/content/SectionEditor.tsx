@@ -1005,6 +1005,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'quote', label: 'Quote', multiline: true },
       { key: 'name', label: 'Name' },
       { key: 'role', label: 'Role / Member since' },
+      { key: 'category', label: 'Category (optional — e.g. PT, Nutrition, Programming)' },
     ]} />
   ),
   scroll_story: (p) => (
@@ -1181,6 +1182,12 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
     )
   },
   // ── Personal Training (KM) ──
+  why_kieran: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'title', label: 'Title' },
+      { key: 'desc', label: 'Description', multiline: true },
+    ]} />
+  ),
   services: (p) => (
     <GenericArrayEditor {...p} fields={[
       { key: 'title', label: 'Service Title' },
