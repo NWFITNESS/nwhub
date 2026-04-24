@@ -1180,6 +1180,40 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       </div>
     )
   },
+  // ── Personal Training (KM) ──
+  services: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'title', label: 'Service Title' },
+      { key: 'desc', label: 'Description', multiline: true },
+      { key: 'image_url', label: 'Image' },
+      { key: 'image_position', label: 'Image focus point' },
+    ]} />
+  ),
+  process: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'title', label: 'Step Title' },
+      { key: 'desc', label: 'Description', multiline: true },
+    ]} />
+  ),
+  pt_contact: ({ content, onChange }) => {
+    const s = content as Record<string, string>
+    return (
+      <div className="space-y-4">
+        <Field label="Heading">
+          <Input value={s.heading ?? ''} onChange={(e) => onChange({ ...content, heading: e.target.value })} />
+        </Field>
+        <Field label="Subtext">
+          <Textarea value={s.subtext ?? ''} onChange={(e) => onChange({ ...content, subtext: e.target.value })} />
+        </Field>
+        <Field label="Instagram Handle (without @)">
+          <Input value={s.instagram ?? ''} onChange={(e) => onChange({ ...content, instagram: e.target.value })} placeholder="k.m_training" />
+        </Field>
+        <Field label="WhatsApp Number">
+          <Input value={s.whatsapp ?? ''} onChange={(e) => onChange({ ...content, whatsapp: e.target.value })} placeholder="+44..." />
+        </Field>
+      </div>
+    )
+  },
 }
 
 export function SectionEditor({ pageSlug, sectionKey, initialContent, onSave, onContentChange, saveLabel = 'Save Section' }: SectionEditorProps) {

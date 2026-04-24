@@ -669,4 +669,53 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
       instagram: 'advanced_physiome',
     },
   },
+  'personal-training': {
+    hero: {
+      kicker: 'Personal Training',
+      heading: 'KM Training x Northern Warrior',
+      subtext: 'Tailored 1-to-1 coaching and bespoke programming by Kieran McGlennon — available at Northern Warrior and online.',
+      video_url: '',
+      image_url: '/feature-1.jpg',
+    },
+    about: {
+      kicker: 'Meet Your PT',
+      heading: 'Kieran McGlennon',
+      subheading: 'Coach · Personal Trainer',
+      body: 'Kieran coaches group classes at Northern Warrior and runs a busy personal training schedule alongside. His 1-to-1 work spans strength development, body composition goals and returning from injury — delivered with the same evidence-based, no-nonsense approach he brings to the coaching floor.',
+      image_url: '',
+      image_position: '50% 30%',
+    },
+    services: {
+      heading: "What's Available",
+      subtext: 'From in-person sessions to fully remote programming — training built around you.',
+      items: [
+        { title: '1-to-1 PT Sessions', desc: 'Tailored personal training at Northern Warrior, built around your goals and schedule.', image_url: '', image_position: '' },
+        { title: 'Online Programming', desc: 'Full-time training programmes, supplementary sessions, or targeted blocks — delivered remotely with ongoing support.', image_url: '', image_position: '' },
+        { title: 'Competition Prep', desc: 'Structured programming blocks leading into competitions, races or fitness events — periodised and goal-specific.', image_url: '', image_position: '' },
+        { title: 'Area-Specific Training', desc: 'Focused programming for strength, conditioning, gymnastics, weightlifting or any area you want to develop.', image_url: '', image_position: '' },
+        { title: 'Nutrition Coaching', desc: 'Case-by-case nutrition blocks to support your training goals — practical, sustainable and evidence-based.', image_url: '', image_position: '' },
+      ],
+    },
+    process: {
+      heading: 'How It Works',
+      subtext: 'Getting started is simple.',
+      items: [
+        { title: 'Get in Touch', desc: 'Reach out via Instagram DM or WhatsApp to start the conversation.' },
+        { title: 'Initial Chat', desc: "Tell Kieran about your goals, experience and what you're looking for." },
+        { title: 'Programme Built', desc: 'Kieran designs your training plan — tailored to you.' },
+        { title: 'Train & Progress', desc: 'Start training with ongoing coaching and programme adjustments.' },
+      ],
+    },
+    testimonials: {
+      items: [
+        { quote: 'Placeholder testimonial — to be replaced with real feedback.', name: 'NW Member', role: '' },
+      ],
+    },
+    pt_contact: {
+      heading: 'Get in Touch',
+      subtext: 'Reach out to Kieran directly via Instagram or WhatsApp.',
+      instagram: 'k.m_training',
+      whatsapp: '+44PLACEHOLDER',
+    },
+  },
 }
