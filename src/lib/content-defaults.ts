@@ -706,6 +706,18 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
         { title: 'Train & Progress', desc: 'Start training with ongoing coaching and programme adjustments.' },
       ],
     },
+    nutrition_showcase: {
+      heading: 'Nutrition That Works',
+      subtext: "Whether your goal is to lose or gain weight, improve body composition, or just get the basics right — Kieran takes a no-nonsense, non-restrictive approach to nutrition coaching.",
+      features: [
+        'Online or in-person consultation',
+        'Nutritional guidance & advice',
+        'Goal setting',
+        'Weekly online check-in',
+        'Ongoing support',
+      ],
+      items: [],
+    },
     why_kieran: {
       heading: 'Why Choose Kieran',
       subtext: "It's not just about the qualifications — it's about who's coaching you.",
