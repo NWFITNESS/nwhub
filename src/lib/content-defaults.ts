@@ -693,7 +693,7 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
         { title: 'Online Programming', desc: 'Full-time training programmes, supplementary sessions, or targeted blocks — delivered remotely with ongoing support.', image_url: '', image_position: '' },
         { title: 'Competition Prep', desc: 'Structured programming blocks leading into competitions, races or fitness events — periodised and goal-specific.', image_url: '', image_position: '' },
         { title: 'Area-Specific Training', desc: 'Focused programming for strength, conditioning, gymnastics, weightlifting or any area you want to develop.', image_url: '', image_position: '' },
-        { title: 'Nutrition Coaching', desc: 'Case-by-case nutrition blocks to support your training goals — practical, sustainable and evidence-based.', image_url: '', image_position: '' },
+        { title: 'Nutrition Coaching', desc: "Whether your goal is to lose or gain weight, improve body composition, fuel for fitness, or just get the basics right — nutrition doesn't have to be complicated or restrictive. Kieran offers online or in-person consultations, goal setting, weekly check-ins and ongoing support.", image_url: '', image_position: '' },
       ],
     },
     process: {
