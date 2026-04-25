@@ -1206,7 +1206,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
           content={{ items }}
           onChange={(v) => onChange({ ...content, items: (v as Record<string, unknown>).items })}
           fields={[
-            { key: 'media_url', label: 'Image or Video URL' },
+            { key: 'image_url', label: 'Image or Video' },
             { key: 'type', label: 'Type (image or video)' },
           ]}
         />
