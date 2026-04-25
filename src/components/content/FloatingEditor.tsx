@@ -204,7 +204,7 @@ function ArrayField({ fieldKey, items, onChange }: {
   items: unknown[]
   onChange: (v: unknown[]) => void
 }) {
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(true)
 
   function updateItemString(i: number, val: string) {
     onChange(items.map((item, idx) => (idx === i ? val : item)))
