@@ -1183,36 +1183,12 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
     )
   },
   // ── Personal Training (KM) ──
-  nutrition_showcase: ({ content, onChange }) => {
-    const s = content as Record<string, unknown>
-    const items = (s.items ?? []) as Array<Record<string, string>>
-    const features = (s.features ?? []) as string[]
-    return (
-      <div className="space-y-6">
-        <Field label="Heading">
-          <Input value={(s.heading as string) ?? ''} onChange={(e) => onChange({ ...content, heading: e.target.value })} />
-        </Field>
-        <Field label="Subtext">
-          <Textarea value={(s.subtext as string) ?? ''} onChange={(e) => onChange({ ...content, subtext: e.target.value })} />
-        </Field>
-        <Field label="Features (one per line)">
-          <Textarea
-            value={features.join('\n')}
-            onChange={(e) => onChange({ ...content, features: e.target.value.split('\n').filter(Boolean) })}
-            placeholder="Online or in-person consultation&#10;Goal setting&#10;Weekly check-in"
-          />
-        </Field>
-        <GenericArrayEditor
-          content={{ items }}
-          onChange={(v) => onChange({ ...content, items: (v as Record<string, unknown>).items })}
-          fields={[
-            { key: 'image_url', label: 'Image or Video' },
-            { key: 'type', label: 'Type (image or video)' },
-          ]}
-        />
-      </div>
-    )
-  },
+  nutrition_showcase: (p) => (
+    <GenericArrayEditor {...p} fields={[
+      { key: 'image_url', label: 'Image or Video' },
+      { key: 'type', label: 'Type (image or video)' },
+    ]} />
+  ),
   why_kieran: (p) => (
     <GenericArrayEditor {...p} fields={[
       { key: 'title', label: 'Title' },
