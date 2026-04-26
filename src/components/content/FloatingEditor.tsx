@@ -341,7 +341,7 @@ export function FloatingEditor({
   const box = (
     <div
       ref={boxRef}
-      className="fixed z-50 w-80 rounded-2xl overflow-hidden"
+      className="fixed z-50 w-96 rounded-2xl overflow-hidden"
       style={{
         top: pos.top,
         left: pos.left,
@@ -387,7 +387,7 @@ export function FloatingEditor({
       </div>
 
       {/* Fields */}
-      <div className="space-y-4 max-h-[440px] overflow-y-auto editor-scroll-container" style={{ padding: 16 }}>
+      <div className="space-y-4 max-h-[70vh] overflow-y-auto editor-scroll-container" style={{ padding: 16 }}>
         {Object.entries(local).map(([key, value]) => {
           if (value === null || value === undefined) return null
 
