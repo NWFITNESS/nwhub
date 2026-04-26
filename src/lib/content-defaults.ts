@@ -712,6 +712,7 @@ export const PAGE_SECTION_DEFAULTS: Record<string, Record<string, Record<string,
         { image_url: '', type: 'image' },
         { image_url: '', type: 'video' },
         { image_url: '', type: 'image' },
+        { image_url: '', type: 'video' },
       ],
     },
     why_kieran: {
