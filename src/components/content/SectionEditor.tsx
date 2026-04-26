@@ -813,6 +813,53 @@ function CoachesEditor({ content, onChange }: { content: Record<string, unknown>
   )
 }
 
+function PTTestimonialsEditor({ content, onChange }: { content: Record<string, unknown>; onChange: (v: Record<string, unknown>) => void }) {
+  const items = ((content.items ?? []) as Array<Record<string, string>>)
+  const categories = ['PT', 'Nutrition', 'Programming'] as const
+  const [tab, setTab] = useState<string>('PT')
+
+  const filtered = items.filter(i => (i.category ?? '') === tab)
+  const otherItems = items.filter(i => (i.category ?? '') !== tab)
+
+  function updateFiltered(v: Record<string, unknown>) {
+    const newFiltered = (v.items ?? []) as Array<Record<string, string>>
+    // Re-tag filtered items with current category
+    const tagged = newFiltered.map(item => ({ ...item, category: tab }))
+    onChange({ ...content, items: [...otherItems, ...tagged] })
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        {categories.map(cat => (
+          <button
+            key={cat}
+            type="button"
+            onClick={() => setTab(cat)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              tab === cat
+                ? 'bg-[#967705]/20 border border-[#967705]/40 text-[#c4a015]'
+                : 'bg-white/[0.04] border border-white/10 text-white/40 hover:text-white/60'
+            }`}
+          >
+            {cat} ({items.filter(i => i.category === cat).length})
+          </button>
+        ))}
+      </div>
+      <GenericArrayEditor
+        content={{ items: filtered }}
+        onChange={updateFiltered}
+        fields={[
+          { key: 'quote', label: 'Quote', multiline: true },
+          { key: 'name', label: 'Name' },
+          { key: 'role', label: 'Role / Result' },
+          { key: 'image_url', label: 'Before/After Photo' },
+        ]}
+      />
+    </div>
+  )
+}
+
 const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>; onChange: (v: Record<string, unknown>) => void }) => React.ReactNode> = {
   hero: (p) => <HeroEditor {...p} />,
   faq: (p) => <FaqEditor {...p} />,
@@ -1183,6 +1230,7 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
     )
   },
   // ── Personal Training (KM) ──
+  pt_testimonials: (p) => <PTTestimonialsEditor {...p} />,
   nutrition_showcase: (p) => (
     <GenericArrayEditor {...p} fields={[
       { key: 'image_url', label: 'Image or Video' },
