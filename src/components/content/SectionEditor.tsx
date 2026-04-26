@@ -1244,15 +1244,57 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
       { key: 'image_url', label: 'Background Image (faded)' },
     ]} />
   ),
-  services: (p) => (
-    <GenericArrayEditor {...p} fields={[
-      { key: 'kicker', label: 'Kicker (e.g. In-Person, Remote)' },
-      { key: 'heading', label: 'Heading' },
-      { key: 'desc', label: 'Description', multiline: true },
-      { key: 'image_url', label: 'Image' },
-      { key: 'image_position', label: 'Image focus point' },
-    ]} />
-  ),
+  services: ({ content, onChange }) => {
+    const s = content as Record<string, unknown>
+    const items = ((s.items ?? []) as Array<Record<string, unknown>>)
+
+    function updateItem(i: number, key: string, val: unknown) {
+      const next = items.map((item, idx) => idx === i ? { ...item, [key]: val } : item)
+      onChange({ ...content, items: next })
+    }
+
+    return (
+      <div className="space-y-6">
+        {s.heading !== undefined && (
+          <Field label="Section Heading">
+            <Input value={String(s.heading ?? '')} onChange={(e) => onChange({ ...content, heading: e.target.value })} />
+          </Field>
+        )}
+        {s.subtext !== undefined && (
+          <Field label="Subtext">
+            <Textarea value={String(s.subtext ?? '')} onChange={(e) => onChange({ ...content, subtext: e.target.value })} />
+          </Field>
+        )}
+        {items.map((item, i) => (
+          <div key={i} className="border border-white/10 rounded-lg p-4 space-y-3">
+            <p className="text-xs text-white/30 font-medium">Panel {i + 1}</p>
+            <Field label="Kicker (e.g. In-Person, Remote)">
+              <Input value={String(item.kicker ?? '')} onChange={(e) => updateItem(i, 'kicker', e.target.value)} />
+            </Field>
+            <Field label="Heading">
+              <Input value={String(item.heading ?? '')} onChange={(e) => updateItem(i, 'heading', e.target.value)} />
+            </Field>
+            <Field label="Description">
+              <Textarea value={String(item.desc ?? '')} onChange={(e) => updateItem(i, 'desc', e.target.value)} />
+            </Field>
+            <Field label="Bullet Points (one per line)">
+              <Textarea
+                value={Array.isArray(item.bullets) ? (item.bullets as string[]).join('\n') : ''}
+                onChange={(e) => updateItem(i, 'bullets', e.target.value.split('\n').filter(Boolean))}
+                placeholder="1-to-1 personal training sessions&#10;Small group PT&#10;Flexible scheduling"
+              />
+            </Field>
+            <Field label="Image">
+              <ImageField value={String(item.image_url ?? '')} onChange={(url) => updateItem(i, 'image_url', url)} />
+            </Field>
+            <Field label="Image Focus Point">
+              <Input value={String(item.image_position ?? '')} onChange={(e) => updateItem(i, 'image_position', e.target.value)} placeholder="50% 50%" />
+            </Field>
+          </div>
+        ))}
+      </div>
+    )
+  },
   process: (p) => (
     <GenericArrayEditor {...p} fields={[
       { key: 'title', label: 'Step Title' },
