@@ -1246,7 +1246,8 @@ const SECTION_EDITORS: Record<string, (props: { content: Record<string, unknown>
   ),
   services: (p) => (
     <GenericArrayEditor {...p} fields={[
-      { key: 'title', label: 'Service Title' },
+      { key: 'kicker', label: 'Kicker (e.g. In-Person, Remote)' },
+      { key: 'heading', label: 'Heading' },
       { key: 'desc', label: 'Description', multiline: true },
       { key: 'image_url', label: 'Image' },
       { key: 'image_position', label: 'Image focus point' },
