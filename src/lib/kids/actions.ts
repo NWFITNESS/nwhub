@@ -1075,12 +1075,13 @@ export async function deletePendingBooking(bookingId: string): Promise<void> {
     .eq('id', bookingId)
     .maybeSingle()
 
+  if (error) throw new Error(`Booking lookup failed: ${error.message}`)
+
   // Already gone (e.g. cleaned up by the public registration flow) — just refresh
   if (!booking) {
     revalidatePath('/kids')
     return
   }
-  if (error) throw new Error(`Booking lookup failed: ${error.message}`)
   if (booking.payment_status !== 'pending') {
     throw new Error('Only pending (unpaid) bookings can be deleted.')
   }
