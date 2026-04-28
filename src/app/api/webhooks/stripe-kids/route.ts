@@ -66,7 +66,8 @@ export async function POST(req: NextRequest) {
     }
     return NextResponse.json({ received: true })
   } catch (err) {
-    console.error('[stripe-kids] handler error:', (err as Error).message)
+    const e = err as Error
+    console.error('[stripe-kids] handler error:', e.message, e.stack)
     // Return 500 so Stripe retries with backoff
     return NextResponse.json({ error: 'handler failed' }, { status: 500 })
   }
@@ -81,6 +82,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   if (type === 'block') {
     const bookingIds = (meta.booking_ids ?? '').split(',').filter(Boolean)
+    console.log('[stripe-kids] block checkout completed:', { sessionId: session.id, bookingIds, paymentIntentId })
     if (!bookingIds.length) {
       console.warn('[stripe-kids] block event with no booking_ids in metadata', session.id)
       return
@@ -94,13 +96,18 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         stripe_checkout_session_id: session.id,
       })
       .in('id', bookingIds)
-    if (error) throw new Error(`Failed to mark block bookings paid: ${error.message}`)
+    if (error) {
+      console.error('[stripe-kids] supabase update failed:', error.message, error.code, error.details)
+      throw new Error(`Failed to mark block bookings paid: ${error.message}`)
+    }
+    console.log('[stripe-kids] bookings marked paid, sending email...')
 
     // Fire-and-mostly-forget confirmation email — log failures but never
     // throw because doing so makes Stripe retry the webhook and we'd
     // re-mark already-paid bookings.
     try {
       await sendBlockConfirmationEmail(bookingIds)
+      console.log('[stripe-kids] confirmation email sent')
     } catch (e) {
       console.error('[stripe-kids] block confirmation email failed:', (e as Error).message)
     }
