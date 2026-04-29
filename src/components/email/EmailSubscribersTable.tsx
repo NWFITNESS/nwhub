@@ -314,11 +314,11 @@ export function EmailSubscribersTable({ initialSubscribers }: Props) {
 
 function TagPill({ tag }: { tag: string }) {
   const colours: Record<string, { bg: string; fg: string }> = {
-    'kids-parents': { bg: 'rgba(212,160,23,0.12)', fg: '#d4a017' },
-    'newsletter': { bg: 'rgba(59,130,246,0.12)', fg: '#60a5fa' },
-    'hyrox-interest': { bg: 'rgba(255,107,80,0.12)', fg: '#ff8a6e' },
+    'kids-parents': { bg: '#fef3c7', fg: '#92400e' },
+    'newsletter': { bg: '#dbeafe', fg: '#1e40af' },
+    'hyrox-interest': { bg: '#fee2e2', fg: '#991b1b' },
   }
-  const c = colours[tag] ?? { bg: 'rgba(255,255,255,0.06)', fg: 'rgba(255,255,255,0.5)' }
+  const c = colours[tag] ?? { bg: '#f3f4f6', fg: '#374151' }
   return (
     <span
       className="rounded-full text-[10px] font-semibold"
