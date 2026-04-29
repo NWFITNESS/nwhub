@@ -182,12 +182,13 @@ export default function RegisterPageClient({ blocks, initialBlockId }: Props) {
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
                   className={`rounded-lg text-xs font-semibold transition-all ${
-                    isSelected ? 'ring-1 ring-white/30' : 'opacity-70 hover:opacity-100'
+                    isSelected ? 'ring-1 ring-white/30' : 'hover:opacity-100'
                   }`}
                   style={{
                     padding: '8px 16px',
-                    background: isSelected ? badge.bg : 'rgba(255,255,255,0.04)',
-                    color: isSelected ? badge.fg : 'rgba(255,255,255,0.6)',
+                    background: badge.bg,
+                    color: badge.fg,
+                    opacity: isSelected ? 1 : 0.55,
                   }}
                 >
                   {CATEGORY_LABEL[cat]} · {CATEGORY_TIME[cat]}
