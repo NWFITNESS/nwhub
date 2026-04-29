@@ -5,6 +5,7 @@ import { GlobalSettingsEditor } from '@/components/content/GlobalSettingsEditor'
 import { AccountSecuritySettings } from '@/components/content/AccountSecuritySettings'
 import { SocialConnections } from '@/components/settings/SocialConnections'
 import { DigestPreferences } from '@/components/settings/DigestPreferences'
+import { GDPRPanel } from '@/components/settings/GDPRPanel'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -49,6 +50,14 @@ export default async function SettingsPage() {
             initialSendHour={parseInt(settingsMap['digest_send_hour'] ?? '8', 10)}
             initialProcessInterval={parseInt(settingsMap['inbox_process_interval'] ?? '5', 10)}
           />
+        </div>
+      </Panel>
+
+      <Panel>
+        <PanelHeader eyebrow="Compliance" title="GDPR &amp; Data Requests" />
+        <div style={{ padding: 20 }}>
+          <p className="text-xs font-medium text-nw-400 mb-4">Search, export, or delete all personal data held for a person. For Subject Access Requests and right to erasure.</p>
+          <GDPRPanel />
         </div>
       </Panel>
 
