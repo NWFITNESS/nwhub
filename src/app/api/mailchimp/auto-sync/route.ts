@@ -37,38 +37,44 @@ export async function POST(req: NextRequest) {
   const [{ data: kidsParents }, { data: kidsRegs }, { data: existingSubs }] = await Promise.all([
     supabase.from('kids_parents').select('email, name'),
     supabase.from('kids_registrations').select('parent_email, parent_name'),
-    supabase.from('email_subscribers').select('email').eq('status', 'subscribed'),
+    supabase.from('email_subscribers').select('email, tags').eq('status', 'subscribed'),
   ])
 
-  const existingEmails = new Set((existingSubs ?? []).map((s) => s.email.toLowerCase()))
+  const existingByEmail = new Map<string, { tags: string[] }>()
+  for (const s of (existingSubs ?? [])) existingByEmail.set(s.email.toLowerCase(), { tags: s.tags ?? [] })
 
-  // Collect unique kids parent emails
-  const kidsToSync: { email: string; first_name: string; last_name: string }[] = []
+  // Collect all unique kids parent emails
+  const allKidsEmails = new Set<string>()
+  const kidsToInsert: { email: string; first_name: string; last_name: string }[] = []
   const seen = new Set<string>()
 
   for (const p of (kidsParents ?? [])) {
     if (!p.email) continue
     const key = p.email.toLowerCase()
-    if (existingEmails.has(key) || seen.has(key)) { stats.kids_skipped++; continue }
+    allKidsEmails.add(key)
+    if (seen.has(key)) continue
     seen.add(key)
+    if (existingByEmail.has(key)) { stats.kids_skipped++; continue }
     const parts = (p.name ?? '').trim().split(/\s+/)
-    kidsToSync.push({ email: key, first_name: parts[0] ?? '', last_name: parts.slice(1).join(' ') })
+    kidsToInsert.push({ email: key, first_name: parts[0] ?? '', last_name: parts.slice(1).join(' ') })
   }
 
   for (const r of (kidsRegs ?? [])) {
     if (!r.parent_email) continue
     const key = r.parent_email.toLowerCase()
-    if (existingEmails.has(key) || seen.has(key)) { stats.kids_skipped++; continue }
+    allKidsEmails.add(key)
+    if (seen.has(key)) continue
     seen.add(key)
+    if (existingByEmail.has(key)) { stats.kids_skipped++; continue }
     const parts = (r.parent_name ?? '').trim().split(/\s+/)
-    kidsToSync.push({ email: key, first_name: parts[0] ?? '', last_name: parts.slice(1).join(' ') })
+    kidsToInsert.push({ email: key, first_name: parts[0] ?? '', last_name: parts.slice(1).join(' ') })
   }
 
-  // Batch insert new kids parents into email_subscribers
-  if (kidsToSync.length) {
+  // Insert NEW kids parents into email_subscribers
+  if (kidsToInsert.length) {
     const now = new Date().toISOString()
-    for (let i = 0; i < kidsToSync.length; i += 50) {
-      const batch = kidsToSync.slice(i, i + 50).map((k) => ({
+    for (let i = 0; i < kidsToInsert.length; i += 50) {
+      const batch = kidsToInsert.slice(i, i + 50).map((k) => ({
         email: k.email,
         first_name: k.first_name,
         last_name: k.last_name,
@@ -80,6 +86,24 @@ export async function POST(req: NextRequest) {
       const { error } = await supabase.from('email_subscribers').upsert(batch, { onConflict: 'email', ignoreDuplicates: true })
       if (!error) stats.kids_synced += batch.length
     }
+  }
+
+  // Tag EXISTING subscribers as kids-parents if they aren't already
+  const kidsToTag: string[] = []
+  for (const email of allKidsEmails) {
+    const existing = existingByEmail.get(email)
+    if (existing && !existing.tags.includes('kids-parents')) {
+      kidsToTag.push(email)
+    }
+  }
+  if (kidsToTag.length) {
+    for (const email of kidsToTag) {
+      const existing = existingByEmail.get(email)!
+      await supabase.from('email_subscribers')
+        .update({ tags: [...existing.tags, 'kids-parents'] })
+        .eq('email', email)
+    }
+    stats.kids_synced += kidsToTag.length
   }
 
   // ── Step 2: All email_subscribers → Mailchimp ────────────────────────────
