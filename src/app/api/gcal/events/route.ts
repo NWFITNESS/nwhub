@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getGCalAccessToken, fetchGCalEvents, gcalEventDate, type GCalEventRaw } from '@/lib/gcal'
+import { requireAuth } from '@/lib/auth-guard'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,6 +20,8 @@ function toCalendarEvent(ev: GCalEventRaw) {
 }
 
 export async function GET(req: NextRequest) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   const auth = await getGCalAccessToken()
   if (!auth) {
     return NextResponse.json({ connected: false, events: [] })

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAuth } from '@/lib/auth-guard'
 
 function slugify(title: string) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -7,6 +8,8 @@ function slugify(title: string) {
 
 // POST /api/blog — create a new blog post
 export async function POST(req: NextRequest) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   const supabase = createAdminClient()
   const body = await req.json()
 

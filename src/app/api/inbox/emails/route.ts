@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAuth } from '@/lib/auth-guard'
 
 export async function GET(req: NextRequest) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   const supabase = createAdminClient()
   const { searchParams } = new URL(req.url)
   const category = searchParams.get('category')

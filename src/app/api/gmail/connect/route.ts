@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/auth-guard'
 
 const SCOPES = [
   'https://www.googleapis.com/auth/gmail.modify',
@@ -8,6 +9,8 @@ const SCOPES = [
 ].join(' ')
 
 export async function GET() {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   const clientId = process.env.GOOGLE_CLIENT_ID
   if (!clientId) {
     return NextResponse.json({ error: 'GOOGLE_CLIENT_ID not configured' }, { status: 500 })

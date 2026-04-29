@@ -1,6 +1,7 @@
 import { xero } from '@/lib/xero'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/auth-guard'
 
 async function refreshXeroToken(refreshToken: string) {
   const credentials = Buffer.from(
@@ -88,6 +89,8 @@ function parsePnL(report: any) {
 }
 
 export async function GET() {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   try {
     const supabase = createAdminClient()
 

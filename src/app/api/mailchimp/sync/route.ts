@@ -2,8 +2,11 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { mc, emailHash, resolveApiKey } from '@/lib/mailchimp'
 import type { MailchimpSettings } from '@/lib/types'
+import { requireAuth } from '@/lib/auth-guard'
 
 export async function POST() {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   const supabase = createAdminClient()
 
   const { data: settingsData } = await supabase

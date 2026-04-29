@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAuth } from '@/lib/auth-guard'
 
 function slugify(title: string) {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -7,6 +8,8 @@ function slugify(title: string) {
 
 // PATCH /api/blog/[id] — update post or toggle status
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   const { id } = await params
   const supabase = createAdminClient()
   const body = await req.json()
@@ -65,6 +68,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 // DELETE /api/blog/[id]
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   const { id } = await params
   const supabase = createAdminClient()
 

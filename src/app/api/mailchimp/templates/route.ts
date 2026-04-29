@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAuth } from '@/lib/auth-guard'
 
 interface EmailTemplate {
   id: string
@@ -19,11 +20,15 @@ async function getTemplates(): Promise<EmailTemplate[]> {
 }
 
 export async function GET() {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   const templates = await getTemplates()
   return NextResponse.json(templates)
 }
 
 export async function POST(req: NextRequest) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   const { name, design_json } = await req.json()
   if (!name || !design_json) {
     return NextResponse.json({ error: 'name and design_json required' }, { status: 400 })
@@ -44,6 +49,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   const { searchParams } = new URL(req.url)
   const id = searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })

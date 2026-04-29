@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAuth } from '@/lib/auth-guard'
 
 function normaliseUKPhone(raw: string): string | null {
   const digits = raw.replace(/\D/g, '')
@@ -67,6 +68,8 @@ function buildRows(input: InputRow[]) {
 }
 
 export async function POST(req: NextRequest) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   const supabase = createAdminClient()
   const contentType = req.headers.get('content-type') ?? ''
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { requireAuth } from '@/lib/auth-guard'
 
 function normaliseUKPhone(raw: string): string | null {
   const digits = raw.replace(/\D/g, '')
@@ -10,6 +11,8 @@ function normaliseUKPhone(raw: string): string | null {
 }
 
 export async function GET() {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   const supabase = createAdminClient()
   const { data, error } = await supabase
     .from('contacts')
@@ -21,6 +24,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   const supabase = createAdminClient()
   const body = await req.json()
 

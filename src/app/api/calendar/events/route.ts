@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getGCalAccessToken, createGCalEvent, deleteGCalEvent } from '@/lib/gcal'
+import { requireAuth } from '@/lib/auth-guard'
 
 export const dynamic = 'force-dynamic'
 
 // ─── POST — create event ──────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   const body = await req.json() as {
     date: string         // "YYYY-MM-DD"
     label: string        // event title
@@ -59,6 +62,8 @@ export async function POST(req: NextRequest) {
 // ─── DELETE — remove event ────────────────────────────────────────────────────
 
 export async function DELETE(req: NextRequest) {
+  const unauth = await requireAuth()
+  if (unauth) return unauth
   const { searchParams } = new URL(req.url)
   const id     = searchParams.get('id')      // Supabase row ID (null for pure GCal events)
   const gcalId = searchParams.get('gcalId')  // Google Calendar event ID
