@@ -11,6 +11,10 @@
     {
       "path": "/api/branding/schedule/process",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/mailchimp/auto-sync",
+      "schedule": "0 6 * * *"
     }
   ]
 }
