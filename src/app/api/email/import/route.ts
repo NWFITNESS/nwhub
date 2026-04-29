@@ -18,8 +18,16 @@ export async function POST(req: NextRequest) {
   const { data: existing } = await supabase.from('email_subscribers').select('email')
   const existingEmails = new Set((existing ?? []).map(e => e.email.toLowerCase()))
 
+  // Dedupe against DB AND within the import itself
+  const seenInImport = new Set<string>()
   const toInsert = subscribers
-    .filter((s: { email: string }) => s.email && !existingEmails.has(s.email.toLowerCase()))
+    .filter((s: { email: string }) => {
+      if (!s.email) return false
+      const key = s.email.toLowerCase().trim()
+      if (existingEmails.has(key) || seenInImport.has(key)) return false
+      seenInImport.add(key)
+      return true
+    })
     .map((s: { email: string; first_name?: string; last_name?: string; tags?: string[]; source?: string }) => ({
       email: s.email.toLowerCase().trim(),
       first_name: s.first_name ?? '',
@@ -34,7 +42,11 @@ export async function POST(req: NextRequest) {
   for (let i = 0; i < toInsert.length; i += 50) {
     const batch = toInsert.slice(i, i + 50)
     const { error } = await supabase.from('email_subscribers').insert(batch)
-    if (!error) synced += batch.length
+    if (error) {
+      console.error('[email-import] batch insert failed:', error.message, error.code)
+    } else {
+      synced += batch.length
+    }
   }
 
   return NextResponse.json({ synced, skipped: subscribers.length - toInsert.length })
