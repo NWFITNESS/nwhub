@@ -10,10 +10,46 @@ function isVideo(url?: string): boolean {
   return /\.(mp4|webm|mov|m4v|avi|mkv)(\?.*)?$/i.test(url)
 }
 
+const MAX_UPLOAD_BYTES = 4 * 1024 * 1024 // 4 MB — stay under Vercel's 4.5 MB limit
+const MAX_DIMENSION = 2400
+
+async function compressImage(file: File): Promise<File> {
+  // Skip non-image files or files already under limit
+  if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') return file
+  if (file.size <= MAX_UPLOAD_BYTES) return file
+
+  const bitmap = await createImageBitmap(file)
+  let { width, height } = bitmap
+
+  // Scale down if either dimension exceeds max
+  if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+    const ratio = Math.min(MAX_DIMENSION / width, MAX_DIMENSION / height)
+    width = Math.round(width * ratio)
+    height = Math.round(height * ratio)
+  }
+
+  const canvas = new OffscreenCanvas(width, height)
+  const ctx = canvas.getContext('2d')!
+  ctx.drawImage(bitmap, 0, 0, width, height)
+  bitmap.close()
+
+  // Try progressively lower quality until under limit
+  let quality = 0.85
+  let blob = await canvas.convertToBlob({ type: 'image/jpeg', quality })
+  while (blob.size > MAX_UPLOAD_BYTES && quality > 0.3) {
+    quality -= 0.1
+    blob = await canvas.convertToBlob({ type: 'image/jpeg', quality })
+  }
+
+  const name = file.name.replace(/\.[^.]+$/, '.jpg')
+  return new File([blob], name, { type: 'image/jpeg' })
+}
+
 async function uploadFile(file: File): Promise<{ data: Media | null; error: string | null }> {
   try {
+    const compressed = await compressImage(file)
     const form = new FormData()
-    form.append('file', file)
+    form.append('file', compressed)
     form.append('alt', '')
     form.append('category', 'general')
     const res = await fetch('/api/media', { method: 'POST', body: form })
