@@ -10,7 +10,8 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input, Field } from '@/components/ui/Input'
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt'
-import { Eye, EyeOff, CheckCircle2, Lock, ShieldAlert } from 'lucide-react'
+import { Eye, EyeOff, CheckCircle2, Lock, ShieldAlert, Fingerprint } from 'lucide-react'
+import { startAuthentication } from '@simplewebauthn/browser'
 
 const MAX_ATTEMPTS = 5
 const LOCKOUT_SECONDS = 30
@@ -41,6 +42,10 @@ function LoginForm() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [lockoutRemaining, setLockoutRemaining] = useState(0)
+  const [passkeyStep, setPasskeyStep] = useState(false)
+  const [passkeyLoading, setPasskeyLoading] = useState(false)
+  const [passkeyError, setPasskeyError] = useState('')
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null)
 
   const resetSuccess = searchParams.get('reset') === 'success'
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -106,9 +111,74 @@ function LoginForm() {
       }
     } else {
       setAttemptData({ count: 0, lockUntil: 0 })
+      // Check if user has a passkey registered — if so, require verification
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        try {
+          const res = await fetch(`/api/passkey/authenticate?user_id=${user.id}`)
+          const json = await res.json()
+          if (json.hasPasskey) {
+            setPendingUserId(user.id)
+            setPasskeyStep(true)
+            // Auto-trigger the passkey prompt
+            handlePasskeyAuth(user.id, json.options)
+            return
+          }
+        } catch {
+          // If passkey check fails, let them through (don't block login)
+        }
+      }
       router.push('/')
       router.refresh()
     }
+  }
+
+  async function handlePasskeyAuth(userId: string, options: unknown) {
+    setPasskeyLoading(true)
+    setPasskeyError('')
+    try {
+      const authResp = await startAuthentication({ optionsJSON: options as Parameters<typeof startAuthentication>[0]['optionsJSON'] })
+      const verifyRes = await fetch('/api/passkey/authenticate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, response: authResp }),
+      })
+      const result = await verifyRes.json()
+      if (result.verified) {
+        router.push('/')
+        router.refresh()
+      } else {
+        setPasskeyError(result.error ?? 'Passkey verification failed')
+      }
+    } catch (e) {
+      const msg = (e as Error).message
+      if (msg.includes('cancelled') || msg.includes('abort')) {
+        setPasskeyError('Passkey verification cancelled. Try again or sign out.')
+      } else {
+        setPasskeyError('Passkey verification failed. Try again.')
+      }
+    }
+    setPasskeyLoading(false)
+  }
+
+  async function handleRetryPasskey() {
+    if (!pendingUserId) return
+    try {
+      const res = await fetch(`/api/passkey/authenticate?user_id=${pendingUserId}`)
+      const json = await res.json()
+      if (json.hasPasskey) {
+        handlePasskeyAuth(pendingUserId, json.options)
+      }
+    } catch {
+      setPasskeyError('Failed to start passkey verification')
+    }
+  }
+
+  async function handleSignOutFromPasskey() {
+    await supabase.auth.signOut()
+    setPasskeyStep(false)
+    setPendingUserId(null)
+    setPasskeyError('')
   }
 
   const isLocked = lockoutRemaining > 0
@@ -194,8 +264,45 @@ function LoginForm() {
             style={{ background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.2), transparent)' }}
           />
 
-          {/* Lockout state */}
-          {isLocked ? (
+          {/* Passkey verification step */}
+          {passkeyStep ? (
+            <div className="text-center py-2">
+              <div className="w-14 h-14 rounded-2xl bg-[rgba(212,175,55,0.1)] border border-[rgba(212,175,55,0.2)] flex items-center justify-center mx-auto mb-5">
+                <Fingerprint className="w-7 h-7 text-[#f2ca50]" />
+              </div>
+              <p className="text-[#e5e2e1] font-semibold text-lg mb-1">Verify your identity</p>
+              <p className="text-[#d0c5af]/40 text-sm mb-6 font-body">
+                Use your passkey to continue — fingerprint, face scan, or security key.
+              </p>
+
+              {passkeyError && (
+                <p className="text-sm text-red-400 bg-red-400/8 border border-red-400/20 rounded-lg px-3 py-2.5 mb-4">
+                  {passkeyError}
+                </p>
+              )}
+
+              <div className="flex flex-col gap-2">
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="lg"
+                  loading={passkeyLoading}
+                  onClick={handleRetryPasskey}
+                  className="w-full"
+                >
+                  <Fingerprint className="w-4 h-4 mr-2" />
+                  {passkeyLoading ? 'Waiting for passkey…' : 'Verify with passkey'}
+                </Button>
+                <button
+                  type="button"
+                  onClick={handleSignOutFromPasskey}
+                  className="text-xs text-[#d0c5af]/30 hover:text-[#d0c5af]/60 transition-colors mt-2"
+                >
+                  Sign out
+                </button>
+              </div>
+            </div>
+          ) : isLocked ? (
             <div className="text-center py-2">
               <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
                 <ShieldAlert className="w-5 h-5 text-red-400" />
