@@ -19,6 +19,7 @@ interface Segment {
   count: number
   emails: string[]
   category?: string
+  tags?: string[]
 }
 
 type Step = 'details' | 'preview' | 'send'
@@ -99,6 +100,13 @@ export function CampaignSendModal({ open, onClose, html, title, previewText, exi
     if (campaignId) return campaignId
     setError('')
     const segEmails = selectedSegments.has('all') ? undefined : selectedEmails.length > 0 ? selectedEmails : undefined
+    // Collect tags from selected segments for Mailchimp tag-based targeting
+    const segTags: string[] = []
+    for (const seg of segments) {
+      if (selectedSegments.has(seg.id) && seg.tags?.length) {
+        for (const t of seg.tags) if (!segTags.includes(t)) segTags.push(t)
+      }
+    }
     const res = await fetch('/api/mailchimp/draft', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -107,6 +115,7 @@ export function CampaignSendModal({ open, onClose, html, title, previewText, exi
         from_name: fromName, from_email: fromEmail, reply_to: replyTo || fromEmail,
         html,
         segment_emails: segEmails,
+        segment_tags: segTags.length > 0 ? segTags : undefined,
       }),
     })
     const text = await res.text()

@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Mailchimp not configured' }, { status: 400 })
   }
 
-  const { campaign_id, subject, title, preview_text, from_name, from_email, reply_to, html, design_json, segment_emails } = await req.json()
+  const { campaign_id, subject, title, preview_text, from_name, from_email, reply_to, html, design_json, segment_emails, segment_tags } = await req.json()
   let campaignId = campaign_id as string | undefined
 
   const campaignSettings = {
@@ -38,25 +38,46 @@ export async function POST(req: NextRequest) {
     reply_to: reply_to || from_email || settings.reply_to || settings.from_email || 'info@northernwarrior.co.uk',
   }
 
+  // Build recipients — prefer tag-based segmentation (no condition limit)
+  // over individual email conditions (Mailchimp caps at ~5 conditions)
+  const segTags = Array.isArray(segment_tags) ? (segment_tags as string[]).filter(Boolean) : []
   const segmentEmails = Array.isArray(segment_emails)
     ? (segment_emails as string[]).filter(Boolean)
     : []
 
-  const recipients =
-    segmentEmails.length > 0
-      ? {
-          list_id: audience_id,
-          segment_opts: {
-            match: 'any',
-            conditions: segmentEmails.map((email: string) => ({
-              condition_type: 'EmailAddress',
-              field: 'EMAIL',
-              op: 'is',
-              value: email,
-            })),
-          },
-        }
-      : { list_id: audience_id }
+  let recipients: Record<string, unknown>
+  if (segTags.length > 0) {
+    // Use Mailchimp tags — works for any number of recipients
+    recipients = {
+      list_id: audience_id,
+      segment_opts: {
+        match: 'any',
+        conditions: segTags.map((tag: string) => ({
+          condition_type: 'StaticSegment',
+          field: 'static_segment',
+          op: 'static_is',
+          value: tag,
+        })),
+      },
+    }
+  } else if (segmentEmails.length > 0 && segmentEmails.length <= 5) {
+    // Small email list — use individual email conditions (within Mailchimp limit)
+    recipients = {
+      list_id: audience_id,
+      segment_opts: {
+        match: 'any',
+        conditions: segmentEmails.map((email: string) => ({
+          condition_type: 'EmailAddress',
+          field: 'EMAIL',
+          op: 'is',
+          value: email,
+        })),
+      },
+    }
+  } else {
+    // Full audience
+    recipients = { list_id: audience_id }
+  }
 
   if (!campaignId) {
     const createRes = await mc(api_key, '/campaigns', {
