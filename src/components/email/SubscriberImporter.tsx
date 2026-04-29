@@ -26,11 +26,26 @@ interface ParsedRow {
   last_name: string
 }
 
+/** Split a CSV line respecting quoted fields (handles commas inside quotes) */
+function splitCSVLine(line: string): string[] {
+  const cols: string[] = []
+  let current = ''
+  let inQuotes = false
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]
+    if (ch === '"') { inQuotes = !inQuotes; continue }
+    if (ch === ',' && !inQuotes) { cols.push(current.trim()); current = ''; continue }
+    current += ch
+  }
+  cols.push(current.trim())
+  return cols
+}
+
 function parseCSV(text: string): ParsedRow[] {
   const lines = text.trim().split(/\r?\n/)
   if (lines.length < 2) return []
 
-  const headers = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/"/g, ''))
+  const headers = splitCSVLine(lines[0]).map(h => h.toLowerCase().replace(/"/g, ''))
   const emailIdx = headers.findIndex(h => h.includes('email'))
   const fnIdx = headers.findIndex(h => h.includes('first') || h === 'name' || h === 'fname')
   const lnIdx = headers.findIndex(h => h.includes('last') || h === 'surname' || h === 'lname')
@@ -39,7 +54,7 @@ function parseCSV(text: string): ParsedRow[] {
 
   const rows: ParsedRow[] = []
   for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''))
+    const cols = splitCSVLine(lines[i])
     const email = cols[emailIdx]?.toLowerCase().trim()
     if (!email || !email.includes('@')) continue
     rows.push({
