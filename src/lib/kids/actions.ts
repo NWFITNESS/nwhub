@@ -4,7 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe, siteUrl } from '@/lib/stripe'
 import { getResend, FROM_EMAIL } from '@/lib/resend'
 import { revalidatePath } from 'next/cache'
-import type { KidsCategory } from './types'
+import type { AttendanceStatus, BookingEditorData, BookingType, KidsCategory } from './types'
 import { CATEGORY_LABEL, CATEGORY_TIME, DROPIN_PRICE_PENCE, categoryFromDob, formatPence } from './constants'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1241,4 +1241,251 @@ export async function deleteDiscount(discountId: string): Promise<void> {
     .eq('id', discountId)
   if (error) throw new Error(`Failed to delete discount: ${error.message}`)
   revalidatePath('/kids')
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Booking editor — fetch + update + alteration email
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch full booking data for the editor modal (server action so client
+ * components can call it on-demand via useTransition).
+ */
+export async function getBookingForEditor(bookingId: string): Promise<BookingEditorData | null> {
+  const { getBookingEditorData } = await import('./queries')
+  return getBookingEditorData(bookingId)
+}
+
+interface UpdateBookingInput {
+  booking_id: string
+  child_name: string
+  date_of_birth: string
+  category: KidsCategory
+  medical_notes: string
+  authorised_pickups: string
+  photo_consent: boolean
+  parent_name: string
+  parent_email: string
+  parent_phone: string
+  emergency_contact_name: string
+  emergency_contact_phone: string
+  emergency_contact_relation: string
+  payment_status: string
+  waiver_signed: boolean
+}
+
+export async function updateBooking(input: UpdateBookingInput): Promise<{ changes: string[] }> {
+  const admin = createAdminClient()
+
+  // Fetch current state
+  const { getBookingEditorData } = await import('./queries')
+  const current = await getBookingEditorData(input.booking_id)
+  if (!current) throw new Error('Booking not found')
+
+  // Compute diff
+  const changes: string[] = []
+  const fieldLabels: Record<string, string> = {
+    child_name: 'Child name', date_of_birth: 'Date of birth', category: 'Category',
+    medical_notes: 'Medical notes', authorised_pickups: 'Authorised pickups',
+    photo_consent: 'Photo consent', parent_name: 'Parent name', parent_email: 'Email',
+    parent_phone: 'Phone', emergency_contact_name: 'Emergency contact',
+    emergency_contact_phone: 'Emergency phone', emergency_contact_relation: 'Emergency relation',
+    payment_status: 'Payment status', waiver_signed: 'Waiver signed',
+  }
+
+  type DiffEntry = { label: string; before: string; after: string }
+  const diffs: DiffEntry[] = []
+
+  function diff(key: string, oldVal: unknown, newVal: unknown) {
+    const o = String(oldVal ?? '')
+    const n = String(newVal ?? '')
+    if (o !== n) {
+      const label = fieldLabels[key] ?? key
+      changes.push(label)
+      diffs.push({ label, before: o || '(empty)', after: n || '(empty)' })
+    }
+  }
+
+  // Child fields
+  diff('child_name', current.child_name, input.child_name)
+  diff('date_of_birth', current.date_of_birth, input.date_of_birth)
+  diff('medical_notes', current.medical_notes, input.medical_notes)
+  diff('authorised_pickups', current.authorised_pickups, input.authorised_pickups)
+  diff('photo_consent', current.photo_consent, input.photo_consent)
+  // Parent fields
+  diff('parent_name', current.parent_name, input.parent_name)
+  diff('parent_email', current.parent_email, input.parent_email)
+  diff('parent_phone', current.parent_phone, input.parent_phone)
+  diff('emergency_contact_name', current.emergency_contact_name, input.emergency_contact_name)
+  diff('emergency_contact_phone', current.emergency_contact_phone, input.emergency_contact_phone)
+  diff('emergency_contact_relation', current.emergency_contact_relation, input.emergency_contact_relation)
+  // Booking fields
+  diff('category', current.category, input.category)
+  diff('payment_status', current.payment_status, input.payment_status)
+  diff('waiver_signed', current.waiver_signed, input.waiver_signed)
+
+  if (!changes.length) return { changes: [] }
+
+  // Apply updates
+  await Promise.all([
+    admin.from('kids_children').update({
+      child_name: input.child_name.trim(),
+      date_of_birth: input.date_of_birth,
+      medical_notes: input.medical_notes.trim() || null,
+      authorised_pickups: input.authorised_pickups.trim() || null,
+      photo_consent: input.photo_consent,
+    }).eq('id', current.child_id),
+
+    admin.from('kids_parents').update({
+      name: input.parent_name.trim(),
+      email: input.parent_email.toLowerCase().trim(),
+      phone: input.parent_phone.trim() || null,
+      emergency_contact_name: input.emergency_contact_name.trim() || null,
+      emergency_contact_phone: input.emergency_contact_phone.trim() || null,
+      emergency_contact_relation: input.emergency_contact_relation.trim() || null,
+    }).eq('id', current.parent_id),
+
+    admin.from('kids_block_bookings').update({
+      category: input.category,
+      payment_status: input.payment_status,
+      waiver_signed: input.waiver_signed,
+      ...(input.payment_status === 'paid' && !current.paid_at ? { paid_at: new Date().toISOString() } : {}),
+    }).eq('id', input.booking_id),
+  ])
+
+  // Send alteration email
+  try {
+    const parentEmail = input.parent_email.toLowerCase().trim()
+    const html = renderBookingAlterationEmail({
+      parentName: input.parent_name.trim(),
+      childName: input.child_name.trim(),
+      blockName: current.block_name,
+      diffs,
+    })
+    const resend = getResend()
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: parentEmail,
+      bcc: KIDS_ADMIN_EMAIL,
+      replyTo: KIDS_ADMIN_EMAIL,
+      subject: `Booking updated — ${current.block_name}`,
+      html,
+    })
+  } catch (e) {
+    console.error('[updateBooking] alteration email failed:', (e as Error).message)
+  }
+
+  revalidatePath('/kids')
+  return { changes }
+}
+
+function renderBookingAlterationEmail(args: {
+  parentName: string
+  childName: string
+  blockName: string
+  diffs: { label: string; before: string; after: string }[]
+}): string {
+  const diffRows = args.diffs
+    .map((d) =>
+      `<tr>
+        <td style="padding:6px 0;color:#cdd5e3;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.05);">${escapeHtml(d.label)}</td>
+        <td style="padding:6px 8px;color:#8a93a5;font-size:13px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.05);text-decoration:line-through;">${escapeHtml(d.before)}</td>
+        <td style="padding:6px 0;color:#fff;font-size:13px;text-align:right;border-bottom:1px solid rgba(255,255,255,0.05);font-weight:600;">${escapeHtml(d.after)}</td>
+      </tr>`
+    )
+    .join('')
+
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Booking updated</title></head>
+<body style="margin:0;padding:0;background:#0b0e14;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#0b0e14;padding:32px 16px;"><tr><td align="center">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;background:#161c2a;border:1px solid rgba(212,160,23,0.18);border-radius:12px;overflow:hidden;">
+      <tr><td style="padding:28px 32px 0;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#d4a017;margin-bottom:8px;">Northern Warrior Kids</div>
+        <h1 style="margin:0;font-size:22px;line-height:1.25;color:#fff;font-weight:700;">Booking updated</h1>
+      </td></tr>
+      <tr><td style="padding:20px 32px 0;color:#cdd5e3;font-size:14px;line-height:1.55;">
+        Hi ${escapeHtml(args.parentName)} &mdash; we&rsquo;ve updated the booking for <strong style="color:#fff;">${escapeHtml(args.childName)}</strong> on <strong style="color:#fff;">${escapeHtml(args.blockName)}</strong>. Here&rsquo;s what changed:
+      </td></tr>
+      <tr><td style="padding:24px 32px 0;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#0b0e14;border:1px solid rgba(255,255,255,0.07);border-radius:10px;">
+          <tr><td style="padding:14px 18px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr>
+                <td style="padding:6px 0;color:#8a93a5;font-size:11px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,0.08);">Field</td>
+                <td style="padding:6px 8px;color:#8a93a5;font-size:11px;text-transform:uppercase;letter-spacing:1px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.08);">Before</td>
+                <td style="padding:6px 0;color:#8a93a5;font-size:11px;text-transform:uppercase;letter-spacing:1px;text-align:right;border-bottom:1px solid rgba(255,255,255,0.08);">After</td>
+              </tr>
+              ${diffRows}
+            </table>
+          </td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding:24px 32px 28px;">
+        <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:18px;color:#8a93a5;font-size:12px;line-height:1.6;">Reply to this email if you have any questions &mdash; we&rsquo;ll get back to you the same day.</div>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Session attendance — register page
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Server action wrapper for getRegisterForSession — callable from client
+ * components for live polling.
+ */
+export async function fetchRegisterData(sessionId: string, blockId: string) {
+  const { getRegisterForSession } = await import('./queries')
+  return getRegisterForSession(sessionId, blockId)
+}
+
+export async function markAttendance(input: {
+  session_id: string
+  child_id: string
+  booking_type: BookingType
+  booking_id: string
+  status: AttendanceStatus
+}): Promise<void> {
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('kids_session_attendance')
+    .upsert(
+      {
+        session_id: input.session_id,
+        child_id: input.child_id,
+        booking_type: input.booking_type,
+        booking_id: input.booking_id,
+        status: input.status,
+        marked_at: new Date().toISOString(),
+        marked_by: 'admin',
+      },
+      { onConflict: 'session_id,child_id,booking_type,booking_id' },
+    )
+  if (error) throw new Error(`Failed to mark attendance: ${error.message}`)
+  revalidatePath('/kids/register')
+}
+
+export async function batchMarkAttendance(input: {
+  session_id: string
+  marks: { child_id: string; booking_type: BookingType; booking_id: string; status: AttendanceStatus }[]
+}): Promise<void> {
+  const admin = createAdminClient()
+  const now = new Date().toISOString()
+  const rows = input.marks.map((m) => ({
+    session_id: input.session_id,
+    child_id: m.child_id,
+    booking_type: m.booking_type,
+    booking_id: m.booking_id,
+    status: m.status,
+    marked_at: now,
+    marked_by: 'admin',
+  }))
+  const { error } = await admin
+    .from('kids_session_attendance')
+    .upsert(rows, { onConflict: 'session_id,child_id,booking_type,booking_id' })
+  if (error) throw new Error(`Failed to batch mark attendance: ${error.message}`)
+  revalidatePath('/kids/register')
 }

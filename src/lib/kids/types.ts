@@ -174,6 +174,63 @@ export interface KidsDiscount {
   created_at: string
 }
 
+// ── Attendance types ──────────────────────────────────────────────────────────
+
+export type AttendanceStatus = 'present' | 'absent' | 'late'
+export type BookingType = 'block' | 'dropin' | 'trial'
+
+export interface SessionAttendance {
+  id: string
+  session_id: string
+  child_id: string
+  booking_type: BookingType
+  booking_id: string
+  status: AttendanceStatus
+  marked_at: string | null
+  marked_by: string | null
+}
+
+/** One row per child in the register view for a given session + category */
+export interface RegisterRow {
+  child_id: string
+  child_name: string
+  booking_type: BookingType
+  booking_id: string
+  category: KidsCategory
+  attendance_id: string | null
+  status: AttendanceStatus | null
+}
+
+// ── Booking editor types ─────────────────────────────────────────────────────
+
+export interface BookingEditorData {
+  booking_id: string
+  block_id: string
+  block_name: string
+  child_id: string
+  parent_id: string
+  // Child
+  child_name: string
+  date_of_birth: string
+  medical_notes: string | null
+  authorised_pickups: string | null
+  photo_consent: boolean
+  // Parent
+  parent_name: string
+  parent_email: string
+  parent_phone: string | null
+  emergency_contact_name: string | null
+  emergency_contact_phone: string | null
+  emergency_contact_relation: string | null
+  // Booking
+  category: KidsCategory
+  payment_status: PaymentStatus
+  waiver_signed: boolean
+  paid_at: string | null
+}
+
+// ── Stats ────────────────────────────────────────────────────────────────────
+
 export interface KidsStats {
   minis_enrolled: number
   littles_enrolled: number

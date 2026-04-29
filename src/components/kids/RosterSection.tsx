@@ -5,6 +5,7 @@ import { CATEGORY_BADGE, CATEGORY_LABEL, ageFromDob } from '@/lib/kids/constants
 import { refundBlockBooking, deletePendingBooking } from '@/lib/kids/actions'
 import type { BlockWithDetails, KidsCategory, RosterRow, SearchResultRow } from '@/lib/kids/types'
 import { SearchInput } from '@/components/ui/SearchInput'
+import BookingEditorModal from '@/components/kids/BookingEditorModal'
 
 interface Props {
   blocks: BlockWithDetails[]
@@ -26,6 +27,7 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
   const [catFilter, setCatFilter] = useState<CategoryFilter>('all')
   const [payFilter, setPayFilter] = useState<PaymentFilter>('all')
   const [consentFilter, setConsentFilter] = useState<ConsentFilter>('all')
+  const [editingBookingId, setEditingBookingId] = useState<string | null>(null)
 
   const filterBtnRef = useRef<HTMLButtonElement>(null)
   const filterPanelRef = useRef<HTMLDivElement>(null)
@@ -212,8 +214,10 @@ export function RosterSection({ blocks, rosterByBlock, activeBlockId, onActiveBl
           )}
         </div>
       ) : (
-        <RosterTable rows={filteredRoster} totalRows={rawRoster.length} onClearFilters={clearFilters} />
+        <RosterTable rows={filteredRoster} totalRows={rawRoster.length} onClearFilters={clearFilters} onEdit={setEditingBookingId} />
       )}
+
+      <BookingEditorModal bookingId={editingBookingId} onClose={() => setEditingBookingId(null)} />
     </div>
   )
 }
@@ -268,7 +272,7 @@ function CameraIcon({ active }: { active: boolean }) {
   )
 }
 
-function RosterTable({ rows, totalRows, onClearFilters }: { rows: RosterRow[]; totalRows: number; onClearFilters: () => void }) {
+function RosterTable({ rows, totalRows, onClearFilters, onEdit }: { rows: RosterRow[]; totalRows: number; onClearFilters: () => void; onEdit: (bookingId: string) => void }) {
   const [pending, startTransition] = useTransition()
 
   function handleRefund(bookingId: string, childName: string) {
@@ -326,7 +330,7 @@ function RosterTable({ rows, totalRows, onClearFilters }: { rows: RosterRow[]; t
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r.booking_id} className="border-b border-[rgba(255,255,255,0.04)] last:border-0 hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+            <tr key={r.booking_id} className="border-b border-[rgba(255,255,255,0.04)] last:border-0 hover:bg-[rgba(255,255,255,0.04)] transition-colors cursor-pointer" onClick={() => onEdit(r.booking_id)}>
               <td className="text-center" style={{ padding: '12px 12px' }}><CameraIcon active={r.photo_consent} /></td>
               <td className="font-medium text-nw-100" style={{ padding: '12px 12px' }}>{r.child_name}</td>
               <td style={{ padding: '12px 12px' }}><CategoryBadge category={r.category} /></td>
@@ -343,7 +347,7 @@ function RosterTable({ rows, totalRows, onClearFilters }: { rows: RosterRow[]; t
               </td>
               <td className="text-[12px]" style={{ padding: '12px 12px' }}>{r.photo_consent ? <span className="text-[#4ade80]">✓ Yes</span> : <span className="text-[#f87171]">✗ No</span>}</td>
               <td className="text-[12px]" style={{ padding: '12px 12px' }}>{r.waiver_signed ? <span className="text-[#4ade80]">✓</span> : <span className="text-[#f87171]">✗</span>}</td>
-              <td className="text-right flex items-center justify-end gap-2" style={{ padding: '12px 12px' }}>
+              <td className="text-right flex items-center justify-end gap-2" style={{ padding: '12px 12px' }} onClick={(e) => e.stopPropagation()}>
                 {r.payment_status === 'paid' && (
                   <button
                     onClick={() => handleRefund(r.booking_id, r.child_name)}

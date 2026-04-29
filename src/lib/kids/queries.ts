@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import type {
+  AttendanceStatus,
   BlockWithDetails,
+  BookingEditorData,
+  BookingType,
   DropInRow,
   KidsBlock,
   KidsBlockPricing,
@@ -10,6 +13,7 @@ import type {
   KidsParent,
   KidsSession,
   KidsStats,
+  RegisterRow,
   RosterRow,
   TrialRow,
   TrialStatus,
@@ -353,4 +357,206 @@ export async function getAllDiscounts(): Promise<KidsDiscount[]> {
     .select('*')
     .order('created_at', { ascending: false })
   return (data ?? []) as KidsDiscount[]
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Booking Editor
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch full child + parent + booking data for the booking editor modal.
+ */
+export async function getBookingEditorData(bookingId: string): Promise<BookingEditorData | null> {
+  const supabase = await createClient()
+
+  const { data: booking } = await supabase
+    .from('kids_block_bookings')
+    .select('id, block_id, child_id, parent_id, category, payment_status, waiver_signed, paid_at')
+    .eq('id', bookingId)
+    .maybeSingle()
+
+  if (!booking) return null
+
+  const [childRes, parentRes, blockRes] = await Promise.all([
+    supabase.from('kids_children').select('*').eq('id', booking.child_id).single(),
+    supabase.from('kids_parents').select('*').eq('id', booking.parent_id).single(),
+    supabase.from('kids_blocks').select('name').eq('id', booking.block_id).single(),
+  ])
+
+  const child = childRes.data as KidsChild | null
+  const parent = parentRes.data as KidsParent | null
+  if (!child || !parent) return null
+
+  return {
+    booking_id: booking.id,
+    block_id: booking.block_id,
+    block_name: blockRes.data?.name ?? 'Block',
+    child_id: booking.child_id,
+    parent_id: booking.parent_id,
+    child_name: child.child_name,
+    date_of_birth: child.date_of_birth,
+    medical_notes: child.medical_notes,
+    authorised_pickups: child.authorised_pickups,
+    photo_consent: child.photo_consent,
+    parent_name: parent.name,
+    parent_email: parent.email,
+    parent_phone: parent.phone,
+    emergency_contact_name: parent.emergency_contact_name,
+    emergency_contact_phone: parent.emergency_contact_phone,
+    emergency_contact_relation: parent.emergency_contact_relation,
+    category: booking.category as KidsCategory,
+    payment_status: booking.payment_status,
+    waiver_signed: booking.waiver_signed,
+    paid_at: booking.paid_at ?? null,
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Session Register
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Build the register for a single session — merges block bookings, drop-ins
+ * and trials into RegisterRow[] grouped by category.
+ */
+export async function getRegisterForSession(
+  sessionId: string,
+  blockId: string,
+): Promise<Record<KidsCategory, RegisterRow[]>> {
+  const supabase = await createClient()
+
+  const [blockBookingsRes, dropinsRes, trialsRes, attendanceRes] = await Promise.all([
+    supabase
+      .from('kids_block_bookings')
+      .select('id, child_id, category, payment_status')
+      .eq('block_id', blockId)
+      .in('payment_status', ['paid', 'pending']),
+    supabase
+      .from('kids_dropin_bookings')
+      .select('id, child_id, child_name, category, payment_status')
+      .eq('session_id', sessionId)
+      .in('payment_status', ['paid', 'link_sent', 'pending']),
+    supabase
+      .from('kids_trials')
+      .select('id, child_id, category, status')
+      .eq('session_id', sessionId)
+      .neq('status', 'cancelled'),
+    supabase
+      .from('kids_session_attendance')
+      .select('id, child_id, booking_type, booking_id, status')
+      .eq('session_id', sessionId),
+  ])
+
+  // Build attendance lookup: `${child_id}-${booking_type}-${booking_id}` → record
+  const attendanceMap = new Map<string, { id: string; status: AttendanceStatus }>()
+  for (const a of (attendanceRes.data ?? []) as { id: string; child_id: string; booking_type: string; booking_id: string; status: AttendanceStatus }[]) {
+    attendanceMap.set(`${a.child_id}-${a.booking_type}-${a.booking_id}`, { id: a.id, status: a.status })
+  }
+
+  // Collect child IDs to batch-fetch names
+  const childIds = new Set<string>()
+  for (const b of blockBookingsRes.data ?? []) if (b.child_id) childIds.add(b.child_id)
+  for (const d of dropinsRes.data ?? []) if (d.child_id) childIds.add(d.child_id)
+  for (const t of trialsRes.data ?? []) if (t.child_id) childIds.add(t.child_id)
+
+  const childNameById = new Map<string, string>()
+  if (childIds.size) {
+    const { data: children } = await supabase
+      .from('kids_children')
+      .select('id, child_name')
+      .in('id', [...childIds])
+    for (const c of children ?? []) childNameById.set(c.id, c.child_name)
+  }
+
+  const result: Record<KidsCategory, RegisterRow[]> = { minis: [], littles: [], teens: [] }
+
+  // Block bookings
+  for (const b of (blockBookingsRes.data ?? [])) {
+    const key = `${b.child_id}-block-${b.id}`
+    const att = attendanceMap.get(key)
+    result[b.category as KidsCategory].push({
+      child_id: b.child_id,
+      child_name: childNameById.get(b.child_id) ?? 'Unknown',
+      booking_type: 'block',
+      booking_id: b.id,
+      category: b.category as KidsCategory,
+      attendance_id: att?.id ?? null,
+      status: att?.status ?? null,
+    })
+  }
+
+  // Drop-ins
+  for (const d of (dropinsRes.data ?? [])) {
+    const childId = d.child_id ?? d.id // fallback to booking ID for anonymous drop-ins
+    const key = `${childId}-dropin-${d.id}`
+    const att = attendanceMap.get(key)
+    result[d.category as KidsCategory].push({
+      child_id: childId,
+      child_name: d.child_id ? (childNameById.get(d.child_id) ?? d.child_name ?? 'Unknown') : (d.child_name ?? 'Unknown'),
+      booking_type: 'dropin',
+      booking_id: d.id,
+      category: d.category as KidsCategory,
+      attendance_id: att?.id ?? null,
+      status: att?.status ?? null,
+    })
+  }
+
+  // Trials
+  for (const t of (trialsRes.data ?? [])) {
+    const key = `${t.child_id}-trial-${t.id}`
+    const att = attendanceMap.get(key)
+    result[t.category as KidsCategory].push({
+      child_id: t.child_id,
+      child_name: childNameById.get(t.child_id) ?? 'Unknown',
+      booking_type: 'trial',
+      booking_id: t.id,
+      category: t.category as KidsCategory,
+      attendance_id: att?.id ?? null,
+      status: att?.status ?? null,
+    })
+  }
+
+  // Sort each category alphabetically by child name
+  for (const cat of ['minis', 'littles', 'teens'] as KidsCategory[]) {
+    result[cat].sort((a, b) => a.child_name.localeCompare(b.child_name))
+  }
+
+  return result
+}
+
+/**
+ * Aggregate attendance counts per session for a block — used for the
+ * register page overview.
+ */
+export async function getAttendanceSummary(
+  blockId: string,
+): Promise<{ session_id: string; present: number; total: number }[]> {
+  const supabase = await createClient()
+
+  const { data: sessions } = await supabase
+    .from('kids_sessions')
+    .select('id')
+    .eq('block_id', blockId)
+    .eq('is_break', false)
+
+  if (!sessions?.length) return []
+
+  const sessionIds = sessions.map((s) => s.id)
+
+  const { data: attendance } = await supabase
+    .from('kids_session_attendance')
+    .select('session_id, status')
+    .in('session_id', sessionIds)
+
+  const bySession = new Map<string, { present: number; total: number }>()
+  for (const sid of sessionIds) bySession.set(sid, { present: 0, total: 0 })
+
+  for (const a of (attendance ?? []) as { session_id: string; status: string }[]) {
+    const entry = bySession.get(a.session_id)
+    if (!entry) continue
+    entry.total++
+    if (a.status === 'present' || a.status === 'late') entry.present++
+  }
+
+  return sessionIds.map((sid) => ({ session_id: sid, ...bySession.get(sid)! }))
 }

@@ -136,7 +136,10 @@ function buildNav(unreadCount: number): NavSection[] {
     {
       label: 'KIDS & TEENS',
       items: [
-        { key: 'kids', label: 'Kids & Teens', icon: I.kids, href: '/kids' },
+        { key: 'kids', label: 'Kids & Teens', icon: I.kids, sub: [
+          { label: 'Dashboard', href: '/kids' },
+          { label: 'Register', href: '/kids/register' },
+        ]},
       ],
     },
     {
@@ -209,6 +212,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
     if (pathname.startsWith('/leads') || pathname.startsWith('/members') || pathname.startsWith('/calendar')) auto.push('members')
     if (pathname.startsWith('/email') || pathname.startsWith('/mailchimp')) auto.push('email')
     if (pathname.startsWith('/branding')) auto.push('branding')
+    if (pathname.startsWith('/kids')) auto.push('kids')
     return auto
   })
 
@@ -259,6 +263,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
     if (pathname.startsWith('/leads') || pathname.startsWith('/members') || pathname.startsWith('/calendar')) auto.push('members')
     if (pathname.startsWith('/email') || pathname.startsWith('/mailchimp')) auto.push('email')
     if (pathname.startsWith('/branding')) auto.push('branding')
+    if (pathname.startsWith('/kids')) auto.push('kids')
     if (auto.length) setOpenSections(prev => [...new Set([...prev, ...auto])])
   }, [pathname])
 
