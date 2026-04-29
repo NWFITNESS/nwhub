@@ -16,18 +16,44 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { name, subject, preview_text, from_name, from_email, reply_to, html_content, segment_tags } = body
+    const { name, subject, preview_text, from_name, from_email, reply_to, html_content, segment_tags, segment_emails } = body
 
     const admin = createAdminClient()
 
-    // Fetch matching subscribers
-    let query = admin.from('email_subscribers').select('email, first_name').eq('status', 'subscribed')
+    // Fetch tag-matched subscribers from email_subscribers table
+    let tagMatched: { email: string; first_name: string | null }[] = []
     if (segment_tags && segment_tags.length > 0) {
-      query = query.overlaps('tags', segment_tags)
+      const { data, error: fetchError } = await admin
+        .from('email_subscribers')
+        .select('email, first_name')
+        .eq('status', 'subscribed')
+        .overlaps('tags', segment_tags)
+      if (fetchError) return NextResponse.json({ error: fetchError.message }, { status: 400 })
+      tagMatched = data ?? []
+    } else if (!segment_emails?.length) {
+      // No tags and no emails — fetch all subscribers
+      const { data, error: fetchError } = await admin
+        .from('email_subscribers')
+        .select('email, first_name')
+        .eq('status', 'subscribed')
+      if (fetchError) return NextResponse.json({ error: fetchError.message }, { status: 400 })
+      tagMatched = data ?? []
     }
-    const { data: subscribers, error: fetchError } = await query
-    if (fetchError) return NextResponse.json({ error: fetchError.message }, { status: 400 })
-    if (!subscribers || subscribers.length === 0) {
+
+    // Merge with direct segment emails (e.g. kids parents from kids_parents table
+    // who aren't in email_subscribers)
+    const emailSet = new Set<string>()
+    const subscribers: { email: string; first_name: string | null }[] = []
+    for (const s of tagMatched) {
+      const key = s.email.toLowerCase()
+      if (!emailSet.has(key)) { emailSet.add(key); subscribers.push(s) }
+    }
+    for (const e of (segment_emails ?? []) as string[]) {
+      const key = e.toLowerCase()
+      if (!emailSet.has(key)) { emailSet.add(key); subscribers.push({ email: key, first_name: null }) }
+    }
+
+    if (subscribers.length === 0) {
       return NextResponse.json({ error: 'No subscribers match this segment' }, { status: 400 })
     }
 

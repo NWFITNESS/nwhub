@@ -12,6 +12,7 @@ interface Segment {
   count: number
   category: string
   tags?: string[]
+  emails?: string[]
 }
 
 export function CampaignBuilder() {
@@ -56,6 +57,17 @@ export function CampaignBuilder() {
     return [...tags]
   }
 
+  function getSegmentEmails(): string[] {
+    const emails = new Set<string>()
+    for (const id of selectedSegments) {
+      const seg = segments.find(s => s.id === id)
+      if (seg?.emails?.length) {
+        for (const e of seg.emails) if (e) emails.add(e.toLowerCase())
+      }
+    }
+    return [...emails]
+  }
+
   function toggleSegment(id: string) {
     setSelectedSegments(prev =>
       prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
@@ -81,7 +93,7 @@ export function CampaignBuilder() {
     const res = await fetch('/api/email/send-campaign', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, subject, preview_text: previewText, from_name: fromName, from_email: fromEmail, reply_to: replyTo, html_content: htmlContent, segment_tags: getSegmentTags() }),
+      body: JSON.stringify({ name, subject, preview_text: previewText, from_name: fromName, from_email: fromEmail, reply_to: replyTo, html_content: htmlContent, segment_tags: getSegmentTags(), segment_emails: getSegmentEmails() }),
     })
     setSending(false)
     if (res.ok) { router.push('/email/campaigns'); router.refresh() }

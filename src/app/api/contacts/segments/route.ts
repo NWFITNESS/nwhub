@@ -8,9 +8,10 @@ export async function GET() {
 
   const supabase = createAdminClient()
 
-  const [{ data: contacts }, { data: kidsRegs }, { data: subscribers }] = await Promise.all([
+  const [{ data: contacts }, { data: kidsRegs }, { data: kidsParents }, { data: subscribers }] = await Promise.all([
     supabase.from('contacts').select('email, groups'),
     supabase.from('kids_registrations').select('parent_email'),
+    supabase.from('kids_parents').select('email'),
     supabase.from('email_subscribers').select('email, tags, source').eq('status', 'subscribed'),
   ])
 
@@ -35,10 +36,14 @@ export async function GET() {
     return g.some(x => x.toLowerCase().includes('trial'))
   })
 
-  // Kids
+  // Kids — aggregate from all sources
   const kidsEmails = new Set<string>()
   for (const r of (kidsRegs ?? [])) {
     if (r.parent_email) kidsEmails.add(r.parent_email.toLowerCase())
+  }
+  // v2 kids_parents table (new booking system)
+  for (const p of (kidsParents ?? [])) {
+    if (p.email) kidsEmails.add(p.email.toLowerCase())
   }
   for (const c of contactsWithEmail) {
     const g: string[] = c.groups ?? []
@@ -46,8 +51,7 @@ export async function GET() {
       kidsEmails.add(c.email!.toLowerCase())
     }
   }
-
-  // Also include subscribers tagged 'kids-parents' in the kids segment
+  // Imported subscribers tagged 'kids-parents'
   for (const s of allSubs) {
     if (s.tags?.includes('kids-parents') && s.email) kidsEmails.add(s.email.toLowerCase())
   }
@@ -84,7 +88,7 @@ export async function GET() {
     { id: 'members', label: 'Members', count: members.length, emails: members.map(c => c.email), category: 'membership' },
     { id: 'leads', label: 'Leads', count: leads.length, emails: leads.map(c => c.email), category: 'membership' },
     { id: 'trials', label: 'Trials', count: trials.length, emails: trials.map(c => c.email), category: 'membership' },
-    { id: 'kids', label: 'Kids & Teens Parents', count: kidsEmails.size, emails: [...kidsEmails], category: 'membership' },
+    { id: 'kids', label: 'Kids & Teens Parents', count: kidsEmails.size, emails: [...kidsEmails], category: 'membership', tags: ['kids-parents'] },
 
     // Source segments
     { id: 'newsletter', label: 'Newsletter', count: newsletterSubs.length, emails: newsletterSubs.map(s => s.email), category: 'source', tags: ['newsletter'] },
