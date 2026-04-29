@@ -87,6 +87,19 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       console.warn('[stripe-kids] block event with no booking_ids in metadata', session.id)
       return
     }
+
+    // Idempotency: check if already paid — Stripe retries can fire multiple
+    // times for the same event, and we must not re-send confirmation emails.
+    const { data: existing } = await admin
+      .from('kids_block_bookings')
+      .select('id, payment_status')
+      .in('id', bookingIds)
+      .eq('payment_status', 'paid')
+    if (existing?.length === bookingIds.length) {
+      console.log('[stripe-kids] all bookings already paid — skipping (idempotent)')
+      return
+    }
+
     const { error } = await admin
       .from('kids_block_bookings')
       .update({
@@ -120,6 +133,19 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       console.warn('[stripe-kids] dropin event with no dropin_booking_id in metadata', session.id)
       return
     }
+
+    // Idempotency: skip if already paid
+    const { data: existingDropin } = await admin
+      .from('kids_dropin_bookings')
+      .select('id, payment_status')
+      .eq('id', dropinBookingId)
+      .eq('payment_status', 'paid')
+      .maybeSingle()
+    if (existingDropin) {
+      console.log('[stripe-kids] drop-in already paid — skipping (idempotent)')
+      return
+    }
+
     const { error } = await admin
       .from('kids_dropin_bookings')
       .update({
