@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { CATEGORY_LABEL, CATEGORY_TIME, CATEGORY_BADGE } from '@/lib/kids/constants'
+import { CATEGORY_LABEL, CATEGORY_TIME, CATEGORY_BADGE, ageFromDob } from '@/lib/kids/constants'
 import { markAttendance, batchMarkAttendance, fetchRegisterData } from '@/lib/kids/actions'
 import type { AttendanceStatus, BlockWithDetails, KidsCategory, KidsSession, RegisterRow } from '@/lib/kids/types'
 
@@ -249,6 +249,7 @@ export default function RegisterPageClient({ blocks, initialBlockId }: Props) {
                   <thead>
                     <tr className="border-b border-[rgba(255,255,255,0.06)]">
                       <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 16px' }}>Child</th>
+                      <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 16px' }}>Age</th>
                       <th className="text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 16px' }}>Type</th>
                       <th className="text-right text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 16px' }}>Attendance</th>
                     </tr>
@@ -262,6 +263,9 @@ export default function RegisterPageClient({ blocks, initialBlockId }: Props) {
                       >
                         <td className="font-medium text-nw-100" style={{ padding: '12px 16px' }}>
                           {row.child_name}
+                        </td>
+                        <td className="text-xs text-nw-400" style={{ padding: '12px 16px' }}>
+                          {row.date_of_birth ? `${ageFromDob(row.date_of_birth)}y` : '—'}
                         </td>
                         <td style={{ padding: '12px 16px' }}>
                           <BookingTypeBadge type={row.booking_type} />

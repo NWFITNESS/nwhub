@@ -194,6 +194,7 @@ export interface SessionAttendance {
 export interface RegisterRow {
   child_id: string
   child_name: string
+  date_of_birth: string | null
   booking_type: BookingType
   booking_id: string
   category: KidsCategory

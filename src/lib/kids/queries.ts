@@ -459,13 +459,13 @@ export async function getRegisterForSession(
   for (const d of dropinsRes.data ?? []) if (d.child_id) childIds.add(d.child_id)
   for (const t of trialsRes.data ?? []) if (t.child_id) childIds.add(t.child_id)
 
-  const childNameById = new Map<string, string>()
+  const childById = new Map<string, { name: string; dob: string | null }>()
   if (childIds.size) {
     const { data: children } = await supabase
       .from('kids_children')
-      .select('id, child_name')
+      .select('id, child_name, date_of_birth')
       .in('id', [...childIds])
-    for (const c of children ?? []) childNameById.set(c.id, c.child_name)
+    for (const c of children ?? []) childById.set(c.id, { name: c.child_name, dob: c.date_of_birth ?? null })
   }
 
   const result: Record<KidsCategory, RegisterRow[]> = { minis: [], littles: [], teens: [] }
@@ -474,9 +474,11 @@ export async function getRegisterForSession(
   for (const b of (blockBookingsRes.data ?? [])) {
     const key = `${b.child_id}-block-${b.id}`
     const att = attendanceMap.get(key)
+    const child = childById.get(b.child_id)
     result[b.category as KidsCategory].push({
       child_id: b.child_id,
-      child_name: childNameById.get(b.child_id) ?? 'Unknown',
+      child_name: child?.name ?? 'Unknown',
+      date_of_birth: child?.dob ?? null,
       booking_type: 'block',
       booking_id: b.id,
       category: b.category as KidsCategory,
@@ -490,9 +492,11 @@ export async function getRegisterForSession(
     const childId = d.child_id ?? d.id // fallback to booking ID for anonymous drop-ins
     const key = `${childId}-dropin-${d.id}`
     const att = attendanceMap.get(key)
+    const child = d.child_id ? childById.get(d.child_id) : null
     result[d.category as KidsCategory].push({
       child_id: childId,
-      child_name: d.child_id ? (childNameById.get(d.child_id) ?? d.child_name ?? 'Unknown') : (d.child_name ?? 'Unknown'),
+      child_name: child?.name ?? d.child_name ?? 'Unknown',
+      date_of_birth: child?.dob ?? null,
       booking_type: 'dropin',
       booking_id: d.id,
       category: d.category as KidsCategory,
@@ -505,9 +509,11 @@ export async function getRegisterForSession(
   for (const t of (trialsRes.data ?? [])) {
     const key = `${t.child_id}-trial-${t.id}`
     const att = attendanceMap.get(key)
+    const child = childById.get(t.child_id)
     result[t.category as KidsCategory].push({
       child_id: t.child_id,
-      child_name: childNameById.get(t.child_id) ?? 'Unknown',
+      child_name: child?.name ?? 'Unknown',
+      date_of_birth: child?.dob ?? null,
       booking_type: 'trial',
       booking_id: t.id,
       category: t.category as KidsCategory,
