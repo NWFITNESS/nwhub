@@ -182,7 +182,7 @@ function LoginForm() {
       const optionsRes = await fetch('/api/passkey/authenticate')
       const json = await optionsRes.json()
       if (!json.hasPasskey) {
-        setError('No passkeys registered on this device.')
+        setError('No passkeys found. Register one in Settings → Account Security first.')
         setPasskeyLoading(false)
         return
       }
@@ -194,10 +194,20 @@ function LoginForm() {
         body: JSON.stringify({ response: authResp }),
       })
       const result = await verifyRes.json()
-      if (result.verified) {
-        // Passkey verified — sign in the user via Supabase admin token
-        // For now, redirect to dashboard (the user was already authenticated
-        // via password earlier, or we need a server-side session creation)
+      if (result.verified && result.session_token) {
+        // Discoverable flow — create a Supabase session using the token
+        const { error: otpError } = await supabase.auth.verifyOtp({
+          token_hash: result.session_token,
+          type: 'magiclink',
+        })
+        if (otpError) {
+          setError('Session creation failed. Try email and password.')
+          setPasskeyLoading(false)
+          return
+        }
+        router.push('/')
+        router.refresh()
+      } else if (result.verified) {
         router.push('/')
         router.refresh()
       } else {
@@ -207,6 +217,8 @@ function LoginForm() {
       const msg = (e as Error).message
       if (msg.includes('cancelled') || msg.includes('abort')) {
         // User cancelled — do nothing
+      } else if (msg.includes('No credentials') || msg.includes('not registered') || msg.includes('no passkey')) {
+        setError('No passkey found for this device. Register one in Settings → Account Security, then try again.')
       } else {
         setError('Passkey login failed. Try email and password instead.')
       }
@@ -270,58 +282,53 @@ function LoginForm() {
 
         {/* Card */}
         <div
-          className="w-full rounded-2xl p-7 border"
+          className="w-full rounded-2xl overflow-hidden"
           style={{
-            background: 'rgba(13, 12, 10, 0.72)',
-            backdropFilter: 'blur(28px)',
-            WebkitBackdropFilter: 'blur(28px)',
-            borderColor: 'rgba(212,175,55,0.14)',
-            boxShadow: '0 0 0 1px rgba(212,175,55,0.06) inset, 0 32px 80px rgba(0,0,0,0.55)',
+            background: '#111110',
+            border: '1px solid rgba(255,255,255,0.08)',
+            boxShadow: '0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(212,175,55,0.05) inset',
           }}
         >
-          {/* Reset success banner */}
-          {resetSuccess && (
-            <div className="flex items-center gap-3 mb-5 px-4 py-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm">
-              <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-              Password reset successfully. Please sign in.
-            </div>
-          )}
-
-          {/* Heading */}
-          <div className="mb-6">
+          {/* Card header */}
+          <div style={{ padding: '28px 28px 0' }}>
             <h2
-              className="text-xl font-bold text-[#e5e2e1] mb-1"
+              className="text-lg font-bold text-white mb-0.5"
               style={{ fontFamily: 'var(--font-league-spartan), system-ui, sans-serif' }}
             >
-              Welcome back
+              Sign in to your account
             </h2>
-            <p className="text-[#d0c5af]/40 text-sm font-body">Sign in to your admin account</p>
+            <p className="text-white/40 text-[13px]">Welcome back to NWHub</p>
           </div>
 
-          {/* Divider */}
-          <div
-            className="h-px mb-6 w-full"
-            style={{ background: 'linear-gradient(90deg, transparent, rgba(212,175,55,0.2), transparent)' }}
-          />
-
-          {/* Passkey verification step */}
-          {passkeyStep ? (
-            <div className="text-center py-2">
-              <div className="w-14 h-14 rounded-2xl bg-[rgba(212,175,55,0.1)] border border-[rgba(212,175,55,0.2)] flex items-center justify-center mx-auto mb-5">
-                <Fingerprint className="w-7 h-7 text-[#f2ca50]" />
+          <div style={{ padding: '20px 28px 28px' }}>
+            {/* Reset success banner */}
+            {resetSuccess && (
+              <div className="flex items-center gap-3 mb-5 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 text-sm" style={{ padding: '10px 14px' }}>
+                <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                Password reset successfully. Please sign in.
               </div>
-              <p className="text-[#e5e2e1] font-semibold text-lg mb-1">Verify your identity</p>
-              <p className="text-[#d0c5af]/40 text-sm mb-6 font-body">
-                Use your passkey to continue — fingerprint, face scan, or security key.
-              </p>
+            )}
 
-              {passkeyError && (
-                <p className="text-sm text-red-400 bg-red-400/8 border border-red-400/20 rounded-lg px-3 py-2.5 mb-4">
-                  {passkeyError}
+            {/* Passkey verification step */}
+            {passkeyStep ? (
+              <div className="text-center" style={{ padding: '12px 0' }}>
+                <div
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
+                  style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}
+                >
+                  <Fingerprint className="w-8 h-8 text-[#f2ca50]" />
+                </div>
+                <p className="text-white font-semibold text-lg mb-1">Verify your identity</p>
+                <p className="text-white/40 text-sm mb-6">
+                  Use your fingerprint, face scan, or security key.
                 </p>
-              )}
 
-              <div className="flex flex-col gap-2">
+                {passkeyError && (
+                  <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg mb-4" style={{ padding: '10px 14px' }}>
+                    {passkeyError}
+                  </p>
+                )}
+
                 <Button
                   type="button"
                   variant="primary"
@@ -336,114 +343,127 @@ function LoginForm() {
                 <button
                   type="button"
                   onClick={handleSignOutFromPasskey}
-                  className="text-xs text-[#d0c5af]/30 hover:text-[#d0c5af]/60 transition-colors mt-2"
+                  className="text-xs text-white/30 hover:text-white/60 transition-colors mt-4"
                 >
-                  Sign out
+                  ← Back to sign in
                 </button>
               </div>
-            </div>
-          ) : isLocked ? (
-            <div className="text-center py-2">
-              <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
-                <ShieldAlert className="w-5 h-5 text-red-400" />
-              </div>
-              <p className="text-[#e5e2e1] font-semibold mb-1">Too many attempts</p>
-              <p className="text-[#d0c5af]/40 text-sm mb-5 font-body">Please wait before trying again.</p>
-              <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20">
-                <Lock className="w-3.5 h-3.5 text-red-400" />
-                <span className="text-red-400 font-mono text-sm font-semibold tabular-nums">
-                  {String(Math.floor(lockoutRemaining / 60)).padStart(2, '0')}:
-                  {String(lockoutRemaining % 60).padStart(2, '0')}
-                </span>
-              </div>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Field label="Email">
-                <Input
-                  type="email"
-                  placeholder="you@northernwarrior.co.uk"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoFocus
-                  autoComplete="email"
-                />
-              </Field>
-
-              <div>
-                <Field label="Password">
-                  <div className="relative">
-                    <Input
-                      type={showPassword ? 'text' : 'password'}
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      autoComplete="current-password"
-                      className="pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#d0c5af]/30 hover:text-[#d0c5af]/70 transition-colors"
-                      tabIndex={-1}
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </Field>
-                <div className="flex justify-end mt-1.5">
-                  <Link
-                    href="/forgot-password"
-                    className="text-xs text-[#d0c5af]/35 hover:text-[#f2ca50] transition-colors"
-                  >
-                    Forgot password?
-                  </Link>
+            ) : isLocked ? (
+              <div className="text-center" style={{ padding: '12px 0' }}>
+                <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
+                  <ShieldAlert className="w-6 h-6 text-red-400" />
+                </div>
+                <p className="text-white font-semibold mb-1">Too many attempts</p>
+                <p className="text-white/40 text-sm mb-5">Please wait before trying again.</p>
+                <div className="inline-flex items-center gap-2 rounded-xl bg-red-500/10 border border-red-500/20" style={{ padding: '10px 20px' }}>
+                  <Lock className="w-3.5 h-3.5 text-red-400" />
+                  <span className="text-red-400 font-mono text-sm font-semibold tabular-nums">
+                    {String(Math.floor(lockoutRemaining / 60)).padStart(2, '0')}:
+                    {String(lockoutRemaining % 60).padStart(2, '0')}
+                  </span>
                 </div>
               </div>
+            ) : (
+              <>
+                {/* Passkey button — primary action */}
+                <button
+                  type="button"
+                  onClick={handleDirectPasskeyLogin}
+                  disabled={passkeyLoading}
+                  className="w-full flex items-center justify-center gap-2.5 rounded-xl text-sm font-semibold transition-all hover:brightness-110 disabled:opacity-50"
+                  style={{
+                    padding: '12px 0',
+                    background: 'linear-gradient(135deg, #967705, #c9a70a)',
+                    color: '#000',
+                  }}
+                >
+                  <Fingerprint className="w-[18px] h-[18px]" />
+                  {passkeyLoading ? 'Waiting for passkey…' : 'Sign in with passkey'}
+                </button>
 
-              {error && (
-                <p className="text-sm text-red-400 bg-red-400/8 border border-red-400/20 rounded-lg px-3 py-2.5">
-                  {error}
-                </p>
-              )}
+                {/* Divider */}
+                <div className="flex items-center gap-3" style={{ margin: '20px 0' }}>
+                  <div className="h-px flex-1 bg-white/8" />
+                  <span className="text-white/25 text-[10px] uppercase tracking-[0.2em]">or use email</span>
+                  <div className="h-px flex-1 bg-white/8" />
+                </div>
 
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                loading={loading}
-                className="w-full mt-1"
-              >
-                Sign In
-              </Button>
+                {/* Email + password form */}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-white/50 text-xs font-medium mb-1.5">Email address</label>
+                    <input
+                      type="email"
+                      placeholder="you@northernwarrior.co.uk"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      autoFocus
+                      autoComplete="email"
+                      className="w-full rounded-lg border border-white/10 bg-white/[0.04] text-white text-sm outline-none transition-colors focus:border-[#967705]/50 focus:bg-white/[0.06] placeholder:text-white/20"
+                      style={{ padding: '10px 14px' }}
+                    />
+                  </div>
 
-              {/* Divider */}
-              <div className="flex items-center gap-3 mt-5">
-                <div className="h-px flex-1" style={{ background: 'rgba(212,175,55,0.12)' }} />
-                <span className="text-[#d0c5af]/25 text-[10px] uppercase tracking-widest">or</span>
-                <div className="h-px flex-1" style={{ background: 'rgba(212,175,55,0.12)' }} />
-              </div>
+                  <div>
+                    <label className="block text-white/50 text-xs font-medium mb-1.5">Password</label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        autoComplete="current-password"
+                        className="w-full rounded-lg border border-white/10 bg-white/[0.04] text-white text-sm outline-none transition-colors focus:border-[#967705]/50 focus:bg-white/[0.06] placeholder:text-white/20"
+                        style={{ padding: '10px 14px', paddingRight: 40 }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition-colors"
+                        tabIndex={-1}
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    <div className="flex justify-end mt-1.5">
+                      <Link
+                        href="/forgot-password"
+                        className="text-xs text-white/30 hover:text-[#c9a70a] transition-colors"
+                      >
+                        Forgot password?
+                      </Link>
+                    </div>
+                  </div>
 
-              {/* Passkey direct login */}
-              <button
-                type="button"
-                onClick={handleDirectPasskeyLogin}
-                disabled={passkeyLoading}
-                className="w-full flex items-center justify-center gap-2 rounded-xl border border-[rgba(212,175,55,0.18)] bg-[rgba(212,175,55,0.06)] hover:bg-[rgba(212,175,55,0.12)] text-[#f2ca50] text-sm font-semibold transition-all mt-3"
-                style={{ padding: '11px 0' }}
-              >
-                <Fingerprint className="w-4 h-4" />
-                {passkeyLoading ? 'Waiting for passkey…' : 'Sign in with passkey'}
-              </button>
-            </form>
-          )}
+                  {error && (
+                    <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg" style={{ padding: '10px 14px' }}>
+                      {error}
+                    </p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full rounded-xl text-sm font-semibold text-white transition-all hover:bg-white/12 disabled:opacity-50"
+                    style={{
+                      padding: '11px 0',
+                      background: 'rgba(255,255,255,0.07)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                    }}
+                  >
+                    {loading ? 'Signing in…' : 'Sign in'}
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-[11px] text-white/18 mt-6 tracking-wide select-none">
+        <p className="text-center text-[11px] text-white/15 mt-6 tracking-wide select-none">
           Northern Warrior Hub &mdash; Internal use only
         </p>
       </div>

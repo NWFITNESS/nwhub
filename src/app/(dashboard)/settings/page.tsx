@@ -1,11 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { PageHeader } from '@/components/layout/PageHeader'
-import { Panel, PanelHeader } from '@/components/ui/Card'
-import { GlobalSettingsEditor } from '@/components/content/GlobalSettingsEditor'
-import { AccountSecuritySettings } from '@/components/content/AccountSecuritySettings'
-import { SocialConnections } from '@/components/settings/SocialConnections'
-import { DigestPreferences } from '@/components/settings/DigestPreferences'
-import { GDPRPanel } from '@/components/settings/GDPRPanel'
+import { SettingsClient } from './SettingsClient'
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -18,56 +12,11 @@ export default async function SettingsPage() {
   )
 
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader
-        eyebrow="System"
-        title="Settings"
-      />
-
-      <Panel>
-        <PanelHeader eyebrow="CMS" title="Global Settings" />
-        <div style={{ padding: 20 }}>
-          <p className="text-xs font-medium text-nw-400 mb-4">Navigation, footer, contact info, and social links used across the site.</p>
-          <GlobalSettingsEditor initialSettings={settingsMap} />
-        </div>
-      </Panel>
-
-      <Panel>
-        <PanelHeader eyebrow="Integrations" title="Social Media" />
-        <div style={{ padding: 20 }}>
-          <p className="text-xs font-medium text-nw-400 mb-4">Connect Facebook, Instagram, and LinkedIn to publish branded posts directly from the Branding Studio.</p>
-          <SocialConnections />
-        </div>
-      </Panel>
-
-      <Panel id="digest-preferences" className="scroll-mt-24">
-        <PanelHeader eyebrow="Automation" title="Digest Preferences" />
-        <div style={{ padding: 20 }}>
-          <p className="text-xs font-medium text-nw-400 mb-4">Configure your daily morning digest email — who receives it and whether it&apos;s enabled.</p>
-          <DigestPreferences
-            initialRecipient={settingsMap['digest_recipient'] ?? 'info@northernwarrior.co.uk'}
-            initialEnabled={settingsMap['digest_enabled'] !== 'false'}
-            initialSendHour={parseInt(settingsMap['digest_send_hour'] ?? '8', 10)}
-            initialProcessInterval={parseInt(settingsMap['inbox_process_interval'] ?? '5', 10)}
-          />
-        </div>
-      </Panel>
-
-      <Panel>
-        <PanelHeader eyebrow="Compliance" title="GDPR &amp; Data Requests" />
-        <div style={{ padding: 20 }}>
-          <p className="text-xs font-medium text-nw-400 mb-4">Search, export, or delete all personal data held for a person. For Subject Access Requests and right to erasure.</p>
-          <GDPRPanel />
-        </div>
-      </Panel>
-
-      <Panel>
-        <PanelHeader eyebrow="Auth" title="Account &amp; Security" />
-        <div style={{ padding: 20 }}>
-          <p className="text-xs font-medium text-nw-400 mb-4">Manage your password, email address, and active sessions.</p>
-          <AccountSecuritySettings />
-        </div>
-      </Panel>
-    </div>
+    <SettingsClient
+      initialDigestRecipient={settingsMap['digest_recipient'] ?? 'info@northernwarrior.co.uk'}
+      initialDigestEnabled={settingsMap['digest_enabled'] !== 'false'}
+      initialDigestSendHour={parseInt(settingsMap['digest_send_hour'] ?? '8', 10)}
+      initialProcessInterval={parseInt(settingsMap['inbox_process_interval'] ?? '5', 10)}
+    />
   )
 }

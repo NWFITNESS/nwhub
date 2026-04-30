@@ -6,10 +6,14 @@ import {
   Users, Mail, PenSquare, Baby, Image, AtSign,
   MessageSquare, Send, Tag, Phone,
   ChevronRight, Inbox, FileText, Clock, Zap,
+  Settings, LogOut, User, ChevronDown, Shield,
 } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useTheme as useThemeHook } from '@/hooks/useTheme'
+import { createClient } from '@/lib/supabase/client'
+import type { StaffProfile } from '@/lib/staff'
+import { ROLE_LABELS } from '@/lib/staff'
 
 type SearchResult = { id: string; label: string; sub: string; href: string }
 type SearchResults = Record<string, SearchResult[]>
@@ -35,7 +39,7 @@ const PATH_LABELS: Record<string, string> = {
   mailchimp: 'Email Campaigns', content: 'Website Editor', blog: 'Blog',
   manage: 'Manage', media: 'Media', settings: 'Settings', sync: 'Integrations',
   branding: 'Branding Studio', workflows: 'Workflows', 'ai-chat': 'AI Chat',
-  todo: 'To Do', 'email-campaigns': 'Email Campaigns',
+  todo: 'To Do', 'email-campaigns': 'Email Campaigns', staff: 'Staff Management',
 }
 
 function getBreadcrumb(pathname: string) {
@@ -67,10 +71,14 @@ const NOTIFICATION_CHANNELS = [
 interface TopBarProps {
   title?: string
   actions?: React.ReactNode
+  staffProfile?: StaffProfile | null
+  userEmail?: string
 }
 
-export function TopBar({ title, actions }: TopBarProps) {
+export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps) {
   const pathname = usePathname()
+  const router = useRouter()
+  const supabase = createClient()
 
   // Search
   const [query, setQuery]               = useState('')
@@ -90,6 +98,19 @@ export function TopBar({ title, actions }: TopBarProps) {
   function handleRefresh() {
     setRefreshing(true)
     window.location.reload()
+  }
+
+  // Profile dropdown
+  const [profileOpen, setProfileOpen] = useState(false)
+  const profileRef = useRef<HTMLDivElement>(null)
+
+  const displayName = staffProfile?.display_name || userEmail?.split('@')[0] || 'Admin'
+  const initials = displayName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+  const roleName = staffProfile ? ROLE_LABELS[staffProfile.role] : 'Administrator'
+
+  async function handleSignOut() {
+    await supabase.auth.signOut()
+    router.push('/login')
   }
 
   // Notifications
@@ -156,6 +177,9 @@ export function TopBar({ title, actions }: TopBarProps) {
       }
       if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
         setBellOpen(false)
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false)
       }
     }
     document.addEventListener('mousedown', handler)
@@ -333,6 +357,125 @@ export function TopBar({ title, actions }: TopBarProps) {
                   className="rounded-[7px] border border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] px-3 py-[4px] text-[11px] font-medium text-gold-300 transition-colors hover:bg-[rgba(212,160,23,0.22)]"
                 >
                   Enable Push
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Separator */}
+        <div className="h-6 w-px bg-white/8 mx-2" />
+
+        {/* Profile dropdown */}
+        <div ref={profileRef} className="relative">
+          <button
+            onClick={() => setProfileOpen(v => !v)}
+            className={`flex items-center gap-2.5 rounded-lg transition-all ${
+              profileOpen
+                ? 'bg-[rgba(255,255,255,0.06)]'
+                : 'hover:bg-[rgba(255,255,255,0.04)]'
+            }`}
+            style={{ padding: '5px 10px 5px 5px' }}
+          >
+            <div
+              className="flex items-center justify-center rounded-full flex-shrink-0"
+              style={{
+                width: 30,
+                height: 30,
+                background: 'linear-gradient(135deg, #967705, #f2ca50)',
+                fontSize: 11,
+                fontWeight: 700,
+                color: '#07090f',
+                fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif',
+              }}
+            >
+              {initials}
+            </div>
+            <span className="text-nw-200 text-[13px] font-medium hidden xl:inline max-w-[120px] truncate">
+              {displayName}
+            </span>
+            <ChevronDown
+              size={14}
+              className={`text-nw-500 transition-transform hidden xl:block ${profileOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {profileOpen && (
+            <div
+              className="absolute right-0 top-full mt-2 z-50 w-[260px] overflow-hidden rounded-[12px] border border-[rgba(255,255,255,0.11)] bg-nw-750 shadow-xl"
+              style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}
+            >
+              {/* Profile header */}
+              <div className="border-b border-[rgba(255,255,255,0.07)]" style={{ padding: '16px 18px' }}>
+                <div className="flex items-center gap-3">
+                  <div
+                    className="flex items-center justify-center rounded-full flex-shrink-0"
+                    style={{
+                      width: 40,
+                      height: 40,
+                      background: 'linear-gradient(135deg, #967705, #f2ca50)',
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: '#07090f',
+                      fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif',
+                    }}
+                  >
+                    {initials}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-semibold text-nw-100 truncate">{displayName}</p>
+                    <p className="text-[11px] text-nw-500 truncate">{staffProfile?.email || userEmail}</p>
+                  </div>
+                </div>
+                <div className="mt-2.5">
+                  <span
+                    className="inline-flex items-center gap-1.5 rounded-md text-[10px] font-semibold uppercase tracking-wider"
+                    style={{
+                      padding: '3px 8px',
+                      background: staffProfile?.role === 'owner' ? 'rgba(212,160,23,0.12)' : staffProfile?.role === 'admin' ? 'rgba(59,130,246,0.12)' : 'rgba(255,255,255,0.06)',
+                      color: staffProfile?.role === 'owner' ? '#f2ca50' : staffProfile?.role === 'admin' ? '#60a5fa' : 'rgba(255,255,255,0.6)',
+                      border: `1px solid ${staffProfile?.role === 'owner' ? 'rgba(212,160,23,0.25)' : staffProfile?.role === 'admin' ? 'rgba(59,130,246,0.25)' : 'rgba(255,255,255,0.1)'}`,
+                    }}
+                  >
+                    <Shield size={10} />
+                    {roleName}
+                  </span>
+                </div>
+              </div>
+
+              {/* Menu items */}
+              <div style={{ padding: '6px 8px' }}>
+                <Link
+                  href="/settings"
+                  onClick={() => setProfileOpen(false)}
+                  className="flex items-center gap-3 rounded-lg text-[13px] text-nw-300 no-underline transition-colors hover:bg-[rgba(255,255,255,0.05)] hover:text-nw-100"
+                  style={{ padding: '9px 10px' }}
+                >
+                  <Settings size={15} className="text-nw-500" />
+                  Settings
+                </Link>
+                {(staffProfile?.role === 'owner' || staffProfile?.role === 'admin') && (
+                  <Link
+                    href="/staff"
+                    onClick={() => setProfileOpen(false)}
+                    className="flex items-center gap-3 rounded-lg text-[13px] text-nw-300 no-underline transition-colors hover:bg-[rgba(255,255,255,0.05)] hover:text-nw-100"
+                    style={{ padding: '9px 10px' }}
+                  >
+                    <Users size={15} className="text-nw-500" />
+                    Staff Management
+                  </Link>
+                )}
+              </div>
+
+              {/* Sign out */}
+              <div className="border-t border-[rgba(255,255,255,0.07)]" style={{ padding: '6px 8px' }}>
+                <button
+                  onClick={() => { setProfileOpen(false); handleSignOut() }}
+                  className="flex w-full items-center gap-3 rounded-lg text-[13px] text-red-400/80 transition-colors hover:bg-red-500/8 hover:text-red-400"
+                  style={{ padding: '9px 10px' }}
+                >
+                  <LogOut size={15} />
+                  Sign out
                 </button>
               </div>
             </div>

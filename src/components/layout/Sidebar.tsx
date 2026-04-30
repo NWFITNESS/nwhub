@@ -1,9 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { NWHubIcon } from '@/components/NWHubIcon'
 
 // ── Colours ──────────────────────────────────────────────────────────────────
@@ -88,6 +87,7 @@ const I = {
   media: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="2" width="14" height="12" rx="2"/><circle cx="5" cy="6" r="1.5"/><path d="M1 12l4-4 3 3 3-3 4 4"/></svg>,
   integrations: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M8 1v4M4.5 3l2 3M11.5 3l-2 3M8 11v4M4.5 13l2-3M11.5 13l-2-3" strokeLinecap="round"/><circle cx="8" cy="8" r="2.5"/></svg>,
   workflows: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M2 4h5l2 2h5M2 8h12M2 12h5l2-2h5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  staff: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="6" cy="5" r="2.5"/><path d="M1 14c0-2.5 2-4.5 5-4.5s5 2 5 4.5"/><circle cx="12" cy="5" r="1.5"/><path d="M15 12c0-1.5-1.2-2.8-3-2.8" strokeLinecap="round"/></svg>,
   settings: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4" strokeLinecap="round"/></svg>,
   calendar: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M2 7h12M5 1v4M11 1v4" strokeLinecap="round"/></svg>,
   kids: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="6" r="3"/><path d="M4 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M5 3c0-1 .5-2 3-2s3 1 3 2" strokeLinecap="round"/></svg>,
@@ -109,6 +109,7 @@ interface NavEntry {
   badge?: 'unread'
   tag?: string
   sub?: { label: string; href: string }[]
+  permKey?: string  // maps to StaffPermissions key
 }
 
 interface NavSection {
@@ -122,21 +123,21 @@ function buildNav(unreadCount: number): NavSection[] {
     {
       label: 'MAIN',
       items: [
-        { key: 'overview', label: 'Overview', icon: I.overview, href: '/' },
-        { key: 'inbox', label: 'Inbox Intelligence', icon: I.inbox, href: '/inbox', badge: unreadCount > 0 ? 'unread' : undefined },
-        { key: 'members', label: 'Members', icon: I.members, sub: [
+        { key: 'overview', label: 'Overview', icon: I.overview, href: '/', permKey: 'overview' },
+        { key: 'inbox', label: 'Inbox Intelligence', icon: I.inbox, href: '/inbox', badge: unreadCount > 0 ? 'unread' : undefined, permKey: 'inbox' },
+        { key: 'members', label: 'Members', icon: I.members, permKey: 'contacts', sub: [
           { label: 'Member List', href: '/leads' },
           { label: 'Leads', href: '/leads/pipeline' },
           { label: 'KPIs', href: '/members/kpis' },
           { label: 'Calendar', href: '/calendar' },
         ]},
-        { key: 'financials', label: 'Financials', icon: I.financials, href: '/financials' },
+        { key: 'financials', label: 'Financials', icon: I.financials, href: '/financials', permKey: 'financials' },
       ],
     },
     {
       label: 'KIDS & TEENS',
       items: [
-        { key: 'kids', label: 'Kids & Teens', icon: I.kids, sub: [
+        { key: 'kids', label: 'Kids & Teens', icon: I.kids, permKey: 'kids', sub: [
           { label: 'Dashboard', href: '/kids' },
           { label: 'Register', href: '/kids/register' },
         ]},
@@ -145,14 +146,14 @@ function buildNav(unreadCount: number): NavSection[] {
     {
       label: 'MARKETING',
       items: [
-        { key: 'popup', label: 'Website Popup', icon: I.popup, href: '/popup' },
-        { key: 'email', label: 'Email Campaigns', icon: I.email, sub: [
+        { key: 'popup', label: 'Website Popup', icon: I.popup, href: '/popup', permKey: 'email_campaigns' },
+        { key: 'email', label: 'Email Campaigns', icon: I.email, permKey: 'email_campaigns', sub: [
           { label: 'All Campaigns', href: '/email/campaigns' },
           { label: 'Subscribers', href: '/email' },
           { label: 'Import Subscribers', href: '/email/import' },
           { label: 'AI Email Creator', href: '/mailchimp/create-ai' },
         ]},
-        { key: 'branding', label: 'Branding Studio', icon: I.branding, sub: [
+        { key: 'branding', label: 'Branding Studio', icon: I.branding, permKey: 'branding', sub: [
           { label: 'Post Studio', href: '/branding' },
           { label: 'Google Reviews', href: '/branding/reviews' },
           { label: 'Documents', href: '/branding/documents' },
@@ -163,22 +164,23 @@ function buildNav(unreadCount: number): NavSection[] {
     {
       label: 'AI',
       items: [
-        { key: 'ai-chat', label: 'AI Chat', icon: I.ai, href: '/ai-chat', tag: 'Bot' },
+        { key: 'ai-chat', label: 'AI Chat', icon: I.ai, href: '/ai-chat', tag: 'Bot', permKey: 'ai_chat' },
       ],
     },
     {
       label: 'CONTENT',
       items: [
-        { key: 'blog', label: 'Blog', icon: I.blog, href: '/blog/manage' },
-        { key: 'editor', label: 'Website Editor', icon: I.editor, href: '/content' },
-        { key: 'media', label: 'Media Library', icon: I.media, href: '/media' },
+        { key: 'blog', label: 'Blog', icon: I.blog, href: '/blog/manage', permKey: 'blog' },
+        { key: 'editor', label: 'Website Editor', icon: I.editor, href: '/content', permKey: 'content_editor' },
+        { key: 'media', label: 'Media Library', icon: I.media, href: '/media', permKey: 'media' },
       ],
     },
     {
       label: 'SYSTEM',
       items: [
-        { key: 'integrations', label: 'Integrations', icon: I.integrations, href: '/sync' },
-        { key: 'settings', label: 'Settings', icon: I.settings, href: '/settings' },
+        { key: 'staff', label: 'Staff', icon: I.staff, href: '/staff', permKey: 'staff_management' },
+        { key: 'integrations', label: 'Integrations', icon: I.integrations, href: '/sync', permKey: 'integrations' },
+        { key: 'settings', label: 'Settings', icon: I.settings, href: '/settings', permKey: 'settings' },
       ],
     },
   ]
@@ -191,14 +193,13 @@ interface SidebarProps {
   onNavigate?: () => void
   userEmail?: string
   unreadCount?: number
+  staffProfile?: import('@/lib/staff').StaffProfile | null
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: SidebarProps) {
+export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0, staffProfile }: SidebarProps) {
   const pathname = usePathname()
-  const router = useRouter()
-  const supabase = createClient()
   const isMobile = !!onToggle
   const C = useThemeColors()
 
@@ -239,11 +240,6 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
     return entry.sub?.some(s => isActive(s.href)) ?? false
   }
 
-  async function handleSignOut() {
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
-
   function showTooltip(e: React.MouseEvent, label: string) {
     if (isOpen || !tooltipRef.current) return
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
@@ -267,9 +263,26 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
     if (auto.length) setOpenSections(prev => [...new Set([...prev, ...auto])])
   }, [pathname])
 
-  const nav = buildNav(unreadCount)
-  const initials = userEmail ? userEmail.split('@')[0].slice(0, 2).toUpperCase() : 'NW'
-  const displayName = userEmail ? userEmail.split('@')[0] : 'Admin'
+  const rawNav = buildNav(unreadCount)
+
+  // Filter nav based on permissions (owners/admins see everything)
+  const isFullAccess = !staffProfile || staffProfile.role === 'owner' || staffProfile.role === 'admin'
+  const nav = isFullAccess
+    ? rawNav
+    : rawNav.map(section => ({
+        ...section,
+        items: section.items.filter(entry =>
+          !entry.permKey || (staffProfile.permissions as unknown as Record<string, boolean>)[entry.permKey]
+        ),
+        ...(section.subGroup ? {
+          subGroup: {
+            ...section.subGroup,
+            items: section.subGroup.items.filter(entry =>
+              !entry.permKey || (staffProfile.permissions as unknown as Record<string, boolean>)[entry.permKey]
+            ),
+          },
+        } : {}),
+      })).filter(section => section.items.length > 0)
 
   const sidebarWidth = isMobile ? 242 : (collapsed ? 56 : 232)
 
@@ -377,39 +390,18 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0 }: Si
           ))}
         </div>
 
-        {/* Footer */}
+        {/* Footer — minimal brand mark */}
         <div style={{ borderTop: `1px solid ${C.border}`, flexShrink: 0 }}>
-          {/* Icon showcase */}
           {isOpen ? (
-            <div style={{ padding: '8px 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <NWHubIcon size={20} animated={false} />
+            <div style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
               <NWHubIcon size={16} animated={false} />
-              <NWHubIcon size={12} animated={false} />
-              <span style={{ marginLeft: 'auto', fontSize: 9, color: C.dim, letterSpacing: '2px', textTransform: 'uppercase' }}>NW · HUB</span>
+              <span style={{ fontSize: 9, color: C.dim, letterSpacing: '2px', textTransform: 'uppercase' }}>NW · HUB</span>
             </div>
           ) : (
-            <div style={{ padding: '8px 0', display: 'flex', justifyContent: 'center' }}>
+            <div style={{ padding: '10px 0', display: 'flex', justifyContent: 'center' }}>
               <NWHubIcon size={16} animated={false} />
             </div>
           )}
-
-          {/* User + sign out */}
-          <div style={{ padding: isOpen ? '8px 12px 10px' : '8px 0 10px', display: 'flex', alignItems: 'center', gap: 9, justifyContent: isOpen ? 'flex-start' : 'center', borderTop: `1px solid ${C.border}` }}>
-            <div style={{ width: 30, height: 30, minWidth: 30, borderRadius: '50%', background: `linear-gradient(135deg, ${C.gold}, ${C.goldBright})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: C.avatarText, fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif' }}>
-              {initials}
-            </div>
-            {isOpen && (
-              <>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 500, color: C.userName, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</div>
-                  <div style={{ fontSize: 10, color: C.muted }}>Administrator</div>
-                </div>
-                <button onClick={handleSignOut} title="Sign out" style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, display: 'flex', padding: 2 }}>
-                  {I.signout}
-                </button>
-              </>
-            )}
-          </div>
         </div>
       </aside>
     </>

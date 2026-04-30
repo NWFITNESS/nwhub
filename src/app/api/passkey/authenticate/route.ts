@@ -117,6 +117,34 @@ export async function POST(req: NextRequest) {
     }).eq('id', credential.id)
 
     challengeStore.delete(sessionKey)
+
+    // For discoverable flow (no user_id), generate a Supabase session
+    // so the user is actually logged in after passkey verification
+    if (!body.user_id) {
+      // Get user email from Supabase auth
+      const { data: { user } } = await admin.auth.admin.getUserById(credential.user_id)
+      if (!user?.email) {
+        return NextResponse.json({ error: 'User not found' }, { status: 400 })
+      }
+
+      // Generate a magic link token to create a session
+      const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+        type: 'magiclink',
+        email: user.email,
+      })
+      if (linkError || !linkData) {
+        console.error('[passkey] session generation failed:', linkError?.message)
+        return NextResponse.json({ error: 'Failed to create session' }, { status: 500 })
+      }
+
+      return NextResponse.json({
+        verified: true,
+        user_id: credential.user_id,
+        session_token: linkData.properties?.hashed_token,
+        email: user.email,
+      })
+    }
+
     return NextResponse.json({ verified: true, user_id: credential.user_id })
   } catch (e) {
     console.error('[passkey] auth error:', (e as Error).message)

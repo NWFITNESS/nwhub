@@ -7,17 +7,20 @@ import { MobileAppBar } from '@/components/mobile/MobileAppBar'
 import { BottomTabBar } from '@/components/mobile/BottomTabBar'
 import { MobileMenuSheet } from '@/components/mobile/MobileMenuSheet'
 import { ScheduledCampaignPopup } from '@/components/dashboard/ScheduledCampaignPopup'
+import type { StaffProfile } from '@/lib/staff'
 
 // ── Shared context ─────────────────────────────────────────────────────────────
 
 interface SidebarContextValue {
   mobileMenuOpen: boolean
   setMobileMenuOpen: (v: boolean) => void
+  staffProfile: StaffProfile | null
 }
 
 export const SidebarCtx = createContext<SidebarContextValue>({
   mobileMenuOpen: false,
   setMobileMenuOpen: () => {},
+  staffProfile: null,
 })
 
 export function useSidebarCtx() {
@@ -30,16 +33,17 @@ interface SidebarProviderProps {
   children: React.ReactNode
   unreadCount?: number
   userEmail?: string
+  staffProfile?: StaffProfile | null
 }
 
-export function SidebarProvider({ children, unreadCount = 0, userEmail }: SidebarProviderProps) {
+export function SidebarProvider({ children, unreadCount = 0, userEmail, staffProfile = null }: SidebarProviderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <SidebarCtx.Provider value={{ mobileMenuOpen, setMobileMenuOpen }}>
+    <SidebarCtx.Provider value={{ mobileMenuOpen, setMobileMenuOpen, staffProfile }}>
       <div className="flex h-screen min-h-[600px] overflow-hidden bg-nw-900">
         {/* Desktop sidebar */}
-        <Sidebar unreadCount={unreadCount} userEmail={userEmail} />
+        <Sidebar unreadCount={unreadCount} userEmail={userEmail} staffProfile={staffProfile} />
 
         {/* Mobile sidebar drawer */}
         <div className={`fixed inset-y-0 left-0 z-50 md:hidden transition-transform duration-300 ease-in-out ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
@@ -47,6 +51,7 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
             onToggle={() => setMobileMenuOpen(false)}
             unreadCount={unreadCount}
             userEmail={userEmail}
+            staffProfile={staffProfile}
             onNavigate={() => setMobileMenuOpen(false)}
           />
         </div>
@@ -61,7 +66,7 @@ export function SidebarProvider({ children, unreadCount = 0, userEmail }: Sideba
 
         {/* Main column */}
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <TopBar />
+          <TopBar staffProfile={staffProfile} userEmail={userEmail} />
           <MobileAppBar />
 
           <main className="flex-1 overflow-y-auto nw-main-pad">

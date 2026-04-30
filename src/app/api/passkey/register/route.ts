@@ -48,7 +48,8 @@ export async function GET() {
       transports: ['internal', 'hybrid'] as AuthenticatorTransport[],
     })),
     authenticatorSelection: {
-      residentKey: 'preferred',
+      residentKey: 'required',
+      requireResidentKey: true,
       userVerification: 'preferred',
     },
   })
