@@ -145,11 +145,11 @@ export function StaffPageClient({ callerRole }: Props) {
                     <td style={{ padding: '12px 16px' }}>
                       <div className="flex items-center gap-3">
                         <div
-                          className="flex items-center justify-center rounded-full flex-shrink-0"
+                          className="flex items-center justify-center rounded-full flex-shrink-0 overflow-hidden"
                           style={{
                             width: 36,
                             height: 36,
-                            background: `linear-gradient(135deg, ${
+                            background: member.avatar_url ? undefined : `linear-gradient(135deg, ${
                               member.role === 'owner' ? '#967705, #f2ca50' :
                               member.role === 'admin' ? '#2563eb, #60a5fa' :
                               '#4b5563, #9ca3af'
@@ -159,7 +159,9 @@ export function StaffPageClient({ callerRole }: Props) {
                             color: '#fff',
                           }}
                         >
-                          {member.display_name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}
+                          {member.avatar_url ? (
+                            <img src={member.avatar_url} alt="" className="w-full h-full object-cover" />
+                          ) : member.display_name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}
                         </div>
                         <div>
                           <p className="text-[13px] font-medium text-nw-100">{member.display_name}</p>

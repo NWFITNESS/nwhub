@@ -378,18 +378,20 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
             style={{ padding: '5px 10px 5px 5px' }}
           >
             <div
-              className="flex items-center justify-center rounded-full flex-shrink-0"
+              className="flex items-center justify-center rounded-full flex-shrink-0 overflow-hidden"
               style={{
                 width: 30,
                 height: 30,
-                background: 'linear-gradient(135deg, #967705, #f2ca50)',
+                background: staffProfile?.avatar_url ? undefined : 'linear-gradient(135deg, #967705, #f2ca50)',
                 fontSize: 11,
                 fontWeight: 700,
                 color: '#07090f',
                 fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif',
               }}
             >
-              {initials}
+              {staffProfile?.avatar_url ? (
+                <img src={staffProfile.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : initials}
             </div>
             <span className="text-nw-200 text-[13px] font-medium hidden xl:inline max-w-[120px] truncate">
               {displayName}
@@ -409,18 +411,20 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
               <div className="border-b border-[rgba(255,255,255,0.07)]" style={{ padding: '16px 18px' }}>
                 <div className="flex items-center gap-3">
                   <div
-                    className="flex items-center justify-center rounded-full flex-shrink-0"
+                    className="flex items-center justify-center rounded-full flex-shrink-0 overflow-hidden"
                     style={{
                       width: 40,
                       height: 40,
-                      background: 'linear-gradient(135deg, #967705, #f2ca50)',
+                      background: staffProfile?.avatar_url ? undefined : 'linear-gradient(135deg, #967705, #f2ca50)',
                       fontSize: 14,
                       fontWeight: 700,
                       color: '#07090f',
                       fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif',
                     }}
                   >
-                    {initials}
+                    {staffProfile?.avatar_url ? (
+                      <img src={staffProfile.avatar_url} alt="" className="w-full h-full object-cover" />
+                    ) : initials}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-[13px] font-semibold text-nw-100 truncate">{displayName}</p>

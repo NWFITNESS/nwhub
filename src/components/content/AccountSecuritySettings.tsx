@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input, Field } from '@/components/ui/Input'
-import { Eye, EyeOff, KeyRound, Mail, LogOut, ShieldAlert, Fingerprint, Trash2, Plus } from 'lucide-react'
+import { Eye, EyeOff, KeyRound, Mail, LogOut, ShieldAlert, Fingerprint, Trash2, Plus, Camera, User, Upload } from 'lucide-react'
 import { startRegistration } from '@simplewebauthn/browser'
+import { useSidebarCtx } from '@/components/layout/SidebarProvider'
 
 function getStrength(password: string): { score: number; label: string; color: string } {
   if (!password) return { score: 0, label: '', color: '' }
@@ -41,6 +42,224 @@ function SectionCard({ icon: Icon, title, description, children }: {
       </div>
       {children}
     </div>
+  )
+}
+
+// ── Profile Photo ──────────────────────────────────────────────────────────
+
+function ProfilePhoto() {
+  const { staffProfile } = useSidebarCtx()
+  const supabase = createClient()
+
+  const [avatarUrl, setAvatarUrl] = useState(staffProfile?.avatar_url ?? '')
+  const [uploading, setUploading] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [displayName, setDisplayName] = useState(staffProfile?.display_name ?? '')
+  const [nameLoading, setNameLoading] = useState(false)
+
+  const initials = (staffProfile?.display_name ?? 'A')
+    .split(' ')
+    .map(w => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate
+    if (!file.type.startsWith('image/')) {
+      setMessage({ type: 'error', text: 'Please select an image file.' })
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'Image must be under 5 MB.' })
+      return
+    }
+
+    setUploading(true)
+    setMessage(null)
+
+    const ext = file.name.split('.').pop() ?? 'jpg'
+    const path = `staff/${staffProfile?.user_id ?? 'unknown'}-${Date.now()}.${ext}`
+
+    // Upload to Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from('media')
+      .upload(path, file, { upsert: true })
+
+    if (uploadError) {
+      setMessage({ type: 'error', text: 'Upload failed: ' + uploadError.message })
+      setUploading(false)
+      return
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path)
+
+    // Update staff profile
+    const res = await fetch('/api/staff/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ avatar_url: publicUrl }),
+    })
+
+    if (!res.ok) {
+      setMessage({ type: 'error', text: 'Failed to save profile photo.' })
+    } else {
+      setAvatarUrl(publicUrl)
+      setMessage({ type: 'success', text: 'Profile photo updated.' })
+    }
+    setUploading(false)
+  }
+
+  async function handleRemovePhoto() {
+    setUploading(true)
+    setMessage(null)
+
+    const res = await fetch('/api/staff/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ avatar_url: null }),
+    })
+
+    if (!res.ok) {
+      setMessage({ type: 'error', text: 'Failed to remove photo.' })
+    } else {
+      setAvatarUrl('')
+      setMessage({ type: 'success', text: 'Profile photo removed.' })
+    }
+    setUploading(false)
+  }
+
+  async function handleNameSave() {
+    if (!displayName.trim()) return
+    setNameLoading(true)
+    setMessage(null)
+
+    const res = await fetch('/api/staff/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ display_name: displayName.trim() }),
+    })
+
+    setNameLoading(false)
+    if (!res.ok) {
+      setMessage({ type: 'error', text: 'Failed to update name.' })
+    } else {
+      setMessage({ type: 'success', text: 'Display name updated.' })
+    }
+  }
+
+  return (
+    <SectionCard icon={User} title="Profile" description="Your photo and display name across NWHub.">
+      <div className="flex flex-col sm:flex-row items-start gap-6">
+        {/* Avatar */}
+        <div className="relative group flex-shrink-0">
+          <div
+            className="rounded-full overflow-hidden flex items-center justify-center"
+            style={{
+              width: 80,
+              height: 80,
+              background: avatarUrl ? undefined : 'linear-gradient(135deg, #967705, #f2ca50)',
+            }}
+          >
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span
+                className="text-xl font-bold"
+                style={{ color: '#07090f', fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif' }}
+              >
+                {initials}
+              </span>
+            )}
+          </div>
+
+          {/* Upload overlay */}
+          <label className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer flex items-center justify-center">
+            <Camera className="w-5 h-5 text-white" />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleUpload}
+              className="sr-only"
+              disabled={uploading}
+            />
+          </label>
+
+          {uploading && (
+            <div className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center">
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            </div>
+          )}
+        </div>
+
+        {/* Name + actions */}
+        <div className="flex-1 min-w-0 space-y-3">
+          <div>
+            <Field label="Display name">
+              <div className="flex gap-2 max-w-sm">
+                <Input
+                  value={displayName}
+                  onChange={e => setDisplayName(e.target.value)}
+                  placeholder="Your name"
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  loading={nameLoading}
+                  onClick={handleNameSave}
+                  disabled={displayName.trim() === staffProfile?.display_name}
+                >
+                  Save
+                </Button>
+              </div>
+            </Field>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] text-[12px] text-nw-300 hover:bg-white/[0.06] transition-colors cursor-pointer" style={{ padding: '6px 12px' }}>
+              <Upload className="w-3.5 h-3.5" />
+              Upload photo
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleUpload}
+                className="sr-only"
+                disabled={uploading}
+              />
+            </label>
+            {avatarUrl && (
+              <button
+                onClick={handleRemovePhoto}
+                disabled={uploading}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/20 text-[12px] text-red-400/80 hover:bg-red-500/8 transition-colors"
+                style={{ padding: '6px 12px' }}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Remove
+              </button>
+            )}
+          </div>
+
+          {message && (
+            <p className={`text-sm rounded-lg border ${
+              message.type === 'success'
+                ? 'text-green-400 bg-green-400/10 border-green-400/20'
+                : 'text-red-400 bg-red-400/10 border-red-400/20'
+            }`} style={{ padding: '8px 12px' }}>
+              {message.text}
+            </p>
+          )}
+        </div>
+      </div>
+    </SectionCard>
   )
 }
 
@@ -255,6 +474,9 @@ export function AccountSecuritySettings() {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Profile Photo & Name */}
+      <ProfilePhoto />
+
       {/* Change Password */}
       <SectionCard icon={KeyRound} title="Change Password" description="Update your account password.">
         <form onSubmit={handleChangePassword} className="space-y-4 max-w-sm">
