@@ -470,7 +470,7 @@ function EditPermissionsModal({ open, callerRole, staff, onClose, onSuccess }: {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        id: staff!.id,
+        id: staff?.id,
         role,
         permissions: role === 'admin' ? FULL_PERMISSIONS : permissions,
       }),
