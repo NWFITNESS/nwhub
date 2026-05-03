@@ -23,7 +23,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       .from('staff_profiles')
       .select('*')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
     staffProfile = data as StaffProfile | null
   }
 

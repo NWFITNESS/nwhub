@@ -8,7 +8,7 @@ async function getCallerProfile(supabase: Awaited<ReturnType<typeof createClient
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
   const admin = createAdminClient()
-  const { data } = await admin.from('staff_profiles').select('*').eq('user_id', user.id).single()
+  const { data } = await admin.from('staff_profiles').select('*').eq('user_id', user.id).maybeSingle()
   return data
 }
 
