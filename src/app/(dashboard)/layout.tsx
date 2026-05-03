@@ -19,12 +19,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // Fetch staff profile for permissions and display name
   let staffProfile: StaffProfile | null = null
   if (user) {
-    const { data } = await supabase
-      .from('staff_profiles')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    staffProfile = data as StaffProfile | null
+    try {
+      const { data } = await supabase
+        .from('staff_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      staffProfile = data as StaffProfile | null
+    } catch (e) {
+      console.error('[layout] staff_profiles query failed:', (e as Error).message)
+    }
   }
 
   return (
