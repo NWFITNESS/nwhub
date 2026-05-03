@@ -8,6 +8,8 @@ const EMPTY_STATS: KidsStats = {
   teens_enrolled: 0,
   block_total: 0,
   dropins_this_block: 0,
+  trials_total: 0,
+  trials_converted: 0,
   gross_pence: 0,
   stripe_fees_pence: 0,
   net_pence: 0,

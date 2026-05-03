@@ -9,12 +9,18 @@ function formatGbp(pence: number): string {
 }
 
 export function StatsRow({ stats }: Props) {
+  const conversionRate = stats.trials_total > 0
+    ? Math.round((stats.trials_converted / stats.trials_total) * 100)
+    : 0
+
   const enrollment: { label: string; value: string }[] = [
     { label: 'Minis enrolled',      value: String(stats.minis_enrolled) },
     { label: 'Littles enrolled',    value: String(stats.littles_enrolled) },
     { label: 'Teens enrolled',      value: String(stats.teens_enrolled) },
     { label: 'Block total',         value: String(stats.block_total) },
     { label: 'Drop-ins',            value: String(stats.dropins_this_block) },
+    { label: 'Trials',              value: String(stats.trials_total) },
+    { label: 'Trial → Booked',      value: stats.trials_total > 0 ? `${stats.trials_converted}/${stats.trials_total} (${conversionRate}%)` : '—' },
   ]
 
   const financials: { label: string; value: string; color?: string }[] = [
@@ -26,7 +32,7 @@ export function StatsRow({ stats }: Props) {
   return (
     <div className="flex flex-col gap-4">
       {/* Enrollment */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7">
         {enrollment.map((it) => (
           <div
             key={it.label}

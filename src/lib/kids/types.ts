@@ -114,6 +114,7 @@ export interface TrialRow {
   session_date: string | null
   source: 'web' | 'admin'
   created_at: string
+  converted: boolean
 }
 
 // ── View types (joined / denormalised for the UI) ───────────────────────────
@@ -238,6 +239,8 @@ export interface KidsStats {
   teens_enrolled: number
   block_total: number
   dropins_this_block: number
+  trials_total: number         // all trials for sessions in this block
+  trials_converted: number     // trials where the child later booked a block
   gross_pence: number          // total paid (blocks + drop-ins)
   stripe_fees_pence: number    // estimated Stripe fees (1.5% + 20p per txn)
   net_pence: number            // gross - fees

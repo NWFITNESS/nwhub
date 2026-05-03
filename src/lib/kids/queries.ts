@@ -179,15 +179,37 @@ export async function getStatsForBlock(blockId: string): Promise<KidsStats> {
   // Drop-in count + revenue
   let dropinCount = 0
   let dropinRevenuePence = 0
+  // Trial counts
+  let trialsTotal = 0
+  let trialsConverted = 0
   if (sessionIds.length) {
-    const { data: dropins, error } = await supabase
-      .from('kids_dropin_bookings')
-      .select('id, price_pence, payment_status')
-      .in('session_id', sessionIds)
-    if (error) console.error('[getStatsForBlock] dropins error:', error.message)
-    dropinCount = dropins?.length ?? 0
-    for (const d of dropins ?? []) {
+    const [dropinsResult, trialsResult] = await Promise.all([
+      supabase
+        .from('kids_dropin_bookings')
+        .select('id, price_pence, payment_status')
+        .in('session_id', sessionIds),
+      supabase
+        .from('kids_trials')
+        .select('child_id')
+        .in('session_id', sessionIds),
+    ])
+    if (dropinsResult.error) console.error('[getStatsForBlock] dropins error:', dropinsResult.error.message)
+    if (trialsResult.error) console.error('[getStatsForBlock] trials error:', trialsResult.error.message)
+    dropinCount = dropinsResult.data?.length ?? 0
+    for (const d of dropinsResult.data ?? []) {
       if (d.payment_status === 'paid') dropinRevenuePence += d.price_pence
+    }
+    // Count trials and check how many converted to paid block bookings
+    const trialChildren = trialsResult.data ?? []
+    trialsTotal = trialChildren.length
+    if (trialChildren.length) {
+      const trialChildIds = [...new Set(trialChildren.map((t) => t.child_id))]
+      const { data: converted } = await supabase
+        .from('kids_block_bookings')
+        .select('child_id')
+        .in('child_id', trialChildIds)
+        .eq('payment_status', 'paid')
+      trialsConverted = new Set((converted ?? []).map((c) => c.child_id)).size
     }
   }
 
@@ -233,6 +255,8 @@ export async function getStatsForBlock(blockId: string): Promise<KidsStats> {
     teens_enrolled: counts.teens,
     block_total: counts.minis + counts.littles + counts.teens,
     dropins_this_block: dropinCount,
+    trials_total: trialsTotal,
+    trials_converted: trialsConverted,
     gross_pence: grossPence,
     stripe_fees_pence: stripeFeesPence,
     net_pence: netPence,
@@ -258,12 +282,18 @@ export async function getKidsTrials(): Promise<TrialRow[]> {
   const parentIds = [...new Set(trials.map((t) => t.parent_id))]
   const sessionIds = [...new Set(trials.map((t) => t.session_id).filter(Boolean) as string[])]
 
-  const [childrenRes, parentsRes, sessionsRes] = await Promise.all([
+  const [childrenRes, parentsRes, sessionsRes, bookingsRes] = await Promise.all([
     supabase.from('kids_children').select('id, child_name').in('id', childIds),
     supabase.from('kids_parents').select('id, name, email').in('id', parentIds),
     sessionIds.length
       ? supabase.from('kids_sessions').select('id, session_date').in('id', sessionIds)
       : Promise.resolve({ data: [] as { id: string; session_date: string }[] }),
+    // Check which trial children have gone on to book a paid block
+    supabase
+      .from('kids_block_bookings')
+      .select('child_id')
+      .in('child_id', childIds)
+      .eq('payment_status', 'paid'),
   ])
 
   const childById = new Map<string, string>()
@@ -274,6 +304,8 @@ export async function getKidsTrials(): Promise<TrialRow[]> {
 
   const sessionDateById = new Map<string, string>()
   for (const s of sessionsRes.data ?? []) sessionDateById.set(s.id, s.session_date)
+
+  const convertedChildIds = new Set((bookingsRes.data ?? []).map((b) => b.child_id))
 
   return trials.map((t): TrialRow => {
     const parent = parentById.get(t.parent_id)
@@ -287,6 +319,7 @@ export async function getKidsTrials(): Promise<TrialRow[]> {
       session_date: t.session_id ? (sessionDateById.get(t.session_id) ?? null) : null,
       source: t.source as 'web' | 'admin',
       created_at: t.created_at,
+      converted: convertedChildIds.has(t.child_id),
     }
   })
 }
