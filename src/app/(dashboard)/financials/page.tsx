@@ -76,9 +76,16 @@ export default function FinancialsPage() {
         }
         actions={
           !notConnected && !loading ? (
-            <Button variant="default" size="sm" onClick={load}>
-              <RefreshCw size={13} /> Refresh
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="default" size="sm" onClick={load}>
+                <RefreshCw size={13} /> Refresh
+              </Button>
+              <a href="/api/xero/connect">
+                <Button variant="default" size="sm">
+                  Reconnect Xero
+                </Button>
+              </a>
+            </div>
           ) : undefined
         }
       />
