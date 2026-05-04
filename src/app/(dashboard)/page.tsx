@@ -84,7 +84,7 @@ export default async function DashboardPage() {
   // Fetch all contacts to count members, leads, converted
   const [{ data: allContacts }, { count: kidsRegistrations }] = await Promise.all([
     supabase.from('contacts').select('groups'),
-    supabase.from('kids_registrations').select('*', { count: 'exact', head: true }),
+    supabase.from('kids_block_bookings').select('*', { count: 'exact', head: true }).neq('payment_status', 'cancelled'),
   ])
   const allC = allContacts ?? []
 
