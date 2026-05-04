@@ -173,7 +173,7 @@ export async function GET() {
     const { monthly, incomeBreakdown } = parsePnL(report)
 
     const txnRes = await xero.accountingApi.getBankTransactions(tenantId, undefined, undefined, 'Date DESC')
-      .catch(() => null)
+      .catch((e: unknown) => { console.error('[xero/financials] getBankTransactions error:', e instanceof Error ? e.message : e); return null })
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rawTxns: any[] = (txnRes?.body as any)?.bankTransactions ?? []
