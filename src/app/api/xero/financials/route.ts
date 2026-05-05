@@ -172,7 +172,7 @@ export async function GET() {
     const report = (plRes.body as any)?.reports?.[0]
     const { monthly, incomeBreakdown } = parsePnL(report)
 
-    const payRes = await xero.accountingApi.getPayments(tenantId, undefined, undefined, 'Date DESC', undefined, undefined, 15)
+    const payRes = await xero.accountingApi.getPayments(tenantId, undefined, undefined, 'Date DESC', undefined, 15)
       .catch((e: unknown) => { console.error('[xero/financials] getPayments error:', e instanceof Error ? e.message : e); return null })
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
