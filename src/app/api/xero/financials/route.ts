@@ -172,17 +172,17 @@ export async function GET() {
     const report = (plRes.body as any)?.reports?.[0]
     const { monthly, incomeBreakdown } = parsePnL(report)
 
-    const txnRes = await xero.accountingApi.getBankTransactions(tenantId, undefined, undefined, 'Date DESC')
-      .catch((e: unknown) => { console.error('[xero/financials] getBankTransactions error:', e instanceof Error ? e.message : e); return null })
+    const payRes = await xero.accountingApi.getPayments(tenantId, undefined, undefined, 'Date DESC', undefined, undefined, 15)
+      .catch((e: unknown) => { console.error('[xero/financials] getPayments error:', e instanceof Error ? e.message : e); return null })
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rawTxns: any[] = (txnRes?.body as any)?.bankTransactions ?? []
-    const bankTransactions = rawTxns.slice(0, 15).map((t) => ({
-      date: t.date,
-      contact: t.contact?.name ?? '—',
-      reference: t.reference || '—',
-      amount: t.total ?? 0,
-      type: String(t.type ?? '').includes('RECEIVE') ? 'IN' : 'OUT',
+    const rawPayments: any[] = (payRes?.body as any)?.payments ?? []
+    const bankTransactions = rawPayments.map((p) => ({
+      date: p.date,
+      contact: p.invoice?.contact?.name ?? '—',
+      reference: p.reference || p.invoice?.invoiceNumber || '—',
+      amount: p.amount ?? 0,
+      type: p.invoice?.type === 'ACCREC' ? 'IN' : 'OUT',
     }))
 
     // Cache the most recent month's income for the dashboard card (avoids concurrent token refreshes)

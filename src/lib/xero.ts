@@ -13,7 +13,6 @@ export const xero = new XeroClient({
     'accounting.payments.read',
     'accounting.contacts.read',
     'accounting.reports.profitandloss.read',
-    'accounting.transactions.read',
     'accounting.settings.read',
   ],
 })
