@@ -2,33 +2,7 @@ import { xero } from '@/lib/xero'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth-guard'
-
-async function refreshXeroToken(refreshToken: string) {
-  const credentials = Buffer.from(
-    `${process.env.XERO_CLIENT_ID}:${process.env.XERO_CLIENT_SECRET}`
-  ).toString('base64')
-
-  const res = await fetch('https://identity.xero.com/connect/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Authorization: `Basic ${credentials}`,
-    },
-    body: new URLSearchParams({
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken,
-    }),
-  })
-
-  if (!res.ok) {
-    const text = await res.text()
-    throw new Error(`Xero token refresh failed (${res.status}): ${text}`)
-  }
-
-  const newToken = await res.json()
-  newToken.expires_at = Math.floor(Date.now() / 1000) + (newToken.expires_in ?? 1800)
-  return newToken
-}
+import { getXeroAuth } from '@/lib/xero-auth'
 
 const parseNum = (v: unknown) =>
   Math.abs(parseFloat(String(v ?? '').replace(/,/g, '')) || 0)
@@ -92,63 +66,13 @@ export async function GET() {
   const unauth = await requireAuth()
   if (unauth) return unauth
   try {
-    const supabase = createAdminClient()
-
-    const { data: tokenData } = await supabase
-      .from('global_settings').select('value').eq('key', 'xero_tokens').single()
-
-    if (!tokenData?.value) {
-      return NextResponse.json({ error: 'not_connected' }, { status: 401 })
+    const auth = await getXeroAuth()
+    if (!auth.ok) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status })
     }
+    const { tenantId } = auth
 
-    let tokenSet = JSON.parse(tokenData.value)
-
-    const expiresAt: number = tokenSet.expires_at ?? 0
-    if (expiresAt < Math.floor(Date.now() / 1000) + 60) {
-      if (!tokenSet.refresh_token) {
-        return NextResponse.json({ error: 'not_connected' }, { status: 401 })
-      }
-      try {
-        tokenSet = await refreshXeroToken(tokenSet.refresh_token)
-      } catch (refreshErr: unknown) {
-        const msg = refreshErr instanceof Error ? refreshErr.message : String(refreshErr)
-        // invalid_grant = refresh token expired or revoked — clear dead token and prompt reconnect
-        if (msg.includes('invalid_grant') || msg.includes('400')) {
-          await supabase.from('global_settings')
-            .delete().in('key', ['xero_tokens', 'xero_tenant_id'])
-        }
-        return NextResponse.json({ error: 'not_connected' }, { status: 401 })
-      }
-      await supabase.from('global_settings').upsert(
-        { key: 'xero_tokens', value: JSON.stringify(tokenSet), updated_at: new Date().toISOString() },
-        { onConflict: 'key' }
-      )
-    }
-
-    await xero.setTokenSet(tokenSet)
-
-    let tenantId = ''
-    const { data: tenantData } = await supabase
-      .from('global_settings').select('value').eq('key', 'xero_tenant_id').single()
-
-    if (tenantData?.value) {
-      tenantId = tenantData.value
-    } else {
-      await xero.updateTenants()
-      tenantId = xero.tenants?.[0]?.tenantId ?? ''
-      if (tenantId) {
-        await supabase.from('global_settings').upsert(
-          { key: 'xero_tenant_id', value: tenantId, updated_at: new Date().toISOString() },
-          { onConflict: 'key' }
-        )
-      }
-    }
-
-    if (!tenantId) {
-      return NextResponse.json({ error: 'no_tenant' }, { status: 401 })
-    }
-
-    // End of current month as toDate; periods=12 with MONTH timeframe gives 12 monthly columns
+    // End of current month as toDate; periods=11 with MONTH timeframe gives 12 monthly columns
     const now = new Date()
     const toDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
       .toISOString().split('T')[0]
@@ -186,6 +110,7 @@ export async function GET() {
     }))
 
     // Cache the most recent month's income for the dashboard card (avoids concurrent token refreshes)
+    const supabase = createAdminClient()
     const lastIncome = monthly[monthly.length - 1]?.income ?? 0
     try {
       await supabase.from('global_settings').upsert(

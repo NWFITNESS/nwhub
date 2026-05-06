@@ -18,6 +18,7 @@ export interface StaffPermissions {
   inbox: boolean
   contacts: boolean
   financials: boolean
+  invoices: boolean
   kids: boolean
   email_campaigns: boolean
   branding: boolean
@@ -35,6 +36,7 @@ export const DEFAULT_STAFF_PERMISSIONS: StaffPermissions = {
   inbox: true,
   contacts: true,
   financials: false,
+  invoices: false,
   kids: true,
   email_campaigns: true,
   branding: true,
@@ -52,6 +54,7 @@ export const FULL_PERMISSIONS: StaffPermissions = {
   inbox: true,
   contacts: true,
   financials: true,
+  invoices: true,
   kids: true,
   email_campaigns: true,
   branding: true,
@@ -69,6 +72,7 @@ export const PERMISSION_LABELS: Record<keyof StaffPermissions, string> = {
   inbox: 'Inbox Intelligence',
   contacts: 'Contacts & Members',
   financials: 'Financials',
+  invoices: 'Invoice Vault',
   kids: 'Kids & Teens',
   email_campaigns: 'Email Campaigns',
   branding: 'Branding Studio',
@@ -86,6 +90,7 @@ export const PERMISSION_DESCRIPTIONS: Record<keyof StaffPermissions, string> = {
   inbox: 'Access inbox intelligence, email triage, and task management',
   contacts: 'View and manage contacts, leads, and member data',
   financials: 'View financial reports, invoices, and Xero data',
+  invoices: 'View and download invoices, track reconciliation',
   kids: 'Manage kids & teens blocks, registrations, and trials',
   email_campaigns: 'Create and send email campaigns, manage subscribers',
   branding: 'Use branding studio, manage reviews, and brand assets',
@@ -119,6 +124,7 @@ export const PERMISSION_ROUTE_MAP: Record<string, keyof StaffPermissions> = {
   '/calendar': 'contacts',
   '/contacts': 'contacts',
   '/financials': 'financials',
+  '/invoices': 'invoices',
   '/kids': 'kids',
   '/email': 'email_campaigns',
   '/mailchimp': 'email_campaigns',
