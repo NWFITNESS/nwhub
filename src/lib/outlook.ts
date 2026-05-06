@@ -129,6 +129,59 @@ export async function outlookFetch(
   })
 }
 
+// ── Outlook Categories (colour-coded tags, equivalent to Gmail labels) ───────
+
+const OUTLOOK_CATEGORIES: Record<string, { displayName: string; color: string }> = {
+  needs_attention: { displayName: 'NWHub - Action Required', color: 'preset9' },   // red
+  new_lead:        { displayName: 'NWHub - New Lead',        color: 'preset7' },   // green
+  receipt_notification: { displayName: 'NWHub - Receipt', color: 'preset0' },      // blue
+  newsletter:      { displayName: 'NWHub - Newsletter',      color: 'preset3' },   // purple
+}
+
+/**
+ * Ensure NWHub categories exist on the Outlook mailbox.
+ * Creates any that are missing. Returns a map of category key → display name.
+ * Cached in-memory for 10 minutes.
+ */
+let categoryCache: { map: Record<string, string>; fetchedAt: number } | null = null
+const CATEGORY_CACHE_TTL = 10 * 60 * 1000
+
+export async function ensureOutlookCategories(
+  fetcher: typeof outlookFetch = outlookFetch,
+): Promise<Record<string, string>> {
+  if (categoryCache && (Date.now() - categoryCache.fetchedAt) < CATEGORY_CACHE_TTL) {
+    return categoryCache.map
+  }
+
+  // Fetch existing categories
+  const res = await fetcher('/me/outlook/masterCategories')
+  const existing: string[] = []
+  if (res.ok) {
+    const data = await res.json()
+    for (const cat of data.value ?? []) {
+      existing.push(cat.displayName)
+    }
+  }
+
+  // Create missing ones
+  for (const [, cat] of Object.entries(OUTLOOK_CATEGORIES)) {
+    if (!existing.includes(cat.displayName)) {
+      await fetcher('/me/outlook/masterCategories', {
+        method: 'POST',
+        body: JSON.stringify({ displayName: cat.displayName, color: cat.color }),
+      }).catch(() => { /* may already exist, ignore */ })
+    }
+  }
+
+  const map: Record<string, string> = {}
+  for (const [key, cat] of Object.entries(OUTLOOK_CATEGORIES)) {
+    map[key] = cat.displayName
+  }
+
+  categoryCache = { map, fetchedAt: Date.now() }
+  return map
+}
+
 /**
  * Build the OAuth2 authorization URL for the "Connect Outlook" flow.
  */

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { gmailFetch, extractEmailBody, ensureGmailLabels } from '@/lib/gmail'
-import { outlookFetch, getOutlookTokens } from '@/lib/outlook'
+import { outlookFetch, getOutlookTokens, ensureOutlookCategories } from '@/lib/outlook'
 import { classifyEmail } from '@/lib/email-classifier'
 
 // Vercel crons fire GET — UI button fires POST — both use the same handler
@@ -313,37 +313,44 @@ async function processOutlookEmails(
       })
 
       // Apply Outlook-specific actions based on classification
+      // Resolve category display names for Outlook colour-coded tags
+      const catMap = await ensureOutlookCategories()
+      const outlookCategory = catMap[category]
+
       if (category === 'spam') {
-        // Move to junk and mark read
+        // Move to junk and mark read — no category needed
         await outlookFetch(`/me/messages/${msg.id}/move`, {
           method: 'POST',
           body: JSON.stringify({ destinationId: 'junkemail' }),
         })
         archived++
       } else if (category === 'needs_attention') {
-        // Flag the email in Outlook so it shows as important
+        // Flag + high importance + category — keep UNREAD so it stays visible
         await outlookFetch(`/me/messages/${msg.id}`, {
           method: 'PATCH',
           body: JSON.stringify({
             importance: 'high',
             flag: { flagStatus: 'flagged' },
-            isRead: true,
+            categories: outlookCategory ? [outlookCategory] : [],
           }),
         })
       } else if (category === 'new_lead') {
-        // Flag it but lower importance
+        // Flag + category — keep UNREAD so it stays visible
         await outlookFetch(`/me/messages/${msg.id}`, {
           method: 'PATCH',
           body: JSON.stringify({
             flag: { flagStatus: 'flagged' },
-            isRead: true,
+            categories: outlookCategory ? [outlookCategory] : [],
           }),
         })
       } else {
-        // Mark as read for newsletters, receipts, etc.
+        // Newsletters + receipts: mark read + apply category
         await outlookFetch(`/me/messages/${msg.id}`, {
           method: 'PATCH',
-          body: JSON.stringify({ isRead: true }),
+          body: JSON.stringify({
+            isRead: true,
+            categories: outlookCategory ? [outlookCategory] : [],
+          }),
         })
         if (category === 'newsletter' || category === 'receipt_notification') {
           archived++
