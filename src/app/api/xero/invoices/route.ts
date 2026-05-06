@@ -3,11 +3,13 @@ import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth-guard'
 import { getXeroAuth } from '@/lib/xero-auth'
 
-function parseXeroDate(d: string | undefined): string | null {
+function parseXeroDate(d: unknown): string | null {
   if (!d) return null
-  const match = d.match(/\/Date\((\d+)([+-]\d+)?\)\//)
+  if (d instanceof Date) return d.toISOString()
+  const s = String(d)
+  const match = s.match(/\/Date\((\d+)([+-]\d+)?\)\//)
   if (match) return new Date(parseInt(match[1])).toISOString()
-  return d
+  return s
 }
 
 export async function GET() {
