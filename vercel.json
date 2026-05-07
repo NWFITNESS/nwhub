@@ -19,6 +19,26 @@
     {
       "path": "/api/gdpr/retention",
       "schedule": "0 3 * * 0"
+    },
+    {
+      "path": "/api/seo/sync/gsc",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/seo/sync/gsc-queries",
+      "schedule": "30 6 * * 1"
+    },
+    {
+      "path": "/api/seo/sync/ga4",
+      "schedule": "15 6 * * *"
+    },
+    {
+      "path": "/api/seo/sync/stripe",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/seo/sync/health",
+      "schedule": "0 7 * * *"
     }
   ]
 }
