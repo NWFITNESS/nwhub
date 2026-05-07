@@ -24,8 +24,8 @@ async function handler(req: Request) {
       return NextResponse.json({ success: true, rows_written: 0 })
     }
 
-    // GSC URL Inspection API (optional — needs service account)
-    const auth = getGoogleAuth(['https://www.googleapis.com/auth/webmasters.readonly'])
+    // GSC URL Inspection API (optional — needs Google connected)
+    const auth = await getGoogleAuth()
     const siteUrl = process.env.GSC_SITE_URL ?? 'sc-domain:northernwarrior.co.uk'
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let searchconsole: any = null

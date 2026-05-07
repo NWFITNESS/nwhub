@@ -156,9 +156,16 @@ export default function SeoEnginePage() {
         titleGold=" Engine"
         actions={
           !loading ? (
-            <Button variant="default" size="sm" onClick={load}>
-              <RefreshCw size={13} /> Refresh
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="default" size="sm" onClick={load}>
+                <RefreshCw size={13} /> Refresh
+              </Button>
+              <a href="/api/seo/google/connect">
+                <Button variant="default" size="sm">
+                  Connect Google
+                </Button>
+              </a>
+            </div>
           ) : undefined
         }
       />

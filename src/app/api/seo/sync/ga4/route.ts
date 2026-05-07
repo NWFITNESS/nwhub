@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { BetaAnalyticsDataClient } from '@google-analytics/data'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getGoogleAuth } from '@/lib/google-auth'
 import { verifyCronSecret, logSyncStart, logSyncEnd } from '@/lib/seo-sync'
 
 export async function GET(req: Request) { return handler(req) }
@@ -12,17 +13,22 @@ async function handler(req: Request) {
   }
 
   const propertyId = process.env.GA4_PROPERTY_ID
-  const saJson = process.env.GA4_SERVICE_ACCOUNT_JSON ?? process.env.GSC_SERVICE_ACCOUNT_JSON
-  if (!propertyId || !saJson) {
-    return NextResponse.json({ skipped: true, reason: 'GA4_PROPERTY_ID or service account not configured' })
+  if (!propertyId) {
+    return NextResponse.json({ skipped: true, reason: 'GA4_PROPERTY_ID not configured' })
+  }
+
+  const auth = await getGoogleAuth()
+  if (!auth) {
+    return NextResponse.json({ skipped: true, reason: 'Google not connected — visit /seo and click Connect Google' })
   }
 
   const logId = await logSyncStart('ga4-daily')
   let rowsWritten = 0
 
   try {
-    const credentials = JSON.parse(Buffer.from(saJson, 'base64').toString('utf-8'))
-    const analyticsDataClient = new BetaAnalyticsDataClient({ credentials })
+    const analyticsDataClient = new BetaAnalyticsDataClient({
+      authClient: auth as never,
+    })
     const supabase = createAdminClient()
 
     const { data: pages } = await supabase.from('seo_pages').select('id, url_path').eq('status', 'live')

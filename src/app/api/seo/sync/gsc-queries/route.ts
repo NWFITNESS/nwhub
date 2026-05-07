@@ -12,9 +12,9 @@ async function handler(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const auth = getGoogleAuth(['https://www.googleapis.com/auth/webmasters.readonly'])
+  const auth = await getGoogleAuth()
   if (!auth) {
-    return NextResponse.json({ skipped: true, reason: 'GSC_SERVICE_ACCOUNT_JSON not configured' })
+    return NextResponse.json({ skipped: true, reason: 'Google not connected — visit /seo and click Connect Google' })
   }
 
   const logId = await logSyncStart('gsc-queries')
