@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { RefreshCw, Search, AlertTriangle, TrendingUp, TrendingDown, ExternalLink, Zap } from 'lucide-react'
+import { RefreshCw, Search, AlertTriangle, TrendingUp, TrendingDown, ExternalLink, Zap, Settings, Plus, Sparkles } from 'lucide-react'
+import { Modal } from '@/components/ui/Modal'
 import Link from 'next/link'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -133,6 +134,12 @@ export default function SeoEnginePage() {
   const [error, setError] = useState<string | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [syncResult, setSyncResult] = useState<string | null>(null)
+  const [editTemplate, setEditTemplate] = useState<TemplateRow | null>(null)
+  const [templateForm, setTemplateForm] = useState({ name: '', slug: '', url_pattern: '', status: 'draft', master_prompt: '' })
+  const [saving, setSaving] = useState(false)
+  const [showNewTemplate, setShowNewTemplate] = useState(false)
+  const [generating, setGenerating] = useState<string | null>(null)
+  const [genResult, setGenResult] = useState<string | null>(null)
 
   async function load() {
     setLoading(true)
@@ -165,6 +172,61 @@ export default function SeoEnginePage() {
       setSyncResult('Sync failed — check console')
     } finally {
       setSyncing(false)
+    }
+  }
+
+  function openEditTemplate(t: TemplateRow) {
+    setEditTemplate(t)
+    setTemplateForm({ name: t.name, slug: t.slug, url_pattern: t.url_pattern, status: t.status, master_prompt: '' })
+    // Fetch the full template with master_prompt
+    fetch('/api/seo/templates').then(r => r.json()).then((templates) => {
+      const full = templates.find((tt: { id: string }) => tt.id === t.id)
+      if (full?.master_prompt) setTemplateForm(f => ({ ...f, master_prompt: full.master_prompt ?? '' }))
+    })
+  }
+
+  async function saveTemplate() {
+    if (!editTemplate) return
+    setSaving(true)
+    await fetch('/api/seo/templates', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: editTemplate.id, ...templateForm }),
+    })
+    setSaving(false)
+    setEditTemplate(null)
+    load()
+  }
+
+  async function createTemplate() {
+    setSaving(true)
+    await fetch('/api/seo/templates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(templateForm),
+    })
+    setSaving(false)
+    setShowNewTemplate(false)
+    setTemplateForm({ name: '', slug: '', url_pattern: '', status: 'draft', master_prompt: '' })
+    load()
+  }
+
+  async function generateForTemplate(templateId: string) {
+    setGenerating(templateId)
+    setGenResult(null)
+    try {
+      const res = await fetch('/api/seo/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ template_id: templateId }),
+      })
+      const result = await res.json()
+      setGenResult(`Generated ${result.generated}/${result.total} pages`)
+      load()
+    } catch {
+      setGenResult('Generation failed')
+    } finally {
+      setGenerating(null)
     }
   }
 
@@ -261,8 +323,21 @@ export default function SeoEnginePage() {
             <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-nw-500 mb-3">Templates</p>
             <div className="flex flex-col gap-3">
               {data.templates.map((t) => (
-                <TemplateCard key={t.id} template={t} />
+                <TemplateCard
+                  key={t.id}
+                  template={t}
+                  onEdit={() => openEditTemplate(t)}
+                  onGenerate={() => generateForTemplate(t.id)}
+                  isGenerating={generating === t.id}
+                />
               ))}
+              <button
+                onClick={() => { setShowNewTemplate(true); setTemplateForm({ name: '', slug: '', url_pattern: '', status: 'draft', master_prompt: '' }) }}
+                className="rounded-2xl border border-dashed border-[rgba(255,255,255,0.12)] bg-transparent flex items-center justify-center gap-2 text-[13px] text-nw-400 hover:text-gold-300 hover:border-[rgba(212,160,23,0.3)] transition-colors"
+                style={{ padding: 20, minHeight: 80 }}
+              >
+                <Plus size={14} /> New Template
+              </button>
             </div>
           </div>
 
@@ -332,6 +407,13 @@ export default function SeoEnginePage() {
             </div>
           )}
 
+          {/* Generation result */}
+          {genResult && (
+            <div className="rounded-xl border border-[rgba(212,160,23,0.25)] bg-[rgba(212,160,23,0.08)] text-[13px] text-gold-300" style={{ padding: '10px 16px' }}>
+              {genResult}
+            </div>
+          )}
+
           {/* Sync result toast */}
           {syncResult && (
             <div
@@ -371,6 +453,63 @@ export default function SeoEnginePage() {
           </div>
         </>
       )}
+
+      {/* Template editor modal */}
+      {(editTemplate || showNewTemplate) && (
+        <Modal
+          open={true}
+          onClose={() => { setEditTemplate(null); setShowNewTemplate(false) }}
+          title={editTemplate ? `Edit: ${editTemplate.name}` : 'New Template'}
+          width="lg"
+        >
+          <div className="flex flex-col gap-3" style={{ padding: 0 }}>
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-[1.4px] text-nw-500 block mb-1">Name</label>
+              <input value={templateForm.name} onChange={e => setTemplateForm(f => ({ ...f, name: e.target.value }))}
+                className="w-full rounded-lg border border-[rgba(255,255,255,0.12)] bg-nw-800 text-[13px] text-white outline-none focus:border-[rgba(212,160,23,0.4)]"
+                style={{ padding: '8px 12px' }} placeholder="Kids Classes by Town" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] font-semibold uppercase tracking-[1.4px] text-nw-500 block mb-1">Slug</label>
+                <input value={templateForm.slug} onChange={e => setTemplateForm(f => ({ ...f, slug: e.target.value }))}
+                  className="w-full rounded-lg border border-[rgba(255,255,255,0.12)] bg-nw-800 text-[13px] text-white outline-none focus:border-[rgba(212,160,23,0.4)]"
+                  style={{ padding: '8px 12px' }} placeholder="kids-by-town" />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold uppercase tracking-[1.4px] text-nw-500 block mb-1">URL Pattern</label>
+                <input value={templateForm.url_pattern} onChange={e => setTemplateForm(f => ({ ...f, url_pattern: e.target.value }))}
+                  className="w-full rounded-lg border border-[rgba(255,255,255,0.12)] bg-nw-800 text-[13px] text-white outline-none focus:border-[rgba(212,160,23,0.4)]"
+                  style={{ padding: '8px 12px' }} placeholder="/kids-classes/[town]" />
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-[1.4px] text-nw-500 block mb-1">Status</label>
+              <select value={templateForm.status} onChange={e => setTemplateForm(f => ({ ...f, status: e.target.value }))}
+                className="w-full rounded-lg border border-[rgba(255,255,255,0.12)] bg-nw-800 text-[13px] text-white outline-none"
+                style={{ padding: '8px 12px' }}>
+                <option value="draft">Draft</option>
+                <option value="live">Live</option>
+                <option value="paused">Paused</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-[1.4px] text-nw-500 block mb-1">Master Prompt</label>
+              <textarea value={templateForm.master_prompt} onChange={e => setTemplateForm(f => ({ ...f, master_prompt: e.target.value }))}
+                className="w-full rounded-lg border border-[rgba(255,255,255,0.12)] bg-nw-800 text-[13px] text-white outline-none focus:border-[rgba(212,160,23,0.4)] min-h-[160px]"
+                style={{ padding: '8px 12px' }}
+                placeholder="Generate a landing page for {{data.town}}. Use {{town}} in the URL..." />
+              <p className="text-[10px] text-nw-500 mt-1">Use {'{{variable}}'} for page variables and {'{{data.field}}'} for data row fields</p>
+            </div>
+            <div className="flex justify-end gap-2 mt-2">
+              <Button variant="default" size="sm" onClick={() => { setEditTemplate(null); setShowNewTemplate(false) }}>Cancel</Button>
+              <Button variant="gold" size="sm" onClick={editTemplate ? saveTemplate : createTemplate} loading={saving}>
+                {editTemplate ? 'Save' : 'Create'}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }
@@ -401,7 +540,7 @@ const TEMPLATE_COLORS: Record<string, string> = {
   'goals-by-town': 'linear-gradient(180deg, #4ade80, #22d3ee)',
 }
 
-function TemplateCard({ template: t }: { template: TemplateRow }) {
+function TemplateCard({ template: t, onEdit, onGenerate, isGenerating }: { template: TemplateRow; onEdit: () => void; onGenerate: () => void; isGenerating: boolean }) {
   const accent = TEMPLATE_COLORS[t.slug] ?? 'linear-gradient(180deg, #c9a70a, #967705)'
   return (
     <div
@@ -420,6 +559,18 @@ function TemplateCard({ template: t }: { template: TemplateRow }) {
             </Badge>
           </div>
           <p className="text-[11px] text-nw-500 mt-0.5">{t.url_pattern}</p>
+        </div>
+        <div className="flex gap-1.5 flex-shrink-0">
+          <button onClick={onGenerate} disabled={isGenerating}
+            className="rounded-lg border border-[rgba(212,160,23,0.3)] text-gold-300 text-[10px] font-bold uppercase tracking-[0.6px] hover:bg-[rgba(212,160,23,0.1)] transition-colors disabled:opacity-40"
+            style={{ padding: '5px 10px', minHeight: 32 }} title="Generate content for all pages">
+            {isGenerating ? '...' : <><Sparkles size={11} /> Generate</>}
+          </button>
+          <button onClick={onEdit}
+            className="rounded-lg border border-[rgba(255,255,255,0.09)] text-nw-400 text-[10px] font-bold uppercase tracking-[0.6px] hover:text-nw-200 transition-colors"
+            style={{ padding: '5px 10px', minHeight: 32 }} title="Edit template">
+            <Settings size={11} />
+          </button>
         </div>
       </div>
 

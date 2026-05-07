@@ -9,8 +9,9 @@ import { Badge } from '@/components/ui/Badge'
 import {
   RefreshCw, ExternalLink, Copy, Check, ChevronRight,
   TrendingUp, TrendingDown, Globe, Shield, Zap, FileText, Link2, Layers,
-  AlertTriangle,
+  AlertTriangle, Sparkles, History, Trash2,
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import {
   AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ComposedChart,
@@ -151,11 +152,19 @@ export default function SeoPageDetailPage() {
   const slug = typeof params.slug === 'string' ? params.slug : ''
   const urlPath = decodeURIComponent(slug)
 
+  const router = useRouter()
   const [data, setData] = useState<SeoPageDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [range, setRange] = useState<string>('28d')
   const [copied, setCopied] = useState(false)
+  const [regenerating, setRegenerating] = useState(false)
+  const [regenResult, setRegenResult] = useState<string | null>(null)
+  const [briefHistory, setBriefHistory] = useState<Array<{ id: string; version: number; model: string; generated_at: string }> | null>(null)
+  const [showHistory, setShowHistory] = useState(false)
+  const [selectedBrief, setSelectedBrief] = useState<{ prompt_used: string; generated_content: string; model: string; version: number } | null>(null)
+  const [deindexing, setDeindexing] = useState(false)
+  const [confirmDeindex, setConfirmDeindex] = useState(false)
 
   async function load(r?: string) {
     setLoading(true)
@@ -183,6 +192,58 @@ export default function SeoPageDetailPage() {
     navigator.clipboard.writeText(`https://northernwarrior.co.uk${urlPath}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  async function regenerate() {
+    if (!data?.page?.id) return
+    setRegenerating(true)
+    setRegenResult(null)
+    try {
+      const res = await fetch('/api/seo/page/regenerate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ page_id: data.page.id }),
+      })
+      const result = await res.json()
+      if (result.generated > 0) {
+        setRegenResult('Content regenerated successfully')
+        load()
+      } else {
+        setRegenResult(result.results?.[0]?.error ?? result.error ?? 'Generation failed')
+      }
+    } catch {
+      setRegenResult('Failed to regenerate')
+    } finally {
+      setRegenerating(false)
+    }
+  }
+
+  async function loadBriefHistory() {
+    if (!data?.page?.id) return
+    setShowHistory(!showHistory)
+    if (briefHistory) return
+    const res = await fetch(`/api/seo/briefs?page_id=${data.page.id}`)
+    if (res.ok) setBriefHistory(await res.json())
+  }
+
+  async function viewBrief(briefId: string) {
+    const res = await fetch(`/api/seo/briefs?id=${briefId}`)
+    if (res.ok) setSelectedBrief(await res.json())
+  }
+
+  async function deindexPage() {
+    if (!data?.page?.id) return
+    setDeindexing(true)
+    try {
+      await fetch('/api/seo/page/deindex', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ page_id: data.page.id }),
+      })
+      router.push('/seo')
+    } catch {
+      setDeindexing(false)
+    }
   }
 
   if (error) {
@@ -396,6 +457,89 @@ export default function SeoPageDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Actions: Regenerate + History */}
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-nw-500 mb-3">Content</p>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="gold" size="sm" onClick={regenerate} loading={regenerating}>
+            <Sparkles size={13} /> Regenerate
+          </Button>
+          <Button variant="default" size="sm" onClick={loadBriefHistory}>
+            <History size={13} /> Brief History
+          </Button>
+        </div>
+        {regenResult && (
+          <div className="mt-3 rounded-xl border border-[rgba(212,160,23,0.25)] bg-[rgba(212,160,23,0.08)] text-[13px] text-gold-300" style={{ padding: '10px 16px' }}>
+            {regenResult}
+          </div>
+        )}
+      </div>
+
+      {/* Brief History drawer */}
+      {showHistory && (
+        <div className="rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 overflow-hidden">
+          <div style={{ padding: '12px 16px' }} className="border-b border-[rgba(255,255,255,0.06)]">
+            <p className="text-[13px] font-semibold text-nw-200">Brief Versions</p>
+          </div>
+          {!briefHistory ? (
+            <div style={{ padding: 16 }} className="text-[13px] text-nw-400">Loading...</div>
+          ) : briefHistory.length === 0 ? (
+            <div style={{ padding: 16 }} className="text-[13px] text-nw-400">No briefs generated yet</div>
+          ) : (
+            briefHistory.map((b, i) => (
+              <button
+                key={b.id}
+                onClick={() => viewBrief(b.id)}
+                className={`w-full text-left flex items-center justify-between transition-colors hover:bg-[rgba(255,255,255,0.03)] ${i < briefHistory.length - 1 ? 'border-b border-[rgba(255,255,255,0.06)]' : ''}`}
+                style={{ padding: '10px 16px', minHeight: 44 }}
+              >
+                <div>
+                  <p className="text-[13px] text-nw-200">Version {b.version}</p>
+                  <p className="text-[11px] text-nw-500">{b.model} · {new Date(b.generated_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                </div>
+                <ChevronRight size={14} className="text-nw-500" />
+              </button>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Selected brief content */}
+      {selectedBrief && (
+        <div className="rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 overflow-hidden">
+          <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.06)]" style={{ padding: '12px 16px' }}>
+            <p className="text-[13px] font-semibold text-nw-200">Brief v{selectedBrief.version} — {selectedBrief.model}</p>
+            <button onClick={() => setSelectedBrief(null)} className="text-nw-500 hover:text-nw-200 text-[11px]">Close</button>
+          </div>
+          <div style={{ padding: 16 }}>
+            <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-nw-500 mb-2">Prompt</p>
+            <pre className="text-[12px] text-nw-400 whitespace-pre-wrap bg-nw-800 rounded-lg overflow-auto max-h-[200px]" style={{ padding: 12 }}>{selectedBrief.prompt_used}</pre>
+            <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-nw-500 mb-2 mt-4">Generated Content</p>
+            <pre className="text-[12px] text-nw-300 whitespace-pre-wrap bg-nw-800 rounded-lg overflow-auto max-h-[400px]" style={{ padding: 12 }}>{selectedBrief.generated_content}</pre>
+          </div>
+        </div>
+      )}
+
+      {/* Danger Zone */}
+      <div className="rounded-2xl border border-[rgba(248,113,113,0.2)] bg-[rgba(248,113,113,0.04)]" style={{ padding: 16 }}>
+        <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-red-400 mb-2">Danger Zone</p>
+        <p className="text-[13px] text-nw-400 mb-3">Deindexing removes this page from the sitemap and marks it as deindexed. This does not delete the page data.</p>
+        {!confirmDeindex ? (
+          <Button variant="danger" size="sm" onClick={() => setConfirmDeindex(true)}>
+            <Trash2 size={13} /> Deindex Page
+          </Button>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Button variant="danger" size="sm" onClick={deindexPage} loading={deindexing}>
+              Confirm Deindex
+            </Button>
+            <Button variant="default" size="sm" onClick={() => setConfirmDeindex(false)}>
+              Cancel
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
