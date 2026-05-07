@@ -131,6 +131,8 @@ export default function SeoEnginePage() {
   const [data, setData] = useState<SeoOverviewData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [syncing, setSyncing] = useState(false)
+  const [syncResult, setSyncResult] = useState<string | null>(null)
 
   async function load() {
     setLoading(true)
@@ -143,6 +145,21 @@ export default function SeoEnginePage() {
       setError(err instanceof Error ? err.message : 'Failed to load')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function syncAll() {
+    setSyncing(true)
+    setSyncResult(null)
+    try {
+      const res = await fetch('/api/seo/sync/all', { method: 'POST' })
+      const data = await res.json()
+      setSyncResult(`Done: ${data.succeeded ?? 0} succeeded, ${data.skipped ?? 0} skipped, ${data.failed ?? 0} failed`)
+      load()
+    } catch {
+      setSyncResult('Sync failed')
+    } finally {
+      setSyncing(false)
     }
   }
 
@@ -159,6 +176,9 @@ export default function SeoEnginePage() {
             <div className="flex items-center gap-2">
               <Button variant="default" size="sm" onClick={load}>
                 <RefreshCw size={13} /> Refresh
+              </Button>
+              <Button variant="gold" size="sm" onClick={syncAll} loading={syncing}>
+                Sync Now
               </Button>
               <a href="/api/seo/google/connect">
                 <Button variant="default" size="sm">
@@ -304,6 +324,16 @@ export default function SeoEnginePage() {
                   </Link>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Sync result toast */}
+          {syncResult && (
+            <div
+              className="rounded-xl border border-[rgba(212,160,23,0.25)] bg-[rgba(212,160,23,0.08)] text-[13px] text-gold-300"
+              style={{ padding: '10px 16px' }}
+            >
+              {syncResult}
             </div>
           )}
 

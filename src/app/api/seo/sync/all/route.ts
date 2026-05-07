@@ -13,9 +13,8 @@ export async function POST(req: Request) {
   const unauth = await requireAuth()
   if (unauth) return unauth
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:3001'
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL
+    ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3001')
   const cronSecret = process.env.CRON_SECRET ?? 'nw-cron-2026'
 
   const results: Array<{ name: string; status: string; rows_written?: number; error?: string }> = []
