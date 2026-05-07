@@ -19,6 +19,7 @@ export interface StaffPermissions {
   contacts: boolean
   financials: boolean
   invoices: boolean
+  seo: boolean
   kids: boolean
   email_campaigns: boolean
   branding: boolean
@@ -37,6 +38,7 @@ export const DEFAULT_STAFF_PERMISSIONS: StaffPermissions = {
   contacts: true,
   financials: false,
   invoices: false,
+  seo: false,
   kids: true,
   email_campaigns: true,
   branding: true,
@@ -55,6 +57,7 @@ export const FULL_PERMISSIONS: StaffPermissions = {
   contacts: true,
   financials: true,
   invoices: true,
+  seo: true,
   kids: true,
   email_campaigns: true,
   branding: true,
@@ -73,6 +76,7 @@ export const PERMISSION_LABELS: Record<keyof StaffPermissions, string> = {
   contacts: 'Contacts & Members',
   financials: 'Financials',
   invoices: 'Invoice Vault',
+  seo: 'SEO Engine',
   kids: 'Kids & Teens',
   email_campaigns: 'Email Campaigns',
   branding: 'Branding Studio',
@@ -91,6 +95,7 @@ export const PERMISSION_DESCRIPTIONS: Record<keyof StaffPermissions, string> = {
   contacts: 'View and manage contacts, leads, and member data',
   financials: 'View financial reports, invoices, and Xero data',
   invoices: 'View and download invoices, track reconciliation',
+  seo: 'Monitor programmatic SEO performance, GSC data, and page health',
   kids: 'Manage kids & teens blocks, registrations, and trials',
   email_campaigns: 'Create and send email campaigns, manage subscribers',
   branding: 'Use branding studio, manage reviews, and brand assets',
@@ -125,6 +130,7 @@ export const PERMISSION_ROUTE_MAP: Record<string, keyof StaffPermissions> = {
   '/contacts': 'contacts',
   '/financials': 'financials',
   '/invoices': 'invoices',
+  '/seo': 'seo',
   '/kids': 'kids',
   '/email': 'email_campaigns',
   '/mailchimp': 'email_campaigns',
