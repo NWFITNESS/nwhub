@@ -26,8 +26,15 @@ async function handler(req: Request) {
 
   try {
     // Get a fresh access token
-    const { token } = await auth.getAccessToken()
-    if (!token) throw new Error('Failed to get access token')
+    console.log('[seo/sync/ga4] Getting access token...')
+    let token: string | null | undefined
+    try {
+      const res = await auth.getAccessToken()
+      token = res.token
+    } catch (tokenErr) {
+      throw new Error(`Token fetch failed: ${JSON.stringify(tokenErr)}`)
+    }
+    if (!token) throw new Error('getAccessToken returned null — Google may need reconnecting')
 
     const supabase = createAdminClient()
     const { data: pages } = await supabase.from('seo_pages').select('id, url_path').eq('status', 'live')
@@ -99,8 +106,8 @@ async function handler(req: Request) {
     await logSyncEnd(logId, rowsWritten)
     return NextResponse.json({ success: true, rows_written: rowsWritten })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err)
-    console.error('[seo/sync/ga4]', message)
+    const message = err instanceof Error ? err.message : JSON.stringify(err) ?? String(err)
+    console.error('[seo/sync/ga4] Full error:', message)
     await logSyncEnd(logId, rowsWritten, message)
     return NextResponse.json({ error: message }, { status: 502 })
   }
