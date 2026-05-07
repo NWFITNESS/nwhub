@@ -153,11 +153,16 @@ export default function SeoEnginePage() {
     setSyncResult(null)
     try {
       const res = await fetch('/api/seo/sync/all', { method: 'POST' })
-      const data = await res.json()
-      setSyncResult(`Done: ${data.succeeded ?? 0} succeeded, ${data.skipped ?? 0} skipped, ${data.failed ?? 0} failed`)
-      load()
+      const result = await res.json()
+      const details = (result.results ?? []).map((r: { name: string; status: string; error?: string; rows_written?: number }) =>
+        `${r.name}: ${r.status}${r.rows_written ? ` (${r.rows_written} rows)` : ''}${r.error ? ` — ${r.error}` : ''}`
+      ).join('\n')
+      setSyncResult(`${result.succeeded ?? 0} succeeded, ${result.skipped ?? 0} skipped, ${result.failed ?? 0} failed\n${details}`)
+      // Refresh data without clearing the sync result
+      const overviewRes = await fetch('/api/seo/overview')
+      if (overviewRes.ok) setData(await overviewRes.json())
     } catch {
-      setSyncResult('Sync failed')
+      setSyncResult('Sync failed — check console')
     } finally {
       setSyncing(false)
     }
@@ -330,8 +335,8 @@ export default function SeoEnginePage() {
           {/* Sync result toast */}
           {syncResult && (
             <div
-              className="rounded-xl border border-[rgba(212,160,23,0.25)] bg-[rgba(212,160,23,0.08)] text-[13px] text-gold-300"
-              style={{ padding: '10px 16px' }}
+              className="rounded-xl border border-[rgba(212,160,23,0.25)] bg-[rgba(212,160,23,0.08)] text-[13px] text-gold-300 whitespace-pre-line"
+              style={{ padding: '12px 16px' }}
             >
               {syncResult}
             </div>
