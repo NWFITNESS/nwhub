@@ -11,11 +11,17 @@ import {
 } from 'lucide-react'
 import { SearchInput } from '@/components/ui/SearchInput'
 
-interface ContentPage {
+export interface ContentPage {
   slug: string
   label: string
   updated?: string
   status?: 'published' | 'draft'
+}
+
+interface SubPageGroup {
+  id: string
+  label: string
+  pages: ContentPage[]
 }
 
 const PAGE_META: Record<string, { icon: LucideIcon; color: string; bg: string; glow: string }> = {
@@ -56,7 +62,8 @@ const cardVariants: Variants = {
   exit: { opacity: 0, scale: 0.96, transition: { duration: 0.2 } },
 }
 
-export function ContentGrid({ pages }: { pages: ContentPage[] }) {
+export function ContentGrid({ pages, subPageGroups = [] }: { pages: ContentPage[]; subPageGroups?: SubPageGroup[] }) {
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all')
 
@@ -235,6 +242,78 @@ export function ContentGrid({ pages }: { pages: ContentPage[] }) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Sub-page groups (programmatic SEO pages) */}
+      {subPageGroups.length > 0 && (
+        <div className="flex flex-col gap-4">
+          <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-nw-500">Programmatic Pages</p>
+          {subPageGroups.map(group => (
+            <div key={group.id} className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 overflow-hidden">
+              {/* Group header — click to expand */}
+              <button
+                onClick={() => setExpandedGroup(expandedGroup === group.id ? null : group.id)}
+                className="w-full flex items-center justify-between transition-colors hover:bg-nw-700"
+                style={{ padding: '14px 20px', minHeight: 56 }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-pink-500/15 text-pink-400" style={{ boxShadow: '0 0 14px rgba(236,72,153,0.35)' }}>
+                    <Baby size={20} strokeWidth={1.75} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[13px] font-medium text-nw-200">{group.label}</p>
+                    <p className="text-[11px] text-nw-400">{group.pages.length} page{group.pages.length !== 1 ? 's' : ''}</p>
+                  </div>
+                </div>
+                <span className={`text-nw-400 transition-transform ${expandedGroup === group.id ? 'rotate-90' : ''}`}>
+                  ›
+                </span>
+              </button>
+
+              {/* Expanded sub-pages */}
+              {expandedGroup === group.id && (
+                <div className="border-t border-[rgba(255,255,255,0.06)]">
+                  {group.pages.map((page, i) => (
+                    <div
+                      key={page.slug}
+                      className={`flex items-center justify-between transition-colors hover:bg-[rgba(255,255,255,0.03)] ${i < group.pages.length - 1 ? 'border-b border-[rgba(255,255,255,0.06)]' : ''}`}
+                      style={{ padding: '10px 20px' }}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-2 h-2 rounded-full bg-[#7ec93a] flex-shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-[13px] font-medium text-nw-200">{page.label}</p>
+                          <p className="text-[10px] text-nw-500 truncate">/{page.slug}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {page.updated && (
+                          <span className="text-[10px] text-nw-500 flex items-center gap-1">
+                            <Clock size={9} /> {timeAgo(page.updated)}
+                          </span>
+                        )}
+                        <Link
+                          href={`/content/${page.slug}`}
+                          className="flex items-center gap-1 rounded-[7px] border border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] px-3 py-1 text-[11px] font-medium text-gold-300 transition-colors hover:bg-[rgba(212,160,23,0.22)]"
+                        >
+                          <Edit3 size={11} /> Edit
+                        </Link>
+                        <a
+                          href={`${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/${page.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex w-7 h-7 items-center justify-center rounded-[7px] text-nw-400 transition-colors hover:text-nw-200 hover:bg-[rgba(255,255,255,0.04)]"
+                        >
+                          <Eye size={12} />
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

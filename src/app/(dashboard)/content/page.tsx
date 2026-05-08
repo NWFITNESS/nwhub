@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { ContentGrid } from '@/components/content/ContentGrid'
+import { ContentGrid, type ContentPage as ContentPageType } from '@/components/content/ContentGrid'
 import { Globe } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 
@@ -26,10 +27,19 @@ const PAGES = [
 
 export default async function ContentPage() {
   const supabase = await createClient()
-  const { data: rows } = await supabase
-    .from('page_content')
-    .select('page_slug, updated_at')
-    .order('updated_at', { ascending: false })
+  const admin = createAdminClient()
+
+  const [{ data: rows }, { data: seoPages }] = await Promise.all([
+    supabase
+      .from('page_content')
+      .select('page_slug, updated_at')
+      .order('updated_at', { ascending: false }),
+    admin
+      .from('seo_pages')
+      .select('url_path, title, status, template_id, updated_at, seo_templates(name)')
+      .eq('status', 'live')
+      .order('url_path'),
+  ])
 
   const lastUpdated = rows?.reduce<Record<string, string>>((acc, row) => {
     if (!acc[row.page_slug] || row.updated_at > acc[row.page_slug]) {
@@ -37,6 +47,33 @@ export default async function ContentPage() {
     }
     return acc
   }, {})
+
+  // Group SEO pages by template for sub-page sections
+  const templateGroups = new Map<string, { name: string; pages: ContentPageType[] }>()
+  for (const p of (seoPages ?? [])) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const templateName = (p as any).seo_templates?.name ?? 'Programmatic Pages'
+    const templateId = p.template_id ?? 'unknown'
+    if (!templateGroups.has(templateId)) {
+      templateGroups.set(templateId, { name: templateName, pages: [] })
+    }
+    // Convert url_path like /kids-classes/whitehaven to a display label
+    const pathParts = p.url_path.split('/')
+    const townName = pathParts[pathParts.length - 1]
+      .split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    templateGroups.get(templateId)!.pages.push({
+      slug: p.url_path.replace(/^\//, ''), // strip leading slash for content editor route
+      label: townName,
+      updated: p.updated_at ?? undefined,
+      status: 'published',
+    })
+  }
+
+  const subPageGroups = Array.from(templateGroups.entries()).map(([id, g]) => ({
+    id,
+    label: g.name,
+    pages: g.pages,
+  }))
 
   return (
     <div className="flex flex-col gap-4">
@@ -57,6 +94,7 @@ export default async function ContentPage() {
           label,
           updated: lastUpdated?.[slug],
         }))}
+        subPageGroups={subPageGroups}
       />
     </div>
   )
