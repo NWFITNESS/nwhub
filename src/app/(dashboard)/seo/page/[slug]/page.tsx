@@ -485,7 +485,7 @@ export default function SeoPageDetailPage() {
           </div>
           <iframe
             src={publicUrl}
-            sandbox="allow-same-origin"
+            sandbox="allow-same-origin allow-scripts"
             className="w-full border-0"
             style={{ height: 400 }}
             title="Live preview"

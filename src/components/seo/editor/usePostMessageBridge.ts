@@ -8,7 +8,12 @@ export interface EditableBlock {
   tag?: string // e.g. 'h1', 'p', 'a'
 }
 
-const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://northernwarrior.co.uk'
+const ALLOWED_ORIGINS = [
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://northernwarrior.co.uk',
+  'https://northernwarrior.co.uk',
+  'https://www.northernwarrior.co.uk',
+  'null', // sandboxed iframes send origin as 'null'
+]
 
 export function usePostMessageBridge() {
   const iframeRef = useRef<HTMLIFrameElement>(null)
@@ -18,8 +23,9 @@ export function usePostMessageBridge() {
 
   useEffect(() => {
     const handler = (e: MessageEvent) => {
-      // Verify origin
-      if (!e.origin || !ALLOWED_ORIGIN.includes(e.origin.replace(/\/$/, ''))) return
+      // Verify origin — accept sandboxed iframe (null origin) and public site
+      const origin = e.origin ?? ''
+      if (!ALLOWED_ORIGINS.some(o => o === origin || o === 'null' && origin === 'null')) return
 
       const data = e.data
       if (!data?.type) return
@@ -40,7 +46,7 @@ export function usePostMessageBridge() {
   }, [])
 
   const postToIframe = useCallback((message: Record<string, unknown>) => {
-    iframeRef.current?.contentWindow?.postMessage(message, ALLOWED_ORIGIN)
+    iframeRef.current?.contentWindow?.postMessage(message, '*')
   }, [])
 
   const highlightBlock = useCallback((blockId: string) => {
