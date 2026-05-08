@@ -43,6 +43,7 @@ interface BriefData {
   version: number
   model: string
   generated_at: string
+  generated_content?: string | Record<string, unknown>
 }
 
 interface DailyPoint {
@@ -665,6 +666,12 @@ export default function SeoPageDetailPage() {
           urlPath={page.url_path}
           title={page.title}
           publicUrl={publicUrl}
+          briefContent={(() => {
+            const gc = brief?.generated_content
+            if (!gc) return null
+            if (typeof gc === 'string') { try { return JSON.parse(gc) } catch { return null } }
+            return gc as Record<string, unknown>
+          })()}
           onClose={() => setShowEditor(false)}
           onSaved={(version) => {
             setShowEditor(false)

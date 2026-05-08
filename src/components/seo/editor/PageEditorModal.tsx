@@ -1,37 +1,78 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { ArrowLeft, Save, Copy, Check, ChevronRight, Type, Link2, Image, FileText } from 'lucide-react'
-import { usePostMessageBridge, type EditableBlock } from './usePostMessageBridge'
+import { ArrowLeft, Save, Check, ChevronRight, Type, Link2, FileText } from 'lucide-react'
+
+interface EditableBlock {
+  id: string
+  type: 'text' | 'link' | 'image' | 'meta'
+  label: string
+  content: string
+  tag?: string
+}
 
 interface Props {
   pageId: string
   urlPath: string
   title: string
   publicUrl: string
+  briefContent?: Record<string, unknown> | null
   onClose: () => void
   onSaved: (version: number) => void
 }
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://northernwarrior.co.uk'
 
-export function PageEditorModal({ pageId, urlPath, title, publicUrl, onClose, onSaved }: Props) {
-  const {
-    iframeRef, blocks, selectedBlockId, setSelectedBlockId,
-    ready, highlightBlock, scrollToBlock, updateBlock, revert,
-  } = usePostMessageBridge()
+/**
+ * Extract editable blocks from the brief's JSON content.
+ * This gives us a block list even when the iframe bridge doesn't connect.
+ */
+function extractBlocksFromBrief(content: Record<string, unknown>): EditableBlock[] {
+  const blocks: EditableBlock[] = []
 
+  function walk(obj: unknown, prefix: string) {
+    if (typeof obj === 'string') {
+      blocks.push({
+        id: prefix,
+        type: 'text',
+        label: prefix.split('.').pop()?.replace(/_/g, ' ') ?? prefix,
+        content: obj,
+        tag: obj.length > 100 ? 'p' : 'span',
+      })
+    } else if (Array.isArray(obj)) {
+      obj.forEach((item, i) => walk(item, `${prefix}.${i}`))
+    } else if (obj && typeof obj === 'object') {
+      for (const [key, val] of Object.entries(obj)) {
+        if (key === 'meta') continue // skip meta block for now
+        walk(val, prefix ? `${prefix}.${key}` : key)
+      }
+    }
+  }
+
+  walk(content, '')
+  return blocks
+}
+
+export function PageEditorModal({ pageId, urlPath, title, publicUrl, briefContent, onClose, onSaved }: Props) {
+  const iframeRef = useRef<HTMLIFrameElement>(null)
   const [pendingChanges, setPendingChanges] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
   const [editorToken, setEditorToken] = useState<string | null>(null)
   const [tokenLoading, setTokenLoading] = useState(true)
   const [copied, setCopied] = useState(false)
+  const [iframeReady, setIframeReady] = useState(false)
+  const [iframeBlocks, setIframeBlocks] = useState<EditableBlock[]>([])
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
 
+  // Blocks: prefer iframe-discovered blocks, fallback to brief-extracted
+  const briefBlocks = briefContent ? extractBlocksFromBrief(briefContent) : []
+  const blocks = iframeBlocks.length > 0 ? iframeBlocks : briefBlocks
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null)
+
   // Fetch editor token on mount
-  useState(() => {
+  useEffect(() => {
     fetch('/api/seo/page/editor-token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -40,29 +81,45 @@ export function PageEditorModal({ pageId, urlPath, title, publicUrl, onClose, on
       .then(r => r.json())
       .then(data => { setEditorToken(data.token); setTokenLoading(false) })
       .catch(() => setTokenLoading(false))
-  })
+  }, [urlPath])
 
-  const iframeSrc = editorToken
-    ? `${SITE_URL}${urlPath}?nw_edit=${editorToken}`
-    : null
+  // Listen for postMessage from iframe
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      const data = e.data
+      if (!data?.type) return
+      if (data.type === 'editor:ready') {
+        setIframeReady(true)
+        if (Array.isArray(data.blocks)) setIframeBlocks(data.blocks)
+      }
+      if (data.type === 'editor:block_clicked' && data.block_id) {
+        setSelectedBlockId(data.block_id)
+      }
+    }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+  }, [])
 
+  const iframeSrc = editorToken ? `${SITE_URL}${urlPath}?nw_edit=${editorToken}` : null
   const hasPendingChanges = Object.keys(pendingChanges).length > 0
+
+  const postToIframe = useCallback((msg: Record<string, unknown>) => {
+    iframeRef.current?.contentWindow?.postMessage(msg, '*')
+  }, [])
 
   const handleBlockEdit = useCallback((blockId: string, content: string) => {
     setPendingChanges(prev => ({ ...prev, [blockId]: content }))
-
-    // Debounced live update to iframe
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
-      updateBlock(blockId, content)
+      postToIframe({ type: 'editor:update', block_id: blockId, content })
     }, 100)
-  }, [updateBlock])
+  }, [postToIframe])
 
   const handleBlockSelect = useCallback((blockId: string) => {
-    highlightBlock(blockId)
-    scrollToBlock(blockId)
     setSelectedBlockId(blockId)
-  }, [highlightBlock, scrollToBlock, setSelectedBlockId])
+    postToIframe({ type: 'editor:highlight', block_id: blockId })
+    postToIframe({ type: 'editor:scroll', block_id: blockId })
+  }, [postToIframe])
 
   async function handleSave() {
     setSaving(true)
@@ -73,9 +130,7 @@ export function PageEditorModal({ pageId, urlPath, title, publicUrl, onClose, on
         body: JSON.stringify({ page_id: pageId, changes: pendingChanges }),
       })
       const data = await res.json()
-      if (res.ok) {
-        onSaved(data.version)
-      }
+      if (res.ok) onSaved(data.version)
     } catch { /* handled by onSaved not being called */ }
     finally { setSaving(false) }
   }
@@ -83,7 +138,7 @@ export function PageEditorModal({ pageId, urlPath, title, publicUrl, onClose, on
   function handleDiscard() {
     if (hasPendingChanges && !confirm('Discard all changes?')) return
     setPendingChanges({})
-    revert()
+    postToIframe({ type: 'editor:revert' })
     onClose()
   }
 
@@ -96,14 +151,13 @@ export function PageEditorModal({ pageId, urlPath, title, publicUrl, onClose, on
   const blockIcon = (type: string) => {
     switch (type) {
       case 'link': return <Link2 size={13} />
-      case 'image': return <Image size={13} />
       case 'meta': return <FileText size={13} />
       default: return <Type size={13} />
     }
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-nw-900 flex flex-col" style={{ height: '100dvh' }}>
+    <div className="fixed inset-0 z-50 bg-nw-900 flex flex-col overflow-hidden" style={{ height: '100dvh' }}>
       {/* Header */}
       <div
         className="flex items-center gap-2 border-b border-[rgba(255,255,255,0.08)] bg-nw-800 flex-shrink-0"
@@ -121,8 +175,8 @@ export function PageEditorModal({ pageId, urlPath, title, publicUrl, onClose, on
         </Button>
       </div>
 
-      {/* Preview iframe — top half */}
-      <div className="flex-1 min-h-0 border-b border-[rgba(212,160,23,0.2)] relative">
+      {/* Preview iframe — fixed 40% height */}
+      <div className="flex-shrink-0 border-b border-[rgba(212,160,23,0.2)] relative" style={{ height: '40%' }}>
         {tokenLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -131,13 +185,23 @@ export function PageEditorModal({ pageId, urlPath, title, publicUrl, onClose, on
             </div>
           </div>
         ) : iframeSrc ? (
-          <iframe
-            ref={iframeRef}
-            src={iframeSrc}
-            className="w-full h-full border-0"
-            sandbox="allow-same-origin allow-scripts"
-            title="Page editor preview"
-          />
+          <>
+            <iframe
+              ref={iframeRef}
+              src={iframeSrc}
+              className="w-full h-full border-0"
+              sandbox="allow-same-origin allow-scripts"
+              title="Page editor preview"
+            />
+            {!iframeReady && (
+              <div className="absolute inset-0 bg-nw-900/80 flex items-center justify-center pointer-events-none">
+                <div className="text-center">
+                  <div className="w-6 h-6 rounded-full border-2 border-gold-400 border-t-transparent animate-spin mx-auto mb-2" />
+                  <p className="text-[11px] text-nw-400">Connecting to page...</p>
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center" style={{ padding: 20 }}>
@@ -146,38 +210,29 @@ export function PageEditorModal({ pageId, urlPath, title, publicUrl, onClose, on
             </div>
           </div>
         )}
-
-        {/* Ready indicator */}
-        {iframeSrc && !ready && !tokenLoading && (
-          <div className="absolute inset-0 bg-nw-900/80 flex items-center justify-center pointer-events-none">
-            <div className="text-center">
-              <div className="w-6 h-6 rounded-full border-2 border-gold-400 border-t-transparent animate-spin mx-auto mb-2" />
-              <p className="text-[11px] text-nw-400">Waiting for page...</p>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Block list — bottom half */}
-      <div className="flex-1 min-h-0 overflow-y-auto bg-nw-750">
-        <div className="border-b border-[rgba(255,255,255,0.06)]" style={{ padding: '10px 16px' }}>
+      {/* Block list — remaining 60%, scrollable */}
+      <div className="flex-1 overflow-y-auto bg-nw-750">
+        <div className="border-b border-[rgba(255,255,255,0.06)] flex-shrink-0" style={{ padding: '10px 16px' }}>
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-nw-500">
-              Editable Blocks
+              {blocks.length > 0 ? `${blocks.length} Editable Blocks` : 'Editable Blocks'}
             </p>
             {hasPendingChanges && (
               <Badge variant="gold">{Object.keys(pendingChanges).length} changed</Badge>
             )}
           </div>
+          {!iframeReady && blocks.length > 0 && (
+            <p className="text-[10px] text-nw-500 mt-1">Editing from brief content (iframe not connected)</p>
+          )}
         </div>
 
-        {!ready && blocks.length === 0 ? (
+        {blocks.length === 0 ? (
           <div style={{ padding: 20 }} className="text-center">
-            <p className="text-[13px] text-nw-400">
-              {tokenLoading ? 'Loading...' : 'No editable blocks found on this page'}
-            </p>
+            <p className="text-[13px] text-nw-400">No editable blocks found</p>
             <p className="text-[11px] text-nw-500 mt-1">
-              Add <code className="text-nw-300 bg-nw-800 rounded px-1">data-nw-editable=&quot;block-id&quot;</code> to elements on the public site
+              The page needs <code className="text-nw-300 bg-nw-800 rounded px-1">data-nw-editable</code> attributes, or a brief with content to edit.
             </p>
           </div>
         ) : (
@@ -215,11 +270,7 @@ function BlockEditor({ block, isSelected, pendingContent, onSelect, onChange, ic
   const isChanged = pendingContent !== undefined
 
   return (
-    <div
-      className={`border-b border-[rgba(255,255,255,0.06)] transition-colors ${
-        isSelected ? 'bg-[rgba(212,160,23,0.06)] border-l-2 border-l-gold-400' : ''
-      }`}
-    >
+    <div className={`border-b border-[rgba(255,255,255,0.06)] transition-colors ${isSelected ? 'bg-[rgba(212,160,23,0.06)] border-l-2 border-l-gold-400' : ''}`}>
       <button
         onClick={() => { onSelect(); setExpanded(!expanded) }}
         className="w-full flex items-center gap-2.5 text-left"
@@ -238,12 +289,12 @@ function BlockEditor({ block, isSelected, pendingContent, onSelect, onChange, ic
 
       {expanded && (
         <div style={{ padding: '0 16px 12px' }}>
-          {block.type === 'text' && block.tag === 'p' ? (
+          {block.tag === 'p' || value.length > 100 ? (
             <textarea
               value={value}
               onChange={e => onChange(e.target.value)}
-              className="w-full rounded-lg border border-[rgba(255,255,255,0.12)] bg-nw-800 text-[13px] text-white outline-none focus:border-[rgba(212,160,23,0.4)] resize-none min-h-[80px]"
-              style={{ padding: '8px 12px' }}
+              className="w-full rounded-lg border border-[rgba(255,255,255,0.12)] bg-nw-800 text-[13px] text-white outline-none focus:border-[rgba(212,160,23,0.4)] resize-none"
+              style={{ padding: '8px 12px', minHeight: 80 }}
             />
           ) : (
             <input
@@ -253,7 +304,7 @@ function BlockEditor({ block, isSelected, pendingContent, onSelect, onChange, ic
               style={{ padding: '8px 12px' }}
             />
           )}
-          <p className="text-[10px] text-nw-500 mt-1">{value.length} characters · {block.tag ?? block.type}</p>
+          <p className="text-[10px] text-nw-500 mt-1">{value.length} chars · {block.id}</p>
         </div>
       )}
     </div>
