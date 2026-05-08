@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/Badge'
 import {
   RefreshCw, ExternalLink, Copy, Check, ChevronRight,
   TrendingUp, TrendingDown, Globe, Shield, Zap, FileText, Link2, Layers,
-  AlertTriangle, Sparkles, History, Trash2,
+  AlertTriangle, Sparkles, History, Trash2, MoreVertical, ClipboardCopy,
+  Search, BarChart3, Pause, X, RotateCcw,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import {
@@ -165,6 +166,10 @@ export default function SeoPageDetailPage() {
   const [selectedBrief, setSelectedBrief] = useState<{ prompt_used: string; generated_content: string; model: string; version: number } | null>(null)
   const [deindexing, setDeindexing] = useState(false)
   const [confirmDeindex, setConfirmDeindex] = useState(false)
+  const [deindexSlug, setDeindexSlug] = useState('')
+  const [showMenu, setShowMenu] = useState(false)
+  const [querySheet, setQuerySheet] = useState<QueryRow | null>(null)
+  const [recheckingHealth, setRecheckingHealth] = useState(false)
 
   async function load(r?: string) {
     setLoading(true)
@@ -246,6 +251,43 @@ export default function SeoPageDetailPage() {
     }
   }
 
+  async function recheckHealth() {
+    if (!data?.page?.id) return
+    setRecheckingHealth(true)
+    try {
+      await fetch('/api/seo/sync/health/single', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ page_id: data.page.id }),
+      })
+      load()
+    } catch { /* ignore */ }
+    finally { setRecheckingHealth(false) }
+  }
+
+  async function restoreVersion(version: number) {
+    if (!data?.page?.id) return
+    await fetch('/api/seo/briefs/restore', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ page_id: data.page.id, from_version: version }),
+    })
+    setBriefHistory(null)
+    setSelectedBrief(null)
+    load()
+  }
+
+  async function deleteVersion(version: number) {
+    if (!data?.page?.id) return
+    await fetch('/api/seo/briefs/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ page_id: data.page.id, version }),
+    })
+    setBriefHistory(null)
+    load()
+  }
+
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
@@ -285,7 +327,15 @@ export default function SeoPageDetailPage() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 flex-wrap">
-          <h1 className="font-brand text-[28px] font-bold text-white" style={{ letterSpacing: '0.3px' }}>{page.title}</h1>
+          <h1 className="font-brand text-[28px] font-bold text-white flex-1" style={{ letterSpacing: '0.3px' }}>{page.title}</h1>
+          <button
+            onClick={() => setShowMenu(true)}
+            className="flex-shrink-0 rounded-lg border border-[rgba(255,255,255,0.09)] text-nw-400 hover:text-nw-200 transition-colors"
+            style={{ padding: 8, minHeight: 44, minWidth: 44 }}
+            aria-label="Page actions"
+          >
+            <MoreVertical size={16} />
+          </button>
           <Badge variant={page.status === 'live' ? 'active' : page.status === 'deindexed' ? 'danger' : 'draft'}>
             {page.status}
           </Badge>
@@ -382,10 +432,11 @@ export default function SeoPageDetailPage() {
           <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-nw-500 mb-3">Top Queries</p>
           <div className="rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 overflow-hidden">
             {queries.map((q, i) => (
-              <div
+              <button
                 key={q.query}
-                className={`flex items-center gap-3 ${i < queries.length - 1 ? 'border-b border-[rgba(255,255,255,0.06)]' : ''}`}
-                style={{ padding: '10px 16px' }}
+                onClick={() => setQuerySheet(q)}
+                className={`w-full text-left flex items-center gap-3 transition-colors hover:bg-[rgba(255,255,255,0.03)] ${i < queries.length - 1 ? 'border-b border-[rgba(255,255,255,0.06)]' : ''}`}
+                style={{ padding: '10px 16px', minHeight: 44 }}
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] text-nw-200 truncate">{q.query}</p>
@@ -397,14 +448,26 @@ export default function SeoPageDetailPage() {
                     {q.position.toFixed(1)}
                   </Badge>
                 )}
-              </div>
+              </button>
             ))}
           </div>
         </div>
       )}
 
       {/* Health Checks */}
-      {health && <HealthChecks health={health} />}
+      {health && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-nw-500">Health Checks</p>
+            </div>
+            <Button variant="default" size="sm" onClick={recheckHealth} loading={recheckingHealth}>
+              <RefreshCw size={11} /> Recheck
+            </Button>
+          </div>
+          <HealthChecksInner health={health} />
+        </div>
+      )}
 
       {/* Live Preview */}
       <div>
@@ -488,18 +551,46 @@ export default function SeoPageDetailPage() {
             <div style={{ padding: 16 }} className="text-[13px] text-nw-400">No briefs generated yet</div>
           ) : (
             briefHistory.map((b, i) => (
-              <button
+              <div
                 key={b.id}
-                onClick={() => viewBrief(b.id)}
-                className={`w-full text-left flex items-center justify-between transition-colors hover:bg-[rgba(255,255,255,0.03)] ${i < briefHistory.length - 1 ? 'border-b border-[rgba(255,255,255,0.06)]' : ''}`}
-                style={{ padding: '10px 16px', minHeight: 44 }}
+                className={`flex items-center gap-2 ${i < briefHistory.length - 1 ? 'border-b border-[rgba(255,255,255,0.06)]' : ''}`}
+                style={{ padding: '10px 16px' }}
               >
-                <div>
-                  <p className="text-[13px] text-nw-200">Version {b.version}</p>
+                <button
+                  onClick={() => viewBrief(b.id)}
+                  className="flex-1 text-left min-w-0"
+                  style={{ minHeight: 44 }}
+                >
+                  <div className="flex items-center gap-2">
+                    <p className="text-[13px] text-nw-200">Version {b.version}</p>
+                    {b.version === page.version && <Badge variant="gold">Current</Badge>}
+                    {b.model.startsWith('restored') && <Badge variant="default">Restored</Badge>}
+                  </div>
                   <p className="text-[11px] text-nw-500">{b.model} · {new Date(b.generated_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                </button>
+                <div className="flex gap-1 flex-shrink-0">
+                  {b.version !== page.version && (
+                    <>
+                      <button
+                        onClick={() => restoreVersion(b.version)}
+                        className="rounded-lg border border-[rgba(255,255,255,0.09)] text-nw-400 hover:text-gold-300 transition-colors"
+                        style={{ padding: '4px 8px', minHeight: 32 }}
+                        title="Restore as new version"
+                      >
+                        <RotateCcw size={12} />
+                      </button>
+                      <button
+                        onClick={() => deleteVersion(b.version)}
+                        className="rounded-lg border border-[rgba(255,255,255,0.09)] text-nw-400 hover:text-red-400 transition-colors"
+                        style={{ padding: '4px 8px', minHeight: 32 }}
+                        title="Delete version"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </>
+                  )}
                 </div>
-                <ChevronRight size={14} className="text-nw-500" />
-              </button>
+              </div>
             ))
           )}
         </div>
@@ -525,21 +616,48 @@ export default function SeoPageDetailPage() {
       <div className="rounded-2xl border border-[rgba(248,113,113,0.2)] bg-[rgba(248,113,113,0.04)]" style={{ padding: 16 }}>
         <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-red-400 mb-2">Danger Zone</p>
         <p className="text-[13px] text-nw-400 mb-3">Deindexing removes this page from the sitemap and marks it as deindexed. This does not delete the page data.</p>
+        {metrics.clicks > 100 && (
+          <div className="rounded-lg border border-[rgba(248,113,113,0.2)] bg-[rgba(248,113,113,0.06)] text-[12px] text-red-300 mb-3" style={{ padding: '8px 12px' }}>
+            This page has had {fmt(metrics.clicks)} clicks in the last {range} — deindexing will lose this traffic.
+          </div>
+        )}
         {!confirmDeindex ? (
           <Button variant="danger" size="sm" onClick={() => setConfirmDeindex(true)}>
             <Trash2 size={13} /> Deindex Page
           </Button>
         ) : (
-          <div className="flex items-center gap-2">
-            <Button variant="danger" size="sm" onClick={deindexPage} loading={deindexing}>
-              Confirm Deindex
-            </Button>
-            <Button variant="default" size="sm" onClick={() => setConfirmDeindex(false)}>
-              Cancel
-            </Button>
+          <div className="flex flex-col gap-3">
+            <p className="text-[12px] text-nw-400">Type the page path to confirm: <span className="text-nw-200 font-mono text-[11px]">{page.url_path}</span></p>
+            <input
+              value={deindexSlug}
+              onChange={e => setDeindexSlug(e.target.value)}
+              className="w-full rounded-lg border border-[rgba(248,113,113,0.25)] bg-nw-800 text-[13px] text-white outline-none font-mono"
+              style={{ padding: '8px 12px' }}
+              placeholder={page.url_path}
+            />
+            <div className="flex items-center gap-2">
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={deindexPage}
+                loading={deindexing}
+                disabled={deindexSlug !== page.url_path}
+              >
+                Confirm Deindex
+              </Button>
+              <Button variant="default" size="sm" onClick={() => { setConfirmDeindex(false); setDeindexSlug('') }}>
+                Cancel
+              </Button>
+            </div>
           </div>
         )}
       </div>
+
+      {/* Kebab menu overlay */}
+      {showMenu && <PageActionsMenu page={page} publicUrl={publicUrl} onClose={() => setShowMenu(false)} onDeindex={() => { setShowMenu(false); setConfirmDeindex(true) }} />}
+
+      {/* Query detail sheet */}
+      {querySheet && <QueryDetailSheet query={querySheet} onClose={() => setQuerySheet(null)} />}
     </div>
   )
 }
@@ -563,7 +681,7 @@ function MetricTile({ label, value, delta, suffix = '%', invert }: {
   )
 }
 
-function HealthChecks({ health }: { health: HealthData }) {
+function HealthChecksInner({ health }: { health: HealthData }) {
   const checks = [
     { label: 'Indexed', pass: health.is_indexed === true, detail: health.is_indexed ? 'Page is indexed' : 'Not yet indexed', icon: Globe },
     { label: 'HTTP Status', pass: health.http_status === 200, detail: health.http_status ? `Status ${health.http_status}` : 'Unknown', icon: Shield },
@@ -600,6 +718,139 @@ function HealthChecks({ health }: { health: HealthData }) {
             <div className={`w-2 h-2 rounded-full flex-shrink-0 ${c.pass ? 'bg-[#4ade80]' : 'bg-[#f59e0b]'}`} />
           </div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+// ── Page Actions Menu (bottom sheet) ─────────────────────────────────────────
+
+function PageActionsMenu({ page, publicUrl, onClose, onDeindex }: {
+  page: PageData; publicUrl: string; onClose: () => void; onDeindex: () => void
+}) {
+  function copyUrl() {
+    navigator.clipboard.writeText(publicUrl)
+    onClose()
+  }
+  function copyMarkdown() {
+    navigator.clipboard.writeText(`[${page.title}](${publicUrl})`)
+    onClose()
+  }
+  function openGsc() {
+    window.open(`https://search.google.com/search-console/performance/search-analytics?resource_id=sc-domain%3Anorthernwarrior.co.uk&page=*${encodeURIComponent(page.url_path)}`, '_blank', 'noopener,noreferrer')
+    onClose()
+  }
+  function openGa4() {
+    const propId = '(check GA4 dashboard)'
+    window.open(`https://analytics.google.com/analytics/web/#/p${propId}/reports/explorer?params=_u.dateOption%3Dlast28days`, '_blank', 'noopener,noreferrer')
+    onClose()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50" onClick={onClose}>
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60" />
+      {/* Sheet */}
+      <div
+        className="absolute bottom-0 left-0 right-0 bg-nw-750 rounded-t-2xl border-t border-[rgba(255,255,255,0.12)]"
+        onClick={e => e.stopPropagation()}
+        style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
+      >
+        {/* Drag handle */}
+        <div className="flex justify-center" style={{ padding: '10px 0 6px' }}>
+          <div className="w-9 h-1 rounded-full bg-nw-600" />
+        </div>
+
+        <div className="flex flex-col">
+          <MenuRow icon={<ClipboardCopy size={16} />} label="Copy URL" onClick={copyUrl} />
+          <MenuRow icon={<FileText size={16} />} label="Copy as Markdown link" onClick={copyMarkdown} />
+          <div className="h-px bg-[rgba(255,255,255,0.06)] mx-4 my-1" />
+          <MenuRow icon={<Search size={16} />} label="View in Search Console" onClick={openGsc} />
+          <MenuRow icon={<BarChart3 size={16} />} label="View in GA4" onClick={openGa4} />
+          <div className="h-px bg-[rgba(255,255,255,0.06)] mx-4 my-1" />
+          <MenuRow icon={<Trash2 size={16} />} label="Deindex page" onClick={onDeindex} danger />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MenuRow({ icon, label, onClick, danger }: { icon: React.ReactNode; label: string; onClick: () => void; danger?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center gap-3 text-left transition-colors hover:bg-[rgba(255,255,255,0.04)] ${danger ? 'text-red-400' : 'text-nw-200'}`}
+      style={{ padding: '12px 20px', minHeight: 44 }}
+    >
+      <span className={danger ? 'text-red-400' : 'text-nw-400'}>{icon}</span>
+      <span className="text-[14px]">{label}</span>
+    </button>
+  )
+}
+
+// ── Query Detail Sheet ───────────────────────────────────────────────────────
+
+function QueryDetailSheet({ query, onClose }: { query: QueryRow; onClose: () => void }) {
+  const ctr = query.impressions > 0 ? ((query.clicks / query.impressions) * 100).toFixed(2) : '0.00'
+
+  return (
+    <div className="fixed inset-0 z-50" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/60" />
+      <div
+        className="absolute bottom-0 left-0 right-0 bg-nw-750 rounded-t-2xl border-t border-[rgba(255,255,255,0.12)] max-h-[70vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+        style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}
+      >
+        {/* Drag handle */}
+        <div className="flex justify-center" style={{ padding: '10px 0 6px' }}>
+          <div className="w-9 h-1 rounded-full bg-nw-600" />
+        </div>
+
+        <div style={{ padding: '0 20px 16px' }}>
+          {/* Header */}
+          <div className="flex items-start justify-between mb-4">
+            <h3 className="font-brand text-lg font-bold text-white flex-1" style={{ letterSpacing: '0.3px' }}>
+              &ldquo;{query.query}&rdquo;
+            </h3>
+            <button onClick={onClose} className="text-nw-500 hover:text-nw-200" style={{ padding: 4 }} aria-label="Close">
+              <X size={16} />
+            </button>
+          </div>
+
+          {/* Stats grid */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-nw-800" style={{ padding: 12 }}>
+              <p className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">Impressions</p>
+              <p className="font-brand text-xl font-bold text-white mt-0.5">{Intl.NumberFormat('en-GB').format(query.impressions)}</p>
+            </div>
+            <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-nw-800" style={{ padding: 12 }}>
+              <p className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">Clicks</p>
+              <p className="font-brand text-xl font-bold text-white mt-0.5">{query.clicks}</p>
+            </div>
+            <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-nw-800" style={{ padding: 12 }}>
+              <p className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">CTR</p>
+              <p className="font-brand text-xl font-bold text-white mt-0.5">{ctr}%</p>
+            </div>
+            <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-nw-800" style={{ padding: 12 }}>
+              <p className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">Avg Position</p>
+              <p className="font-brand text-xl font-bold text-white mt-0.5">{query.position?.toFixed(1) ?? '—'}</p>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                window.open(`https://search.google.com/search-console/performance/search-analytics?resource_id=sc-domain%3Anorthernwarrior.co.uk&query=*${encodeURIComponent(query.query)}`, '_blank')
+                onClose()
+              }}
+              className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-[rgba(255,255,255,0.09)] bg-nw-800 text-[12px] font-bold text-nw-200 transition-colors hover:border-[rgba(212,160,23,0.3)]"
+              style={{ padding: '10px 12px', minHeight: 44 }}
+            >
+              <Search size={13} /> View in GSC
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )
