@@ -17,6 +17,7 @@ import {
   AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ComposedChart,
 } from 'recharts'
+import { PageEditorModal } from '@/components/seo/editor/PageEditorModal'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -170,6 +171,7 @@ export default function SeoPageDetailPage() {
   const [showMenu, setShowMenu] = useState(false)
   const [querySheet, setQuerySheet] = useState<QueryRow | null>(null)
   const [recheckingHealth, setRecheckingHealth] = useState(false)
+  const [showEditor, setShowEditor] = useState(false)
 
   async function load(r?: string) {
     setLoading(true)
@@ -525,7 +527,10 @@ export default function SeoPageDetailPage() {
       <div>
         <p className="text-[10px] font-semibold uppercase tracking-[1.8px] text-nw-500 mb-3">Content</p>
         <div className="flex gap-2 flex-wrap">
-          <Button variant="gold" size="sm" onClick={regenerate} loading={regenerating}>
+          <Button variant="gold" size="sm" onClick={() => setShowEditor(true)}>
+            <FileText size={13} /> Edit Page
+          </Button>
+          <Button variant="default" size="sm" onClick={regenerate} loading={regenerating}>
             <Sparkles size={13} /> Regenerate
           </Button>
           <Button variant="default" size="sm" onClick={loadBriefHistory}>
@@ -652,6 +657,22 @@ export default function SeoPageDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Page Editor Modal */}
+      {showEditor && (
+        <PageEditorModal
+          pageId={page.id}
+          urlPath={page.url_path}
+          title={page.title}
+          publicUrl={publicUrl}
+          onClose={() => setShowEditor(false)}
+          onSaved={(version) => {
+            setShowEditor(false)
+            setRegenResult(`Saved as v${version}`)
+            load()
+          }}
+        />
+      )}
 
       {/* Kebab menu overlay */}
       {showMenu && <PageActionsMenu page={page} publicUrl={publicUrl} onClose={() => setShowMenu(false)} onDeindex={() => { setShowMenu(false); setConfirmDeindex(true) }} />}
