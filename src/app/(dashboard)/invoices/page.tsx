@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { DollarSign, RefreshCw, FileText, Download, AlertTriangle, Paperclip } from 'lucide-react'
+import { DollarSign, RefreshCw, FileText, Download, AlertTriangle, Paperclip, Mail, Link2, X } from 'lucide-react'
+import { Modal } from '@/components/ui/Modal'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -22,6 +23,25 @@ interface InvoiceRow {
   hasAttachments: boolean
   isOverdue: boolean
   hasUnreconciledPayment: boolean
+  // Extended fields for unified display
+  source?: 'xero' | 'email' | 'manual'
+  vaultId?: string
+  xeroMatchStatus?: string
+  pdfStoragePath?: string
+}
+
+interface EmailInvoice {
+  id: string
+  source: string
+  supplier: string | null
+  invoice_number: string | null
+  amount: number | null
+  invoice_date: string | null
+  due_date: string | null
+  pdf_storage_path: string | null
+  xero_match_status: string
+  xero_invoice_id: string | null
+  created_at: string
 }
 
 interface InvoiceVaultData {
@@ -31,10 +51,19 @@ interface InvoiceVaultData {
     overdueCount: number
     unreconciledCount: number
     monthSpend: number
+    unmatchedEmailCount: number
   }
 }
 
-type FilterTab = 'all' | 'unpaid' | 'paid' | 'overdue'
+interface MatchCandidate {
+  xeroInvoiceId: string
+  contactName: string
+  total: number
+  date: string
+  score: number
+}
+
+type FilterTab = 'all' | 'unpaid' | 'paid' | 'overdue' | 'from-email'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -104,19 +133,65 @@ export default function InvoiceVaultPage() {
   const [lastSynced, setLastSynced] = useState('')
   const [filter, setFilter] = useState<FilterTab>('all')
   const [downloading, setDownloading] = useState<string | null>(null)
+  const [matchModal, setMatchModal] = useState<{ vaultId: string; supplier: string } | null>(null)
+  const [matchCandidates, setMatchCandidates] = useState<MatchCandidate[]>([])
+  const [matchLoading, setMatchLoading] = useState(false)
 
   async function load() {
     setLoading(true)
     setApiError(null)
     try {
-      const res = await fetch('/api/xero/invoices')
-      if (res.status === 401) { setNotConnected(true); setLoading(false); return }
-      const text = await res.text()
+      // Fetch Xero invoices + email vault in parallel
+      const [xeroRes, vaultRes] = await Promise.all([
+        fetch('/api/xero/invoices'),
+        fetch('/api/invoices/vault'),
+      ])
+
+      if (xeroRes.status === 401) { setNotConnected(true); setLoading(false); return }
+
+      const xeroText = await xeroRes.text()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let json: any = {}
-      try { if (text) json = JSON.parse(text) } catch { /* ignore */ }
-      if (!res.ok) { setApiError(json?.message ?? `Xero API error (${res.status})`); setLoading(false); return }
-      setData(json)
+      let xeroJson: any = {}
+      try { if (xeroText) xeroJson = JSON.parse(xeroText) } catch { /* ignore */ }
+      if (!xeroRes.ok) { setApiError(xeroJson?.message ?? `Xero API error (${xeroRes.status})`); setLoading(false); return }
+
+      // Add source='xero' to Xero invoices
+      const xeroInvoices: InvoiceRow[] = (xeroJson.invoices ?? []).map((inv: InvoiceRow) => ({ ...inv, source: 'xero' as const }))
+
+      // Convert email vault items to InvoiceRow format
+      let emailInvoices: InvoiceRow[] = []
+      let unmatchedCount = 0
+      if (vaultRes.ok) {
+        const vaultData = await vaultRes.json()
+        unmatchedCount = vaultData.unmatched_count ?? 0
+        emailInvoices = (vaultData.items ?? []).map((v: EmailInvoice) => ({
+          invoiceId: v.id,
+          type: 'ACCPAY' as const,
+          contact: v.supplier ?? '—',
+          invoiceNumber: v.invoice_number ?? '—',
+          date: v.invoice_date,
+          dueDate: v.due_date,
+          status: 'PAID',
+          total: v.amount ?? 0,
+          amountDue: 0,
+          amountPaid: v.amount ?? 0,
+          hasAttachments: !!v.pdf_storage_path,
+          isOverdue: false,
+          hasUnreconciledPayment: false,
+          source: 'email' as const,
+          vaultId: v.id,
+          xeroMatchStatus: v.xero_match_status,
+          pdfStoragePath: v.pdf_storage_path,
+        }))
+      }
+
+      setData({
+        invoices: [...xeroInvoices, ...emailInvoices],
+        stats: {
+          ...xeroJson.stats,
+          unmatchedEmailCount: unmatchedCount,
+        },
+      })
       setLastSynced(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }))
     } catch (err) {
       setApiError(err instanceof Error ? err.message : 'Failed to load invoice data')
@@ -127,13 +202,44 @@ export default function InvoiceVaultPage() {
 
   useEffect(() => { load() }, [])
 
-  async function downloadPdf(invoiceId: string) {
+  async function openMatchModal(vaultId: string, supplier: string) {
+    setMatchModal({ vaultId, supplier })
+    setMatchLoading(true)
+    try {
+      const res = await fetch(`/api/invoices/match?vault_id=${vaultId}`)
+      if (res.ok) setMatchCandidates(await res.json())
+    } catch { /* ignore */ }
+    finally { setMatchLoading(false) }
+  }
+
+  async function confirmMatch(vaultId: string, xeroInvoiceId: string) {
+    await fetch('/api/invoices/match', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vault_id: vaultId, xero_invoice_id: xeroInvoiceId }),
+    })
+    setMatchModal(null)
+    load()
+  }
+
+  async function downloadPdf(invoiceId: string, source?: string, storagePath?: string) {
     setDownloading(invoiceId)
     try {
+      let url: string
+      if (source === 'email' && storagePath) {
+        // Fetch signed URL from Supabase Storage
+        const res = await fetch(`/api/invoices/vault/pdf?path=${encodeURIComponent(storagePath)}`)
+        if (!res.ok) throw new Error('PDF URL failed')
+        const { url: signedUrl } = await res.json()
+        url = signedUrl
+        window.open(url, '_blank')
+        setDownloading(null)
+        return
+      }
       const res = await fetch(`/api/xero/invoices/pdf?id=${invoiceId}`)
       if (!res.ok) throw new Error('PDF download failed')
       const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
+      url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
       a.download = `invoice-${invoiceId}.pdf`
@@ -150,14 +256,18 @@ export default function InvoiceVaultPage() {
     if (filter === 'unpaid') return inv.status === 'AUTHORISED' && inv.amountDue > 0
     if (filter === 'paid') return inv.status === 'PAID'
     if (filter === 'overdue') return inv.isOverdue
+    if (filter === 'from-email') return inv.source === 'email'
     return true
   }) ?? []
+
+  const emailCount = data?.invoices.filter(i => i.source === 'email').length ?? 0
 
   const TABS: { key: FilterTab; label: string; count?: number }[] = [
     { key: 'all', label: 'All', count: data?.invoices.length },
     { key: 'unpaid', label: 'Unpaid', count: data?.stats.unpaidCount },
     { key: 'paid', label: 'Paid' },
     { key: 'overdue', label: 'Overdue', count: data?.stats.overdueCount },
+    { key: 'from-email', label: 'From Email', count: emailCount > 0 ? emailCount : undefined },
   ]
 
   return (
@@ -211,10 +321,11 @@ export default function InvoiceVaultPage() {
       {!loading && !notConnected && !apiError && data && (
         <>
           {/* KPI Row */}
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
             <StatCard label="Unpaid Invoices" value={data.stats.unpaidCount} sub="Awaiting payment" />
             <StatCard label="Overdue" value={data.stats.overdueCount} sub="Past due date" danger={data.stats.overdueCount > 0} />
             <StatCard label="Unreconciled" value={data.stats.unreconciledCount} sub="Payments to reconcile" danger={data.stats.unreconciledCount > 0} />
+            <StatCard label="Unmatched" value={data.stats.unmatchedEmailCount} sub="Email invoices to match" danger={data.stats.unmatchedEmailCount > 0} />
             <StatCard label="Month Spend" value={formatCurrency(data.stats.monthSpend)} sub="Bills paid this month" />
           </div>
 
@@ -245,7 +356,7 @@ export default function InvoiceVaultPage() {
               <table className="w-full border-collapse text-[13px]">
                 <thead>
                   <tr>
-                    {['Type', 'Contact', 'Invoice #', 'Date', 'Due Date', 'Amount', 'Status', ''].map((h) => (
+                    {['Source', 'Type', 'Contact', 'Invoice #', 'Date', 'Due Date', 'Amount', 'Status', ''].map((h) => (
                       <th key={h} className="border-b border-[rgba(255,255,255,0.07)] text-left text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500" style={{ padding: '10px 16px' }}>
                         {h}
                       </th>
@@ -255,13 +366,18 @@ export default function InvoiceVaultPage() {
                 <tbody>
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="text-center text-[13px] text-nw-500" style={{ padding: '48px 16px' }}>
+                      <td colSpan={9} className="text-center text-[13px] text-nw-500" style={{ padding: '48px 16px' }}>
                         No invoices found
                       </td>
                     </tr>
                   ) : (
                     filtered.map((inv) => (
                       <tr key={inv.invoiceId} className="transition-colors hover:bg-[rgba(255,255,255,0.03)]">
+                        <td className="border-b border-[rgba(255,255,255,0.05)]" style={{ padding: '12px 16px' }}>
+                          <Badge variant={inv.source === 'email' ? 'gold' : inv.source === 'manual' ? 'default' : 'active'}>
+                            {inv.source === 'email' ? 'Email' : inv.source === 'manual' ? 'Manual' : 'Xero'}
+                          </Badge>
+                        </td>
                         <td className="border-b border-[rgba(255,255,255,0.05)] text-nw-400" style={{ padding: '12px 16px' }}>
                           <Badge variant={inv.type === 'ACCREC' ? 'green' : 'amber'}>
                             {inv.type === 'ACCREC' ? 'Invoice' : 'Bill'}
@@ -292,29 +408,52 @@ export default function InvoiceVaultPage() {
                         </td>
                         <td className="border-b border-[rgba(255,255,255,0.05)]" style={{ padding: '12px 16px' }}>
                           <div className="flex flex-col gap-1">
-                            {inv.status === 'PAID' ? (
-                              <Badge variant="done">Paid</Badge>
-                            ) : inv.isOverdue ? (
-                              <Badge variant="danger">Overdue</Badge>
+                            {inv.source === 'email' ? (
+                              inv.xeroMatchStatus === 'matched' ? (
+                                <Badge variant="done">Matched</Badge>
+                              ) : (
+                                <Badge variant="amber">Unmatched</Badge>
+                              )
                             ) : (
-                              <Badge variant="amber">Unpaid</Badge>
-                            )}
-                            {inv.hasUnreconciledPayment && (
-                              <Badge variant="danger">Unreconciled</Badge>
+                              <>
+                                {inv.status === 'PAID' ? (
+                                  <Badge variant="done">Paid</Badge>
+                                ) : inv.isOverdue ? (
+                                  <Badge variant="danger">Overdue</Badge>
+                                ) : (
+                                  <Badge variant="amber">Unpaid</Badge>
+                                )}
+                                {inv.hasUnreconciledPayment && (
+                                  <Badge variant="danger">Unreconciled</Badge>
+                                )}
+                              </>
                             )}
                           </div>
                         </td>
                         <td className="border-b border-[rgba(255,255,255,0.05)]" style={{ padding: '12px 16px' }}>
-                          <button
-                            onClick={() => downloadPdf(inv.invoiceId)}
-                            disabled={downloading === inv.invoiceId}
-                            className="flex items-center gap-1 rounded-lg border border-[rgba(255,255,255,0.09)] bg-transparent text-[11px] font-bold uppercase tracking-[0.6px] text-nw-400 transition-colors hover:text-nw-200 hover:border-[rgba(255,255,255,0.18)] disabled:opacity-40"
-                            style={{ padding: '5px 10px' }}
-                            title="Download PDF"
-                          >
-                            <Download size={12} />
-                            PDF
-                          </button>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => downloadPdf(inv.invoiceId, inv.source, inv.pdfStoragePath ?? undefined)}
+                              disabled={downloading === inv.invoiceId}
+                              className="flex items-center gap-1 rounded-lg border border-[rgba(255,255,255,0.09)] bg-transparent text-[11px] font-bold uppercase tracking-[0.6px] text-nw-400 transition-colors hover:text-nw-200 hover:border-[rgba(255,255,255,0.18)] disabled:opacity-40"
+                              style={{ padding: '5px 10px' }}
+                              title="Download PDF"
+                            >
+                              <Download size={12} />
+                              PDF
+                            </button>
+                            {inv.source === 'email' && inv.xeroMatchStatus === 'unmatched' && inv.vaultId && (
+                              <button
+                                onClick={() => openMatchModal(inv.vaultId!, inv.contact)}
+                                className="flex items-center gap-1 rounded-lg border border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-[11px] font-bold uppercase tracking-[0.6px] text-gold-300 transition-colors hover:bg-[rgba(212,160,23,0.22)]"
+                                style={{ padding: '5px 10px' }}
+                                title="Match to Xero"
+                              >
+                                <Link2 size={12} />
+                                Match
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -324,6 +463,39 @@ export default function InvoiceVaultPage() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Manual match modal */}
+      {matchModal && (
+        <Modal open onClose={() => setMatchModal(null)} title={`Match: ${matchModal.supplier}`} width="lg">
+          <div style={{ padding: 0 }}>
+            <p className="text-[13px] text-nw-400 mb-4">Select the matching Xero bill to link this email invoice.</p>
+            {matchLoading ? (
+              <div className="text-[13px] text-nw-400" style={{ padding: '20px 0' }}>Searching Xero...</div>
+            ) : matchCandidates.length === 0 ? (
+              <div className="text-[13px] text-nw-400" style={{ padding: '20px 0' }}>No matching Xero bills found within ±7 days and similar amount.</div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {matchCandidates.map((c) => (
+                  <div key={c.xeroInvoiceId} className="flex items-center justify-between rounded-xl border border-[rgba(255,255,255,0.08)] bg-nw-800" style={{ padding: '10px 14px' }}>
+                    <div>
+                      <p className="text-[13px] text-nw-200 font-medium">{c.contactName}</p>
+                      <p className="text-[11px] text-nw-500">{formatCurrency(c.total)} · {c.date ? formatDate(c.date) : '—'}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={c.score >= 70 ? 'done' : c.score >= 50 ? 'gold' : 'default'}>
+                        {c.score}%
+                      </Badge>
+                      <Button variant="gold" size="sm" onClick={() => confirmMatch(matchModal.vaultId, c.xeroInvoiceId)}>
+                        <Link2 size={11} /> Match
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </Modal>
       )}
     </div>
   )

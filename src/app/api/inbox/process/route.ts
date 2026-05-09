@@ -4,6 +4,10 @@ import { gmailFetch, extractEmailBody, ensureGmailLabels } from '@/lib/gmail'
 import { outlookFetch, getOutlookTokens, ensureOutlookCategories } from '@/lib/outlook'
 import { classifyEmail } from '@/lib/email-classifier'
 import { applyRules, type NormalizedEmail } from '@/lib/rules-engine'
+import { fetchPdfAttachments } from '@/lib/gmail-attachments'
+import { extractInvoiceMetadata } from '@/lib/invoice-extractor'
+import { storeInvoicePdf } from '@/lib/invoice-storage'
+import { findMatchingXeroInvoice } from '@/lib/xero-matcher'
 
 // Vercel crons fire GET — UI button fires POST — both use the same handler
 export async function GET(request: Request) { return handler(request) }
@@ -164,7 +168,7 @@ async function processEmails(request: Request, supabase: ReturnType<typeof creat
       }
 
       // Store classification
-      await supabase.from('email_classifications').insert({
+      const { data: classRow } = await supabase.from('email_classifications').insert({
         gmail_message_id: msg.id,
         thread_id: detail.threadId,
         sender,
@@ -178,7 +182,47 @@ async function processEmails(request: Request, supabase: ReturnType<typeof creat
         archived: category === 'spam' || category === 'newsletter' || category === 'receipt_notification',
         task_created: !!task_id,
         task_id: task_id ?? null,
-      })
+      }).select('id').single()
+
+      // Invoice extraction — for receipts or when rules set extract_invoice
+      if (classRow?.id && (result.extract_invoice || category === 'receipt_notification')) {
+        try {
+          const pdfs = await fetchPdfAttachments(msg.id)
+          for (const pdf of pdfs) {
+            try {
+              const extracted = await extractInvoiceMetadata(pdf.data)
+              if (!extracted || !extracted.is_invoice) continue
+
+              const storagePath = await storeInvoicePdf(pdf.data, pdf.filename, classRow.id)
+              const match = await findMatchingXeroInvoice({
+                supplier: extracted.supplier ?? '',
+                amount_total: extracted.amount_total ?? 0,
+                invoice_date: extracted.invoice_date ?? new Date().toISOString().split('T')[0],
+                invoice_number: extracted.invoice_number,
+              })
+
+              await supabase.from('invoice_vault').insert({
+                source: 'email',
+                source_email_id: classRow.id,
+                supplier: extracted.supplier ?? null,
+                invoice_number: extracted.invoice_number ?? null,
+                amount: extracted.amount_total ?? null,
+                currency: extracted.amount_currency ?? 'GBP',
+                invoice_date: extracted.invoice_date ?? null,
+                due_date: extracted.due_date ?? null,
+                pdf_storage_path: storagePath,
+                xero_match_status: match.matched ? 'matched' : 'unmatched',
+                xero_invoice_id: match.xeroInvoiceId ?? null,
+              })
+            } catch (pdfErr) {
+              console.error(`[inbox/process] PDF extraction failed for ${pdf.filename}:`, pdfErr instanceof Error ? pdfErr.message : pdfErr)
+              // Continue — one bad PDF must not crash the batch
+            }
+          }
+        } catch (attErr) {
+          console.error(`[inbox/process] Attachment fetch failed for ${msg.id}:`, attErr instanceof Error ? attErr.message : attErr)
+        }
+      }
 
       // Move to correct Gmail folder/label based on category
       let gmailModify: { addLabelIds?: string[]; removeLabelIds?: string[] }
