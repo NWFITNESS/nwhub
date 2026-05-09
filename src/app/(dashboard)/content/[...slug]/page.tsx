@@ -60,7 +60,43 @@ export default async function ContentEditorPage({ params }: Props) {
   }
   const draftCount = sortedSections.filter((s) => s.draft_content != null).length
 
-  const defaults = PAGE_SECTION_DEFAULTS[slug] ?? {}
+  // Check exact match first, then fall back to template defaults for programmatic pages
+  let defaults = PAGE_SECTION_DEFAULTS[slug]
+  if (!defaults && slug.startsWith('kids-classes/')) {
+    const town = slug.replace('kids-classes/', '')
+    const townDisplay = town.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+    defaults = {
+      town_hero_image: {
+        image_url: '',
+        image_position: '50% 50%',
+        alt: `Kids training at Northern Warrior`,
+        caption: '',
+      },
+      town_gallery: {
+        heading: `${townDisplay} warriors in action`,
+        items: [
+          { image_url: '', alt: 'Kids session photo 1', image_position: '50% 50%' },
+          { image_url: '', alt: 'Kids session photo 2', image_position: '50% 50%' },
+          { image_url: '', alt: 'Kids session photo 3', image_position: '50% 50%' },
+          { image_url: '', alt: 'Kids session photo 4', image_position: '50% 50%' },
+        ],
+      },
+      town_coaches: {
+        heading: 'Meet the coaches',
+        items: [
+          { name: 'Mathew Tomkinson', role: 'Head Kids Coach', image_url: '', image_position: '50% 30%', bio: 'Paediatric first aid, full DBS clearance. Runs every session.' },
+          { name: 'Lauren', role: 'Assistant Coach', image_url: '', image_position: '50% 30%', bio: 'Level 3 Sport Science, first aid, DBS clearance.' },
+        ],
+      },
+      town_feature_image: {
+        image_url: '',
+        image_position: '50% 50%',
+        alt: 'Northern Warrior gym facility',
+        caption: `Our gym in Egremont`,
+      },
+    }
+  }
+  if (!defaults) defaults = {}
 
   // Check construction mode
   const admin = createAdminClient()
