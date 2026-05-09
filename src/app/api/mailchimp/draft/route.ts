@@ -50,18 +50,36 @@ export async function POST(req: NextRequest) {
 
   let recipients: Record<string, unknown>
   if (segTags.length > 0) {
-    // Use Mailchimp tags — works for any number of recipients
-    recipients = {
-      list_id: audience_id,
-      segment_opts: {
-        match: 'any',
-        conditions: segTags.map((tag: string) => ({
-          condition_type: 'StaticSegment',
-          field: 'static_segment',
-          op: 'static_is',
-          value: tag,
-        })),
-      },
+    // Look up Mailchimp tag IDs by name — tags API returns segments with matching names
+    const tagIds: number[] = []
+    for (const tagName of segTags) {
+      const segRes = await mc(api_key, `/lists/${audience_id}/segments?type=static&count=100`, { method: 'GET' })
+      if (segRes.ok) {
+        const segData = await segRes.json()
+        const match = segData.segments?.find((s: { name: string; id: number }) =>
+          s.name.toLowerCase() === tagName.toLowerCase()
+        )
+        if (match) tagIds.push(match.id)
+      }
+    }
+
+    if (tagIds.length > 0) {
+      // Use Mailchimp static segments (tags) by numeric ID
+      recipients = {
+        list_id: audience_id,
+        segment_opts: {
+          match: 'any',
+          conditions: tagIds.map((id) => ({
+            condition_type: 'StaticSegment',
+            field: 'static_segment',
+            op: 'static_is',
+            value: id,
+          })),
+        },
+      }
+    } else {
+      // Tags not found — send to full audience
+      recipients = { list_id: audience_id }
     }
   } else if (segmentEmails.length > 0 && segmentEmails.length <= 5) {
     // Small email list — use individual email conditions (within Mailchimp limit)
