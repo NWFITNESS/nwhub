@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Panel } from '@/components/ui/Card'
 import { RefreshCw, Send } from 'lucide-react'
+import { RuleBuilder } from '@/components/inbox/RuleBuilder'
 import { archiveEmail, bulkArchiveEmails } from '@/app/actions/inbox'
 
 interface Email {
@@ -242,6 +243,9 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected, outlo
           </Panel>
         </div>
       </div>
+
+      {/* Rule Builder */}
+      <RuleBuilder />
     </div>
   )
 }

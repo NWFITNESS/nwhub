@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { gmailFetch, extractEmailBody, ensureGmailLabels } from '@/lib/gmail'
 import { outlookFetch, getOutlookTokens, ensureOutlookCategories } from '@/lib/outlook'
 import { classifyEmail } from '@/lib/email-classifier'
+import { applyRules, type NormalizedEmail } from '@/lib/rules-engine'
 
 // Vercel crons fire GET — UI button fires POST — both use the same handler
 export async function GET(request: Request) { return handler(request) }
@@ -127,8 +128,20 @@ async function processEmails(request: Request, supabase: ReturnType<typeof creat
       const body = extractEmailBody(detail.payload)
       const preview = (body || detail.snippet || '').slice(0, 500)
 
-      const result = await classifyEmail({ from, subject, preview })
-      if (!result) continue
+      const aiResult = await classifyEmail({ from, subject, preview })
+      if (!aiResult) continue
+
+      // Apply rules engine — rules can override AI classification
+      const senderDomain = sender.includes('@') ? sender.split('@')[1] : ''
+      const normalizedEmail: NormalizedEmail = {
+        from: sender,
+        from_domain: senderDomain,
+        subject,
+        body: preview,
+        has_attachment: (detail.payload?.parts ?? []).some((p: { mimeType?: string }) => p.mimeType === 'application/pdf' || p.mimeType?.startsWith('image/')),
+        attachment_types: (detail.payload?.parts ?? []).filter((p: { mimeType?: string }) => p.mimeType && !p.mimeType.startsWith('text/') && !p.mimeType.startsWith('multipart/')).map((p: { mimeType: string }) => p.mimeType),
+      }
+      const result = await applyRules(normalizedEmail, aiResult)
 
       const category = result.category
 
@@ -268,12 +281,24 @@ async function processOutlookEmails(
         : new Date().toISOString()
 
       // Classify with the same AI classifier used for Gmail
-      const result = await classifyEmail({
+      const aiResult = await classifyEmail({
         from: `${senderName} <${sender}>`,
         subject,
         preview,
       })
-      if (!result) continue
+      if (!aiResult) continue
+
+      // Apply rules engine
+      const outlookSenderDomain = sender.includes('@') ? sender.split('@')[1] : ''
+      const outlookNormalized: NormalizedEmail = {
+        from: sender,
+        from_domain: outlookSenderDomain,
+        subject,
+        body: preview,
+        has_attachment: false, // Outlook attachment detection deferred
+        attachment_types: [],
+      }
+      const result = await applyRules(outlookNormalized, aiResult)
 
       const category = result.category
 
