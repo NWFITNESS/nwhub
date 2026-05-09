@@ -318,33 +318,35 @@ async function processOutlookEmails(
       const outlookCategory = catMap[category]
 
       if (category === 'spam') {
-        // Move to junk and mark read — no category needed
+        // Move to Junk folder
         await outlookFetch(`/me/messages/${msg.id}/move`, {
           method: 'POST',
           body: JSON.stringify({ destinationId: 'junkemail' }),
         })
         archived++
       } else if (category === 'needs_attention') {
-        // Flag + high importance + category — keep UNREAD so it stays visible
+        // Flag + high importance + category — explicitly keep unread
         await outlookFetch(`/me/messages/${msg.id}`, {
           method: 'PATCH',
           body: JSON.stringify({
-            importance: 'high',
             flag: { flagStatus: 'flagged' },
+            importance: 'high',
+            isRead: false,
             categories: outlookCategory ? [outlookCategory] : [],
           }),
         })
       } else if (category === 'new_lead') {
-        // Flag + category — keep UNREAD so it stays visible
+        // Flag + category — explicitly keep unread
         await outlookFetch(`/me/messages/${msg.id}`, {
           method: 'PATCH',
           body: JSON.stringify({
             flag: { flagStatus: 'flagged' },
+            isRead: false,
             categories: outlookCategory ? [outlookCategory] : [],
           }),
         })
-      } else {
-        // Newsletters + receipts: mark read + apply category
+      } else if (category === 'newsletter' || category === 'receipt_notification') {
+        // Apply category, mark read, then move to Archive folder
         await outlookFetch(`/me/messages/${msg.id}`, {
           method: 'PATCH',
           body: JSON.stringify({
@@ -352,9 +354,20 @@ async function processOutlookEmails(
             categories: outlookCategory ? [outlookCategory] : [],
           }),
         })
-        if (category === 'newsletter' || category === 'receipt_notification') {
-          archived++
-        }
+        await outlookFetch(`/me/messages/${msg.id}/move`, {
+          method: 'POST',
+          body: JSON.stringify({ destinationId: 'archive' }),
+        })
+        archived++
+      } else {
+        // Any other category: mark read + apply category
+        await outlookFetch(`/me/messages/${msg.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            isRead: true,
+            categories: outlookCategory ? [outlookCategory] : [],
+          }),
+        })
       }
 
       processed++
