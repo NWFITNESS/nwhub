@@ -40,10 +40,36 @@ export async function POST() {
     const outlookCategory = catMap['needs_attention']
 
     for (const email of emails) {
-      if (!email.outlook_message_id) continue
+      let msgId = email.outlook_message_id
+
+      // If no outlook_message_id, search Outlook by subject to find matching message
+      if (!msgId && email.subject) {
+        try {
+          const searchSubject = email.subject.replace(/'/g, "''").slice(0, 100)
+          const searchRes = await outlookFetch(
+            `/me/messages?$filter=subject eq '${searchSubject}'&$top=1&$select=id`
+          )
+          if (searchRes.ok) {
+            const searchData = await searchRes.json()
+            if (searchData.value?.[0]?.id) {
+              msgId = searchData.value[0].id
+              // Save the outlook_message_id for future use
+              await supabase.from('email_classifications').update({ outlook_message_id: msgId }).eq('id', email.id)
+              debug.push(`Found Outlook ID for: ${email.subject}`)
+            }
+          }
+        } catch {
+          debug.push(`Outlook search failed for: ${email.subject}`)
+        }
+      }
+
+      if (!msgId) {
+        debug.push(`No Outlook message found for: ${email.subject}`)
+        continue
+      }
 
       try {
-        const patchRes = await outlookFetch(`/me/messages/${email.outlook_message_id}`, {
+        const patchRes = await outlookFetch(`/me/messages/${msgId}`, {
           method: 'PATCH',
           body: JSON.stringify({
             flag: { flagStatus: 'flagged' },

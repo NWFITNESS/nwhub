@@ -12,7 +12,7 @@ interface PdfAttachment {
  */
 export async function fetchPdfAttachments(messageId: string): Promise<PdfAttachment[]> {
   // Fetch full message to get attachment metadata
-  const msgRes = await gmailFetch(`/gmail/v1/users/me/messages/${messageId}?format=full`)
+  const msgRes = await gmailFetch(`/users/me/messages/${messageId}?format=full`)
   if (!msgRes.ok) return []
 
   const msg = await msgRes.json()
@@ -54,7 +54,7 @@ export async function fetchPdfAttachments(messageId: string): Promise<PdfAttachm
 
     try {
       const attRes = await gmailFetch(
-        `/gmail/v1/users/me/messages/${messageId}/attachments/${attachmentId}`
+        `/users/me/messages/${messageId}/attachments/${attachmentId}`
       )
       if (attRes.ok) {
         const attData = await attRes.json()
