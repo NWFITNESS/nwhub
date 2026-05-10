@@ -39,37 +39,42 @@ export async function POST() {
     const catMap = await ensureOutlookCategories()
     const outlookCategory = catMap['needs_attention']
 
+    // First, fetch a batch of recent Outlook messages to match against
+    let outlookMessages: Array<{ id: string; subject: string; from: { emailAddress: { address: string } }; receivedDateTime: string }> = []
+    try {
+      const batchRes = await outlookFetch(
+        `/me/mailFolders/inbox/messages?$top=100&$select=id,subject,from,receivedDateTime&$orderby=receivedDateTime desc`
+      )
+      if (batchRes.ok) {
+        const batchData = await batchRes.json()
+        outlookMessages = batchData.value ?? []
+        debug.push(`Fetched ${outlookMessages.length} Outlook messages for matching`)
+      } else {
+        debug.push(`Outlook fetch failed: ${batchRes.status}`)
+      }
+    } catch (e) {
+      debug.push(`Outlook fetch error: ${e instanceof Error ? e.message : String(e)}`)
+    }
+
     for (const email of emails) {
       let msgId = email.outlook_message_id
 
-      // If no outlook_message_id, search Outlook by subject keywords
-      if (!msgId && email.subject) {
-        try {
-          // Take first 3-4 meaningful words from subject for search
-          const words = email.subject.replace(/[^a-zA-Z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim().split(' ').filter((w: string) => w.length > 2).slice(0, 4).join(' ')
-          const searchRes = await outlookFetch(
-            `/me/messages?$search=%22${encodeURIComponent(words)}%22&$top=3&$select=id,subject`
-          )
-          if (searchRes.ok) {
-            const searchData = await searchRes.json()
-            if (searchData.value?.[0]?.id) {
-              msgId = searchData.value[0].id
-              await supabase.from('email_classifications').update({ outlook_message_id: msgId }).eq('id', email.id)
-              debug.push(`Found Outlook ID for: ${email.subject} → ${searchData.value[0].subject}`)
-            } else {
-              debug.push(`Outlook search 0 results for: "${words}"`)
-            }
-          } else {
-            const errText = await searchRes.text().catch(() => '')
-            debug.push(`Outlook search HTTP ${searchRes.status} for "${words}": ${errText.slice(0, 150)}`)
-          }
-        } catch (e) {
-          debug.push(`Outlook search error: ${e instanceof Error ? e.message : String(e)}`)
+      // Match by sender email address
+      if (!msgId && email.sender && outlookMessages.length > 0) {
+        const senderLower = email.sender.toLowerCase()
+        const match = outlookMessages.find(m =>
+          m.from?.emailAddress?.address?.toLowerCase() === senderLower &&
+          m.subject?.toLowerCase().includes((email.subject ?? '').toLowerCase().slice(0, 30))
+        )
+        if (match) {
+          msgId = match.id
+          await supabase.from('email_classifications').update({ outlook_message_id: msgId }).eq('id', email.id)
+          debug.push(`Matched Outlook by sender: ${email.sender} | ${email.subject}`)
         }
       }
 
       if (!msgId) {
-        debug.push(`No Outlook message found for: ${email.subject}`)
+        debug.push(`No Outlook match: ${email.sender} | ${email.subject?.slice(0, 40)}`)
         continue
       }
 
