@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from('email_classifications')
-    .select('*, tasks(id, title, due_date, completed)')
+    .select('*')
     .order('received_at', { ascending: false })
     .limit(200)
 

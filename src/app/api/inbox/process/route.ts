@@ -83,10 +83,10 @@ async function processEmails(request: Request, supabase: ReturnType<typeof creat
   await supabase.from('global_settings').upsert({ key: 'inbox_last_processed', value: new Date().toISOString() }, { onConflict: 'key' })
   const labelMap = await getCachedLabels()
 
-  // Fetch unread emails from Gmail
+  // Fetch recent emails from Gmail (last 24h, read or unread — we skip already-processed ones by ID)
   let listData: { messages?: Array<{ id: string }> }
   try {
-    const listRes = await gmailFetch('/users/me/messages?maxResults=50&q=is:unread+in:inbox&labelIds=INBOX')
+    const listRes = await gmailFetch('/users/me/messages?maxResults=50&q=newer_than:1d+in:inbox')
     if (!listRes.ok) {
       const text = await listRes.text()
       return NextResponse.json({ error: `Gmail fetch failed: ${text}` }, { status: 500 })
@@ -295,9 +295,10 @@ async function processEmails(request: Request, supabase: ReturnType<typeof creat
 async function processOutlookEmails(
   supabase: ReturnType<typeof createAdminClient>,
 ): Promise<{ processed: number; tasks_created: number; archived: number }> {
-  // Fetch unread emails from Outlook inbox
+  // Fetch recent emails from Outlook inbox (last 24h, read or unread — skip already-processed by ID)
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const listRes = await outlookFetch(
-    "/me/mailFolders/inbox/messages?$filter=isRead eq false&$top=50&$select=id,subject,from,receivedDateTime,bodyPreview,importance&$orderby=receivedDateTime desc",
+    `/me/mailFolders/inbox/messages?$filter=receivedDateTime ge ${oneDayAgo}&$top=50&$select=id,subject,from,receivedDateTime,bodyPreview,importance&$orderby=receivedDateTime desc`,
   )
 
   if (!listRes.ok) {
