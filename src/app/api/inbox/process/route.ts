@@ -184,7 +184,8 @@ async function processEmails(request: Request, supabase: ReturnType<typeof creat
         task_id: task_id ?? null,
       }).select('id').single()
 
-      // Invoice extraction — for receipts or when rules set extract_invoice
+      // Invoice extraction — for receipts or when rules set extract_invoice (Gmail only)
+      console.log(`[inbox/process] Gmail: ${sender} | "${subject}" → ${category} | extract: ${result.extract_invoice ?? false}`)
       if (classRow?.id && (result.extract_invoice || category === 'receipt_notification')) {
         try {
           const pdfs = await fetchPdfAttachments(msg.id)
@@ -382,20 +383,20 @@ async function processOutlookEmails(
       })
 
       // Apply Outlook-specific actions based on classification
-      // Resolve category display names for Outlook colour-coded tags
+      console.log(`[inbox/process] Outlook: ${sender} | "${subject}" → ${category}`)
+
       const catMap = await ensureOutlookCategories()
       const outlookCategory = catMap[category]
 
       if (category === 'spam') {
-        // Move to Junk folder
-        await outlookFetch(`/me/messages/${msg.id}/move`, {
+        const moveRes = await outlookFetch(`/me/messages/${msg.id}/move`, {
           method: 'POST',
           body: JSON.stringify({ destinationId: 'junkemail' }),
         })
+        if (!moveRes.ok) console.error(`[inbox/process] Outlook move to junk failed:`, await moveRes.text().catch(() => ''))
         archived++
       } else if (category === 'needs_attention') {
-        // Flag + high importance + category — explicitly keep unread
-        await outlookFetch(`/me/messages/${msg.id}`, {
+        const patchRes = await outlookFetch(`/me/messages/${msg.id}`, {
           method: 'PATCH',
           body: JSON.stringify({
             flag: { flagStatus: 'flagged' },
@@ -404,9 +405,9 @@ async function processOutlookEmails(
             categories: outlookCategory ? [outlookCategory] : [],
           }),
         })
+        if (!patchRes.ok) console.error(`[inbox/process] Outlook flag failed:`, await patchRes.text().catch(() => ''))
       } else if (category === 'new_lead') {
-        // Flag + category — explicitly keep unread
-        await outlookFetch(`/me/messages/${msg.id}`, {
+        const patchRes = await outlookFetch(`/me/messages/${msg.id}`, {
           method: 'PATCH',
           body: JSON.stringify({
             flag: { flagStatus: 'flagged' },
@@ -414,22 +415,23 @@ async function processOutlookEmails(
             categories: outlookCategory ? [outlookCategory] : [],
           }),
         })
+        if (!patchRes.ok) console.error(`[inbox/process] Outlook flag failed:`, await patchRes.text().catch(() => ''))
       } else if (category === 'newsletter' || category === 'receipt_notification') {
-        // Apply category, mark read, then move to Archive folder
-        await outlookFetch(`/me/messages/${msg.id}`, {
+        const patchRes = await outlookFetch(`/me/messages/${msg.id}`, {
           method: 'PATCH',
           body: JSON.stringify({
             isRead: true,
             categories: outlookCategory ? [outlookCategory] : [],
           }),
         })
-        await outlookFetch(`/me/messages/${msg.id}/move`, {
+        if (!patchRes.ok) console.error(`[inbox/process] Outlook category failed:`, await patchRes.text().catch(() => ''))
+        const moveRes = await outlookFetch(`/me/messages/${msg.id}/move`, {
           method: 'POST',
           body: JSON.stringify({ destinationId: 'archive' }),
         })
+        if (!moveRes.ok) console.error(`[inbox/process] Outlook move to archive failed:`, await moveRes.text().catch(() => ''))
         archived++
       } else {
-        // Any other category: mark read + apply category
         await outlookFetch(`/me/messages/${msg.id}`, {
           method: 'PATCH',
           body: JSON.stringify({
