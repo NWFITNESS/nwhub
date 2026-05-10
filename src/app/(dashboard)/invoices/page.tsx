@@ -65,6 +65,11 @@ interface MatchCandidate {
 
 type FilterTab = 'all' | 'unpaid' | 'paid' | 'overdue' | 'from-email'
 
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+]
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string | null): string {
@@ -138,6 +143,7 @@ export default function InvoiceVaultPage() {
   const [matchLoading, setMatchLoading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewLoading, setPreviewLoading] = useState(false)
+  const [monthFilter, setMonthFilter] = useState<string>('all') // 'all' or 'YYYY-MM'
 
   async function load() {
     setLoading(true)
@@ -276,14 +282,27 @@ export default function InvoiceVaultPage() {
   }
 
   const filtered = data?.invoices.filter((inv) => {
-    if (filter === 'unpaid') return inv.status === 'AUTHORISED' && inv.amountDue > 0
-    if (filter === 'paid') return inv.status === 'PAID'
-    if (filter === 'overdue') return inv.isOverdue
-    if (filter === 'from-email') return inv.source === 'email'
+    // Tab filter
+    if (filter === 'unpaid') { if (!(inv.status === 'AUTHORISED' && inv.amountDue > 0)) return false }
+    else if (filter === 'paid') { if (inv.status !== 'PAID') return false }
+    else if (filter === 'overdue') { if (!inv.isOverdue) return false }
+    else if (filter === 'from-email') { if (inv.source !== 'email') return false }
+    // Month filter
+    if (monthFilter !== 'all' && inv.date) {
+      const invMonth = inv.date.slice(0, 7) // YYYY-MM
+      if (invMonth !== monthFilter) return false
+    }
     return true
   }) ?? []
 
   const emailCount = data?.invoices.filter(i => i.source === 'email').length ?? 0
+
+  // Get available months from invoice dates for the month picker
+  const availableMonths = [...new Set(
+    (data?.invoices ?? [])
+      .filter(i => i.date)
+      .map(i => i.date!.slice(0, 7))
+  )].sort().reverse()
 
   const TABS: { key: FilterTab; label: string; count?: number }[] = [
     { key: 'all', label: 'All', count: data?.invoices.length },
@@ -352,25 +371,40 @@ export default function InvoiceVaultPage() {
             <StatCard label="Month Spend" value={formatCurrency(data.stats.monthSpend)} sub="Bills paid this month" />
           </div>
 
-          {/* Filter Tabs */}
-          <div className="flex gap-1.5" style={{ marginTop: 4 }}>
-            {TABS.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setFilter(tab.key)}
-                className={`rounded-lg border text-[11px] font-bold uppercase tracking-[0.8px] transition-colors ${
-                  filter === tab.key
-                    ? 'border-[rgba(212,160,23,0.35)] bg-[rgba(212,160,23,0.12)] text-gold-300'
-                    : 'border-[rgba(255,255,255,0.09)] bg-transparent text-nw-400 hover:text-nw-200 hover:border-[rgba(255,255,255,0.15)]'
-                }`}
-                style={{ padding: '6px 12px' }}
-              >
-                {tab.label}
-                {tab.count !== undefined && tab.count > 0 && (
-                  <span className="ml-1.5 text-[10px] opacity-70">{tab.count}</span>
-                )}
-              </button>
-            ))}
+          {/* Filter Tabs + Month Picker */}
+          <div className="flex items-center gap-3 flex-wrap" style={{ marginTop: 4 }}>
+            <div className="flex gap-1.5">
+              {TABS.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setFilter(tab.key)}
+                  className={`rounded-lg border text-[11px] font-bold uppercase tracking-[0.8px] transition-colors ${
+                    filter === tab.key
+                      ? 'border-[rgba(212,160,23,0.35)] bg-[rgba(212,160,23,0.12)] text-gold-300'
+                      : 'border-[rgba(255,255,255,0.09)] bg-transparent text-nw-400 hover:text-nw-200 hover:border-[rgba(255,255,255,0.15)]'
+                  }`}
+                  style={{ padding: '6px 12px' }}
+                >
+                  {tab.label}
+                  {tab.count !== undefined && tab.count > 0 && (
+                    <span className="ml-1.5 text-[10px] opacity-70">{tab.count}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+            {/* Month filter */}
+            <select
+              value={monthFilter}
+              onChange={e => setMonthFilter(e.target.value)}
+              className="rounded-lg border border-[rgba(255,255,255,0.09)] bg-transparent text-[11px] font-bold uppercase tracking-[0.8px] text-nw-400 outline-none"
+              style={{ padding: '6px 10px' }}
+            >
+              <option value="all">All Months</option>
+              {availableMonths.map(m => {
+                const [y, mo] = m.split('-')
+                return <option key={m} value={m}>{MONTHS[parseInt(mo) - 1]} {y}</option>
+              })}
+            </select>
           </div>
 
           {/* Invoice Table */}
