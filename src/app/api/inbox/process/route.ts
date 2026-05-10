@@ -109,6 +109,8 @@ async function processEmails(request: Request, supabase: ReturnType<typeof creat
   const newMessages = messages.filter((m) => !existingIds.has(m.id))
 
   let processed = 0, tasks_created = 0, archived = 0
+  const debug: string[] = []
+  debug.push(`Gmail: ${messages.length} unread, ${newMessages.length} new`)
 
   for (const msg of newMessages) {
     try {
@@ -188,17 +190,17 @@ async function processEmails(request: Request, supabase: ReturnType<typeof creat
       const subjectLower = subject.toLowerCase()
       const hasInvoiceKeyword = subjectLower.includes('invoice') || subjectLower.includes('receipt') || subjectLower.includes('statement') || subjectLower.includes('payment')
       const shouldExtract = result.extract_invoice || category === 'receipt_notification' || (category === 'needs_attention' && hasInvoiceKeyword)
-      console.log(`[inbox/process] Gmail: ${sender} | "${subject}" → ${category} | extract: ${shouldExtract} | classRowId: ${classRow?.id ?? 'null'}`)
+      debug.push(`Gmail: ${sender} | "${subject}" → ${category} | extract: ${shouldExtract} | classRowId: ${classRow?.id ?? 'null'}`)
       if (classRow?.id && shouldExtract) {
         try {
-          console.log(`[inbox/process] Fetching PDF attachments for ${msg.id}...`)
+          debug.push(`Fetching PDF attachments for ${msg.id}...`)
           const pdfs = await fetchPdfAttachments(msg.id)
-          console.log(`[inbox/process] Found ${pdfs.length} PDF attachment(s)`)
+          debug.push(`Found ${pdfs.length} PDF attachment(s)`)
           for (const pdf of pdfs) {
             try {
-              console.log(`[inbox/process] Extracting metadata from ${pdf.filename} (${pdf.data.length} bytes)...`)
+              debug.push(`Extracting: ${pdf.filename} (${pdf.data.length} bytes)`)
               const extracted = await extractInvoiceMetadata(pdf.data)
-              console.log(`[inbox/process] Extraction result:`, JSON.stringify(extracted))
+              debug.push(`Result: ${JSON.stringify(extracted)}`)
               if (!extracted || !extracted.is_invoice) continue
 
               const storagePath = await storeInvoicePdf(pdf.data, pdf.filename, classRow.id)
@@ -267,19 +269,21 @@ async function processEmails(request: Request, supabase: ReturnType<typeof creat
 
   // ── Process Outlook emails (if connected) ───────────────────────────
   const outlookTokens = await getOutlookTokens()
-  console.log(`[inbox/process] Outlook connected: ${!!outlookTokens}`)
+  debug.push(`Outlook connected: ${!!outlookTokens}`)
   if (outlookTokens) {
     try {
       const outlookResult = await processOutlookEmails(supabase)
       processed += outlookResult.processed
       tasks_created += outlookResult.tasks_created
       archived += outlookResult.archived
+      debug.push(`Outlook: processed ${outlookResult.processed}, tasks ${outlookResult.tasks_created}`)
     } catch (e) {
+      debug.push(`Outlook FAILED: ${(e as Error).message}`)
       console.error('[inbox/process] Outlook processing failed:', (e as Error).message)
     }
   }
 
-  return NextResponse.json({ processed, tasks_created, archived })
+  return NextResponse.json({ processed, tasks_created, archived, debug })
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
