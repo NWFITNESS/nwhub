@@ -71,9 +71,13 @@ Use for:
 - Advanced Physio service enquiries
 - PT or one-to-one coaching enquiries
 - Local school, sports club, or organisation group session enquiries
+- ANYONE asking about "starting", "joining", "signing up", "getting started", or "looking to start"
+- Any personal email from someone you don't recognise asking how to begin
+- Short emails saying "hello" or "hi" and asking about the gym — these are LEADS
 
 When in doubt between new_lead and needs_attention — use new_lead.
 When in doubt whether something is a real enquiry or spam — use new_lead.
+A real person emailing for the first time about joining = ALWAYS new_lead, never anything else.
 
 ── receipt_notification ──────────────────
 Automated booking confirmations, system notifications, and routine status updates that need NO financial action.
