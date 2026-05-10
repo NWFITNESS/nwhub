@@ -76,17 +76,29 @@ When in doubt between new_lead and needs_attention — use new_lead.
 When in doubt whether something is a real enquiry or spam — use new_lead.
 
 ── receipt_notification ──────────────────
-Automated receipts, invoices, payment confirmations, or booking confirmations from known tools.
+Automated booking confirmations, system notifications, and routine status updates that need NO financial action.
 
 Use for:
-- GoCardless successful payment confirmations
-- Software subscription receipts (Vercel, Canva, Supabase, Resend, etc.)
-- Equipment or supply invoices from known suppliers
+- GoCardless successful payment confirmations (money already collected, no action)
 - Wodify booking confirmations or system notifications
-- Utility, insurance, or business service routine invoices
-- Squarespace plan renewals or billing notices
+- Squarespace plan auto-renewal confirmations (already paid, no action)
+- Automated system status emails (uptime, build success, etc.)
 
-No task needed. Archive with label.
+Do NOT use for invoices, bills, or anything that requires payment or filing. Those go to needs_attention.
+
+── needs_attention (INVOICES) ────────────
+ALL invoices, bills, receipts, and payment requests go here — they need filing for accounts.
+
+This includes:
+- Software subscription invoices/receipts (Vercel, Canva, Supabase, Resend, etc.)
+- Equipment or supply invoices from any supplier
+- Utility, insurance, or business service invoices
+- Any email with a PDF invoice attached
+- Any email with "invoice", "receipt", "payment", or "statement" in the subject
+- GoCardless FAILED payments (high priority)
+- Tax, VAT, or HMRC correspondence
+
+These ALL need a task created so they get filed in the accounts.
 
 ── newsletter ────────────────────────────
 Marketing emails, industry news, product updates, or mass-send informational emails requiring no action.
@@ -125,12 +137,14 @@ DECISION RULES
 
 1. If in doubt between needs_attention and new_lead → use new_lead
 2. If in doubt between spam and anything else → do NOT use spam
-3. GoCardless FAILED payment with member name = needs_attention + task (priority: high)
-4. GoCardless SUCCESSFUL payment = receipt_notification, no task
-5. Cold sales from unknown company = spam
-6. Cold sales mentioning fitness or West Cumbria = newsletter
-7. Real named person not on a known domain = needs_attention or new_lead, never spam
-8. Legal, tax, or government emails = needs_attention, priority: high`
+3. ANY invoice, receipt, bill, statement, or payment request = needs_attention + task (priority: medium, title: "File invoice from [sender]")
+4. GoCardless FAILED payment with member name = needs_attention + task (priority: high)
+5. GoCardless SUCCESSFUL payment confirmation (money already collected) = receipt_notification, no task
+6. Cold sales from unknown company = spam
+7. Cold sales mentioning fitness or West Cumbria = newsletter
+8. Real named person not on a known domain = needs_attention or new_lead, never spam
+9. Legal, tax, or government emails = needs_attention, priority: high
+10. Any email that looks like it needs a reply or action = needs_attention, flag it`
 
 export const CLASSIFY_TOOL: Anthropic.Tool = {
   name: 'classify_email',

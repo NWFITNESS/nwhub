@@ -184,9 +184,12 @@ async function processEmails(request: Request, supabase: ReturnType<typeof creat
         task_id: task_id ?? null,
       }).select('id').single()
 
-      // Invoice extraction — for receipts or when rules set extract_invoice (Gmail only)
-      console.log(`[inbox/process] Gmail: ${sender} | "${subject}" → ${category} | extract: ${result.extract_invoice ?? false}`)
-      if (classRow?.id && (result.extract_invoice || category === 'receipt_notification')) {
+      // Invoice extraction — for invoices/receipts or when rules set extract_invoice (Gmail only)
+      const subjectLower = subject.toLowerCase()
+      const hasInvoiceKeyword = subjectLower.includes('invoice') || subjectLower.includes('receipt') || subjectLower.includes('statement') || subjectLower.includes('payment')
+      const shouldExtract = result.extract_invoice || category === 'receipt_notification' || (category === 'needs_attention' && hasInvoiceKeyword)
+      console.log(`[inbox/process] Gmail: ${sender} | "${subject}" → ${category} | extract: ${shouldExtract}`)
+      if (classRow?.id && shouldExtract) {
         try {
           const pdfs = await fetchPdfAttachments(msg.id)
           for (const pdf of pdfs) {
@@ -418,6 +421,7 @@ async function processOutlookEmails(
         })
         if (!patchRes.ok) console.error(`[inbox/process] Outlook flag failed:`, await patchRes.text().catch(() => ''))
       } else if (category === 'newsletter' || category === 'receipt_notification') {
+        // Mark read + apply category — do NOT move (archive folder doesn't exist on all Exchange configs)
         const patchRes = await outlookFetch(`/me/messages/${msg.id}`, {
           method: 'PATCH',
           body: JSON.stringify({
@@ -426,11 +430,6 @@ async function processOutlookEmails(
           }),
         })
         if (!patchRes.ok) console.error(`[inbox/process] Outlook category failed:`, await patchRes.text().catch(() => ''))
-        const moveRes = await outlookFetch(`/me/messages/${msg.id}/move`, {
-          method: 'POST',
-          body: JSON.stringify({ destinationId: 'archive' }),
-        })
-        if (!moveRes.ok) console.error(`[inbox/process] Outlook move to archive failed:`, await moveRes.text().catch(() => ''))
         archived++
       } else {
         await outlookFetch(`/me/messages/${msg.id}`, {
