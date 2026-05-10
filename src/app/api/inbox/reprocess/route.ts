@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { outlookFetch, getOutlookTokens, ensureOutlookCategories } from '@/lib/outlook'
+import { gmailFetch } from '@/lib/gmail'
 import { fetchPdfAttachments } from '@/lib/gmail-attachments'
 import { extractInvoiceMetadata } from '@/lib/invoice-extractor'
 import { storeInvoicePdf } from '@/lib/invoice-storage'
@@ -8,8 +8,7 @@ import { findMatchingXeroInvoice } from '@/lib/xero-matcher'
 import { requireAuth } from '@/lib/auth-guard'
 
 // POST — reprocess existing classified emails
-// Re-applies Outlook flagging and invoice extraction to emails that were
-// processed before those features were deployed.
+// Stars in Gmail (shows as flagged in Outlook linked view) and extracts invoices
 export async function POST() {
   const unauth = await requireAuth()
   if (unauth) return unauth
@@ -17,7 +16,6 @@ export async function POST() {
   const supabase = createAdminClient()
   const debug: string[] = []
 
-  // Get recent needs_attention emails that might need flagging/extraction
   const { data: emails } = await supabase
     .from('email_classifications')
     .select('*')
@@ -31,79 +29,32 @@ export async function POST() {
 
   debug.push(`Found ${emails.length} needs_attention emails to reprocess`)
 
-  // ── Outlook flagging ─────────────────────────────────────────────────
-  const outlookTokens = await getOutlookTokens()
-  let outlookFlagged = 0
+  // ── Gmail starring (shows as flagged in Outlook linked view) ──────────
+  let starred = 0
 
-  if (outlookTokens) {
-    const catMap = await ensureOutlookCategories()
-    const outlookCategory = catMap['needs_attention']
+  for (const email of emails) {
+    if (!email.gmail_message_id) continue
 
-    // First, fetch a batch of recent Outlook messages to match against
-    let outlookMessages: Array<{ id: string; subject: string; from: { emailAddress: { address: string } }; receivedDateTime: string }> = []
     try {
-      const batchRes = await outlookFetch(
-        `/me/mailFolders/inbox/messages?$top=100&$select=id,subject,from,receivedDateTime&$orderby=receivedDateTime desc`
-      )
-      if (batchRes.ok) {
-        const batchData = await batchRes.json()
-        outlookMessages = batchData.value ?? []
-        debug.push(`Fetched ${outlookMessages.length} Outlook messages for matching`)
+      const starRes = await gmailFetch(`/users/me/messages/${email.gmail_message_id}/modify`, {
+        method: 'POST',
+        body: JSON.stringify({
+          addLabelIds: ['STARRED'],
+        }),
+      })
+
+      if (starRes.ok) {
+        starred++
+        debug.push(`Starred in Gmail: ${email.sender} | ${email.subject}`)
       } else {
-        debug.push(`Outlook fetch failed: ${batchRes.status}`)
+        debug.push(`Star FAILED (${starRes.status}): ${email.subject}`)
       }
     } catch (e) {
-      debug.push(`Outlook fetch error: ${e instanceof Error ? e.message : String(e)}`)
+      debug.push(`Star ERROR: ${email.subject} — ${e instanceof Error ? e.message : String(e)}`)
     }
-
-    for (const email of emails) {
-      let msgId = email.outlook_message_id
-
-      // Match by sender email address
-      if (!msgId && email.sender && outlookMessages.length > 0) {
-        const senderLower = email.sender.toLowerCase()
-        const match = outlookMessages.find(m =>
-          m.from?.emailAddress?.address?.toLowerCase() === senderLower &&
-          m.subject?.toLowerCase().includes((email.subject ?? '').toLowerCase().slice(0, 30))
-        )
-        if (match) {
-          msgId = match.id
-          await supabase.from('email_classifications').update({ outlook_message_id: msgId }).eq('id', email.id)
-          debug.push(`Matched Outlook by sender: ${email.sender} | ${email.subject}`)
-        }
-      }
-
-      if (!msgId) {
-        debug.push(`No Outlook match: ${email.sender} | ${email.subject?.slice(0, 40)}`)
-        continue
-      }
-
-      try {
-        const patchRes = await outlookFetch(`/me/messages/${msgId}`, {
-          method: 'PATCH',
-          body: JSON.stringify({
-            flag: { flagStatus: 'flagged' },
-            importance: 'high',
-            categories: outlookCategory ? [outlookCategory] : [],
-          }),
-        })
-
-        if (patchRes.ok) {
-          outlookFlagged++
-          debug.push(`Flagged in Outlook: ${email.sender} | ${email.subject}`)
-        } else {
-          const errText = await patchRes.text().catch(() => '')
-          debug.push(`Outlook flag FAILED (${patchRes.status}): ${email.subject} — ${errText.slice(0, 200)}`)
-        }
-      } catch (e) {
-        debug.push(`Outlook flag ERROR: ${email.subject} — ${e instanceof Error ? e.message : String(e)}`)
-      }
-    }
-  } else {
-    debug.push('Outlook not connected — skipping flagging')
   }
 
-  debug.push(`Outlook: flagged ${outlookFlagged} emails`)
+  debug.push(`Gmail: starred ${starred} emails (shows as flagged in Outlook)`)
 
   // ── Invoice extraction (Gmail only) ──────────────────────────────────
   let invoicesExtracted = 0
@@ -116,7 +67,6 @@ export async function POST() {
 
     if (!hasInvoiceKeyword) continue
 
-    // Check if already extracted
     const { count } = await supabase
       .from('invoice_vault')
       .select('id', { count: 'exact', head: true })
@@ -141,7 +91,6 @@ export async function POST() {
           if (!extracted || !extracted.is_invoice) continue
 
           const storagePath = await storeInvoicePdf(pdf.data, pdf.filename, email.id)
-          debug.push(`Stored at: ${storagePath}`)
 
           const match = await findMatchingXeroInvoice({
             supplier: extracted.supplier ?? '',
@@ -149,7 +98,6 @@ export async function POST() {
             invoice_date: extracted.invoice_date ?? new Date().toISOString().split('T')[0],
             invoice_number: extracted.invoice_number,
           })
-          debug.push(`Xero match: ${match.matched ? 'YES' : 'NO'} (score: ${match.confidence ?? 0})`)
 
           await supabase.from('invoice_vault').insert({
             source: 'email',
@@ -178,9 +126,5 @@ export async function POST() {
 
   debug.push(`Invoices extracted: ${invoicesExtracted}`)
 
-  return NextResponse.json({
-    outlook_flagged: outlookFlagged,
-    invoices_extracted: invoicesExtracted,
-    debug,
-  })
+  return NextResponse.json({ starred, invoices_extracted: invoicesExtracted, debug })
 }

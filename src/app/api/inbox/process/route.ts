@@ -249,10 +249,11 @@ async function processEmails(request: Request, supabase: ReturnType<typeof creat
         archived++
       } else if (category === 'needs_attention') {
         const labelId = labelMap['NWHub/Action Required']
-        gmailModify = { addLabelIds: labelId ? [labelId] : [], removeLabelIds: ['UNREAD'] }
+        // STARRED = shows as flagged in Outlook linked view
+        gmailModify = { addLabelIds: [labelId, 'STARRED'].filter(Boolean) as string[], removeLabelIds: ['UNREAD'] }
       } else if (category === 'new_lead') {
         const labelId = labelMap['NWHub/New Lead']
-        gmailModify = { addLabelIds: labelId ? [labelId] : [], removeLabelIds: ['UNREAD'] }
+        gmailModify = { addLabelIds: [labelId, 'STARRED'].filter(Boolean) as string[], removeLabelIds: ['UNREAD'] }
       } else {
         gmailModify = { removeLabelIds: ['UNREAD'] }
       }
@@ -267,7 +268,10 @@ async function processEmails(request: Request, supabase: ReturnType<typeof creat
     }
   }
 
-  // ── Process Outlook emails (if connected) ───────────────────────────
+  // ── Process Outlook emails (if connected as native Exchange mailbox) ─
+  // NOTE: If Outlook is a linked Gmail account, this finds 0 messages
+  // (emails live in Gmail, not Microsoft servers). Flagging is handled
+  // via Gmail starring above (STARRED label = flagged in Outlook).
   const outlookTokens = await getOutlookTokens()
   debug.push(`Outlook connected: ${!!outlookTokens}`)
   if (outlookTokens) {
