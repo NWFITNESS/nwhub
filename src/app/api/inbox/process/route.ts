@@ -98,7 +98,7 @@ async function processEmails(request: Request, supabase: ReturnType<typeof creat
   }
 
   const messages = listData.messages ?? []
-  if (messages.length === 0) return NextResponse.json({ processed: 0, tasks_created: 0, archived: 0 })
+  // NOTE: do NOT early-return here — Outlook processing runs after Gmail regardless
 
   // Get already-processed IDs
   const { data: existing } = await supabase
@@ -260,6 +260,7 @@ async function processEmails(request: Request, supabase: ReturnType<typeof creat
 
   // ── Process Outlook emails (if connected) ───────────────────────────
   const outlookTokens = await getOutlookTokens()
+  console.log(`[inbox/process] Outlook connected: ${!!outlookTokens}`)
   if (outlookTokens) {
     try {
       const outlookResult = await processOutlookEmails(supabase)
