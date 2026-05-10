@@ -19,17 +19,33 @@ export async function fetchPdfAttachments(messageId: string): Promise<PdfAttachm
   const attachments: PdfAttachment[] = []
 
   // Recursively find PDF parts
-  function walkParts(parts: Array<{ mimeType?: string; filename?: string; body?: { attachmentId?: string; size?: number }; parts?: unknown[] }>) {
+  function walkParts(parts: Array<{ mimeType?: string; filename?: string; body?: { attachmentId?: string; size?: number; data?: string }; parts?: unknown[] }>) {
     for (const part of parts) {
-      if (part.mimeType === 'application/pdf' && part.body?.attachmentId && part.filename) {
+      const isPdf = part.mimeType === 'application/pdf'
+        || (part.filename && part.filename.toLowerCase().endsWith('.pdf'))
+        || (part.mimeType === 'application/octet-stream' && part.filename?.toLowerCase().endsWith('.pdf'))
+
+      if (isPdf && part.body?.attachmentId && part.filename) {
         attachments.push({
           filename: part.filename,
-          data: Buffer.alloc(0), // placeholder — will be filled below
+          data: Buffer.alloc(0),
           mimeType: 'application/pdf',
         })
-        // Store the attachment ID for download
         ;(attachments[attachments.length - 1] as { _attachmentId?: string })._attachmentId = part.body.attachmentId
+      } else if (isPdf && part.body?.data && part.filename) {
+        // Some small PDFs are inline (base64 in body.data, no attachmentId)
+        attachments.push({
+          filename: part.filename,
+          data: Buffer.from(part.body.data, 'base64url'),
+          mimeType: 'application/pdf',
+        })
       }
+
+      // Log all parts with attachments for debugging
+      if (part.body?.attachmentId) {
+        console.log(`[gmail-attachments] Part: ${part.mimeType} | ${part.filename ?? 'no-filename'} | attachmentId: ${part.body.attachmentId.slice(0, 20)}...`)
+      }
+
       if (part.parts) {
         walkParts(part.parts as typeof parts)
       }

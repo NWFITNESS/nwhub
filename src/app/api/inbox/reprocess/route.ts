@@ -45,9 +45,10 @@ export async function POST() {
       // If no outlook_message_id, search Outlook by subject keywords
       if (!msgId && email.subject) {
         try {
-          const searchTerms = email.subject.replace(/[^a-zA-Z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80)
+          // Take first 3-4 meaningful words from subject for search
+          const words = email.subject.replace(/[^a-zA-Z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim().split(' ').filter((w: string) => w.length > 2).slice(0, 4).join(' ')
           const searchRes = await outlookFetch(
-            `/me/messages?$search="${encodeURIComponent(searchTerms)}"&$top=3&$select=id,subject`
+            `/me/messages?$search=%22${encodeURIComponent(words)}%22&$top=3&$select=id,subject`
           )
           if (searchRes.ok) {
             const searchData = await searchRes.json()
@@ -56,11 +57,11 @@ export async function POST() {
               await supabase.from('email_classifications').update({ outlook_message_id: msgId }).eq('id', email.id)
               debug.push(`Found Outlook ID for: ${email.subject} → ${searchData.value[0].subject}`)
             } else {
-              debug.push(`Outlook search returned 0 results for: "${searchTerms}"`)
+              debug.push(`Outlook search 0 results for: "${words}"`)
             }
           } else {
             const errText = await searchRes.text().catch(() => '')
-            debug.push(`Outlook search HTTP ${searchRes.status}: ${errText.slice(0, 150)}`)
+            debug.push(`Outlook search HTTP ${searchRes.status} for "${words}": ${errText.slice(0, 150)}`)
           }
         } catch (e) {
           debug.push(`Outlook search error: ${e instanceof Error ? e.message : String(e)}`)
