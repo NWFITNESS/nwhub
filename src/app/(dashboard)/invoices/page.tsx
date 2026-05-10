@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { DollarSign, RefreshCw, FileText, Download, AlertTriangle, Paperclip, Mail, Link2, X } from 'lucide-react'
+import { DollarSign, RefreshCw, FileText, Download, AlertTriangle, Paperclip, Mail, Link2, X, Eye } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -136,6 +136,8 @@ export default function InvoiceVaultPage() {
   const [matchModal, setMatchModal] = useState<{ vaultId: string; supplier: string } | null>(null)
   const [matchCandidates, setMatchCandidates] = useState<MatchCandidate[]>([])
   const [matchLoading, setMatchLoading] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [previewLoading, setPreviewLoading] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -220,6 +222,27 @@ export default function InvoiceVaultPage() {
     })
     setMatchModal(null)
     load()
+  }
+
+  async function previewPdf(invoiceId: string, source?: string, storagePath?: string) {
+    setPreviewLoading(true)
+    try {
+      if (source === 'email' && storagePath) {
+        const res = await fetch(`/api/invoices/vault/pdf?path=${encodeURIComponent(storagePath)}`)
+        if (res.ok) {
+          const { url } = await res.json()
+          setPreviewUrl(url)
+        }
+      } else {
+        // Xero PDF — fetch as blob and create object URL
+        const res = await fetch(`/api/xero/invoices/pdf?id=${invoiceId}`)
+        if (res.ok) {
+          const blob = await res.blob()
+          setPreviewUrl(URL.createObjectURL(blob))
+        }
+      }
+    } catch { /* ignore */ }
+    finally { setPreviewLoading(false) }
   }
 
   async function downloadPdf(invoiceId: string, source?: string, storagePath?: string) {
@@ -433,6 +456,14 @@ export default function InvoiceVaultPage() {
                         <td className="border-b border-[rgba(255,255,255,0.05)]" style={{ padding: '12px 16px' }}>
                           <div className="flex items-center gap-1.5">
                             <button
+                              onClick={() => previewPdf(inv.invoiceId, inv.source, inv.pdfStoragePath ?? undefined)}
+                              className="flex items-center justify-center rounded-lg border border-[rgba(255,255,255,0.09)] bg-transparent text-nw-400 transition-colors hover:text-nw-200 hover:border-[rgba(255,255,255,0.18)]"
+                              style={{ padding: '5px 8px', minHeight: 28 }}
+                              title="Preview PDF"
+                            >
+                              <Eye size={13} />
+                            </button>
+                            <button
                               onClick={() => downloadPdf(inv.invoiceId, inv.source, inv.pdfStoragePath ?? undefined)}
                               disabled={downloading === inv.invoiceId}
                               className="flex items-center gap-1 rounded-lg border border-[rgba(255,255,255,0.09)] bg-transparent text-[11px] font-bold uppercase tracking-[0.6px] text-nw-400 transition-colors hover:text-nw-200 hover:border-[rgba(255,255,255,0.18)] disabled:opacity-40"
@@ -463,6 +494,42 @@ export default function InvoiceVaultPage() {
             </div>
           </div>
         </>
+      )}
+
+      {/* PDF Preview modal */}
+      {(previewUrl || previewLoading) && (
+        <div className="fixed inset-0 z-50" onClick={() => { setPreviewUrl(null); setPreviewLoading(false) }}>
+          <div className="absolute inset-0 bg-black/70" />
+          <div
+            className="absolute inset-4 md:inset-12 bg-nw-800 rounded-2xl border border-[rgba(255,255,255,0.12)] overflow-hidden flex flex-col"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-[rgba(255,255,255,0.08)] flex-shrink-0" style={{ padding: '10px 16px' }}>
+              <p className="text-[13px] font-medium text-nw-200">Invoice Preview</p>
+              <button
+                onClick={() => { setPreviewUrl(null); setPreviewLoading(false) }}
+                className="text-nw-400 hover:text-nw-200 transition-colors"
+                style={{ padding: 4 }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+            {previewLoading ? (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-8 h-8 rounded-full border-2 border-gold-400 border-t-transparent animate-spin mx-auto mb-3" />
+                  <p className="text-[13px] text-nw-400">Loading PDF...</p>
+                </div>
+              </div>
+            ) : previewUrl ? (
+              <iframe
+                src={previewUrl}
+                className="flex-1 w-full border-0"
+                title="Invoice PDF preview"
+              />
+            ) : null}
+          </div>
+        </div>
       )}
 
       {/* Manual match modal */}
