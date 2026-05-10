@@ -188,13 +188,17 @@ async function processEmails(request: Request, supabase: ReturnType<typeof creat
       const subjectLower = subject.toLowerCase()
       const hasInvoiceKeyword = subjectLower.includes('invoice') || subjectLower.includes('receipt') || subjectLower.includes('statement') || subjectLower.includes('payment')
       const shouldExtract = result.extract_invoice || category === 'receipt_notification' || (category === 'needs_attention' && hasInvoiceKeyword)
-      console.log(`[inbox/process] Gmail: ${sender} | "${subject}" → ${category} | extract: ${shouldExtract}`)
+      console.log(`[inbox/process] Gmail: ${sender} | "${subject}" → ${category} | extract: ${shouldExtract} | classRowId: ${classRow?.id ?? 'null'}`)
       if (classRow?.id && shouldExtract) {
         try {
+          console.log(`[inbox/process] Fetching PDF attachments for ${msg.id}...`)
           const pdfs = await fetchPdfAttachments(msg.id)
+          console.log(`[inbox/process] Found ${pdfs.length} PDF attachment(s)`)
           for (const pdf of pdfs) {
             try {
+              console.log(`[inbox/process] Extracting metadata from ${pdf.filename} (${pdf.data.length} bytes)...`)
               const extracted = await extractInvoiceMetadata(pdf.data)
+              console.log(`[inbox/process] Extraction result:`, JSON.stringify(extracted))
               if (!extracted || !extracted.is_invoice) continue
 
               const storagePath = await storeInvoicePdf(pdf.data, pdf.filename, classRow.id)
@@ -387,7 +391,7 @@ async function processOutlookEmails(
       })
 
       // Apply Outlook-specific actions based on classification
-      console.log(`[inbox/process] Outlook: ${sender} | "${subject}" → ${category}`)
+      console.log(`[inbox/process] Outlook: ${sender} | "${subject}" → ${category} | flagged: ${result.flagged}`)
 
       const catMap = await ensureOutlookCategories()
       const outlookCategory = catMap[category]
