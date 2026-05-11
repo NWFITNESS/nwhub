@@ -44,6 +44,8 @@ export interface PopupBlock {
   style: BlockStyle
 }
 
+export type PopupAnimation = 'scale-fade' | 'slide-up' | 'slide-down' | 'slide-left' | 'slide-right' | 'bounce' | 'flip' | 'zoom' | 'blur-in' | 'none'
+
 export interface PopupDesign {
   enabled: boolean
   display_mode: 'first_visit' | 'once_per_session' | 'every_page' | 'every_refresh'
@@ -57,11 +59,27 @@ export interface PopupDesign {
   glowEnabled?: boolean
   glowColor?: string
   glowSize?: number
+  // Animation
+  animation?: PopupAnimation
+  animationDuration?: number // seconds, default 0.4
   // Blocks
   blocks: PopupBlock[]
   // Legacy
   dismiss_text: string
 }
+
+export const ANIMATION_OPTIONS: { value: PopupAnimation; label: string; desc: string }[] = [
+  { value: 'scale-fade', label: 'Scale & Fade', desc: 'Default — scales up with fade' },
+  { value: 'slide-up', label: 'Slide Up', desc: 'Slides in from the bottom' },
+  { value: 'slide-down', label: 'Slide Down', desc: 'Drops in from the top' },
+  { value: 'slide-left', label: 'Slide Left', desc: 'Slides in from the right' },
+  { value: 'slide-right', label: 'Slide Right', desc: 'Slides in from the left' },
+  { value: 'bounce', label: 'Bounce', desc: 'Bounces in with spring physics' },
+  { value: 'flip', label: 'Flip', desc: '3D flip rotation' },
+  { value: 'zoom', label: 'Zoom', desc: 'Zooms in from small' },
+  { value: 'blur-in', label: 'Blur In', desc: 'Fades in with blur clear' },
+  { value: 'none', label: 'None', desc: 'No animation — instant' },
+]
 
 export const DEFAULT_DESIGN: PopupDesign = {
   enabled: true,

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Responsive, WidthProvider } from 'react-grid-layout'
+import { motion } from 'framer-motion'
 import 'react-grid-layout/css/styles.css'
 import 'react-resizable/css/styles.css'
 import { Button } from '@/components/ui/Button'
@@ -13,8 +14,8 @@ import {
 import { MediaPickerModal } from '@/components/media/MediaPicker'
 import { BlockRenderer } from './BlockRenderer'
 import { StylePanel } from './StylePanel'
-import type { PopupBlock, PopupDesign, BlockStyle } from './types'
-import { DEFAULT_DESIGN, BLOCK_DEFAULTS } from './types'
+import type { PopupBlock, PopupDesign, BlockStyle, PopupAnimation } from './types'
+import { DEFAULT_DESIGN, BLOCK_DEFAULTS, ANIMATION_OPTIONS } from './types'
 import { createClient } from '@supabase/supabase-js'
 
 const ResponsiveGridLayout = WidthProvider(Responsive)
@@ -386,13 +387,16 @@ export function PopupBuilder({ initial }: Props) {
       {/* Preview Modal */}
       {showPreview && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowPreview(false)}>
-          <div onClick={e => e.stopPropagation()}>
+          <motion.div
+            onClick={e => e.stopPropagation()}
+            {...getAnimationProps(design.animation ?? 'scale-fade', design.animationDuration ?? 0.4)}
+          >
             <div
               className="relative"
               style={{
                 width: design.width,
                 maxWidth: '90vw',
-                minHeight: design.height,
+                minHeight: Math.max(design.height, ...(design.blocks ?? []).map(b => (b.y + b.h) * 20 + 40)),
                 overflow: 'hidden',
                 backgroundColor: design.backgroundColor,
                 borderRadius: design.borderRadius,
@@ -427,7 +431,7 @@ export function PopupBuilder({ initial }: Props) {
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
 
@@ -477,6 +481,34 @@ export function PopupBuilder({ initial }: Props) {
       )}
     </div>
   )
+}
+
+// ── Animation helpers ────────────────────────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getAnimationProps(animation: PopupAnimation, duration: number): any {
+  switch (animation) {
+    case 'slide-up':
+      return { initial: { opacity: 0, y: 80 }, animate: { opacity: 1, y: 0 }, transition: { duration } }
+    case 'slide-down':
+      return { initial: { opacity: 0, y: -80 }, animate: { opacity: 1, y: 0 }, transition: { duration } }
+    case 'slide-left':
+      return { initial: { opacity: 0, x: 80 }, animate: { opacity: 1, x: 0 }, transition: { duration } }
+    case 'slide-right':
+      return { initial: { opacity: 0, x: -80 }, animate: { opacity: 1, x: 0 }, transition: { duration } }
+    case 'bounce':
+      return { initial: { opacity: 0, scale: 0.3 }, animate: { opacity: 1, scale: 1 }, transition: { type: 'spring', damping: 12, stiffness: 200 } }
+    case 'flip':
+      return { initial: { opacity: 0, rotateY: 90 }, animate: { opacity: 1, rotateY: 0 }, transition: { duration } }
+    case 'zoom':
+      return { initial: { opacity: 0, scale: 0.1 }, animate: { opacity: 1, scale: 1 }, transition: { duration } }
+    case 'blur-in':
+      return { initial: { opacity: 0, filter: 'blur(20px)' }, animate: { opacity: 1, filter: 'blur(0px)' }, transition: { duration } }
+    case 'none':
+      return { initial: { opacity: 1 }, animate: { opacity: 1 } }
+    default:
+      return { initial: { opacity: 0, scale: 0.9, y: 20 }, animate: { opacity: 1, scale: 1, y: 0 }, transition: { type: 'spring', damping: 22, stiffness: 300 } }
+  }
 }
 
 // ── Canvas Settings Panel ────────────────────────────────────────────────────
@@ -601,6 +633,38 @@ function CanvasSettings({ design, onUpdate }: { design: PopupDesign; onUpdate: (
             </div>
           </div>
         )}
+      </div>
+
+      {/* Animation */}
+      <div>
+        <p className="text-[10px] font-semibold uppercase tracking-[1.4px] text-nw-500 mb-2">Entrance Animation</p>
+        <div className="flex flex-col gap-1.5">
+          {ANIMATION_OPTIONS.map(a => (
+            <button
+              key={a.value}
+              onClick={() => onUpdate({ animation: a.value })}
+              className={`text-left rounded-lg border transition-colors ${
+                (design.animation ?? 'scale-fade') === a.value
+                  ? 'border-[rgba(212,160,23,0.4)] bg-[rgba(212,160,23,0.1)]'
+                  : 'border-[rgba(255,255,255,0.06)] hover:border-[rgba(255,255,255,0.12)]'
+              }`}
+              style={{ padding: '6px 10px' }}
+            >
+              <p className={`text-[11px] font-medium ${(design.animation ?? 'scale-fade') === a.value ? 'text-gold-300' : 'text-nw-200'}`}>{a.label}</p>
+              <p className="text-[9px] text-nw-500">{a.desc}</p>
+            </button>
+          ))}
+        </div>
+        <div className="mt-2">
+          <label className="text-[9px] text-nw-500 block mb-1">Duration: {design.animationDuration ?? 0.4}s</label>
+          <input
+            type="range"
+            min={0.1} max={1.5} step={0.1}
+            value={design.animationDuration ?? 0.4}
+            onChange={e => onUpdate({ animationDuration: Number(e.target.value) })}
+            className="w-full accent-[#c9a70a]"
+          />
+        </div>
       </div>
     </div>
   )
