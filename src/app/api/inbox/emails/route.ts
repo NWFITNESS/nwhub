@@ -23,5 +23,22 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+
+  // Check which emails have extracted invoices
+  const emailIds = (data ?? []).map(e => e.id)
+  let invoiceEmailIds = new Set<string>()
+  if (emailIds.length > 0) {
+    const { data: vaultRows } = await supabase
+      .from('invoice_vault')
+      .select('source_email_id')
+      .in('source_email_id', emailIds)
+    invoiceEmailIds = new Set((vaultRows ?? []).map(r => r.source_email_id).filter(Boolean))
+  }
+
+  const enriched = (data ?? []).map(e => ({
+    ...e,
+    has_invoice: invoiceEmailIds.has(e.id),
+  }))
+
+  return NextResponse.json(enriched)
 }

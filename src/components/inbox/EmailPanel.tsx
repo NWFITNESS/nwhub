@@ -28,6 +28,7 @@ interface Props {
   onArchive: (emailId: string) => void
   onBulkArchive: (emailIds: string[]) => void
   onRefresh: () => void
+  onReclassify?: (emailId: string) => void
 }
 
 const FILTERS: { key: FilterType; label: string }[] = [
@@ -38,7 +39,7 @@ const FILTERS: { key: FilterType; label: string }[] = [
   { key: 'spam', label: 'Archived' },
 ]
 
-export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive }: Props) {
+export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive, onReclassify }: Props) {
   // Default to needs_attention so the admin lands on priority emails, not the
   // full firehose including archives and newsletters.
   const [filter, setFilter] = useState<FilterType>('needs_attention')
@@ -172,6 +173,7 @@ export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive }: Prop
               email={email}
               onAddTask={onAddTask}
               onArchive={onArchive}
+              onReclassify={onReclassify}
               selected={selectedIds.has(email.id)}
               onToggleSelect={email.archived ? undefined : toggleSelect}
             />

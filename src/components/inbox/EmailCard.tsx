@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { ChevronDown, Plus, Check } from 'lucide-react'
+import { ChevronDown, Plus, Check, RefreshCw } from 'lucide-react'
 
 interface Email {
   id: string
@@ -15,12 +15,14 @@ interface Email {
   flagged: boolean
   archived: boolean
   task_created: boolean
+  has_invoice?: boolean
 }
 
 interface Props {
   email: Email
   onAddTask: (title: string, due_date?: string) => void
   onArchive: (emailId: string) => void
+  onReclassify?: (emailId: string) => void
   selected?: boolean
   onToggleSelect?: (emailId: string) => void
 }
@@ -58,9 +60,10 @@ function hashColor(str: string): string {
   return colors[Math.abs(hash)]
 }
 
-export function EmailCard({ email, onAddTask, onArchive, selected, onToggleSelect }: Props) {
+export function EmailCard({ email, onAddTask, onArchive, onReclassify, selected, onToggleSelect }: Props) {
   const [summaryOpen, setSummaryOpen] = useState(false)
   const [archiving, startArchiveTransition] = useTransition()
+  const [reclassifying, setReclassifying] = useState(false)
   const category = CATEGORY_STYLES[email.category] ?? { label: email.category, className: 'bg-white/[0.05] text-white/40 border-white/[0.06]' }
   const initials = getInitials(email.sender_name, email.sender)
   const avatarColor = hashColor(email.sender)
@@ -128,6 +131,11 @@ export function EmailCard({ email, onAddTask, onArchive, selected, onToggleSelec
                 Task created
               </span>
             )}
+            {email.has_invoice && (
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-blue-500/15 text-blue-400 border-blue-500/25">
+                Invoice extracted
+              </span>
+            )}
           </div>
 
           {/* AI Summary (collapsible for flagged) */}
@@ -149,33 +157,46 @@ export function EmailCard({ email, onAddTask, onArchive, selected, onToggleSelec
           )}
 
           {/* Actions row */}
-          {(isActionable || (isImportant && !email.task_created)) && (
-            <div className="mt-2 flex items-center gap-3">
-              {/* Add task action */}
-              {!email.task_created && isImportant && (
-                <button
-                  onClick={() => onAddTask(`Follow up: ${email.subject}`, undefined)}
-                  className="flex items-center gap-1 text-[11px] text-white/40 hover:text-[#f2ca50] transition-colors"
-                >
-                  <Plus size={11} />
-                  Add to tasks
-                </button>
-              )}
+          <div className="mt-2 flex items-center gap-3">
+            {/* Add task action */}
+            {!email.task_created && isImportant && (
+              <button
+                onClick={() => onAddTask(`Follow up: ${email.subject}`, undefined)}
+                className="flex items-center gap-1 text-[11px] text-white/40 hover:text-[#f2ca50] transition-colors"
+              >
+                <Plus size={11} />
+                Add to tasks
+              </button>
+            )}
 
-              {/* Mark as handled — archives the email so it drops off the
-                  "Needs Action" filter */}
-              {isActionable && !email.archived && (
-                <button
-                  onClick={() => startArchiveTransition(() => onArchive(email.id))}
-                  disabled={archiving}
-                  className="flex items-center gap-1 text-[11px] text-white/40 hover:text-green-400 transition-colors disabled:opacity-50"
-                >
-                  <Check size={11} />
-                  {archiving ? 'Done…' : 'Mark handled'}
-                </button>
-              )}
-            </div>
-          )}
+            {/* Mark as handled */}
+            {isActionable && !email.archived && (
+              <button
+                onClick={() => startArchiveTransition(() => onArchive(email.id))}
+                disabled={archiving}
+                className="flex items-center gap-1 text-[11px] text-white/40 hover:text-green-400 transition-colors disabled:opacity-50"
+              >
+                <Check size={11} />
+                {archiving ? 'Done…' : 'Mark handled'}
+              </button>
+            )}
+
+            {/* Reclassify */}
+            {onReclassify && (
+              <button
+                onClick={async () => {
+                  setReclassifying(true)
+                  await onReclassify(email.id)
+                  setReclassifying(false)
+                }}
+                disabled={reclassifying}
+                className="flex items-center gap-1 text-[11px] text-white/40 hover:text-blue-400 transition-colors disabled:opacity-50"
+              >
+                <RefreshCw size={11} className={reclassifying ? 'animate-spin' : ''} />
+                {reclassifying ? 'Reclassifying…' : 'Reclassify'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

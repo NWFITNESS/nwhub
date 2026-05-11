@@ -110,6 +110,23 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected, outlo
     }
   }
 
+  async function handleReclassify(emailId: string) {
+    try {
+      const res = await fetch('/api/inbox/reclassify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email_id: emailId }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setLastResult(`Reclassified: ${data.old_category} → ${data.new_category}`)
+        // Refresh emails
+        const emailsRes = await fetch('/api/inbox/emails')
+        if (emailsRes.ok) setEmails(await emailsRes.json())
+      }
+    } catch { /* ignore */ }
+  }
+
   async function handleToggleTask(id: string, completed: boolean) {
     await fetch(`/api/tasks/${id}`, {
       method: 'PATCH',
@@ -203,6 +220,25 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected, outlo
             <Button
               variant="ghost"
               size="sm"
+              onClick={async () => {
+                setProcessing(true)
+                setLastResult(null)
+                try {
+                  const res = await fetch('/api/inbox/process?force=true&lookback=7d', { method: 'POST' })
+                  const data = await res.json()
+                  setLastResult(`Processed ${data.processed} · ${data.tasks_created} tasks · ${data.archived} archived (7-day lookback)`)
+                  refreshEmails()
+                } finally { setProcessing(false) }
+              }}
+              loading={processing}
+              disabled={!gmailConnected}
+            >
+              Process Older (7d)
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleSendDigest}
               loading={sendingDigest}
             >
@@ -227,6 +263,7 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected, outlo
               onArchive={handleArchive}
               onBulkArchive={handleBulkArchive}
               onRefresh={refreshEmails}
+              onReclassify={handleReclassify}
             />
           </Panel>
         </div>
