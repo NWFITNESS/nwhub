@@ -38,16 +38,29 @@ interface Props {
   initial?: { published?: PopupDesign; draft?: PopupDesign }
 }
 
+function normalizeDesign(raw: unknown): PopupDesign {
+  if (!raw || typeof raw !== 'object') return DEFAULT_DESIGN
+  const d = raw as Record<string, unknown>
+  // If it has a blocks array, it's the new format
+  if (Array.isArray(d.blocks)) return { ...DEFAULT_DESIGN, ...d, blocks: d.blocks } as PopupDesign
+  // Legacy flat format — start fresh with defaults, preserve enabled/display_mode
+  return {
+    ...DEFAULT_DESIGN,
+    enabled: typeof d.enabled === 'boolean' ? d.enabled : true,
+    display_mode: (d.display_mode as PopupDesign['display_mode']) ?? 'first_visit',
+  }
+}
+
 export function PopupBuilder({ initial }: Props) {
-  const [design, setDesign] = useState<PopupDesign>(initial?.draft ?? initial?.published ?? DEFAULT_DESIGN)
-  const [published, setPublished] = useState<PopupDesign | null>(initial?.published ?? null)
+  const [design, setDesign] = useState<PopupDesign>(normalizeDesign(initial?.draft ?? initial?.published))
+  const [published, setPublished] = useState<PopupDesign | null>(initial?.published ? normalizeDesign(initial.published) : null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [publishing, setPublishing] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
 
-  const selectedBlock = design.blocks.find(b => b.id === selectedId) ?? null
+  const selectedBlock = (design.blocks ?? []).find(b => b.id === selectedId) ?? null
   const hasChanges = JSON.stringify(design) !== JSON.stringify(published ?? DEFAULT_DESIGN)
 
   function showToast(msg: string) {
