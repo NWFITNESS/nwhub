@@ -116,7 +116,7 @@ export const BLOCK_DEFAULTS: Record<string, Partial<PopupBlock>> = {
   },
   newsletter: {
     type: 'newsletter',
-    w: 12, h: 4,
+    w: 12, h: 3,
     content: 'Subscribe',
     style: {
       placeholderText: 'Enter your email',

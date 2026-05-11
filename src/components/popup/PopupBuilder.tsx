@@ -388,11 +388,12 @@ export function PopupBuilder({ initial }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowPreview(false)}>
           <div onClick={e => e.stopPropagation()}>
             <div
-              className="relative overflow-hidden"
+              className="relative"
               style={{
                 width: design.width,
                 maxWidth: '90vw',
                 minHeight: design.height,
+                overflow: 'hidden',
                 backgroundColor: design.backgroundColor,
                 borderRadius: design.borderRadius,
                 backgroundImage: design.backgroundImage ? `url(${design.backgroundImage})` : undefined,
@@ -408,12 +409,12 @@ export function PopupBuilder({ initial }: Props) {
               </button>
 
               {/* Blocks */}
-              <div className="relative" style={{ minHeight: design.height }}>
+              <div className="relative" style={{ minHeight: Math.max(design.height, ...((design.blocks ?? []).map(b => (b.y + b.h) * 20 + 20))) }}>
                 {(design.blocks ?? []).map(block => {
                   const colWidth = design.width / 12
                   const rowHeight = 20
                   return (
-                    <div key={block.id} style={{ position: 'absolute', left: block.x * colWidth + 4, top: block.y * rowHeight + 4, width: block.w * colWidth - 8, height: block.h * rowHeight - 8 }}>
+                    <div key={block.id} style={{ position: 'absolute', left: block.x * colWidth + 4, top: block.y * rowHeight + 4, width: block.w * colWidth - 8, height: block.h * rowHeight - 8, zIndex: 1 }}>
                       <BlockRenderer block={block} />
                     </div>
                   )
