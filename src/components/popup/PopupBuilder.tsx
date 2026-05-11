@@ -59,6 +59,9 @@ export function PopupBuilder({ initial }: Props) {
   const [publishing, setPublishing] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [generating, setGenerating] = useState(false)
+  const [aiPrompt, setAiPrompt] = useState('')
+  const [showAiModal, setShowAiModal] = useState(false)
 
   const selectedBlock = (design.blocks ?? []).find(b => b.id === selectedId) ?? null
   const hasChanges = JSON.stringify(design) !== JSON.stringify(published ?? DEFAULT_DESIGN)
@@ -154,6 +157,32 @@ export function PopupBuilder({ initial }: Props) {
     setSelectedId(null)
   }
 
+  async function generateWithAI() {
+    setGenerating(true)
+    try {
+      const res = await fetch('/api/popup/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: aiPrompt || 'Design a promotional popup for a functional fitness gym' }),
+      })
+      if (!res.ok) { showToast('AI generation failed'); return }
+      const data = await res.json()
+      if (data.blocks && Array.isArray(data.blocks)) {
+        setDesign(d => ({
+          ...d,
+          blocks: data.blocks,
+          backgroundColor: data.backgroundColor ?? d.backgroundColor,
+          width: data.width ?? d.width,
+          height: data.height ?? d.height,
+          borderRadius: data.borderRadius ?? d.borderRadius,
+          dismiss_text: data.dismiss_text ?? d.dismiss_text,
+        }))
+        showToast(`Generated ${data.blocks.length} blocks — tweak as needed`)
+      }
+    } catch { showToast('AI generation failed') }
+    finally { setGenerating(false); setShowAiModal(false); setAiPrompt('') }
+  }
+
   // ── Layout ─────────────────────────────────────────────────────────────
 
   const gridLayout = design.blocks.map(b => ({
@@ -199,6 +228,9 @@ export function PopupBuilder({ initial }: Props) {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button variant="default" size="sm" onClick={() => setShowAiModal(true)} loading={generating}>
+            <Star size={12} /> AI Generate
+          </Button>
           {hasChanges && (
             <Button variant="ghost" size="sm" onClick={discardDraft}>
               <Undo2 size={12} /> Discard
@@ -332,6 +364,51 @@ export function PopupBuilder({ initial }: Props) {
           </div>
         </div>
       </div>
+
+      {/* AI Generate Modal */}
+      {showAiModal && (
+        <div className="fixed inset-0 z-50" onClick={() => setShowAiModal(false)}>
+          <div className="absolute inset-0 bg-black/60" />
+          <div className="absolute inset-0 flex items-center justify-center" style={{ padding: 20 }}>
+            <div
+              className="bg-nw-750 rounded-2xl border border-[rgba(255,255,255,0.12)] w-full max-w-md"
+              style={{ padding: 24 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <h3 className="font-brand text-lg font-bold text-white mb-1">AI Popup Generator</h3>
+              <p className="text-[12px] text-nw-400 mb-4">Describe what you want and AI will design the layout. You can tweak everything after.</p>
+
+              <textarea
+                value={aiPrompt}
+                onChange={e => setAiPrompt(e.target.value)}
+                placeholder="e.g. A popup promoting our 2-week free trial with a hero image, bold headline, and a gold CTA button"
+                className="w-full rounded-lg border border-[rgba(255,255,255,0.12)] bg-nw-800 text-[13px] text-white outline-none focus:border-[rgba(212,160,23,0.4)] resize-none"
+                style={{ padding: '10px 12px', minHeight: 100 }}
+              />
+
+              <div className="flex gap-2 mt-2 text-[10px] text-nw-500 flex-wrap">
+                {['2-week free trial promo', 'Kids classes announcement', 'HYROX event signup', 'New year membership offer'].map(s => (
+                  <button
+                    key={s}
+                    onClick={() => setAiPrompt(s)}
+                    className="rounded-lg border border-[rgba(255,255,255,0.08)] hover:border-[rgba(212,160,23,0.2)] hover:text-gold-300 transition-colors"
+                    style={{ padding: '4px 8px' }}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex justify-end gap-2 mt-4">
+                <Button variant="default" size="sm" onClick={() => setShowAiModal(false)}>Cancel</Button>
+                <Button variant="gold" size="sm" onClick={generateWithAI} loading={generating} disabled={!aiPrompt.trim()}>
+                  <Star size={12} /> Generate
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
