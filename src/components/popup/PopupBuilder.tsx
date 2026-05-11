@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import {
   Type, ImageIcon, MousePointer, Star, Tag, Minus,
-  Eye, EyeOff, Save, Upload, Undo2, Settings,
+  Eye, EyeOff, Save, Upload, Undo2, Settings, Mail, Monitor,
 } from 'lucide-react'
+import { MediaPickerModal } from '@/components/media/MediaPicker'
 import { BlockRenderer } from './BlockRenderer'
 import { StylePanel } from './StylePanel'
 import type { PopupBlock, PopupDesign, BlockStyle } from './types'
@@ -25,6 +26,7 @@ const BLOCK_TYPES = [
   { type: 'icon', label: 'Icon', icon: Star },
   { type: 'badge', label: 'Badge', icon: Tag },
   { type: 'divider', label: 'Divider', icon: Minus },
+  { type: 'newsletter', label: 'Newsletter', icon: Mail },
 ] as const
 
 const DISPLAY_MODES = [
@@ -62,6 +64,8 @@ export function PopupBuilder({ initial }: Props) {
   const [generating, setGenerating] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('')
   const [showAiModal, setShowAiModal] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
+  const [mediaPicker, setMediaPicker] = useState<{ callback: (url: string) => void } | null>(null)
 
   const selectedBlock = (design.blocks ?? []).find(b => b.id === selectedId) ?? null
   const hasChanges = JSON.stringify(design) !== JSON.stringify(published ?? DEFAULT_DESIGN)
@@ -228,6 +232,9 @@ export function PopupBuilder({ initial }: Props) {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button variant="default" size="sm" onClick={() => setShowPreview(true)}>
+            <Monitor size={12} /> Preview
+          </Button>
           <Button variant="default" size="sm" onClick={() => setShowAiModal(true)} loading={generating}>
             <Star size={12} /> AI Generate
           </Button>
@@ -299,6 +306,7 @@ export function PopupBuilder({ initial }: Props) {
                   block={selectedBlock}
                   onUpdate={updates => updateBlock(selectedBlock.id, updates)}
                   onDelete={() => deleteBlock(selectedBlock.id)}
+                  onImagePick={cb => setMediaPicker({ callback: cb })}
                 />
               ) : null}
             </div>
@@ -317,6 +325,7 @@ export function PopupBuilder({ initial }: Props) {
               backgroundImage: design.backgroundImage ? `url(${design.backgroundImage})` : undefined,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
+              boxShadow: design.glowEnabled ? `0 0 ${design.glowSize ?? 40}px ${(design.glowSize ?? 40) / 2}px ${design.glowColor ?? '#967705'}40, 0 0 ${(design.glowSize ?? 40) * 2}px ${design.glowSize ?? 40}px ${design.glowColor ?? '#967705'}15` : undefined,
             }}
             onClick={() => { setSelectedId(null); setShowSettings(false) }}
           >
@@ -364,6 +373,62 @@ export function PopupBuilder({ initial }: Props) {
           </div>
         </div>
       </div>
+
+      {/* Media Picker */}
+      {mediaPicker && (
+        <MediaPickerModal
+          value=""
+          onSelect={url => { mediaPicker.callback(url); setMediaPicker(null) }}
+          onClose={() => setMediaPicker(null)}
+        />
+      )}
+
+      {/* Preview Modal */}
+      {showPreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowPreview(false)}>
+          <div onClick={e => e.stopPropagation()}>
+            <div
+              className="relative overflow-hidden"
+              style={{
+                width: design.width,
+                maxWidth: '90vw',
+                minHeight: design.height,
+                backgroundColor: design.backgroundColor,
+                borderRadius: design.borderRadius,
+                backgroundImage: design.backgroundImage ? `url(${design.backgroundImage})` : undefined,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                border: '1px solid rgba(255,255,255,0.1)',
+                boxShadow: design.glowEnabled ? `0 0 ${design.glowSize ?? 40}px ${(design.glowSize ?? 40) / 2}px ${design.glowColor ?? '#967705'}40, 0 0 ${(design.glowSize ?? 40) * 2}px ${design.glowSize ?? 40}px ${design.glowColor ?? '#967705'}15` : '0 0 80px rgba(150,119,5,0.15)',
+              }}
+            >
+              {/* Close */}
+              <button onClick={() => setShowPreview(false)} className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white/70 backdrop-blur-sm hover:bg-black/70 hover:text-white">
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 1l12 12M13 1L1 13" /></svg>
+              </button>
+
+              {/* Blocks */}
+              <div className="relative" style={{ minHeight: design.height }}>
+                {(design.blocks ?? []).map(block => {
+                  const colWidth = design.width / 12
+                  const rowHeight = 20
+                  return (
+                    <div key={block.id} style={{ position: 'absolute', left: block.x * colWidth + 4, top: block.y * rowHeight + 4, width: block.w * colWidth - 8, height: block.h * rowHeight - 8 }}>
+                      <BlockRenderer block={block} />
+                    </div>
+                  )
+                })}
+              </div>
+
+              {design.dismiss_text && (
+                <div className="text-center" style={{ padding: '8px 16px 16px' }}>
+                  <span className="text-[11px] text-white/30 hover:text-white/60 cursor-pointer">{design.dismiss_text}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* AI Generate Modal */}
       {showAiModal && (
@@ -494,6 +559,47 @@ function CanvasSettings({ design, onUpdate }: { design: PopupDesign; onUpdate: (
           className="w-full rounded-lg border border-[rgba(255,255,255,0.12)] bg-nw-800 text-[12px] text-white outline-none"
           style={{ padding: '6px 10px' }}
         />
+      </div>
+
+      {/* Glow Effect */}
+      <div>
+        <label className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[1.4px] text-nw-500 mb-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={design.glowEnabled ?? false}
+            onChange={e => onUpdate({ glowEnabled: e.target.checked })}
+            className="accent-[#c9a70a]"
+          />
+          Glow Effect
+        </label>
+        {design.glowEnabled && (
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2 items-center">
+              <input
+                type="color"
+                value={design.glowColor ?? '#967705'}
+                onChange={e => onUpdate({ glowColor: e.target.value })}
+                className="w-8 h-8 rounded border-0 cursor-pointer"
+              />
+              <input
+                value={design.glowColor ?? '#967705'}
+                onChange={e => onUpdate({ glowColor: e.target.value })}
+                className="flex-1 rounded-lg border border-[rgba(255,255,255,0.12)] bg-nw-800 text-[11px] text-white outline-none font-mono"
+                style={{ padding: '4px 8px' }}
+              />
+            </div>
+            <div>
+              <label className="text-[9px] text-nw-500 block mb-1">Glow Size: {design.glowSize ?? 40}px</label>
+              <input
+                type="range"
+                min={10} max={100}
+                value={design.glowSize ?? 40}
+                onChange={e => onUpdate({ glowSize: Number(e.target.value) })}
+                className="w-full accent-[#c9a70a]"
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

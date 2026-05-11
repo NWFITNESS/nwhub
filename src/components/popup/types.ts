@@ -20,6 +20,10 @@ export interface BlockStyle {
   // Button
   buttonVariant?: 'gold' | 'outline' | 'ghost'
   buttonLink?: string
+  // Newsletter
+  placeholderText?: string
+  buttonText?: string
+  successText?: string
   // Layout
   padding?: number
   borderRadius?: number
@@ -31,15 +35,12 @@ export interface BlockStyle {
 
 export interface PopupBlock {
   id: string
-  type: 'text' | 'image' | 'button' | 'icon' | 'badge' | 'divider'
-  // react-grid-layout position
+  type: 'text' | 'image' | 'button' | 'icon' | 'badge' | 'divider' | 'newsletter'
   x: number
   y: number
   w: number
   h: number
-  // Content
   content: string
-  // Styling
   style: BlockStyle
 }
 
@@ -52,6 +53,10 @@ export interface PopupDesign {
   backgroundColor: string
   backgroundImage?: string
   borderRadius: number
+  // Glow
+  glowEnabled?: boolean
+  glowColor?: string
+  glowSize?: number
   // Blocks
   blocks: PopupBlock[]
   // Legacy
@@ -65,6 +70,9 @@ export const DEFAULT_DESIGN: PopupDesign = {
   height: 540,
   backgroundColor: '#0e0e0e',
   borderRadius: 16,
+  glowEnabled: false,
+  glowColor: '#967705',
+  glowSize: 40,
   blocks: [],
   dismiss_text: "No thanks, I'll look around first",
 }
@@ -80,7 +88,7 @@ export const BLOCK_DEFAULTS: Record<string, Partial<PopupBlock>> = {
     type: 'image',
     w: 12, h: 8,
     content: '',
-    style: { objectFit: 'cover', borderRadius: 0, opacity: 100 },
+    style: { objectFit: 'cover', objectPosition: '50% 50%', borderRadius: 0, opacity: 100 },
   },
   button: {
     type: 'button',
@@ -105,6 +113,21 @@ export const BLOCK_DEFAULTS: Record<string, Partial<PopupBlock>> = {
     w: 12, h: 1,
     content: '',
     style: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 0 },
+  },
+  newsletter: {
+    type: 'newsletter',
+    w: 12, h: 4,
+    content: 'Subscribe',
+    style: {
+      placeholderText: 'Enter your email',
+      buttonText: 'Subscribe',
+      successText: "You're in! ✓",
+      backgroundColor: 'rgba(255,255,255,0.04)',
+      borderRadius: 12,
+      padding: 12,
+      color: '#ffffff',
+      fontSize: 13,
+    },
   },
 }
 
