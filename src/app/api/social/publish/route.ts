@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth-guard'
-import { getSocialConnections, refreshLinkedInToken } from '@/lib/social'
+import { getSocialConnections, refreshLinkedInToken } from '@/lib/social/connections'
 import {
   uploadImageToStorage,
   publishToFacebook,
@@ -10,7 +10,7 @@ import {
   publishMultiToInstagram,
   publishMultiToLinkedIn,
   type PublishResult,
-} from '@/lib/social-publish'
+} from '@/lib/social/publisher'
 
 export { type PublishResult }
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth-guard'
-import { getInvoicePdfUrl } from '@/lib/invoice-storage'
+import { getInvoicePdfUrl } from '@/lib/invoices/storage'
 
 export async function GET(req: NextRequest) {
   const unauth = await requireAuth()

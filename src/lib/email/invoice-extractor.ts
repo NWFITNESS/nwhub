@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import type { ExtractedInvoice } from '@/lib/invoice-extractor'
+import type { ExtractedInvoice } from '@/lib/invoices/extractor'
 
 const anthropic = new Anthropic()
 

@@ -1,5 +1,5 @@
-import { xero } from '@/lib/xero'
-import { getXeroAuth } from '@/lib/xero-auth'
+import { xero } from '@/lib/xero/client'
+import { getXeroAuth } from '@/lib/xero/auth'
 
 interface MatchResult {
   matched: boolean

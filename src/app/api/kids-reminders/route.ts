@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getResend, FROM_EMAIL } from '@/lib/resend'
+import { getResend, FROM_EMAIL } from '@/lib/email/resend'
 import { CATEGORY_LABEL, CATEGORY_TIME } from '@/lib/kids/constants'
 import type { KidsCategory } from '@/lib/kids/types'
 

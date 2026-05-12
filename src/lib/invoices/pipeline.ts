@@ -1,9 +1,9 @@
-import { fetchPdfAttachments } from '@/lib/gmail-attachments'
-import { extractInvoiceMetadata } from '@/lib/invoice-extractor'
-import { extractInvoiceFromEmailBody, wrapEmailAsHtml } from '@/lib/email-invoice-extractor'
-import { storeInvoicePdf } from '@/lib/invoice-storage'
-import { findMatchingXeroInvoice } from '@/lib/xero-matcher'
-import { gmailFetch, extractEmailBody } from '@/lib/gmail'
+import { fetchPdfAttachments } from '@/lib/gmail/attachments'
+import { extractInvoiceMetadata } from '@/lib/invoices/extractor'
+import { extractInvoiceFromEmailBody, wrapEmailAsHtml } from '@/lib/email/invoice-extractor'
+import { storeInvoicePdf } from '@/lib/invoices/storage'
+import { findMatchingXeroInvoice } from '@/lib/xero/matcher'
+import { gmailFetch, extractEmailBody } from '@/lib/gmail/client'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**

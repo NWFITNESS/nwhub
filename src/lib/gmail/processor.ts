@@ -1,7 +1,7 @@
-import { gmailFetch, extractEmailBody, ensureGmailLabels } from '@/lib/gmail'
-import { classifyEmail } from '@/lib/email-classifier'
-import { applyRules, type NormalizedEmail } from '@/lib/rules-engine'
-import { extractInvoiceFromEmail } from '@/lib/extraction-pipeline'
+import { gmailFetch, extractEmailBody, ensureGmailLabels } from '@/lib/gmail/client'
+import { classifyEmail } from '@/lib/email/classifier'
+import { applyRules, type NormalizedEmail } from '@/lib/email/rules-engine'
+import { extractInvoiceFromEmail } from '@/lib/invoices/pipeline'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 // In-memory label cache

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { processGmailEmails } from '@/lib/gmail-processor'
+import { processGmailEmails } from '@/lib/gmail/processor'
 
 // Vercel crons fire GET — UI button fires POST — both use the same handler
 export async function GET(request: Request) { return handler(request) }

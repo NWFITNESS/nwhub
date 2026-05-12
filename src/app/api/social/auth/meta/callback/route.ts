@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSocialConnections, saveSocialConnections } from '@/lib/social'
+import { getSocialConnections, saveSocialConnections } from '@/lib/social/connections'
 
 const META_VERSION = 'v20.0'
 

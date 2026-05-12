@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSocialConnections, saveSocialConnections } from '@/lib/social'
+import { getSocialConnections, saveSocialConnections } from '@/lib/social/connections'
 
 export async function GET(req: NextRequest) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''

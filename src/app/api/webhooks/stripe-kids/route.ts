@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 import Stripe from 'stripe'
 import { getStripe } from '@/lib/stripe'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getResend, FROM_EMAIL } from '@/lib/resend'
+import { getResend, FROM_EMAIL } from '@/lib/email/resend'
 import { CATEGORY_LABEL, CATEGORY_TIME, formatPence } from '@/lib/kids/constants'
 import type { KidsCategory } from '@/lib/kids/types'
 

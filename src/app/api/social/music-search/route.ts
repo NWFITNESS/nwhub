@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth-guard'
-import { getSocialConnections } from '@/lib/social'
+import { getSocialConnections } from '@/lib/social/connections'
 
 const META_VERSION = 'v20.0'
 

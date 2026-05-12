@@ -1,7 +1,7 @@
-import { xero } from '@/lib/xero'
+import { xero } from '@/lib/xero/client'
 import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth-guard'
-import { getXeroAuth } from '@/lib/xero-auth'
+import { getXeroAuth } from '@/lib/xero/auth'
 
 function parseXeroDate(d: unknown): string | null {
   if (!d) return null

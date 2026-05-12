@@ -1,4 +1,4 @@
-import { gmailFetch } from '@/lib/gmail'
+import { gmailFetch } from '@/lib/gmail/client'
 
 interface PdfAttachment {
   filename: string

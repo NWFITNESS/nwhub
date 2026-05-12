@@ -2,7 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getStripe, siteUrl } from '@/lib/stripe'
-import { getResend, FROM_EMAIL } from '@/lib/resend'
+import { getResend, FROM_EMAIL } from '@/lib/email/resend'
 import { revalidatePath } from 'next/cache'
 import type { AttendanceStatus, BookingEditorData, BookingType, KidsCategory } from './types'
 import { CATEGORY_LABEL, CATEGORY_TIME, DROPIN_PRICE_PENCE, categoryFromDob, formatPence } from './constants'

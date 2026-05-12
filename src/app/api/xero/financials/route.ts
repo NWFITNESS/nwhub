@@ -1,8 +1,8 @@
-import { xero } from '@/lib/xero'
+import { xero } from '@/lib/xero/client'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth-guard'
-import { getXeroAuth } from '@/lib/xero-auth'
+import { getXeroAuth } from '@/lib/xero/auth'
 
 const parseNum = (v: unknown) =>
   Math.abs(parseFloat(String(v ?? '').replace(/,/g, '')) || 0)

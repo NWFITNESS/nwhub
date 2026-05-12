@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { gmailFetch } from '@/lib/gmail'
-import { fetchPdfAttachments } from '@/lib/gmail-attachments'
-import { extractInvoiceMetadata } from '@/lib/invoice-extractor'
-import { storeInvoicePdf } from '@/lib/invoice-storage'
-import { findMatchingXeroInvoice } from '@/lib/xero-matcher'
+import { gmailFetch } from '@/lib/gmail/client'
+import { fetchPdfAttachments } from '@/lib/gmail/attachments'
+import { extractInvoiceMetadata } from '@/lib/invoices/extractor'
+import { storeInvoicePdf } from '@/lib/invoices/storage'
+import { findMatchingXeroInvoice } from '@/lib/xero/matcher'
 import { requireAuth } from '@/lib/auth-guard'
 
 // POST — reprocess existing classified emails

@@ -156,10 +156,11 @@ function buildNav(unreadCount: number): NavSection[] {
       items: [
         { key: 'popup', label: 'Website Popup', icon: I.popup, href: '/popup', permKey: 'email_campaigns' },
         { key: 'email', label: 'Email Campaigns', icon: I.email, permKey: 'email_campaigns', sub: [
-          { label: 'All Campaigns', href: '/email/campaigns' },
+          { label: 'All Campaigns', href: '/mailchimp' },
+          { label: 'Create Campaign', href: '/mailchimp/create' },
+          { label: 'AI Email Creator', href: '/mailchimp/create-ai' },
           { label: 'Subscribers', href: '/email' },
           { label: 'Import Subscribers', href: '/email/import' },
-          { label: 'AI Email Creator', href: '/mailchimp/create-ai' },
         ]},
         { key: 'branding', label: 'Branding Studio', icon: I.branding, permKey: 'branding', sub: [
           { label: 'Post Studio', href: '/branding' },

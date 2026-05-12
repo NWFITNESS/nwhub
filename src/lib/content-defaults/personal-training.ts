@@ -1,0 +1,81 @@
+export const personalTrainingDefaults = {
+  hero: {
+    kicker: 'Personal Training',
+    heading: 'KM Training x Northern Warrior',
+    subtext: 'Tailored 1-to-1 coaching and bespoke programming by Kieran McGlennon \u2014 available at Northern Warrior and online.',
+    video_url: '',
+    image_url: '/feature-1.jpg',
+  },
+  about: {
+    kicker: 'Meet Your PT',
+    heading: 'Kieran McGlennon',
+    subheading: 'Coach \u00b7 Personal Trainer',
+    body: "Kieran is a fully qualified personal trainer and coach with over 4 years of experience coaching strength & conditioning, Olympic weightlifting, and gymnastics. He's coached across some of the best gyms in West Cumbria and even spent 9 months travelling the southern hemisphere before coming back to do what he does best \u2014 right here at Northern Warrior.\n\nWhether it's 1-to-1 sessions at the gym, fully remote programming, or nutritional guidance, Kieran builds everything around your goals, your schedule and where you're at right now. He's not about gimmicks or overcomplicated plans \u2014 just honest, down-to-earth coaching that actually works.",
+    image_url: '',
+    image_position: '50% 30%',
+  },
+  services: {
+    heading: "What's Available",
+    subtext: 'From in-person sessions to fully remote programming \u2014 training built around you.',
+    items: [
+      { title: '1-to-1 PT Sessions', desc: 'Tailored personal training at Northern Warrior, built around your goals and schedule.', image_url: '', image_position: '' },
+      { title: 'Online Programming', desc: 'Full-time training programmes, supplementary sessions, or targeted blocks \u2014 delivered remotely with ongoing support.', image_url: '', image_position: '' },
+      { title: 'Competition Prep', desc: 'Structured programming blocks leading into competitions, races or fitness events \u2014 periodised and goal-specific.', image_url: '', image_position: '' },
+      { title: 'Area-Specific Training', desc: 'Focused programming for strength, conditioning, gymnastics, weightlifting or any area you want to develop.', image_url: '', image_position: '' },
+      { title: 'Nutrition Coaching', desc: "Whether your goal is to lose or gain weight, improve body composition, fuel for fitness, or just get the basics right \u2014 nutrition doesn't have to be complicated or restrictive. Kieran offers online or in-person consultations, goal setting, weekly check-ins and ongoing support.", image_url: '', image_position: '' },
+    ],
+  },
+  process: {
+    heading: 'How It Works',
+    subtext: 'Getting started is simple.',
+    items: [
+      { title: 'Get in Touch', desc: 'Reach out via Instagram DM or WhatsApp to start the conversation.' },
+      { title: 'Initial Chat', desc: "Tell Kieran about your goals, experience and what you're looking for." },
+      { title: 'Programme Built', desc: 'Kieran designs your training plan \u2014 tailored to you.' },
+      { title: 'Train & Progress', desc: 'Start training with ongoing coaching and programme adjustments.' },
+    ],
+  },
+  nutrition_showcase: {
+    items: [
+      { image_url: '', type: 'video' },
+      { image_url: '', type: 'image' },
+      { image_url: '', type: 'video' },
+      { image_url: '', type: 'image' },
+      { image_url: '', type: 'video' },
+    ],
+  },
+  why_kieran: {
+    heading: 'Why Choose Kieran',
+    subtext: "It's not just about the qualifications \u2014 it's about who's coaching you.",
+    items: [
+      { title: 'Genuine & Approachable', desc: "Kieran is one of the most down-to-earth coaches you'll meet. No ego, no jargon \u2014 just a good laugh and honest advice." },
+      { title: 'Seriously Knowledgeable', desc: 'Years of coaching experience across strength, conditioning, rehab and competition prep. He knows his stuff and keeps learning.' },
+      { title: 'Tailored to You', desc: "No cookie-cutter programmes. Everything is built around your goals, your lifestyle and where you're starting from." },
+      { title: 'Results That Last', desc: "Kieran focuses on sustainable progress, not quick fixes. You'll build habits and strength that stick." },
+      { title: 'Part of the NW Family', desc: "Training with Kieran means you're plugged into the Northern Warrior community \u2014 support, accountability, and a gym that has your back." },
+      { title: 'No Pressure, Just Progress', desc: 'Free consultation, no hard sell. Kieran will have an honest chat about what you need and whether PT is right for you.' },
+    ],
+  },
+  pt_testimonials: {
+    items: [
+      { quote: "Kieran made me feel at ease from day one. He's a proper sound bloke \u2014 knows his stuff but doesn't take himself too seriously.", name: 'NW Member', role: '1-to-1 Client', category: 'PT', image_url: '' },
+      { quote: "Every session is different, challenging and actually fun. Kieran pushes you but in a way that makes you want to come back.", name: 'NW Member', role: '1-to-1 Client', category: 'PT', image_url: '' },
+      { quote: "The best thing about training with Kieran is how much he actually cares. He checks in, adjusts the plan, and genuinely wants to see you win.", name: 'NW Member', role: '1-to-1 Client', category: 'PT', image_url: '' },
+      { quote: "I'd never done PT before and was nervous. Kieran was so relaxed and genuine about it \u2014 within a week I felt like I'd been training with him for years.", name: 'NW Member', role: '1-to-1 Client', category: 'PT', image_url: '' },
+      { quote: "I feel miles better in myself, clothes are fitting so much better. This is the first plan I could actually continue and keep up.", name: 'Nutrition Client', role: '8-week block - 2.8kg down - 36cm lost', category: 'Nutrition', image_url: '' },
+      { quote: "I'm buzzing people have noticed! I've felt 10x better in myself and my clothes. The block was spot on.", name: 'Nutrition Client', role: '8-week block - 3.5kg down - 18cm lost', category: 'Nutrition', image_url: '' },
+      { quote: "I can tell a difference \u2014 my work pants that were tight are now really loose. I feel a lot better too.", name: 'Nutrition Client', role: '8-week block - 3kg down - 22cm lost', category: 'Nutrition', image_url: '' },
+      { quote: "Hit all targets over 8 weeks, even with 2 weeks of illness. Consistency beats perfection.", name: 'Nutrition Client', role: '8-week block - 4kg down - 27.5cm lost', category: 'Nutrition', image_url: '' },
+      { quote: "The online programming is brilliant. More progress in 3 months than the last year on my own.", name: 'NW Member', role: 'Online Client', category: 'Programming', image_url: '' },
+      { quote: "Kieran put together a competition prep block that addressed exactly what I needed.", name: 'NW Member', role: 'Competition Prep', category: 'Programming', image_url: '' },
+      { quote: "Having someone else take the thinking out of my training has been a game-changer.", name: 'NW Member', role: 'Online Client', category: 'Programming', image_url: '' },
+      { quote: "Kieran programmed around my shifts and my injuries. First time training has felt manageable AND progressive.", name: 'NW Member', role: 'Online Client', category: 'Programming', image_url: '' },
+    ],
+  },
+  pt_contact: {
+    heading: 'Get in Touch',
+    subtext: 'Reach out to Kieran directly via Instagram or WhatsApp.',
+    instagram: 'k.m_training',
+    whatsapp: '+447582631377',
+  },
+}

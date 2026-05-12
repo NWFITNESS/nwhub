@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getSocialConnections, refreshLinkedInToken } from '@/lib/social'
+import { getSocialConnections, refreshLinkedInToken } from '@/lib/social/connections'
 import {
   publishToFacebook,
   publishToInstagram,
   publishToLinkedIn,
   type PublishResult,
-} from '@/lib/social-publish'
+} from '@/lib/social/publisher'
 
 export async function POST(req: NextRequest) {
   const secret = req.headers.get('x-cron-secret')

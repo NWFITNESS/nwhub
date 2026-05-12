@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth-guard'
-import { getSocialConnections, refreshLinkedInToken } from '@/lib/social'
+import { getSocialConnections, refreshLinkedInToken } from '@/lib/social/connections'
 import {
   publishReelToInstagram,
   publishReelToFacebook,
   publishVideoToLinkedIn,
   type PublishResult,
-} from '@/lib/social-publish'
+} from '@/lib/social/publisher'
 
 export async function POST(req: NextRequest) {
   const unauth = await requireAuth()

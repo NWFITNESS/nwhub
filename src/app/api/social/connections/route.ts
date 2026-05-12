@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth-guard'
-import { getSocialConnections, saveSocialConnections } from '@/lib/social'
+import { getSocialConnections, saveSocialConnections } from '@/lib/social/connections'
 
 /** GET — returns connection status without exposing access tokens */
 export async function GET() {

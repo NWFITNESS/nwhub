@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireAuth } from '@/lib/auth-guard'
-import { classifyEmail } from '@/lib/email-classifier'
-import { applyRules, type NormalizedEmail } from '@/lib/rules-engine'
-import { gmailFetch, extractEmailBody } from '@/lib/gmail'
-import { extractInvoiceFromEmail } from '@/lib/extraction-pipeline'
+import { classifyEmail } from '@/lib/email/classifier'
+import { applyRules, type NormalizedEmail } from '@/lib/email/rules-engine'
+import { gmailFetch, extractEmailBody } from '@/lib/gmail/client'
+import { extractInvoiceFromEmail } from '@/lib/invoices/pipeline'
 
 // POST — reclassify a single email by its classification ID
 // Body: { email_id: string }

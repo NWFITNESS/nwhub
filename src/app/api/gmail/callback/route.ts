@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { storeGmailTokens } from '@/lib/gmail'
+import { storeGmailTokens } from '@/lib/gmail/client'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)

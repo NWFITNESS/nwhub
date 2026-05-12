@@ -1,4 +1,4 @@
-import { xero } from '@/lib/xero'
+import { xero } from '@/lib/xero/client'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 

@@ -1,4 +1,4 @@
-import { xero } from '@/lib/xero'
+import { xero } from '@/lib/xero/client'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 async function refreshXeroToken(refreshToken: string) {

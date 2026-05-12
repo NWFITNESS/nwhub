@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { getResend, FROM_EMAIL, REPLY_TO } from '@/lib/resend'
+import { getResend, FROM_EMAIL, REPLY_TO } from '@/lib/email/resend'
 import { requireAuth } from '@/lib/auth-guard'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
