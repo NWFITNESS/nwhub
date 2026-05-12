@@ -211,7 +211,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
           <RefreshCw size={13} className={syncing ? 'animate-spin' : ''} />
           {syncing ? 'Syncing…' : 'Sync Subscribers'}
         </Button>
-        <Button variant="gold" size="sm" onClick={() => router.push('/mailchimp/create')}>
+        <Button variant="gold" size="sm" onClick={() => router.push('/mailchimp/create-ai')}>
           <Plus size={13} /> New Campaign
         </Button>
       </div>
@@ -247,7 +247,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
           <div className="flex flex-col items-center justify-center gap-3 p-10 text-center">
             <p className="text-[13px] text-nw-500">{campaigns.length === 0 ? 'No campaigns yet' : `No ${statusFilter} campaigns`}</p>
             {campaigns.length === 0 && (
-              <Button variant="gold" size="sm" onClick={() => router.push('/mailchimp/create')}>
+              <Button variant="gold" size="sm" onClick={() => router.push('/mailchimp/create-ai')}>
                 <Plus size={13} /> Create your first campaign
               </Button>
             )}
@@ -353,7 +353,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
                   <p className="text-[13px] font-medium text-nw-200 truncate">{t.name}</p>
                   <p className="text-xs font-medium text-nw-400 mt-0.5">{format(new Date(t.created_at), 'dd MMM yyyy')}</p>
                 </div>
-                <Button variant="gold" size="sm" className="w-full" onClick={() => router.push(`/mailchimp/create?template=${t.id}`)}>
+                <Button variant="gold" size="sm" className="w-full" onClick={() => router.push(`/mailchimp/create-ai?template=${t.id}`)}>
                   <Plus size={12} /> Start Campaign
                 </Button>
               </div>
