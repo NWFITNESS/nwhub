@@ -90,7 +90,7 @@ export function MembershipGroups({ initialGroups }: Props) {
         <Button variant="gold" size="sm" onClick={handleSave} loading={saving}>
           {saved ? <><Check size={13} /> Saved</> : <><Save size={13} /> Save Groups</>}
         </Button>
-        {saved && <span className="text-[11px] text-[#4ade80]">Dashboard will update on next page load</span>}
+        {saved && <span className="text-[11px] text-[#22c55e]">Dashboard will update on next page load</span>}
       </div>
 
       {/* Reset to defaults */}

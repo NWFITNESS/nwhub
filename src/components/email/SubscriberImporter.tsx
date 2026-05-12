@@ -215,7 +215,7 @@ export function SubscriberImporter() {
           )}
 
           {result && (
-            <div className="mt-3 flex items-center gap-2 rounded-[8px] border border-[rgba(74,222,128,0.2)] bg-[rgba(74,222,128,0.08)] px-3 py-2 text-[#4ade80]" style={{ fontSize: 12 }}>
+            <div className="mt-3 flex items-center gap-2 rounded-[8px] border border-[rgba(74,222,128,0.2)] bg-[rgba(74,222,128,0.08)] px-3 py-2 text-[#22c55e]" style={{ fontSize: 12 }}>
               <CheckCircle size={14} /> Imported {result.synced} subscribers ({result.skipped} already existed)
             </div>
           )}

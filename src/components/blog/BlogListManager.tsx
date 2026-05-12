@@ -110,7 +110,7 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
           <span className="text-nw-600">·</span>
           <div>
             <div className="text-[10px] uppercase text-nw-500 tracking-[1px]">Published</div>
-            <div className="text-[13px] font-medium text-[#4ade80]">{publishedCount}</div>
+            <div className="text-[13px] font-medium text-[#22c55e]">{publishedCount}</div>
           </div>
           <span className="text-nw-600">·</span>
           <div>

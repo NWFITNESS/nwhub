@@ -102,7 +102,7 @@ function DeltaPill({ value, invert }: { value: number; invert?: boolean }) {
   const positive = invert ? value < 0 : value > 0
   const icon = positive ? <TrendingUp size={11} /> : <TrendingDown size={11} />
   return (
-    <span className={`inline-flex items-center gap-1 rounded-md text-[10px] font-bold ${positive ? 'text-[#4ade80]' : 'text-red-400'}`} style={{ padding: '2px 6px' }}>
+    <span className={`inline-flex items-center gap-1 rounded-md text-[10px] font-bold ${positive ? 'text-[#22c55e]' : 'text-[#ef4444]'}`} style={{ padding: '2px 6px' }}>
       {icon} {value > 0 ? '+' : ''}{value}%
     </span>
   )

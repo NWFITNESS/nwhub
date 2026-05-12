@@ -106,7 +106,7 @@ export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive, onRecl
                 onClick={() => setFilter(f.key)}
                 className={`flex-shrink-0 flex items-center gap-1.5 h-7 px-3 rounded-full text-[12px] font-medium transition-all ${
                   filter === f.key
-                    ? 'bg-[#967705]/20 border border-[#967705]/40 text-[#f2ca50]'
+                    ? 'bg-[#967705]/20 border border-[#967705]/40 text-[#c9a70a]'
                     : 'bg-white/[0.03] border border-white/[0.06] text-white/40 hover:text-white/60 hover:bg-white/[0.06]'
                 }`}
               >
@@ -137,7 +137,7 @@ export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive, onRecl
           </div>
           <button
             onClick={handleBulkHandled}
-            className="flex items-center gap-1.5 rounded-lg bg-[#967705]/20 border border-[#967705]/40 px-3 py-1.5 text-[12px] font-semibold text-[#f2ca50] transition-colors hover:bg-[#967705]/30"
+            className="flex items-center gap-1.5 rounded-lg bg-[#967705]/20 border border-[#967705]/40 px-3 py-1.5 text-[12px] font-semibold text-[#c9a70a] transition-colors hover:bg-[#967705]/30"
           >
             <Check size={13} />
             Mark {selectedIds.size} handled

@@ -114,7 +114,7 @@ export function SyncClient() {
 
         {status === 'complete' && (
           <>
-            <CheckCircle size={24} className="text-[#4ade80]" />
+            <CheckCircle size={24} className="text-[#22c55e]" />
             <p className="text-[13px] font-medium text-nw-300">Sync complete!</p>
             <p className="text-xs text-nw-500">Drop another CSV to sync again</p>
           </>
@@ -150,7 +150,7 @@ export function SyncClient() {
                       : entry.includes('Cancel')  ? 'bg-red-400'
                       : entry.includes('Convert') ? 'bg-blue-400'
                       : entry.includes('Updated') ? 'bg-blue-400'
-                      : 'bg-[#4ade80]'
+                      : 'bg-[#22c55e]'
                     }`} />
                     <p className="text-[11px] text-nw-400">{entry}</p>
                   </div>

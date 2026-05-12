@@ -12,7 +12,7 @@ export function YearOverviewWidget({ yearIncome, yearExpenses, yearProfit }: Pro
       <div className="space-y-3">
         <div className="flex items-center justify-between py-3 border-b border-[rgba(255,255,255,0.07)]">
           <span className="text-[13px] text-nw-400">Total Income</span>
-          <span className="text-[13px] font-medium text-[#4ade80]">£{yearIncome.toLocaleString()}</span>
+          <span className="text-[13px] font-medium text-[#22c55e]">£{yearIncome.toLocaleString()}</span>
         </div>
         <div className="flex items-center justify-between py-3 border-b border-[rgba(255,255,255,0.07)]">
           <span className="text-[13px] text-nw-400">Total Expenses</span>

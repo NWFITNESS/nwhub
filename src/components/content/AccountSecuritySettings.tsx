@@ -161,7 +161,7 @@ function ProfilePhoto() {
             style={{
               width: 80,
               height: 80,
-              background: avatarUrl ? undefined : 'linear-gradient(135deg, #967705, #f2ca50)',
+              background: avatarUrl ? undefined : 'linear-gradient(135deg, #967705, #c9a70a)',
             }}
           >
             {avatarUrl ? (

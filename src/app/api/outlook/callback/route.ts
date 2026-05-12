@@ -26,7 +26,6 @@ export async function GET(request: Request) {
 
   try {
     const tokens = await exchangeOutlookCode(code, redirectUri)
-    console.log('[outlook/callback] Connected successfully:', tokens.email ?? 'unknown email')
     return NextResponse.redirect(`${url.origin}/inbox?outlook_connected=true`)
   } catch (e) {
     console.error('[outlook/callback] Token exchange failed:', (e as Error).message)

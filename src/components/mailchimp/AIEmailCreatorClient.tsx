@@ -528,7 +528,7 @@ export function AIEmailCreatorClient() {
                   onClick={copyHTML}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium text-nw-400 border border-[rgba(255,255,255,0.09)] bg-[rgba(255,255,255,0.04)] hover:text-nw-200 hover:border-[rgba(255,255,255,0.14)] transition-all"
                 >
-                  {copied ? <><Check size={12} className="text-[#4ade80]" /> Copied!</> : <><Copy size={12} /> Copy HTML</>}
+                  {copied ? <><Check size={12} className="text-[#22c55e]" /> Copied!</> : <><Copy size={12} /> Copy HTML</>}
                 </button>
                 <button
                   onClick={downloadHTML}

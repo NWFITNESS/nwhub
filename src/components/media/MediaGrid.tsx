@@ -249,10 +249,7 @@ export function MediaGrid({ initialMedia }: Props) {
           .from('media')
           .upload(path, p.file, { contentType: p.file.type || 'application/octet-stream' })
 
-        if (storageError) {
-          console.error('Storage upload failed:', storageError.message)
-          continue
-        }
+        if (storageError) continue
 
         const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path)
 
@@ -272,9 +269,8 @@ export function MediaGrid({ initialMedia }: Props) {
           }),
         })
         if (res.ok) uploaded.push(await res.json() as Media)
-        else console.error('DB insert failed:', await res.text())
-      } catch (err) {
-        console.error('Upload error:', err)
+      } catch {
+        // upload failed — skip
       }
     }
 

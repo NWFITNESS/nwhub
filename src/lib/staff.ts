@@ -115,8 +115,8 @@ export const ROLE_LABELS: Record<string, string> = {
 }
 
 export const ROLE_COLOURS: Record<string, { bg: string; text: string; border: string }> = {
-  owner: { bg: 'rgba(212,160,23,0.12)', text: '#f2ca50', border: 'rgba(212,160,23,0.25)' },
-  admin: { bg: 'rgba(59,130,246,0.12)', text: '#60a5fa', border: 'rgba(59,130,246,0.25)' },
+  owner: { bg: 'rgba(212,160,23,0.12)', text: '#c9a70a', border: 'rgba(212,160,23,0.25)' },
+  admin: { bg: 'rgba(59,130,246,0.12)', text: '#3b82f6', border: 'rgba(59,130,246,0.25)' },
   staff: { bg: 'rgba(255,255,255,0.06)', text: 'rgba(255,255,255,0.6)', border: 'rgba(255,255,255,0.1)' },
 }
 

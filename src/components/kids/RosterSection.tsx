@@ -238,7 +238,7 @@ function FilterGroup({ label, value, onChange, options }: {
               type="radio"
               checked={value === o.v}
               onChange={() => onChange(o.v)}
-              className="accent-[#d4a017]"
+              className="accent-[#c9a70a]"
             />
             {o.label}
           </label>
@@ -338,21 +338,21 @@ function RosterTable({ rows, totalRows, onClearFilters, onEdit }: { rows: Roster
               <td className="text-xs text-nw-400" style={{ padding: '12px 12px' }}>{r.parent_name}</td>
               <td style={{ padding: '12px 12px' }}>
                 {r.payment_status === 'paid' ? (
-                  <span className="rounded-full bg-[rgba(74,222,128,0.12)] px-2 py-0.5 text-[10px] font-semibold text-[#4ade80]">Paid</span>
+                  <span className="rounded-full bg-[rgba(74,222,128,0.12)] px-2 py-0.5 text-[10px] font-semibold text-[#22c55e]">Paid</span>
                 ) : r.payment_status === 'refunded' ? (
-                  <span className="rounded-full bg-[rgba(248,113,113,0.12)] px-2 py-0.5 text-[10px] font-semibold text-[#f87171]">Refunded</span>
+                  <span className="rounded-full bg-[rgba(248,113,113,0.12)] px-2 py-0.5 text-[10px] font-semibold text-[#ef4444]">Refunded</span>
                 ) : (
                   <span className="rounded-full bg-[rgba(245,158,11,0.12)] px-2 py-0.5 text-[10px] font-semibold text-[#f59e0b]">Pending</span>
                 )}
               </td>
-              <td className="text-[12px]" style={{ padding: '12px 12px' }}>{r.photo_consent ? <span className="text-[#4ade80]">✓ Yes</span> : <span className="text-[#f87171]">✗ No</span>}</td>
-              <td className="text-[12px]" style={{ padding: '12px 12px' }}>{r.waiver_signed ? <span className="text-[#4ade80]">✓</span> : <span className="text-[#f87171]">✗</span>}</td>
+              <td className="text-[12px]" style={{ padding: '12px 12px' }}>{r.photo_consent ? <span className="text-[#22c55e]">✓ Yes</span> : <span className="text-[#ef4444]">✗ No</span>}</td>
+              <td className="text-[12px]" style={{ padding: '12px 12px' }}>{r.waiver_signed ? <span className="text-[#22c55e]">✓</span> : <span className="text-[#ef4444]">✗</span>}</td>
               <td className="text-right flex items-center justify-end gap-2" style={{ padding: '12px 12px' }} onClick={(e) => e.stopPropagation()}>
                 {r.payment_status === 'paid' && (
                   <button
                     onClick={() => handleRefund(r.booking_id, r.child_name)}
                     disabled={pending}
-                    className="text-[11px] font-medium text-nw-400 hover:text-[#f87171] disabled:opacity-50 transition-colors"
+                    className="text-[11px] font-medium text-nw-400 hover:text-[#ef4444] disabled:opacity-50 transition-colors"
                   >
                     Refund
                   </button>
@@ -361,7 +361,7 @@ function RosterTable({ rows, totalRows, onClearFilters, onEdit }: { rows: Roster
                   <button
                     onClick={() => handleDeletePending(r.booking_id, r.child_name)}
                     disabled={pending}
-                    className="text-[11px] font-medium text-nw-400 hover:text-[#f87171] disabled:opacity-50 transition-colors"
+                    className="text-[11px] font-medium text-nw-400 hover:text-[#ef4444] disabled:opacity-50 transition-colors"
                   >
                     Delete
                   </button>

@@ -82,7 +82,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   if (type === 'block') {
     const bookingIds = (meta.booking_ids ?? '').split(',').filter(Boolean)
-    console.log('[stripe-kids] block checkout completed:', { sessionId: session.id, bookingIds, paymentIntentId })
     if (!bookingIds.length) {
       console.warn('[stripe-kids] block event with no booking_ids in metadata', session.id)
       return
@@ -96,7 +95,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       .in('id', bookingIds)
       .eq('payment_status', 'paid')
     if (existing?.length === bookingIds.length) {
-      console.log('[stripe-kids] all bookings already paid — skipping (idempotent)')
       return
     }
 
@@ -113,14 +111,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       console.error('[stripe-kids] supabase update failed:', error.message, error.code, error.details)
       throw new Error(`Failed to mark block bookings paid: ${error.message}`)
     }
-    console.log('[stripe-kids] bookings marked paid, sending email...')
 
     // Fire-and-mostly-forget confirmation email — log failures but never
     // throw because doing so makes Stripe retry the webhook and we'd
     // re-mark already-paid bookings.
     try {
       await sendBlockConfirmationEmail(bookingIds)
-      console.log('[stripe-kids] confirmation email sent')
     } catch (e) {
       console.error('[stripe-kids] block confirmation email failed:', (e as Error).message)
     }
@@ -142,7 +138,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       .eq('payment_status', 'paid')
       .maybeSingle()
     if (existingDropin) {
-      console.log('[stripe-kids] drop-in already paid — skipping (idempotent)')
       return
     }
 
@@ -165,7 +160,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   // Unknown type — log and ignore. Could be from another integration sharing
   // the same webhook endpoint (it shouldn't, but be defensive).
-  console.log('[stripe-kids] ignoring event with unknown metadata.type:', type)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -307,7 +301,7 @@ function renderBlockConfirmationEmail(args: {
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#0b0e14;padding:32px 16px;"><tr><td align="center">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;background:#161c2a;border:1px solid rgba(212,160,23,0.18);border-radius:12px;overflow:hidden;">
       <tr><td style="padding:28px 32px 0;">
-        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#d4a017;margin-bottom:8px;">Northern Warrior Kids</div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#c9a70a;margin-bottom:8px;">Northern Warrior Kids</div>
         <h1 style="margin:0;font-size:22px;line-height:1.25;color:#fff;font-weight:700;">You&rsquo;re booked in</h1>
       </td></tr>
       <tr><td style="padding:20px 32px 0;color:#cdd5e3;font-size:14px;line-height:1.55;">
@@ -351,7 +345,7 @@ function renderDropInPaidEmail(args: {
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#0b0e14;padding:32px 16px;"><tr><td align="center">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="520" style="max-width:520px;background:#161c2a;border:1px solid rgba(212,160,23,0.18);border-radius:12px;overflow:hidden;">
       <tr><td style="padding:28px 32px 0;">
-        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#d4a017;margin-bottom:8px;">Northern Warrior Kids</div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#c9a70a;margin-bottom:8px;">Northern Warrior Kids</div>
         <h1 style="margin:0;font-size:22px;line-height:1.25;color:#fff;font-weight:700;">Drop-in confirmed</h1>
       </td></tr>
       <tr><td style="padding:20px 32px 0;color:#cdd5e3;font-size:14px;line-height:1.55;">
@@ -362,7 +356,7 @@ function renderDropInPaidEmail(args: {
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
             <tr><td style="padding:6px 0;color:#8a93a5;font-size:13px;">Group</td><td style="padding:6px 0;color:#fff;font-size:14px;text-align:right;">${catLabel} &middot; ${time}</td></tr>
             ${sessionLine}
-            <tr><td style="padding:6px 0;color:#8a93a5;font-size:13px;">Paid</td><td style="padding:6px 0;color:#4ade80;font-size:14px;font-weight:700;text-align:right;">${formatPence(args.pricePence)}</td></tr>
+            <tr><td style="padding:6px 0;color:#8a93a5;font-size:13px;">Paid</td><td style="padding:6px 0;color:#22c55e;font-size:14px;font-weight:700;text-align:right;">${formatPence(args.pricePence)}</td></tr>
           </table>
         </td></tr></table>
       </td></tr>

@@ -109,7 +109,7 @@ export function CampaignsList({ campaigns: initialCampaigns }: { campaigns: Camp
                   </td>
                   <td className="border-b border-[rgba(255,255,255,0.05)] px-6 py-3 text-nw-300">{c.emails_sent > 0 ? c.emails_sent.toLocaleString() : '—'}</td>
                   <td className="border-b border-[rgba(255,255,255,0.05)] px-6 py-3">
-                    {c.opens ? <span className="text-[#4ade80] font-medium">{(c.opens.open_rate * 100).toFixed(1)}%</span> : '—'}
+                    {c.opens ? <span className="text-[#22c55e] font-medium">{(c.opens.open_rate * 100).toFixed(1)}%</span> : '—'}
                   </td>
                   <td className="border-b border-[rgba(255,255,255,0.05)] px-6 py-3">
                     {c.clicks ? <span className="text-gold-300 font-medium">{(c.clicks.click_rate * 100).toFixed(1)}%</span> : '—'}
@@ -156,7 +156,7 @@ export function CampaignsList({ campaigns: initialCampaigns }: { campaigns: Camp
               </div>
               <div className="flex items-center gap-4 mb-2" style={{ fontSize: 11 }}>
                 {c.emails_sent > 0 && <span className="text-nw-400">{c.emails_sent} sent</span>}
-                {c.opens && <span className="text-[#4ade80]">{(c.opens.open_rate * 100).toFixed(1)}% opens</span>}
+                {c.opens && <span className="text-[#22c55e]">{(c.opens.open_rate * 100).toFixed(1)}% opens</span>}
                 {c.clicks && <span className="text-gold-300">{(c.clicks.click_rate * 100).toFixed(1)}% clicks</span>}
                 <span className="text-nw-500 ml-auto">{c.send_time ? format(new Date(c.send_time), 'dd MMM') : 'Draft'}</span>
               </div>

@@ -119,9 +119,9 @@ export function CalendarClient() {
       {justConnected && (
         <div style={{
           padding: '8px 17px', background: 'rgba(74,222,128,0.08)', borderBottom: '1px solid rgba(74,222,128,0.2)',
-          fontSize: 12, color: '#4ade80', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
+          fontSize: 12, color: '#22c55e', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
         }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', flexShrink: 0 }} />
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
           Google Calendar connected — your events will appear here automatically.
         </div>
       )}
@@ -162,10 +162,10 @@ export function CalendarClient() {
         fontSize: 10, color: 'var(--slate-500)',
         flexShrink: 0,
       }}>
-        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80' }} />
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />
         <span>Supabase</span>
         <div style={{ width: 1, height: 10, background: 'rgba(255,255,255,0.07)' }} />
-        <div style={{ width: 6, height: 6, borderRadius: '50%', background: gcalConnected ? '#4ade80' : '#f59e0b' }} />
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: gcalConnected ? '#22c55e' : '#f59e0b' }} />
         <span>Google Calendar {gcalConnected ? 'connected' : '— not connected'}</span>
         {!gcalConnected && (
           <>

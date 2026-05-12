@@ -209,7 +209,7 @@ export function PopupBuilder({ initial }: Props) {
             onClick={() => setDesign(d => ({ ...d, enabled: !d.enabled }))}
             className={`flex items-center gap-1.5 rounded-lg border text-[11px] font-bold uppercase tracking-[0.6px] transition-colors ${
               design.enabled
-                ? 'border-[rgba(74,222,128,0.3)] bg-[rgba(74,222,128,0.1)] text-[#4ade80]'
+                ? 'border-[rgba(74,222,128,0.3)] bg-[rgba(74,222,128,0.1)] text-[#22c55e]'
                 : 'border-[rgba(248,113,113,0.3)] bg-[rgba(248,113,113,0.1)] text-red-400'
             }`}
             style={{ padding: '5px 12px', minHeight: 32 }}

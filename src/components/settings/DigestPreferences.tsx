@@ -61,7 +61,7 @@ export function DigestPreferences({ initialRecipient, initialEnabled, initialSen
             onClick={() => setEnabled(e => !e)}
             className={`relative flex-shrink-0 w-11 h-6 rounded-full transition-colors ${enabled ? 'bg-[#967705]/60 border border-[#967705]/60' : 'bg-white/10 border border-white/10'}`}
           >
-            <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform ${enabled ? 'translate-x-5 bg-[#f2ca50]' : 'bg-white/30'}`} />
+            <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform ${enabled ? 'translate-x-5 bg-[#c9a70a]' : 'bg-white/30'}`} />
           </button>
         </div>
 
@@ -117,7 +117,7 @@ export function DigestPreferences({ initialRecipient, initialEnabled, initialSen
           <button
             onClick={handleSave}
             disabled={saving}
-            className="h-9 px-5 rounded-lg bg-[#967705]/20 border border-[#967705]/40 text-[#f2ca50] text-[13px] font-semibold hover:bg-[#967705]/30 transition-colors disabled:opacity-50"
+            className="h-9 px-5 rounded-lg bg-[#967705]/20 border border-[#967705]/40 text-[#c9a70a] text-[13px] font-semibold hover:bg-[#967705]/30 transition-colors disabled:opacity-50"
           >
             {saving ? 'Saving…' : 'Save preferences'}
           </button>

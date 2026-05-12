@@ -169,7 +169,7 @@ export function PageEditorModal({ pageId, urlPath, title, publicUrl, briefConten
         <button onClick={copyUrl} className="flex-1 min-w-0 text-left">
           <p className="text-[11px] text-nw-500 truncate font-mono">{urlPath}</p>
         </button>
-        {copied && <Check size={14} className="text-[#4ade80] flex-shrink-0" />}
+        {copied && <Check size={14} className="text-[#22c55e] flex-shrink-0" />}
         <Button variant="gold" size="sm" onClick={handleSave} loading={saving} disabled={!hasPendingChanges}>
           <Save size={13} /> Save
         </Button>

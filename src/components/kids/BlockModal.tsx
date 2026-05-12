@@ -105,7 +105,7 @@ export function BlockModal({ open, onClose, onCreated }: Props) {
             type="checkbox"
             checked={isRecurring}
             onChange={(e) => setIsRecurring(e.target.checked)}
-            className="h-4 w-4 accent-[#d4a017]"
+            className="h-4 w-4 accent-[#c9a70a]"
           />
           Weekly recurring
         </label>

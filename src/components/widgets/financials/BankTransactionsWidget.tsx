@@ -56,7 +56,7 @@ export function BankTransactionsWidget({ transactions }: Props) {
                     {txn.type === 'IN' ? 'Income' : 'Expense'}
                   </Badge>
                 </td>
-                <td className={`border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-right font-medium ${txn.type === 'IN' ? 'text-[#4ade80]' : 'text-red-400'}`}>
+                <td className={`border-b border-[rgba(255,255,255,0.05)] px-4 py-3 text-right font-medium ${txn.type === 'IN' ? 'text-[#22c55e]' : 'text-red-400'}`}>
                   {txn.type === 'OUT' ? '-' : ''}£{(txn.amount ?? 0).toLocaleString()}
                 </td>
               </tr>

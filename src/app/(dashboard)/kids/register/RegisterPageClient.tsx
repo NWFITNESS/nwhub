@@ -44,8 +44,8 @@ export default function RegisterPageClient({ blocks, initialBlockId }: Props) {
     try {
       const data = await fetchRegisterData(selectedSessionId, activeBlockId)
       setRegister(data)
-    } catch (e) {
-      console.error('Failed to load register:', e)
+    } catch {
+      // fetch failed
     }
     setLoadingRegister(false)
   }, [selectedSessionId, activeBlockId])
@@ -225,7 +225,7 @@ export default function RegisterPageClient({ blocks, initialBlockId }: Props) {
               <button
                 onClick={handleMarkAllPresent}
                 disabled={pending || !currentRows.length}
-                className="rounded-lg bg-[rgba(74,222,128,0.12)] text-xs font-semibold text-[#4ade80] hover:bg-[rgba(74,222,128,0.2)] transition-colors disabled:opacity-40"
+                className="rounded-lg bg-[rgba(74,222,128,0.12)] text-xs font-semibold text-[#22c55e] hover:bg-[rgba(74,222,128,0.2)] transition-colors disabled:opacity-40"
                 style={{ padding: '6px 14px' }}
               >
                 Mark all present
@@ -277,7 +277,7 @@ export default function RegisterPageClient({ blocks, initialBlockId }: Props) {
                               disabled={pending}
                               className={`rounded-md text-[11px] font-semibold transition-all ${
                                 row.status === 'present'
-                                  ? 'bg-[#4ade80] text-black'
+                                  ? 'bg-[#22c55e] text-black'
                                   : 'bg-[rgba(255,255,255,0.06)] text-white/40 hover:text-white/70'
                               }`}
                               style={{ padding: '5px 12px' }}
@@ -311,7 +311,7 @@ export default function RegisterPageClient({ blocks, initialBlockId }: Props) {
                                   })
                                 }}
                                 disabled={pending}
-                                className="rounded-md bg-[rgba(255,255,255,0.06)] text-[11px] font-medium text-white/30 hover:text-[#f87171] transition-colors"
+                                className="rounded-md bg-[rgba(255,255,255,0.06)] text-[11px] font-medium text-white/30 hover:text-[#ef4444] transition-colors"
                                 style={{ padding: '5px 8px' }}
                               >
                                 ✗
@@ -334,9 +334,9 @@ export default function RegisterPageClient({ blocks, initialBlockId }: Props) {
 
 function BookingTypeBadge({ type }: { type: string }) {
   const styles: Record<string, { bg: string; color: string; label: string }> = {
-    block: { bg: 'rgba(150,119,5,0.15)', color: '#d4a017', label: 'Block' },
+    block: { bg: 'rgba(150,119,5,0.15)', color: '#c9a70a', label: 'Block' },
     dropin: { bg: 'rgba(255,107,80,0.12)', color: '#ff8a6e', label: 'Drop-in' },
-    trial: { bg: 'rgba(59,130,246,0.12)', color: '#60a5fa', label: 'Trial' },
+    trial: { bg: 'rgba(59,130,246,0.12)', color: '#3b82f6', label: 'Trial' },
   }
   const s = styles[type] ?? styles.block
   return (

@@ -72,7 +72,7 @@ export function DiscountsSection({ discounts }: Props) {
                     <td className="font-medium text-nw-100" style={{ padding: '12px 12px' }}>
                       <span className="font-mono text-xs">{d.code}</span>
                       {d.auto_apply && (
-                        <span className="ml-2 rounded-full px-1.5 py-0.5 text-[9px] font-semibold" style={{ background: 'rgba(59,130,246,0.12)', color: '#60a5fa' }}>
+                        <span className="ml-2 rounded-full px-1.5 py-0.5 text-[9px] font-semibold" style={{ background: 'rgba(59,130,246,0.12)', color: '#3b82f6' }}>
                           AUTO
                         </span>
                       )}
@@ -92,7 +92,7 @@ export function DiscountsSection({ discounts }: Props) {
                         className="rounded-full px-2 py-0.5 text-[10px] font-semibold disabled:opacity-50 transition-colors"
                         style={{
                           background: d.is_active ? 'rgba(74,222,128,0.12)' : 'rgba(248,113,113,0.12)',
-                          color: d.is_active ? '#4ade80' : '#f87171',
+                          color: d.is_active ? '#22c55e' : '#ef4444',
                         }}
                       >
                         {d.is_active ? 'Active' : 'Inactive'}
@@ -110,7 +110,7 @@ export function DiscountsSection({ discounts }: Props) {
                         <button
                           onClick={() => handleDelete(d)}
                           disabled={pending}
-                          className="text-[11px] font-medium text-nw-400 hover:text-[#f87171] disabled:opacity-50 transition-colors"
+                          className="text-[11px] font-medium text-nw-400 hover:text-[#ef4444] disabled:opacity-50 transition-colors"
                         >
                           Delete
                         </button>

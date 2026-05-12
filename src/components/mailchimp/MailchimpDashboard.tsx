@@ -156,7 +156,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
       {/* Toast */}
       {toast && (
         <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-medium shadow-2xl ${
-          toast.ok ? 'border-[rgba(74,222,128,0.2)] bg-[rgba(74,222,128,0.1)] text-[#4ade80]' : 'border-[rgba(248,113,113,0.2)] bg-[rgba(248,113,113,0.1)] text-red-400'
+          toast.ok ? 'border-[rgba(74,222,128,0.2)] bg-[rgba(74,222,128,0.1)] text-[#22c55e]' : 'border-[rgba(248,113,113,0.2)] bg-[rgba(248,113,113,0.1)] text-red-400'
         }`}>
           {toast.ok ? <CheckCircle size={15} /> : <AlertCircle size={15} />}
           {toast.msg}
@@ -287,7 +287,7 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
                       )}
                       {c.opens ? (
                         <span className="text-nw-500">
-                          <span className="font-bold text-[#4ade80]">{(c.opens.open_rate * 100).toFixed(1)}%</span>
+                          <span className="font-bold text-[#22c55e]">{(c.opens.open_rate * 100).toFixed(1)}%</span>
                           {c.opens.unique_opens > 0 && <span className="text-nw-600 ml-1">({c.opens.unique_opens.toLocaleString()})</span>}
                           {' '}opens
                         </span>

@@ -49,7 +49,6 @@ export async function POST(req: NextRequest) {
     const decoded = JSON.parse(Buffer.from(messageData, 'base64').toString())
     const { emailAddress, historyId } = decoded
 
-    console.log('[gmail/webhook] Push notification:', { emailAddress, historyId })
 
     // Trigger processing in background (fire and forget)
     fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/inbox/process`, { method: 'POST' }).catch(() => {})

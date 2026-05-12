@@ -42,7 +42,7 @@ export function SidebarInstallBox() {
   return (
     <div className="ml-8 mr-3 mb-2 p-3 rounded-lg border border-[#d4af37]/20 bg-[#d4af37]/5 flex items-center gap-3">
       <div className="w-7 h-7 rounded-md bg-[#d4af37]/15 flex items-center justify-center flex-shrink-0">
-        <Download size={13} className="text-[#f2ca50]" />
+        <Download size={13} className="text-[#c9a70a]" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-[12px] font-semibold text-[#e5e2e1] leading-tight">Install App</p>

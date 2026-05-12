@@ -26,7 +26,7 @@ export function FinStatCard({ label, value, iconBg, icon: Icon, sub, trend, nega
         {trend != null ? (
           <div className="mt-1.5 flex items-center gap-1 text-xs font-medium text-nw-400">
             {trend >= 0
-              ? <ArrowUpRight size={10} className="text-[#4ade80]" />
+              ? <ArrowUpRight size={10} className="text-[#22c55e]" />
               : <ArrowDownRight size={10} className="text-red-400" />}
             {Math.abs(trend)}% vs last month
           </div>

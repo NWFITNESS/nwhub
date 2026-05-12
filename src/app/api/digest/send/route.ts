@@ -63,19 +63,19 @@ async function handler(request: Request) {
   /* Hero header — SVG as CSS background so text is always on top */
   .hero { background: linear-gradient(150deg, #0e1628 0%, #060a12 60%, #080c10 100%), url(https://nwhub.vercel.app/icons/NWHub-Icon.svg) no-repeat center center / 160px 160px; border-radius: 14px; padding: 32px 32px 28px; text-align: center; margin-bottom: 24px; border: 1px solid rgba(201,168,76,0.12); }
   .hero-eyebrow { color: rgba(201,168,76,0.55); font-size: 10px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; margin: 0 0 8px; }
-  .hero-title { color: #f2ca50; font-size: 26px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin: 0; line-height: 1; }
+  .hero-title { color: #c9a70a; font-size: 26px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin: 0; line-height: 1; }
   .hero-sub { color: rgba(255,255,255,0.4); font-size: 12px; margin: 6px 0 0; }
   .hero-date { display: inline-block; margin-top: 12px; background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.2); border-radius: 20px; padding: 4px 14px; color: #d4af37; font-size: 11px; font-weight: 600; }
   /* Stats grid */
   .stats { display: table; width: 100%; border-collapse: separate; border-spacing: 0; background: #141413; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; margin-bottom: 28px; overflow: hidden; }
   .stat-cell { display: table-cell; padding: 18px 20px; border-right: 1px solid rgba(255,255,255,0.05); width: 25%; text-align: center; vertical-align: middle; }
   .stat-cell:last-child { border-right: none; }
-  .stat-num { color: #f2ca50; font-size: 26px; font-weight: 800; line-height: 1; margin: 0 0 4px; }
+  .stat-num { color: #c9a70a; font-size: 26px; font-weight: 800; line-height: 1; margin: 0 0 4px; }
   .stat-label { color: rgba(255,255,255,0.35); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin: 0; }
   /* Section */
   .section-title { color: #d4af37; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; margin: 0 0 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(212,175,55,0.15); }
   .email-card { background: #141413; border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
-  .email-from { font-size: 12px; font-weight: 700; color: #f2ca50; margin: 0 0 3px; }
+  .email-from { font-size: 12px; font-weight: 700; color: #c9a70a; margin: 0 0 3px; }
   .email-subject { font-size: 14px; color: #e5e2e1; font-weight: 500; margin: 0 0 5px; }
   .email-summary { font-size: 12px; color: rgba(255,255,255,0.45); margin: 0; line-height: 1.5; }
   /* CTA */
@@ -103,11 +103,11 @@ async function handler(request: Request) {
       <p class="stat-label">Processed</p>
     </div>
     <div class="stat-cell">
-      <p class="stat-num" style="color:${flagged.length > 0 ? '#f87171' : '#f2ca50'}">${flagged.length}</p>
+      <p class="stat-num" style="color:${flagged.length > 0 ? '#ef4444' : '#c9a70a'}">${flagged.length}</p>
       <p class="stat-label">Action needed</p>
     </div>
     <div class="stat-cell">
-      <p class="stat-num" style="color:${newLeads.length > 0 ? '#34d399' : '#f2ca50'}">${newLeads.length}</p>
+      <p class="stat-num" style="color:${newLeads.length > 0 ? '#34d399' : '#c9a70a'}">${newLeads.length}</p>
       <p class="stat-label">New leads</p>
     </div>
     <div class="stat-cell">

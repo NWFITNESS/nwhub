@@ -51,7 +51,7 @@ export function StatCard({ label, value, sub, icon, iconBg, gold = false, trend,
           {alert ? (
             <><ArrowUpRight size={11} className="text-red-400" />{subText}</>
           ) : trend != null ? (
-            <>{trend >= 0 ? <ArrowUpRight size={11} className="text-[#4ade80]" /> : <ArrowDownRight size={11} className="text-red-400" />}{subText}</>
+            <>{trend >= 0 ? <ArrowUpRight size={11} className="text-[#22c55e]" /> : <ArrowDownRight size={11} className="text-red-400" />}{subText}</>
           ) : (
             subText
           )}

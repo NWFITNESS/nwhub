@@ -95,7 +95,7 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
             <button
               onClick={handleDeactivate}
               disabled={pending}
-              className="text-[10px] font-medium text-nw-400 hover:text-[#f87171] transition-colors disabled:opacity-50"
+              className="text-[10px] font-medium text-nw-400 hover:text-[#ef4444] transition-colors disabled:opacity-50"
             >
               Deactivate
             </button>
@@ -146,7 +146,7 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
               type="checkbox"
               checked={isRecurring}
               onChange={(e) => setIsRecurring(e.target.checked)}
-              className="h-4 w-4 accent-[#d4a017]"
+              className="h-4 w-4 accent-[#c9a70a]"
             />
             Weekly recurring
           </label>

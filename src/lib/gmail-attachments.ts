@@ -43,7 +43,6 @@ export async function fetchPdfAttachments(messageId: string): Promise<PdfAttachm
 
       // Log all parts with attachments for debugging
       if (part.body?.attachmentId) {
-        console.log(`[gmail-attachments] Part: ${part.mimeType} | ${part.filename ?? 'no-filename'} | attachmentId: ${part.body.attachmentId.slice(0, 20)}...`)
       }
 
       if (part.parts) {

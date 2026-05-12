@@ -26,7 +26,6 @@ async function handler(req: Request) {
 
   try {
     // Get a fresh access token
-    console.log('[seo/sync/ga4] Getting access token...')
     let token: string | null | undefined
     try {
       const res = await auth.getAccessToken()

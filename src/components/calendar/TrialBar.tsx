@@ -18,8 +18,8 @@ const VARIANTS = [
   {
     bg:     'rgba(96,165,250,0.1)',
     border: 'rgba(96,165,250,0.22)',
-    color:  '#60a5fa',
-    accent: '#60a5fa',
+    color:  '#3b82f6',
+    accent: '#3b82f6',
   },
   {
     bg:     'rgba(167,139,250,0.1)',

@@ -274,8 +274,8 @@ export default function InvoiceVaultPage() {
       a.download = `invoice-${invoiceId}.pdf`
       a.click()
       URL.revokeObjectURL(url)
-    } catch (err) {
-      console.error('PDF download error:', err)
+    } catch {
+      // download failed
     } finally {
       setDownloading(null)
     }

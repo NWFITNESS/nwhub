@@ -125,7 +125,7 @@ function DeltaPill({ value, invert, suffix = '%' }: { value: number; invert?: bo
   const positive = invert ? value < 0 : value > 0
   const icon = positive ? <TrendingUp size={11} /> : <TrendingDown size={11} />
   return (
-    <span className={`inline-flex items-center gap-1 rounded-md text-[10px] font-bold ${positive ? 'text-[#4ade80]' : 'text-red-400'}`} style={{ padding: '2px 6px' }}>
+    <span className={`inline-flex items-center gap-1 rounded-md text-[10px] font-bold ${positive ? 'text-[#22c55e]' : 'text-red-400'}`} style={{ padding: '2px 6px' }}>
       {icon} {value > 0 ? '+' : ''}{value}{suffix}
     </span>
   )
@@ -353,7 +353,7 @@ export default function SeoPageDetailPage() {
         >
           <span className="truncate flex-1">{publicUrl}</span>
           <button onClick={copyUrl} className="flex-shrink-0 text-nw-500 hover:text-gold-300 transition-colors" style={{ padding: 4 }}>
-            {copied ? <Check size={13} className="text-[#4ade80]" /> : <Copy size={13} />}
+            {copied ? <Check size={13} className="text-[#22c55e]" /> : <Copy size={13} />}
           </button>
           <a href={publicUrl} target="_blank" rel="noopener noreferrer" className="flex-shrink-0 text-nw-500 hover:text-gold-300 transition-colors" style={{ padding: 4 }}>
             <ExternalLink size={13} />
@@ -736,14 +736,14 @@ function HealthChecksInner({ health }: { health: HealthData }) {
             className={`flex items-center gap-3 ${i < checks.length - 1 ? 'border-b border-[rgba(255,255,255,0.06)]' : ''}`}
             style={{ padding: '10px 16px' }}
           >
-            <div className={`flex-shrink-0 ${c.pass ? 'text-[#4ade80]' : 'text-[#f59e0b]'}`}>
+            <div className={`flex-shrink-0 ${c.pass ? 'text-[#22c55e]' : 'text-[#f59e0b]'}`}>
               <c.icon size={14} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-medium text-nw-200">{c.label}</p>
             </div>
             <span className="text-[11px] text-nw-400">{c.detail}</span>
-            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${c.pass ? 'bg-[#4ade80]' : 'bg-[#f59e0b]'}`} />
+            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${c.pass ? 'bg-[#22c55e]' : 'bg-[#f59e0b]'}`} />
           </div>
         ))}
       </div>

@@ -215,7 +215,7 @@ export default function BookingEditorModal({ bookingId, onClose }: Props) {
                 marginBottom: 12,
                 background: toast.startsWith('Error') ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)',
                 border: `1px solid ${toast.startsWith('Error') ? 'rgba(239,68,68,0.3)' : 'rgba(34,197,94,0.3)'}`,
-                color: toast.startsWith('Error') ? '#f87171' : '#4ade80',
+                color: toast.startsWith('Error') ? '#ef4444' : '#22c55e',
               }}
             >
               {toast}

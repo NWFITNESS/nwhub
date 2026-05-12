@@ -115,7 +115,7 @@ export default async function MemberKPIsPage() {
             <div className="mt-2 flex items-baseline gap-2">
               <span className="font-brand text-[36px] font-bold leading-none tracking-[-0.5px] text-gold-300">{convertedLeads}</span>
               {conversionRate > 0 && (
-                <span className="rounded-[6px] bg-[rgba(74,222,128,0.1)] border border-[rgba(74,222,128,0.2)] px-1.5 py-0.5 text-[10px] font-semibold text-[#4ade80]">
+                <span className="rounded-[6px] bg-[rgba(74,222,128,0.1)] border border-[rgba(74,222,128,0.2)] px-1.5 py-0.5 text-[10px] font-semibold text-[#22c55e]">
                   {conversionRate}%
                 </span>
               )}

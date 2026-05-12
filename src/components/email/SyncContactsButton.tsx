@@ -31,7 +31,7 @@ export function SyncContactsButton({ unsyncedCount }: Props) {
 
   if (result) {
     return (
-      <div className="flex items-center gap-2 text-[#4ade80]" style={{ fontSize: 12 }}>
+      <div className="flex items-center gap-2 text-[#22c55e]" style={{ fontSize: 12 }}>
         <Check size={14} /> {result.synced} contacts synced
       </div>
     )

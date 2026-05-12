@@ -1,7 +1,7 @@
 import type { EventType } from '@/app/(dashboard)/calendar/types'
 
 const CHIP_STYLES: Record<EventType, { bg: string; color: string }> = {
-  gmail:   { bg: 'rgba(248,113,113,0.12)', color: '#f87171' },
+  gmail:   { bg: 'rgba(248,113,113,0.12)', color: '#ef4444' },
   enquiry: { bg: 'rgba(212,160,23,0.12)',  color: 'var(--r-gold-300)' },
   renewal: { bg: 'rgba(74,222,128,0.1)',   color: 'var(--r-green)' },
   class:   { bg: 'rgba(167,139,250,0.12)', color: '#a78bfa' },

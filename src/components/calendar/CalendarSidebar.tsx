@@ -244,7 +244,7 @@ export function CalendarSidebar({ events, selectedDate, gcalConnected, onCreateE
             </div>
           ))}
           {[
-            { color: '#f87171',           label: 'Gmail event' },
+            { color: '#ef4444',           label: 'Gmail event' },
             { color: 'var(--r-gold-300)', label: 'Enquiry follow-up' },
             { color: 'var(--r-green)',    label: 'Renewal' },
             { color: '#a78bfa',           label: 'Class' },
@@ -296,7 +296,7 @@ export function CalendarSidebar({ events, selectedDate, gcalConnected, onCreateE
                     onClick={() => handleDelete(ev)}
                     disabled={deletingId === ev.id}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)', display: 'flex', padding: 2, flexShrink: 0, opacity: deletingId === ev.id ? 0.4 : 1 }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#f87171' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#ef4444' }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.2)' }}
                     title="Delete event"
                   >

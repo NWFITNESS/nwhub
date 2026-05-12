@@ -25,8 +25,8 @@ export function StatsRow({ stats }: Props) {
 
   const financials: { label: string; value: string; color?: string }[] = [
     { label: 'Gross revenue',  value: formatGbp(stats.gross_pence) },
-    { label: 'Stripe fees',   value: `−${formatGbp(stats.stripe_fees_pence)}`, color: '#f87171' },
-    { label: 'Net revenue',   value: formatGbp(stats.net_pence), color: '#4ade80' },
+    { label: 'Stripe fees',   value: `−${formatGbp(stats.stripe_fees_pence)}`, color: '#ef4444' },
+    { label: 'Net revenue',   value: formatGbp(stats.net_pence), color: '#22c55e' },
   ]
 
   return (

@@ -126,7 +126,7 @@ export function TrialsSection({ trials, blocks }: Props) {
                             <button
                               onClick={() => handleStatusChange(t.id, 'attended', t.child_name)}
                               disabled={pending}
-                              className="text-[11px] font-medium text-nw-400 hover:text-[#4ade80] disabled:opacity-50 transition-colors"
+                              className="text-[11px] font-medium text-nw-400 hover:text-[#22c55e] disabled:opacity-50 transition-colors"
                               title="Mark attended"
                             >
                               Attended
@@ -142,7 +142,7 @@ export function TrialsSection({ trials, blocks }: Props) {
                             <button
                               onClick={() => handleStatusChange(t.id, 'cancelled', t.child_name)}
                               disabled={pending}
-                              className="text-[11px] font-medium text-nw-400 hover:text-[#f87171] disabled:opacity-50 transition-colors"
+                              className="text-[11px] font-medium text-nw-400 hover:text-[#ef4444] disabled:opacity-50 transition-colors"
                               title="Cancel trial"
                             >
                               Cancel
@@ -153,7 +153,7 @@ export function TrialsSection({ trials, blocks }: Props) {
                           <button
                             onClick={() => handleDelete(t.id, t.child_name)}
                             disabled={pending}
-                            className="text-[11px] font-medium text-nw-500 hover:text-[#f87171] disabled:opacity-50 transition-colors"
+                            className="text-[11px] font-medium text-nw-500 hover:text-[#ef4444] disabled:opacity-50 transition-colors"
                             title="Delete entry"
                           >
                             Delete
@@ -176,10 +176,10 @@ export function TrialsSection({ trials, blocks }: Props) {
 
 function StatusPill({ status }: { status: TrialStatus }) {
   const map: Record<TrialStatus, { label: string; bg: string; fg: string }> = {
-    confirmed: { label: 'Confirmed', bg: 'rgba(59,130,246,0.12)',  fg: '#60a5fa' },
-    attended:  { label: 'Attended',  bg: 'rgba(74,222,128,0.12)',  fg: '#4ade80' },
+    confirmed: { label: 'Confirmed', bg: 'rgba(59,130,246,0.12)',  fg: '#3b82f6' },
+    attended:  { label: 'Attended',  bg: 'rgba(74,222,128,0.12)',  fg: '#22c55e' },
     no_show:   { label: 'No-show',   bg: 'rgba(245,158,11,0.12)',  fg: '#f59e0b' },
-    cancelled: { label: 'Cancelled', bg: 'rgba(248,113,113,0.12)', fg: '#f87171' },
+    cancelled: { label: 'Cancelled', bg: 'rgba(248,113,113,0.12)', fg: '#ef4444' },
   }
   const s = map[status]
   return (
@@ -195,7 +195,7 @@ function ConversionPill({ converted, status }: { converted: boolean; status: Tri
   }
   if (converted) {
     return (
-      <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: 'rgba(74,222,128,0.12)', color: '#4ade80' }}>
+      <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: 'rgba(74,222,128,0.12)', color: '#22c55e' }}>
         Booked
       </span>
     )

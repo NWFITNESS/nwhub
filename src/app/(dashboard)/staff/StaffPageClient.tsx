@@ -150,7 +150,7 @@ export function StaffPageClient({ callerRole }: Props) {
                             width: 36,
                             height: 36,
                             background: member.avatar_url ? undefined : `linear-gradient(135deg, ${
-                              member.role === 'owner' ? '#967705, #f2ca50' :
+                              member.role === 'owner' ? '#967705, #c9a70a' :
                               member.role === 'admin' ? '#2563eb, #60a5fa' :
                               '#4b5563, #9ca3af'
                             })`,

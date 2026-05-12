@@ -270,7 +270,7 @@ function LoginForm() {
         {/* Brand name */}
         <div className="text-center mb-8 select-none">
           <h1
-            className="text-[#f2ca50] font-bold text-2xl tracking-widest uppercase leading-none"
+            className="text-[#c9a70a] font-bold text-2xl tracking-widest uppercase leading-none"
             style={{ fontFamily: 'var(--font-league-spartan), system-ui, sans-serif' }}
           >
             Northern Warrior
@@ -316,7 +316,7 @@ function LoginForm() {
                   className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5"
                   style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)' }}
                 >
-                  <Fingerprint className="w-8 h-8 text-[#f2ca50]" />
+                  <Fingerprint className="w-8 h-8 text-[#c9a70a]" />
                 </div>
                 <p className="text-white font-semibold text-lg mb-1">Verify your identity</p>
                 <p className="text-white/40 text-sm mb-6">

@@ -159,7 +159,7 @@ export function TaskBoard({ tasks, onToggle, onAdd, onDelete, onBulkComplete, on
                 onClick={() => setFilter(f)}
                 className={`text-[11px] px-2.5 py-1 rounded-lg transition-colors capitalize ${
                   filter === f
-                    ? 'bg-[#967705]/20 border border-[#967705]/40 text-[#f2ca50]'
+                    ? 'bg-[#967705]/20 border border-[#967705]/40 text-[#c9a70a]'
                     : 'text-white/40 hover:text-white/60'
                 }`}
               >
@@ -229,7 +229,7 @@ export function TaskBoard({ tasks, onToggle, onAdd, onDelete, onBulkComplete, on
           />
           <button
             onClick={handleAdd}
-            className="w-7 h-7 rounded-lg bg-[#967705]/20 border border-[#967705]/40 text-[#f2ca50] flex items-center justify-center hover:bg-[#967705]/30 transition-colors flex-shrink-0"
+            className="w-7 h-7 rounded-lg bg-[#967705]/20 border border-[#967705]/40 text-[#c9a70a] flex items-center justify-center hover:bg-[#967705]/30 transition-colors flex-shrink-0"
           >
             <Plus size={14} />
           </button>
@@ -258,7 +258,7 @@ export function TaskBoard({ tasks, onToggle, onAdd, onDelete, onBulkComplete, on
           <>
             <Section label="Overdue" items={overdue} accent="text-red-400" />
             <Section label="Today" items={today} accent="text-orange-400" />
-            <Section label="This Week" items={thisWeek} accent="text-[#f2ca50]" />
+            <Section label="This Week" items={thisWeek} accent="text-[#c9a70a]" />
             <Section label="Later" items={later} />
             {!selectMode && filter === 'active' && overdue.length === 0 && today.length === 0 && thisWeek.length === 0 && later.length === 0 && (
               <p className="text-[13px] text-white/25 text-center py-10">All caught up ✓</p>

@@ -110,7 +110,7 @@ export function PWAInstallPrompt() {
               onClick={handleInstall}
               disabled={installing}
               className="flex-[2] py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-70"
-              style={{ background: 'linear-gradient(135deg, #f2ca50, #d4af37)', color: '#3c2f00' }}
+              style={{ background: 'linear-gradient(135deg, #c9a70a, #d4af37)', color: '#3c2f00' }}
             >
               <Download size={14} />
               {installing ? 'Installing…' : 'Install App'}

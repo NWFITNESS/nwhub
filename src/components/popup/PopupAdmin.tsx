@@ -200,15 +200,15 @@ export default function PopupAdmin() {
   const textSecondary = light ? '#6b7280' : 'rgba(255,255,255,0.5)'
   const textMuted = light ? '#9ca3af' : 'rgba(255,255,255,0.3)'
   const gold = light ? '#b8870f' : '#c9a84c'
-  const goldBright = light ? '#d4a017' : '#f5c842'
+  const goldBright = light ? '#c9a70a' : '#f5c842'
   const goldDim = light ? 'rgba(184,135,15,0.08)' : 'rgba(201,168,76,0.1)'
   const goldBorder = light ? 'rgba(184,135,15,0.25)' : 'rgba(201,168,76,0.3)'
   const dangerBg = light ? 'rgba(239,68,68,0.08)' : 'rgba(239,68,68,0.1)'
   const dangerBorder = light ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.2)'
-  const dangerText = light ? '#dc2626' : '#f87171'
+  const dangerText = light ? '#dc2626' : '#ef4444'
   const successBg = light ? 'rgba(34,197,94,0.08)' : 'rgba(34,197,94,0.1)'
   const successBorder = light ? 'rgba(34,197,94,0.2)' : 'rgba(34,197,94,0.2)'
-  const successText = light ? '#16a34a' : '#4ade80'
+  const successText = light ? '#16a34a' : '#22c55e'
 
   if (loading) {
     return (
@@ -714,7 +714,7 @@ export default function PopupAdmin() {
               transform: 'translate(-50%, -50%)',
               padding: '6px 16px', borderRadius: 8,
               background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)',
-              color: '#f87171', fontSize: 12, fontWeight: 700,
+              color: '#ef4444', fontSize: 12, fontWeight: 700,
               pointerEvents: 'none',
             }}>
               DISABLED

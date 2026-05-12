@@ -153,7 +153,6 @@ export async function saveBlock(input: SaveBlockInput): Promise<{ id: string }> 
  * or removed first to avoid orphaning paid customers.
  */
 export async function deleteBlock(blockId: string): Promise<void> {
-  console.log('[deleteBlock] start', { blockId })
   const admin = createAdminClient()
 
   // Refuse if any block bookings exist for this block
@@ -205,7 +204,6 @@ export async function deleteBlock(blockId: string): Promise<void> {
     throw new Error(`Failed to delete block: ${error.message}`)
   }
 
-  console.log('[deleteBlock] success', { blockId, sessionIdsCleared: sessionIds.length })
   revalidatePath('/kids')
 }
 
@@ -696,7 +694,7 @@ function renderDropInEmail(args: {
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="520" style="max-width:520px;background:#161c2a;border:1px solid rgba(212,160,23,0.18);border-radius:12px;overflow:hidden;">
           <tr>
             <td style="padding:28px 32px 0;">
-              <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#d4a017;margin-bottom:8px;">Northern Warrior Kids</div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#c9a70a;margin-bottom:8px;">Northern Warrior Kids</div>
               <h1 style="margin:0;font-size:22px;line-height:1.25;color:#fff;font-weight:700;">Your drop-in payment link</h1>
             </td>
           </tr>
@@ -721,13 +719,13 @@ function renderDropInEmail(args: {
           </tr>
           <tr>
             <td align="center" style="padding:28px 32px 8px;">
-              <a href="${args.paymentUrl}" style="display:inline-block;background:#d4a017;color:#0b0e14;text-decoration:none;font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px;letter-spacing:0.3px;">Pay now &rarr;</a>
+              <a href="${args.paymentUrl}" style="display:inline-block;background:#c9a70a;color:#0b0e14;text-decoration:none;font-weight:700;font-size:15px;padding:14px 32px;border-radius:8px;letter-spacing:0.3px;">Pay now &rarr;</a>
             </td>
           </tr>
           <tr>
             <td style="padding:8px 32px 0;color:#6b7587;font-size:11px;text-align:center;line-height:1.5;">
               Or copy and paste this link:<br>
-              <a href="${args.paymentUrl}" style="color:#d4a017;word-break:break-all;">${args.paymentUrl}</a>
+              <a href="${args.paymentUrl}" style="color:#c9a70a;word-break:break-all;">${args.paymentUrl}</a>
             </td>
           </tr>
           <tr>
@@ -983,7 +981,7 @@ function renderTrialConfirmEmail(args: {
       <td align="center">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="520" style="max-width:520px;background:#161c2a;border:1px solid rgba(212,160,23,0.18);border-radius:12px;overflow:hidden;">
           <tr><td style="padding:28px 32px 0;">
-            <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#d4a017;margin-bottom:8px;">Northern Warrior Kids</div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#c9a70a;margin-bottom:8px;">Northern Warrior Kids</div>
             <h1 style="margin:0;font-size:22px;line-height:1.25;color:#fff;font-weight:700;">Your trial is booked</h1>
           </td></tr>
           <tr><td style="padding:20px 32px 0;color:#cdd5e3;font-size:14px;line-height:1.55;">
@@ -1401,7 +1399,7 @@ function renderBookingAlterationEmail(args: {
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#0b0e14;padding:32px 16px;"><tr><td align="center">
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;background:#161c2a;border:1px solid rgba(212,160,23,0.18);border-radius:12px;overflow:hidden;">
       <tr><td style="padding:28px 32px 0;">
-        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#d4a017;margin-bottom:8px;">Northern Warrior Kids</div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#c9a70a;margin-bottom:8px;">Northern Warrior Kids</div>
         <h1 style="margin:0;font-size:22px;line-height:1.25;color:#fff;font-weight:700;">Booking updated</h1>
       </td></tr>
       <tr><td style="padding:20px 32px 0;color:#cdd5e3;font-size:14px;line-height:1.55;">

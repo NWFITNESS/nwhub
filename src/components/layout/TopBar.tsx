@@ -382,7 +382,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
               style={{
                 width: 30,
                 height: 30,
-                background: staffProfile?.avatar_url ? undefined : 'linear-gradient(135deg, #967705, #f2ca50)',
+                background: staffProfile?.avatar_url ? undefined : 'linear-gradient(135deg, #967705, #c9a70a)',
                 fontSize: 11,
                 fontWeight: 700,
                 color: '#07090f',
@@ -415,7 +415,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
                     style={{
                       width: 40,
                       height: 40,
-                      background: staffProfile?.avatar_url ? undefined : 'linear-gradient(135deg, #967705, #f2ca50)',
+                      background: staffProfile?.avatar_url ? undefined : 'linear-gradient(135deg, #967705, #c9a70a)',
                       fontSize: 14,
                       fontWeight: 700,
                       color: '#07090f',
@@ -437,7 +437,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
                     style={{
                       padding: '3px 8px',
                       background: staffProfile?.role === 'owner' ? 'rgba(212,160,23,0.12)' : staffProfile?.role === 'admin' ? 'rgba(59,130,246,0.12)' : 'rgba(255,255,255,0.06)',
-                      color: staffProfile?.role === 'owner' ? '#f2ca50' : staffProfile?.role === 'admin' ? '#60a5fa' : 'rgba(255,255,255,0.6)',
+                      color: staffProfile?.role === 'owner' ? '#c9a70a' : staffProfile?.role === 'admin' ? '#3b82f6' : 'rgba(255,255,255,0.6)',
                       border: `1px solid ${staffProfile?.role === 'owner' ? 'rgba(212,160,23,0.25)' : staffProfile?.role === 'admin' ? 'rgba(59,130,246,0.25)' : 'rgba(255,255,255,0.1)'}`,
                     }}
                   >

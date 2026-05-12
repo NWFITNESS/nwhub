@@ -259,7 +259,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
                     <div className="mt-1.5 flex items-baseline gap-1.5">
                       <span className="font-brand text-[28px] font-bold leading-none tracking-[-0.5px] text-gold-300">{data.convertedLeads}</span>
                       {convRate > 0 && (
-                        <span className="rounded-[5px] bg-[rgba(74,222,128,0.1)] border border-[rgba(74,222,128,0.2)] px-1 py-px text-[9px] font-semibold text-[#4ade80]">{convRate}%</span>
+                        <span className="rounded-[5px] bg-[rgba(74,222,128,0.1)] border border-[rgba(74,222,128,0.2)] px-1 py-px text-[9px] font-semibold text-[#22c55e]">{convRate}%</span>
                       )}
                     </div>
                     <div className="mt-1 text-[10px] text-nw-500">Became members</div>
@@ -421,7 +421,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
                         <button
                           onClick={e => { e.stopPropagation(); deleteCustom(customId) }}
                           style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.2)', display: 'flex', padding: 2, flexShrink: 0 }}
-                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#f87171' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#ef4444' }}
                           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.2)' }}
                         >
                           <Trash2 size={11} />
@@ -469,8 +469,8 @@ export function OverviewContent({ data, formattedDate }: Props) {
               <span className="text-[10px] font-bold uppercase tracking-[1.6px] text-nw-400">System Status</span>
               <div className="flex flex-col gap-2">
                 {[
-                  { name: 'Supabase',      status: 'Operational', color: '#4ade80' },
-                  { name: 'Vercel Deploy', status: 'Live',        color: '#4ade80' },
+                  { name: 'Supabase',      status: 'Operational', color: '#22c55e' },
+                  { name: 'Vercel Deploy', status: 'Live',        color: '#22c55e' },
                   { name: 'Resend Email',  status: 'Pending',     color: '#f59e0b' },
                 ].map(row => (
                   <div key={row.name} className="flex items-center justify-between text-xs">
@@ -518,7 +518,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
                 <div>
                   <span className="text-sm font-semibold text-nw-100">To Do</span>
                   {tasks.filter(t => !t.completed).length > 0 && (
-                    <span className="ml-2 text-[10px] font-bold text-[#f2ca50]">
+                    <span className="ml-2 text-[10px] font-bold text-[#c9a70a]">
                       {tasks.filter(t => !t.completed).length} pending
                     </span>
                   )}

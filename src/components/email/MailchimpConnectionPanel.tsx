@@ -92,7 +92,7 @@ export function MailchimpConnectionPanel({
     }
   }
 
-  const statusColor = initialConnected ? '#4ade80' : '#ef4444'
+  const statusColor = initialConnected ? '#22c55e' : '#ef4444'
   const statusLabel = initialConnected ? 'Connected' : 'Not connected'
 
   return (
@@ -161,7 +161,7 @@ export function MailchimpConnectionPanel({
         )}
 
         {savedAt && (
-          <div className="text-[#4ade80]" style={{ fontSize: 12 }}>
+          <div className="text-[#22c55e]" style={{ fontSize: 12 }}>
             ✓ Settings saved
           </div>
         )}

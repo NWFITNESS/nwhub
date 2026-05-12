@@ -202,7 +202,7 @@ function GenerateLinkCard({ blocks }: { blocks: BlockWithDetails[] }) {
         </div>
 
         {confirm && (
-          <p className="text-center text-[11px] text-[#4ade80]">{confirm}</p>
+          <p className="text-center text-[11px] text-[#22c55e]">{confirm}</p>
         )}
       </div>
     </div>
@@ -272,7 +272,7 @@ function RecentDropInsCard({ rows }: { rows: DropInRow[] }) {
                         <button
                           onClick={() => handleCancel(r.id, r.child_name)}
                           disabled={pending}
-                          className="text-[11px] font-medium text-nw-400 hover:text-[#f87171] disabled:opacity-50 transition-colors"
+                          className="text-[11px] font-medium text-nw-400 hover:text-[#ef4444] disabled:opacity-50 transition-colors"
                         >
                           Cancel
                         </button>
@@ -281,7 +281,7 @@ function RecentDropInsCard({ rows }: { rows: DropInRow[] }) {
                         <button
                           onClick={() => handleRefund(r.id, r.child_name)}
                           disabled={pending}
-                          className="text-[11px] font-medium text-nw-400 hover:text-[#f87171] disabled:opacity-50 transition-colors"
+                          className="text-[11px] font-medium text-nw-400 hover:text-[#ef4444] disabled:opacity-50 transition-colors"
                         >
                           Refund
                         </button>
@@ -300,11 +300,11 @@ function RecentDropInsCard({ rows }: { rows: DropInRow[] }) {
 
 function StatusPill({ status }: { status: DropInRow['payment_status'] }) {
   const map: Record<DropInRow['payment_status'], { label: string; bg: string; fg: string }> = {
-    paid:      { label: 'Paid',      bg: 'rgba(74,222,128,0.12)',  fg: '#4ade80' },
-    link_sent: { label: 'Link sent', bg: 'rgba(59,130,246,0.12)',  fg: '#60a5fa' },
+    paid:      { label: 'Paid',      bg: 'rgba(74,222,128,0.12)',  fg: '#22c55e' },
+    link_sent: { label: 'Link sent', bg: 'rgba(59,130,246,0.12)',  fg: '#3b82f6' },
     pending:   { label: 'Pending',   bg: 'rgba(245,158,11,0.12)',  fg: '#f59e0b' },
-    refunded:  { label: 'Refunded',  bg: 'rgba(248,113,113,0.12)', fg: '#f87171' },
-    cancelled: { label: 'Cancelled', bg: 'rgba(248,113,113,0.12)', fg: '#f87171' },
+    refunded:  { label: 'Refunded',  bg: 'rgba(248,113,113,0.12)', fg: '#ef4444' },
+    cancelled: { label: 'Cancelled', bg: 'rgba(248,113,113,0.12)', fg: '#ef4444' },
   }
   const s = map[status]
   return (

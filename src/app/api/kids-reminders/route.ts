@@ -158,7 +158,7 @@ function renderReminderEmail(args: {
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="520" style="max-width:520px;background:#161c2a;border:1px solid rgba(212,160,23,0.18);border-radius:12px;overflow:hidden;">
 
       <tr><td style="padding:28px 32px 0;">
-        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#d4a017;margin-bottom:8px;">Northern Warrior Kids</div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#c9a70a;margin-bottom:8px;">Northern Warrior Kids</div>
         <h1 style="margin:0;font-size:22px;line-height:1.25;color:#fff;font-weight:700;">Today&rsquo;s the day!</h1>
       </td></tr>
 
@@ -186,8 +186,8 @@ function renderReminderEmail(args: {
           <div style="font-size:13px;color:#f59e0b;font-weight:600;margin-bottom:4px;">Can&rsquo;t make it?</div>
           <div style="font-size:13px;color:#cdd5e3;line-height:1.5;">
             Please let us know as early as you can:<br>
-            <a href="mailto:info@nwfitnesskids.co.uk" style="color:#d4a017;text-decoration:none;">info@nwfitnesskids.co.uk</a><br>
-            <a href="https://wa.me/447905321589" style="color:#d4a017;text-decoration:none;">WhatsApp 07905 321589</a>
+            <a href="mailto:info@nwfitnesskids.co.uk" style="color:#c9a70a;text-decoration:none;">info@nwfitnesskids.co.uk</a><br>
+            <a href="https://wa.me/447905321589" style="color:#c9a70a;text-decoration:none;">WhatsApp 07905 321589</a>
           </div>
         </div>
       </td></tr>

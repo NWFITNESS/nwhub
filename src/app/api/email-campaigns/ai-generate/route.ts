@@ -36,7 +36,7 @@ COLOUR PALETTE:
 - Background: #0a0a0a (near black)
 - Card/section bg: #111111 or #161616 (dark charcoal)
 - Primary accent: #C9A70A (gold)
-- Bright gold: #f2ca50 (for highlights, stars, emphasis)
+- Bright gold: #c9a70a (for highlights, stars, emphasis)
 - Text primary: #F0F0F0 (near white)
 - Text secondary: #999999 (gray)
 - Text muted: #666666 (dark gray)

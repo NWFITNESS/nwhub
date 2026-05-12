@@ -127,7 +127,7 @@ export function EmailCard({ email, onAddTask, onArchive, onReclassify, selected,
               </span>
             )}
             {email.task_created && (
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-[#967705]/15 text-[#f2ca50] border-[#967705]/25">
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-[#967705]/15 text-[#c9a70a] border-[#967705]/25">
                 Task created
               </span>
             )}
@@ -143,7 +143,7 @@ export function EmailCard({ email, onAddTask, onArchive, onReclassify, selected,
             <div className="mt-2">
               <button
                 onClick={() => setSummaryOpen(v => !v)}
-                className="flex items-center gap-1 text-[11px] text-[#f2ca50]/70 hover:text-[#f2ca50] transition-colors"
+                className="flex items-center gap-1 text-[11px] text-[#c9a70a]/70 hover:text-[#c9a70a] transition-colors"
               >
                 <ChevronDown size={12} className={`transition-transform ${summaryOpen ? 'rotate-180' : ''}`} />
                 AI Summary
@@ -162,7 +162,7 @@ export function EmailCard({ email, onAddTask, onArchive, onReclassify, selected,
             {!email.task_created && isImportant && (
               <button
                 onClick={() => onAddTask(`Follow up: ${email.subject}`, undefined)}
-                className="flex items-center gap-1 text-[11px] text-white/40 hover:text-[#f2ca50] transition-colors"
+                className="flex items-center gap-1 text-[11px] text-white/40 hover:text-[#c9a70a] transition-colors"
               >
                 <Plus size={11} />
                 Add to tasks
