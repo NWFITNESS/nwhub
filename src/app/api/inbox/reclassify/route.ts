@@ -4,10 +4,7 @@ import { requireAuth } from '@/lib/auth-guard'
 import { classifyEmail } from '@/lib/email-classifier'
 import { applyRules, type NormalizedEmail } from '@/lib/rules-engine'
 import { gmailFetch, extractEmailBody } from '@/lib/gmail'
-import { fetchPdfAttachments } from '@/lib/gmail-attachments'
-import { extractInvoiceMetadata } from '@/lib/invoice-extractor'
-import { storeInvoicePdf } from '@/lib/invoice-storage'
-import { findMatchingXeroInvoice } from '@/lib/xero-matcher'
+import { extractInvoiceFromEmail } from '@/lib/extraction-pipeline'
 
 // POST — reclassify a single email by its classification ID
 // Body: { email_id: string }
@@ -115,9 +112,10 @@ export async function POST(req: NextRequest) {
   }
 
   // Extract invoices if applicable
+  // Extract invoices (PDF attachments or email body)
   if (email.gmail_message_id) {
     const subjectLower = (email.subject ?? '').toLowerCase()
-    const hasInvoiceKeyword = subjectLower.includes('invoice') || subjectLower.includes('receipt') || subjectLower.includes('statement') || subjectLower.includes('payment')
+    const hasInvoiceKeyword = subjectLower.includes('invoice') || subjectLower.includes('receipt') || subjectLower.includes('statement') || subjectLower.includes('payment') || subjectLower.includes('order')
 
     if (hasInvoiceKeyword || result.extract_invoice) {
       const { count } = await supabase
@@ -126,41 +124,8 @@ export async function POST(req: NextRequest) {
         .eq('source_email_id', email_id)
 
       if ((count ?? 0) === 0) {
-        try {
-          const pdfs = await fetchPdfAttachments(email.gmail_message_id)
-          debug.push(`Found ${pdfs.length} PDF(s)`)
-          for (const pdf of pdfs) {
-            try {
-              const extracted = await extractInvoiceMetadata(pdf.data)
-              if (!extracted?.is_invoice) continue
-              const storagePath = await storeInvoicePdf(pdf.data, pdf.filename, email_id)
-              const match = await findMatchingXeroInvoice({
-                supplier: extracted.supplier ?? '',
-                amount_total: extracted.amount_total ?? 0,
-                invoice_date: extracted.invoice_date ?? new Date().toISOString().split('T')[0],
-                invoice_number: extracted.invoice_number,
-              })
-              await supabase.from('invoice_vault').insert({
-                source: 'email',
-                source_email_id: email_id,
-                supplier: extracted.supplier ?? null,
-                invoice_number: extracted.invoice_number ?? null,
-                amount: extracted.amount_total ?? null,
-                currency: extracted.amount_currency ?? 'GBP',
-                invoice_date: extracted.invoice_date ?? null,
-                due_date: extracted.due_date ?? null,
-                pdf_storage_path: storagePath,
-                xero_match_status: match.matched ? 'matched' : 'unmatched',
-                xero_invoice_id: match.xeroInvoiceId ?? null,
-              })
-              debug.push(`Invoice extracted: ${extracted.supplier} £${extracted.amount_total}`)
-            } catch (e) {
-              debug.push(`PDF failed: ${e instanceof Error ? e.message : String(e)}`)
-            }
-          }
-        } catch (e) {
-          debug.push(`Attachment fetch failed: ${e instanceof Error ? e.message : String(e)}`)
-        }
+        const extractDebug = await extractInvoiceFromEmail(supabase, email.gmail_message_id, email_id, email.subject, email.sender)
+        debug.push(...extractDebug)
       } else {
         debug.push('Invoice already extracted')
       }

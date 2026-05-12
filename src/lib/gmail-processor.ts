@@ -128,7 +128,7 @@ export async function processGmailEmails(
       const shouldExtract = result.extract_invoice || category === 'receipt_notification' || (category === 'needs_attention' && hasInvoiceKeyword)
 
       if (classRow?.id && shouldExtract) {
-        const extractDebug = await extractInvoiceFromEmail(supabase, msg.id, classRow.id)
+        const extractDebug = await extractInvoiceFromEmail(supabase, msg.id, classRow.id, subject, sender)
         debug.push(...extractDebug)
       }
 
