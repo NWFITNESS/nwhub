@@ -61,7 +61,7 @@ function EditModal({ item, onSave, onClose }: {
       <div className="bg-nw-900 border border-white/10 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between border-b border-white/[0.08]" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 16, paddingBottom: 16 }}>
           <p className="text-sm font-semibold text-white">Edit image details</p>
-          <button onClick={onClose} className="text-white/30 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/[0.06]"><X size={15} /></button>
+          <button onClick={onClose} className="text-white/30 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/[0.06]" aria-label="Close"><X size={15} /></button>
         </div>
         <div className="flex gap-4" style={{ padding: 18 }}>
           <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-black border border-white/[0.08]">
@@ -141,7 +141,7 @@ function BulkCategoryModal({ ids, onSave, onClose }: {
             <p className="text-sm font-semibold text-white">Set category</p>
             <p className="text-xs text-white/30 mt-0.5">{ids.length} image{ids.length > 1 ? 's' : ''} selected</p>
           </div>
-          <button onClick={onClose} className="text-white/30 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/[0.06]"><X size={15} /></button>
+          <button onClick={onClose} className="text-white/30 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/[0.06]" aria-label="Close"><X size={15} /></button>
         </div>
         <div style={{ padding: 18 }}>
           <label className="block text-xs font-semibold text-white/40 uppercase tracking-[0.1em] mb-3">Category</label>

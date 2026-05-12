@@ -330,6 +330,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0, staf
         {!isMobile && (
           <button
             onClick={toggleCollapse}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             style={{
               position: 'absolute', top: 22, right: -12, width: 24, height: 24,
               background: C.toggleBg, border: `1px solid ${C.toggleBdr}`, borderRadius: '50%',
@@ -357,7 +358,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0, staf
             </div>
           )}
           {isMobile && onToggle && (
-            <button onClick={onToggle} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: C.muted, display: 'flex', padding: 2 }}>
+            <button onClick={onToggle} aria-label="Close sidebar" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: C.muted, display: 'flex', padding: 2 }}>
               {I.close}
             </button>
           )}
@@ -488,7 +489,7 @@ function NavItem({ entry, isOpen, isActive, isParentActive, openSections, toggle
     onNavigate?.()
   }
 
-  const iconEl = <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, flexShrink: 0 }}>{entry.icon}</div>
+  const iconEl = <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, flexShrink: 0 }} aria-hidden="true">{entry.icon}</div>
 
   const content = (
     <>
@@ -514,7 +515,7 @@ function NavItem({ entry, isOpen, isActive, isParentActive, openSections, toggle
       {entry.href && !hasSub ? (
         <Link href={entry.href} onClick={handleClick} style={baseStyle} {...events}>{content}</Link>
       ) : (
-        <div onClick={handleClick} style={baseStyle} {...events}>{content}</div>
+        <div onClick={handleClick} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick() } }} style={baseStyle} {...events}>{content}</div>
       )}
 
       {/* Sub-items */}

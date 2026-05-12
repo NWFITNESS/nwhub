@@ -1,5 +1,3 @@
-'use client'
-
 import type { Review } from './ReviewsPanel'
 
 // ─── Shared types ─────────────────────────────────────────────────────────────

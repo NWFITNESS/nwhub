@@ -179,7 +179,7 @@ function DiscountModal({ discount, onClose }: { discount: KidsDiscount | null; o
   const inputCls = 'w-full rounded-lg border border-[rgba(255,255,255,0.1)] bg-nw-800 px-3 py-2 text-sm text-nw-100 outline-none focus:border-gold-400/40'
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose} role="dialog" aria-modal="true" aria-label={isEdit ? 'Edit discount' : 'New discount'}>
       <div className="w-full max-w-md rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750" style={{ padding: 24 }} onClick={(e) => e.stopPropagation()}>
         <h3 className="text-lg font-semibold text-nw-100 mb-4">
           {isEdit ? 'Edit discount' : 'New discount'}

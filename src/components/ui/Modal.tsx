@@ -26,13 +26,13 @@ export function Modal({ open, onClose, title, children, width = 'md' }: ModalPro
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative w-full ${widthMap[width]} rounded-xl shadow-2xl`} style={{ background: 'var(--slate-800)', border: '1px solid var(--r-panel-border)' }}>
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
+      <div role="dialog" aria-modal="true" aria-label={title || 'Dialog'} className={`relative w-full ${widthMap[width]} rounded-xl shadow-2xl`} style={{ background: 'var(--slate-800)', border: '1px solid var(--r-panel-border)' }}>
         {title && (
           <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--r-panel-border)' }}>
             <h3 className="text-base font-semibold">{title}</h3>
-            <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
-              <X size={18} />
+            <button onClick={onClose} aria-label="Close" className="text-white/40 hover:text-white transition-colors">
+              <X size={18} aria-hidden="true" />
             </button>
           </div>
         )}

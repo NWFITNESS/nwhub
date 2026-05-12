@@ -51,7 +51,7 @@ function getBreadcrumb(pathname: string) {
 }
 
 const Chevron = () => (
-  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.7" style={{ opacity: 0.4 }}>
+  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.7" style={{ opacity: 0.4 }} aria-hidden="true">
     <path d="M3 2l3.5 3L3 8" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 )
@@ -224,7 +224,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
               style={{ paddingLeft: 38, paddingRight: 38 }}
             />
             {query && (
-              <button onClick={() => { setQuery(''); setSearchOpen(false) }} className="absolute right-3 top-1/2 -translate-y-1/2 text-nw-500 hover:text-nw-300 transition-colors">
+              <button onClick={() => { setQuery(''); setSearchOpen(false) }} className="absolute right-3 top-1/2 -translate-y-1/2 text-nw-500 hover:text-nw-300 transition-colors" aria-label="Clear search">
                 <X size={14} />
               </button>
             )}
@@ -279,6 +279,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
           onClick={handleRefresh}
           className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] text-nw-400 transition-all hover:bg-[rgba(255,255,255,0.06)] hover:text-nw-200"
           title="Refresh"
+          aria-label="Refresh page"
         >
           <RotateCw size={16} strokeWidth={1.7} className={refreshing ? 'animate-spin' : ''} />
         </button>
@@ -288,6 +289,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
           onClick={toggleTheme}
           className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] text-nw-400 transition-all hover:bg-[rgba(212,160,23,0.08)] hover:text-gold-400"
           title={lightMode ? 'Switch to dark mode' : 'Switch to light mode'}
+          aria-label={lightMode ? 'Switch to dark mode' : 'Switch to light mode'}
         >
           {lightMode ? <Moon size={16} strokeWidth={1.7} /> : <Sun size={16} strokeWidth={1.7} />}
         </button>
@@ -302,6 +304,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
                 : 'text-nw-400 hover:bg-[rgba(255,255,255,0.06)] hover:text-nw-200'
             }`}
             title="Notification settings"
+            aria-label="Notification settings"
           >
             <Bell size={16} strokeWidth={1.7} />
           </button>
@@ -319,7 +322,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
                     <p className="text-[10px] text-nw-500">Choose what alerts you</p>
                   </div>
                 </div>
-                <button onClick={() => setBellOpen(false)} className="text-nw-500 hover:text-nw-300 transition-colors"><X size={14} /></button>
+                <button onClick={() => setBellOpen(false)} className="text-nw-500 hover:text-nw-300 transition-colors" aria-label="Close notifications"><X size={14} /></button>
               </div>
               <div className="flex items-center justify-end gap-0 border-b border-[rgba(255,255,255,0.05)] px-5 py-2">
                 <span className="w-[52px] text-center text-[9px] font-semibold uppercase tracking-[1px] text-nw-500">Desktop</span>
@@ -337,10 +340,10 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
                         <p className="text-[12px] font-medium text-nw-200">{label}</p>
                         <p className="text-[10px] text-nw-500 leading-tight mt-0.5">{desc}</p>
                       </div>
-                      <button onClick={() => toggleNotif(key, 'desktop')} className={`relative h-[18px] w-[32px] flex-shrink-0 rounded-full transition-colors ${s.desktop ? 'bg-gold-500' : 'bg-nw-600'}`}>
+                      <button onClick={() => toggleNotif(key, 'desktop')} className={`relative h-[18px] w-[32px] flex-shrink-0 rounded-full transition-colors ${s.desktop ? 'bg-gold-500' : 'bg-nw-600'}`} aria-label={`${label} desktop notifications ${s.desktop ? 'on' : 'off'}`} role="switch" aria-checked={s.desktop}>
                         <div className={`absolute top-[3px] h-3 w-3 rounded-full bg-white shadow transition-transform ${s.desktop ? 'translate-x-[17px]' : 'translate-x-[3px]'}`} />
                       </button>
-                      <button onClick={() => toggleNotif(key, 'mobile')} className={`relative h-[18px] w-[32px] flex-shrink-0 rounded-full transition-colors ${s.mobile ? 'bg-gold-500' : 'bg-nw-600'}`}>
+                      <button onClick={() => toggleNotif(key, 'mobile')} className={`relative h-[18px] w-[32px] flex-shrink-0 rounded-full transition-colors ${s.mobile ? 'bg-gold-500' : 'bg-nw-600'}`} aria-label={`${label} mobile notifications ${s.mobile ? 'on' : 'off'}`} role="switch" aria-checked={s.mobile}>
                         <div className={`absolute top-[3px] h-3 w-3 rounded-full bg-white shadow transition-transform ${s.mobile ? 'translate-x-[17px]' : 'translate-x-[3px]'}`} />
                       </button>
                     </div>
@@ -364,12 +367,13 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
         </div>
 
         {/* Separator */}
-        <div className="h-6 w-px bg-white/8 mx-2" />
+        <div className="h-6 w-px bg-white/8 mx-2" aria-hidden="true" />
 
         {/* Profile dropdown */}
         <div ref={profileRef} className="relative">
           <button
             onClick={() => setProfileOpen(v => !v)}
+            aria-label="Profile menu"
             className={`flex items-center gap-2.5 rounded-lg transition-all ${
               profileOpen
                 ? 'bg-[rgba(255,255,255,0.06)]'
@@ -399,6 +403,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
             <ChevronDown
               size={14}
               className={`text-nw-500 transition-transform hidden xl:block ${profileOpen ? 'rotate-180' : ''}`}
+              aria-hidden="true"
             />
           </button>
 
@@ -441,7 +446,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
                       border: `1px solid ${staffProfile?.role === 'owner' ? 'rgba(212,160,23,0.25)' : staffProfile?.role === 'admin' ? 'rgba(59,130,246,0.25)' : 'rgba(255,255,255,0.1)'}`,
                     }}
                   >
-                    <Shield size={10} />
+                    <Shield size={10} aria-hidden="true" />
                     {roleName}
                   </span>
                 </div>
@@ -455,7 +460,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
                   className="flex items-center gap-3 rounded-lg text-[13px] text-nw-300 no-underline transition-colors hover:bg-[rgba(255,255,255,0.05)] hover:text-nw-100"
                   style={{ padding: '9px 10px' }}
                 >
-                  <Settings size={15} className="text-nw-500" />
+                  <Settings size={15} className="text-nw-500" aria-hidden="true" />
                   Settings
                 </Link>
                 {(staffProfile?.role === 'owner' || staffProfile?.role === 'admin') && (
@@ -465,7 +470,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
                     className="flex items-center gap-3 rounded-lg text-[13px] text-nw-300 no-underline transition-colors hover:bg-[rgba(255,255,255,0.05)] hover:text-nw-100"
                     style={{ padding: '9px 10px' }}
                   >
-                    <Users size={15} className="text-nw-500" />
+                    <Users size={15} className="text-nw-500" aria-hidden="true" />
                     Staff Management
                   </Link>
                 )}
@@ -478,7 +483,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
                   className="flex w-full items-center gap-3 rounded-lg text-[13px] text-red-400/80 transition-colors hover:bg-red-500/8 hover:text-red-400"
                   style={{ padding: '9px 10px' }}
                 >
-                  <LogOut size={15} />
+                  <LogOut size={15} aria-hidden="true" />
                   Sign out
                 </button>
               </div>

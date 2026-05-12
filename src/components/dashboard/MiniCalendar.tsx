@@ -61,7 +61,7 @@ export function MiniCalendar() {
           <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--slate-500)' }}>Calendar</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <button onClick={prev} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-500)', display: 'flex', padding: 2 }}
+          <button onClick={prev} aria-label="Previous month" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-500)', display: 'flex', padding: 2 }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--slate-200)' }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--slate-500)' }}
           >
@@ -70,7 +70,7 @@ export function MiniCalendar() {
           <span style={{ fontFamily: 'var(--font-rajdhani), Rajdhani, sans-serif', fontSize: 12, fontWeight: 700, color: 'var(--slate-100)', minWidth: 72, textAlign: 'center' }}>
             {MONTHS[month]} {year}
           </span>
-          <button onClick={next} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-500)', display: 'flex', padding: 2 }}
+          <button onClick={next} aria-label="Next month" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--slate-500)', display: 'flex', padding: 2 }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--slate-200)' }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--slate-500)' }}
           >

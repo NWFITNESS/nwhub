@@ -386,7 +386,7 @@ export function PopupBuilder({ initial }: Props) {
 
       {/* Preview Modal */}
       {showPreview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowPreview(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowPreview(false)} role="dialog" aria-modal="true" aria-label="Popup preview">
           <motion.div
             onClick={e => e.stopPropagation()}
             {...getAnimationProps(design.animation ?? 'scale-fade', design.animationDuration ?? 0.4)}
@@ -437,8 +437,8 @@ export function PopupBuilder({ initial }: Props) {
 
       {/* AI Generate Modal */}
       {showAiModal && (
-        <div className="fixed inset-0 z-50" onClick={() => setShowAiModal(false)}>
-          <div className="absolute inset-0 bg-black/60" />
+        <div className="fixed inset-0 z-50" onClick={() => setShowAiModal(false)} role="dialog" aria-modal="true" aria-label="AI Popup Generator">
+          <div className="absolute inset-0 bg-black/60" aria-hidden="true" />
           <div className="absolute inset-0 flex items-center justify-center" style={{ padding: 20 }}>
             <div
               className="bg-nw-750 rounded-2xl border border-[rgba(255,255,255,0.12)] w-full max-w-md"

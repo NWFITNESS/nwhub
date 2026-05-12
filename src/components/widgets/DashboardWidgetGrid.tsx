@@ -9,7 +9,7 @@ import { WebsiteVisitorsWidget } from './dashboard/WebsiteVisitorsWidget'
 import { RecentEnquiriesWidget } from './dashboard/RecentEnquiriesWidget'
 import { SetupChecklistWidget } from './dashboard/SetupChecklistWidget'
 import { QuickActionsWidget } from './dashboard/QuickActionsWidget'
-import { XeroRevenueWidget } from './dashboard/XeroRevenueWidget'
+import { XeroRevenueCard } from '@/components/dashboard/XeroRevenueCard'
 import type { ChartDataPoint } from '@/components/dashboard/MemberGrowthChart'
 
 export interface ChecklistItem { label: string; done: boolean; manual?: boolean }
@@ -92,7 +92,7 @@ export function DashboardWidgetGrid({ data }: Props) {
       case 'kpi-revenue':
         return (
           <WidgetShell key={id} id={id} isCustomising={isCustomising} onRemove={onRemove}>
-            <XeroRevenueWidget />
+            <XeroRevenueCard />
           </WidgetShell>
         )
       case 'chart-visitors':
