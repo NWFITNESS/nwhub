@@ -140,7 +140,7 @@ export async function GET(req: NextRequest) {
       id: c.id,
       label: c.name,
       sub: `${c.subject} · ${c.status}`,
-      href: '/email/campaigns',
+      href: '/mailchimp',
     }))
   }
 

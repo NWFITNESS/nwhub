@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { X } from 'lucide-react'
 import { Button } from './Button'
 
@@ -14,20 +14,62 @@ interface ModalProps {
 
 const widthMap = { sm: 'max-w-sm', md: 'max-w-md', lg: 'max-w-lg', xl: 'max-w-2xl', '2xl': 'max-w-4xl' }
 
+const FOCUSABLE_SELECTOR = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+
 export function Modal({ open, onClose, title, children, width = 'md' }: ModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null)
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null)
+
+  // Save previously focused element when modal opens, restore on close
   useEffect(() => {
-    if (!open) return
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [open, onClose])
+    if (open) {
+      previouslyFocusedRef.current = document.activeElement as HTMLElement
+    } else if (previouslyFocusedRef.current) {
+      previouslyFocusedRef.current.focus()
+      previouslyFocusedRef.current = null
+    }
+  }, [open])
+
+  // Focus first focusable element when modal opens
+  useEffect(() => {
+    if (!open || !modalRef.current) return
+    const firstFocusable = modalRef.current.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)
+    if (firstFocusable) firstFocusable.focus()
+  }, [open])
+
+  // Keyboard handler: Escape to close + Tab focus trapping
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      onClose()
+      return
+    }
+    if (e.key !== 'Tab' || !modalRef.current) return
+
+    const focusableEls = Array.from(modalRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR))
+    if (focusableEls.length === 0) return
+
+    const first = focusableEls[0]
+    const last = focusableEls[focusableEls.length - 1]
+
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      }
+    } else {
+      if (document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+  }, [onClose])
 
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onKeyDown={handleKeyDown}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
-      <div role="dialog" aria-modal="true" aria-label={title || 'Dialog'} className={`relative w-full ${widthMap[width]} rounded-xl shadow-2xl`} style={{ background: 'var(--slate-800)', border: '1px solid var(--r-panel-border)' }}>
+      <div ref={modalRef} role="dialog" aria-modal="true" aria-label={title || 'Dialog'} className={`relative w-full ${widthMap[width]} rounded-xl shadow-2xl`} style={{ background: 'var(--slate-800)', border: '1px solid var(--r-panel-border)' }}>
         {title && (
           <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--r-panel-border)' }}>
             <h3 className="text-base font-semibold">{title}</h3>

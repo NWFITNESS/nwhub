@@ -24,10 +24,11 @@ const SECTIONS = [
     label: 'Marketing',
     items: [
       { label: 'Website Popup', href: '/popup', iconColor: 'gold' as const },
-      { label: 'All Campaigns', href: '/email/campaigns', iconColor: 'gold' as const },
+      { label: 'All Campaigns', href: '/mailchimp', iconColor: 'gold' as const },
+      { label: 'Create Campaign', href: '/mailchimp/create', iconColor: 'gold' as const },
+      { label: 'AI Email Creator', href: '/mailchimp/create-ai', iconColor: 'gold' as const, tag: 'AI' },
       { label: 'Subscribers', href: '/email', iconColor: 'gold' as const },
       { label: 'Import Subscribers', href: '/email/import', iconColor: 'gold' as const },
-      { label: 'AI Email Creator', href: '/mailchimp/create-ai', iconColor: 'gold' as const, tag: 'AI' },
       { label: 'Post Studio', href: '/branding', iconColor: 'gold' as const },
       { label: 'Google Reviews', href: '/branding/reviews', iconColor: 'gold' as const },
       { label: 'Documents', href: '/branding/documents', iconColor: 'gold' as const },
