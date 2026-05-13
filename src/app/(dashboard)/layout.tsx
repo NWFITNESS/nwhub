@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { SidebarProvider } from '@/components/layout/SidebarProvider'
+import { EnquiryToast } from '@/components/enquiries/EnquiryToast'
 import type { StaffProfile } from '@/lib/staff'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -38,6 +39,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       staffProfile={staffProfile}
     >
       {children}
+      <EnquiryToast />
     </SidebarProvider>
   )
 }

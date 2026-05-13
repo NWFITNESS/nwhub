@@ -338,13 +338,13 @@ export function OverviewContent({ data, formattedDate }: Props) {
               ) : (
                 <div className="flex-1 overflow-y-auto">
                   {data.recentEnquiries.map(enq => (
-                    <div key={enq.id} className="flex flex-col gap-[3px] border-b border-[rgba(255,255,255,0.05)] py-[10px]" style={{ paddingLeft: 20, paddingRight: 20 }}>
+                    <Link key={enq.id} href={`/enquiries?id=${enq.id}`} className="flex flex-col gap-[3px] border-b border-[rgba(255,255,255,0.05)] py-[10px] transition-colors hover:bg-[rgba(255,255,255,0.03)] no-underline" style={{ paddingLeft: 20, paddingRight: 20 }}>
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-medium text-nw-200">{enq.name}</span>
                         <span className="text-[10px] text-nw-600">{new Date(enq.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
                       </div>
                       <span className="truncate text-xs font-medium text-nw-400">{enq.message ?? enq.enquiry_type}</span>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}

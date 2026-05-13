@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { ContactsTable } from '@/components/contacts/ContactsTable'
+import { EnquiriesClient } from '@/components/enquiries/EnquiriesClient'
 
-export default async function EnquiriesPage() {
+export default async function EnquiriesPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+  const { id } = await searchParams
   const supabase = await createClient()
   const { data: enquiries } = await supabase
     .from('contact_enquiries')
@@ -12,7 +13,7 @@ export default async function EnquiriesPage() {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader eyebrow="Admin Panel" title="Contact" titleGold="Enquiries" description={`${enquiries?.length ?? 0} enquiries`} />
-      <ContactsTable initialEnquiries={enquiries ?? []} />
+      <EnquiriesClient initialEnquiries={enquiries ?? []} selectedId={id} />
     </div>
   )
 }
