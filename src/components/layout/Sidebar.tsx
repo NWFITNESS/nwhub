@@ -10,26 +10,26 @@ import { NWHubIcon } from '@/components/NWHubIcon'
 const DARK = {
   bg:       '#07090f',
   bg2:      '#0a0d16',
-  border:   '#111825',
-  gold:     '#c9a84c',
+  border:   '#141c2c',
+  gold:     '#d4b24a',
   goldBright: '#f5c842',
-  goldDim:  'rgba(201,168,76,0.08)',
-  goldBdr:  'rgba(201,168,76,0.2)',
+  goldDim:  'rgba(201,168,76,0.1)',
+  goldBdr:  'rgba(201,168,76,0.22)',
   blue:     '#3b82f6',
-  text:     '#ffffff',
-  muted:    '#4a6080',
-  dim:      '#1e2e48',
-  sub:      '#3a5070',
-  hoverBg:  'rgba(255,255,255,0.03)',
-  hoverBdr: 'rgba(201,168,76,0.3)',
+  text:     '#f0f2f5',
+  muted:    '#8899b4',
+  dim:      '#3a4d6a',
+  sub:      '#6a80a8',
+  hoverBg:  'rgba(255,255,255,0.04)',
+  hoverBdr: 'rgba(201,168,76,0.35)',
   tooltipBg: '#0e1628',
   avatarText: '#07090f',
-  userName:  '#d0d8e8',
+  userName:  '#e0e6f0',
   glowShadow: '0 0 8px 2px rgba(201,168,76,0.5), 0 0 16px 3px rgba(201,168,76,0.18)',
-  subGroupRule: '#0f1828',
-  subGroupLabel: '#2a3d58',
+  subGroupRule: '#141c2c',
+  subGroupLabel: '#4a6080',
   toggleBg: '#0e1628',
-  toggleBdr: '#1a2840',
+  toggleBdr: '#1e2e48',
   badgeDotBorder: '#07090f',
 }
 
@@ -348,11 +348,11 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0, staf
           justifyContent: isOpen ? 'flex-start' : 'center',
           flexShrink: 0, minHeight: 64,
         }}>
-          <NWHubIcon size={isOpen ? 36 : 32} animated />
+          <NWHubIcon size={isOpen ? 38 : 32} animated />
           {isOpen && (
             <div style={{ opacity: isOpen ? 1 : 0, transition: 'opacity 200ms' }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: C.text, letterSpacing: '1px', textTransform: 'uppercase' }}>Northern Warrior</p>
-              <p style={{ fontSize: 9, color: 'rgba(201,168,76,0.55)', letterSpacing: '2px', textTransform: 'uppercase' }}>NWHub</p>
+              <p style={{ fontSize: 12, fontWeight: 700, color: C.text, letterSpacing: '0.8px', textTransform: 'uppercase' }}>Northern Warrior</p>
+              <p style={{ fontSize: 9.5, color: 'rgba(212,178,74,0.6)', letterSpacing: '2.5px', textTransform: 'uppercase', marginTop: 1 }}>NWHub</p>
             </div>
           )}
           {isMobile && onToggle && (
@@ -368,7 +368,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0, staf
             <div key={section.label}>
               {/* Section label */}
               {isOpen ? (
-                <p style={{ fontSize: 9, fontWeight: 700, color: C.dim, letterSpacing: '3px', textTransform: 'uppercase', padding: '14px 16px 5px' }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: C.dim, letterSpacing: '2.5px', textTransform: 'uppercase', padding: '16px 16px 6px' }}>
                   {section.label}
                 </p>
               ) : (
@@ -429,16 +429,16 @@ function NavItem({ entry, isOpen, isActive, isParentActive, openSections, toggle
   const subOpen = openSections.includes(entry.key)
 
   const baseStyle: React.CSSProperties = {
-    padding: isOpen ? `8px ${indented ? '14px' : '14px'} 8px ${indented ? '26px' : '14px'}` : '0',
-    display: 'flex', alignItems: 'center', gap: 10,
-    cursor: 'pointer', fontSize: 13, color: active ? C.gold : C.muted,
+    padding: isOpen ? `9px ${indented ? '14px' : '14px'} 9px ${indented ? '26px' : '14px'}` : '0',
+    display: 'flex', alignItems: 'center', gap: 11,
+    cursor: 'pointer', fontSize: 13.5, fontWeight: active ? 600 : 500, color: active ? C.gold : C.muted,
     position: 'relative', borderRight: `2px solid ${active ? C.gold : 'transparent'}`,
     transition: 'background 0.15s, border-color 0.2s, color 0.15s',
     textDecoration: 'none', background: active ? C.goldDim : 'transparent',
-    minHeight: isOpen ? undefined : 36,
+    minHeight: isOpen ? undefined : 38,
     justifyContent: isOpen ? 'flex-start' : 'center',
     margin: isOpen ? '1px 0' : '2px auto',
-    width: isOpen ? undefined : 36, height: isOpen ? undefined : 36,
+    width: isOpen ? undefined : 38, height: isOpen ? undefined : 38,
     borderRadius: isOpen ? 0 : 8,
   }
 
@@ -527,7 +527,7 @@ function NavItem({ entry, isOpen, isActive, isParentActive, openSections, toggle
             const subActive = isActive(sub.href)
             return (
               <Link key={sub.href} href={sub.href} onClick={onNavigate} style={{
-                padding: '6px 12px', fontSize: 12, color: subActive ? C.gold : C.sub,
+                padding: '7px 12px', fontSize: 12.5, fontWeight: subActive ? 600 : 450, color: subActive ? C.gold : C.sub,
                 borderRadius: 6, display: 'flex', alignItems: 'center', gap: 8,
                 textDecoration: 'none', transition: 'color 0.15s, background 0.15s',
                 background: subActive ? C.goldDim : 'transparent',

@@ -190,18 +190,18 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
   const totalResults = categories.reduce((n, [, items]) => n + items.length, 0)
 
   return (
-    <header className="hidden md:flex h-[56px] min-h-[56px] flex-shrink-0 items-center border-b border-[rgba(255,255,255,0.09)] bg-nw-950 px-5 z-10">
+    <header className="hidden md:flex h-[60px] min-h-[60px] flex-shrink-0 items-center border-b border-[rgba(255,255,255,0.1)] bg-nw-950 z-10" style={{ paddingLeft: 24, paddingRight: 24 }}>
 
       {/* ── LEFT: Page title ── */}
-      <div className="flex items-center gap-3 min-w-0 flex-shrink-0" style={{ paddingLeft: 10 }}>
+      <div className="flex items-center gap-3 min-w-0 flex-shrink-0">
         {segments.length > 0 && (
-          <div className="flex items-center gap-[6px] text-nw-500" style={{ fontSize: 12 }}>
+          <div className="flex items-center gap-[6px] text-nw-400" style={{ fontSize: 12.5 }}>
             {segments.map((seg, i) => (
               <span key={i} className="flex items-center gap-[6px] whitespace-nowrap">{seg} <Chevron /></span>
             ))}
           </div>
         )}
-        <span className="font-bold text-nw-100 whitespace-nowrap" style={{ fontSize: 16 }}>{pageLabel}</span>
+        <span className="font-semibold text-white whitespace-nowrap" style={{ fontSize: 17, letterSpacing: '-0.01em' }}>{pageLabel}</span>
       </div>
 
       {/* ── CENTRE: Search bar ── */}
@@ -273,7 +273,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
         {/* Refresh */}
         <button
           onClick={handleRefresh}
-          className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] text-nw-400 transition-all hover:bg-[rgba(255,255,255,0.06)] hover:text-nw-200"
+          className="flex h-[36px] w-[36px] items-center justify-center rounded-[10px] text-nw-400 transition-all hover:bg-[rgba(255,255,255,0.06)] hover:text-nw-200"
           title="Refresh"
           aria-label="Refresh page"
         >
@@ -287,7 +287,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
         <div ref={bellRef} className="relative">
           <button
             onClick={() => setBellOpen(v => !v)}
-            className={`flex h-[34px] w-[34px] items-center justify-center rounded-[9px] transition-all ${
+            className={`flex h-[36px] w-[36px] items-center justify-center rounded-[10px] transition-all ${
               bellOpen
                 ? 'bg-[rgba(212,160,23,0.12)] text-gold-300'
                 : 'text-nw-400 hover:bg-[rgba(255,255,255,0.06)] hover:text-nw-200'
