@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import type { DashboardData, DashboardTask } from '@/components/widgets/DashboardWidgetGrid'
+import type { SystemStatus } from '@/app/api/system-status/route'
 import { MiniCalendar } from './MiniCalendar'
 import { WebsiteVisitorsChart } from './MemberGrowthChart'
 import { Responsive, WidthProvider } from 'react-grid-layout'
@@ -157,6 +158,12 @@ export function OverviewContent({ data, formattedDate }: Props) {
       setTasks(prev => [task, ...prev])
     }
   }
+
+  // ── System status (live integration checks) ────────────────────────────────
+  const [sysStatus, setSysStatus] = useState<SystemStatus | null>(null)
+  useEffect(() => {
+    fetch('/api/system-status').then(r => r.ok ? r.json() : null).then(setSysStatus).catch(() => {})
+  }, [])
 
   // ── Checklist state (localStorage-backed) ──────────────────────────────────
   const [checklistEditing, setChecklistEditing] = useState(false)
@@ -462,29 +469,47 @@ export function OverviewContent({ data, formattedDate }: Props) {
           </WidgetWrapper>
         )
 
-      case 'system-status':
+      case 'system-status': {
+        const rows: { name: string; connected: boolean; detail?: string }[] = sysStatus ? [
+          { name: 'Gmail',     connected: sysStatus.gmail.connected,     detail: sysStatus.gmail.email },
+          { name: 'Outlook',   connected: sysStatus.outlook.connected,   detail: sysStatus.outlook.email },
+          { name: 'Xero',      connected: sysStatus.xero.connected },
+          { name: 'Mailchimp', connected: sysStatus.mailchimp.connected },
+          { name: 'Stripe',    connected: sysStatus.stripe.connected },
+          { name: 'Facebook',  connected: sysStatus.facebook.connected,  detail: sysStatus.facebook.name },
+          { name: 'Instagram', connected: sysStatus.instagram.connected, detail: sysStatus.instagram.name },
+          { name: 'LinkedIn',  connected: sysStatus.linkedin.connected,  detail: sysStatus.linkedin.name },
+        ] : []
         return (
           <WidgetWrapper id={id} isCustomising={isCustomising} onRemove={removeWidget}>
-            <div className="flex h-full flex-col gap-3 rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750" style={{ padding: 18 }}>
+            <div className="flex h-full flex-col gap-3 rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 overflow-y-auto" style={{ padding: 18 }}>
               <span className="text-[10px] font-bold uppercase tracking-[1.6px] text-nw-400">System Status</span>
-              <div className="flex flex-col gap-2">
-                {[
-                  { name: 'Supabase',      status: 'Operational', color: '#22c55e' },
-                  { name: 'Vercel Deploy', status: 'Live',        color: '#22c55e' },
-                  { name: 'Resend Email',  status: 'Pending',     color: '#f59e0b' },
-                ].map(row => (
-                  <div key={row.name} className="flex items-center justify-between text-xs">
-                    <span className="text-nw-400">{row.name}</span>
-                    <span className="flex items-center gap-1.5 font-medium" style={{ color: row.color }}>
-                      <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ background: row.color }} />
-                      {row.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              {!sysStatus ? (
+                <div className="flex flex-col gap-2">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <div className="h-3 w-16 rounded bg-white/5 animate-pulse" />
+                      <div className="h-3 w-14 rounded bg-white/5 animate-pulse" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-1.5">
+                  {rows.map(row => (
+                    <div key={row.name} className="flex items-center justify-between text-xs" title={row.detail || undefined}>
+                      <span className="text-nw-400">{row.name}</span>
+                      <span className="flex items-center gap-1.5 font-medium" style={{ color: row.connected ? '#22c55e' : '#ef4444' }}>
+                        <span className="h-1.5 w-1.5 rounded-full flex-shrink-0" style={{ background: row.connected ? '#22c55e' : '#ef4444' }} />
+                        {row.connected ? 'Connected' : 'Not connected'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </WidgetWrapper>
         )
+      }
 
       case 'calendar':
         return (
