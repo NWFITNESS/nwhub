@@ -136,7 +136,6 @@ function buildNav(unreadCount: number): NavSection[] {
           { label: 'KPIs', href: '/members/kpis' },
           { label: 'Calendar', href: '/calendar' },
         ]},
-        { key: 'todo', label: 'To-Do', icon: I.todo, href: '/todo', permKey: 'inbox' },
         { key: 'financials', label: 'Financials', icon: I.financials, href: '/financials', permKey: 'financials' },
         { key: 'invoices', label: 'Invoice Vault', icon: I.invoices, href: '/invoices', permKey: 'invoices' },
         { key: 'seo', label: 'SEO Engine', icon: I.seo, href: '/seo', permKey: 'seo' },
