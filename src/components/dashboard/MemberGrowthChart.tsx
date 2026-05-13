@@ -26,33 +26,45 @@ interface Props {
 }
 
 // Placeholder data — never show an empty chart (SKILL.md §5)
-const PH_24H: ChartDataPoint[] = Array.from({ length: 24 }, (_, i) => ({
-  label: `${String(i).padStart(2, '0')}:00`,
-  value: Math.round(2 + Math.random() * 6),
-}))
+function buildPlaceholders() {
+  const now = new Date()
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-const PH_7D: ChartDataPoint[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d, i) => ({
-  label: d,
-  value: 12 + i * 4 + Math.round(Math.random() * 8),
-}))
+  const ph24h: ChartDataPoint[] = Array.from({ length: 24 }, (_, idx) => {
+    const h = new Date(now.getTime() - (23 - idx) * 3600000)
+    const hour = h.getHours()
+    const ampm = hour < 12 ? 'am' : 'pm'
+    const h12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
+    const label = hour === 0 ? `${h.getDate()}/${h.getMonth() + 1}` : `${h12}${ampm}`
+    return { label, value: Math.round(2 + Math.random() * 6) }
+  })
 
-const PH_30D: ChartDataPoint[] = Array.from({ length: 30 }, (_, i) => ({
-  label: String(i + 1),
-  value: 8 + Math.round(Math.random() * 15),
-}))
+  const ph7d: ChartDataPoint[] = Array.from({ length: 7 }, (_, idx) => {
+    const d = new Date(now.getTime() - (6 - idx) * 86400000)
+    const label = idx === 6 ? 'Today' : `${dayNames[d.getDay()]} ${d.getDate()}`
+    return { label, value: 12 + idx * 4 + Math.round(Math.random() * 8) }
+  })
 
-const PH_1Y: ChartDataPoint[] = [
-  { label: 'Apr', value: 120 }, { label: 'May', value: 185 },
-  { label: 'Jun', value: 210 }, { label: 'Jul', value: 245 },
-  { label: 'Aug', value: 310 }, { label: 'Sep', value: 370 },
-  { label: 'Oct', value: 425 }, { label: 'Nov', value: 480 },
-  { label: 'Dec', value: 560 }, { label: 'Jan', value: 620 },
-  { label: 'Feb', value: 710 }, { label: 'Mar', value: 830 },
-]
+  const ph30d: ChartDataPoint[] = Array.from({ length: 30 }, (_, idx) => {
+    const d = new Date(now.getTime() - (29 - idx) * 86400000)
+    const label = idx === 29 ? 'Today' : `${d.getDate()} ${monthNames[d.getMonth()]}`
+    return { label, value: 8 + Math.round(Math.random() * 15) }
+  })
 
-const PLACEHOLDERS: Record<Range, ChartDataPoint[]> = {
-  '24H': PH_24H, '7D': PH_7D, '30D': PH_30D, '1Y': PH_1Y,
+  const ph1y: ChartDataPoint[] = Array.from({ length: 12 }, (_, idx) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (11 - idx), 1)
+    const mName = monthNames[d.getMonth()]
+    const label = idx === 11 ? `${mName} (now)` : `${mName} ${String(d.getFullYear()).slice(2)}`
+    return { label, value: 100 + idx * 70 + Math.round(Math.random() * 40) }
+  })
+
+  return { '24H': ph24h, '7D': ph7d, '30D': ph30d, '1Y': ph1y }
 }
+
+const PH = buildPlaceholders()
+
+const PLACEHOLDERS = PH
 
 const RANGE_LABELS: Record<Range, string> = {
   '24H': 'Today', '7D': 'This Week', '30D': 'This Month', '1Y': 'This Year',

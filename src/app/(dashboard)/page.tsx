@@ -14,7 +14,11 @@ function buildHourlyVisitors(rows: Array<{ created_at: string }>): ChartDataPoin
   const buckets: ChartDataPoint[] = []
   for (let i = 23; i >= 0; i--) {
     const h = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() - i)
-    buckets.push({ label: `${String(h.getHours()).padStart(2, '0')}:00`, value: 0 })
+    const hour = h.getHours()
+    const ampm = hour < 12 ? 'am' : 'pm'
+    const h12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
+    const label = hour === 0 ? `${h.getDate()}/${h.getMonth() + 1}` : `${h12}${ampm}`
+    buckets.push({ label, value: 0 })
   }
   const cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000)
   for (const row of rows) {
@@ -31,11 +35,12 @@ function buildDailyVisitors(rows: Array<{ created_at: string }>, days: number): 
   const now = new Date()
   const buckets: ChartDataPoint[] = []
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i)
     const label = days <= 7
-      ? dayNames[d.getDay()]
-      : `${d.getDate()}/${d.getMonth() + 1}`
+      ? (i === 0 ? 'Today' : `${dayNames[d.getDay()]} ${d.getDate()}`)
+      : (i === 0 ? 'Today' : `${d.getDate()} ${monthNames[d.getMonth()]}`)
     buckets.push({ label, value: 0 })
   }
   const cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (days - 1))
@@ -54,7 +59,9 @@ function buildMonthlyVisitors(rows: Array<{ created_at: string }>, months: numbe
   const buckets: ChartDataPoint[] = []
   for (let i = months - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    buckets.push({ label: d.toLocaleString('en-GB', { month: 'short' }), value: 0 })
+    const mName = d.toLocaleString('en-GB', { month: 'short' })
+    const label = i === 0 ? `${mName} (now)` : `${mName} ${String(d.getFullYear()).slice(2)}`
+    buckets.push({ label, value: 0 })
   }
   const cutoff = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1)
   for (const row of rows) {

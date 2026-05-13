@@ -94,7 +94,14 @@ export async function GET() {
     const dateStr = h.toISOString().split('T')[0].replace(/-/g, '')
     const hourStr = String(h.getHours()).padStart(2, '0')
     const key = `${dateStr}-${hourStr}`
-    data24h.push({ label: `${hourStr}:00`, value: hourMap.get(key) || 0 })
+    // Show "9am", "2pm" style — and append date for midnight to orient
+    const hour = h.getHours()
+    const ampm = hour < 12 ? 'am' : 'pm'
+    const h12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour
+    const label = hour === 0
+      ? `${h.getDate()}/${h.getMonth() + 1}`
+      : `${h12}${ampm}`
+    data24h.push({ label, value: hourMap.get(key) || 0 })
   }
 
   // ── Build 7d chart ──────────────────────────────────────────────────────────
@@ -109,15 +116,18 @@ export async function GET() {
   for (let i = 6; i >= 0; i--) {
     const d = new Date(now.getTime() - i * 86400000)
     const key = d.toISOString().split('T')[0].replace(/-/g, '')
-    data7d.push({ label: dayNames[d.getDay()], value: dayMap.get(key) || 0 })
+    const label = i === 0 ? 'Today' : `${dayNames[d.getDay()]} ${d.getDate()}`
+    data7d.push({ label, value: dayMap.get(key) || 0 })
   }
 
   // ── Build 30d chart ─────────────────────────────────────────────────────────
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   const data30d: ChartDataPoint[] = []
   for (let i = 29; i >= 0; i--) {
     const d = new Date(now.getTime() - i * 86400000)
     const key = d.toISOString().split('T')[0].replace(/-/g, '')
-    data30d.push({ label: `${d.getDate()}/${d.getMonth() + 1}`, value: dayMap.get(key) || 0 })
+    const label = i === 0 ? 'Today' : `${d.getDate()} ${monthNames[d.getMonth()]}`
+    data30d.push({ label, value: dayMap.get(key) || 0 })
   }
 
   // ── Build 1y chart (monthly buckets) ────────────────────────────────────────
@@ -132,7 +142,9 @@ export async function GET() {
   for (let i = 11; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
     const key = `${d.getFullYear()}-${d.getMonth()}`
-    data1y.push({ label: d.toLocaleString('en-GB', { month: 'short' }), value: monthMap.get(key) || 0 })
+    const mName = d.toLocaleString('en-GB', { month: 'short' })
+    const label = i === 0 ? `${mName} (now)` : `${mName} ${String(d.getFullYear()).slice(2)}`
+    data1y.push({ label, value: monthMap.get(key) || 0 })
   }
 
   const result: VisitorData = { data24h, data7d, data30d, data1y }
