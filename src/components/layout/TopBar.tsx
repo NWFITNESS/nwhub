@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import {
-  Search, X, Bell, Sun, Moon, RotateCw,
+  Search, X, Bell, RotateCw,
   Users, Mail, PenSquare, Baby, Image, AtSign,
   MessageSquare, Send, Tag, Phone,
   ChevronRight, Inbox, FileText, Clock, Zap,
@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useTheme as useThemeHook } from '@/hooks/useTheme'
+import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler'
 import { createClient } from '@/lib/supabase/client'
 import type { StaffProfile } from '@/lib/staff'
 import { ROLE_LABELS } from '@/lib/staff'
@@ -88,10 +88,6 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
   const [searchVisible, setSearchVisible] = useState(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const inputRef   = useRef<HTMLInputElement>(null)
-
-  // Theme — single source of truth via zustand
-  const { theme: currentTheme, toggle: toggleTheme } = useThemeHook()
-  const lightMode = currentTheme === 'light'
 
   // Refresh
   const [refreshing, setRefreshing] = useState(false)
@@ -285,14 +281,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
         </button>
 
         {/* Theme toggle */}
-        <button
-          onClick={toggleTheme}
-          className="flex h-[34px] w-[34px] items-center justify-center rounded-[9px] text-nw-400 transition-all hover:bg-[rgba(212,160,23,0.08)] hover:text-gold-400"
-          title={lightMode ? 'Switch to dark mode' : 'Switch to light mode'}
-          aria-label={lightMode ? 'Switch to dark mode' : 'Switch to light mode'}
-        >
-          {lightMode ? <Moon size={16} strokeWidth={1.7} /> : <Sun size={16} strokeWidth={1.7} />}
-        </button>
+        <AnimatedThemeToggler size={16} />
 
         {/* Notification bell */}
         <div ref={bellRef} className="relative">
