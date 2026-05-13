@@ -29,7 +29,7 @@ export default async function ContentPage() {
   const supabase = await createClient()
   const admin = createAdminClient()
 
-  const [{ data: rows }, { data: seoPages }] = await Promise.all([
+  const [{ data: rows }, { data: seoPages }, { data: constructionRow }, { data: draftRows }] = await Promise.all([
     supabase
       .from('page_content')
       .select('page_slug, updated_at')
@@ -39,7 +39,24 @@ export default async function ContentPage() {
       .select('url_path, title, status, template_id, updated_at, seo_templates(name)')
       .eq('status', 'live')
       .order('url_path'),
+    admin
+      .from('global_settings')
+      .select('value')
+      .eq('key', 'page_construction')
+      .single(),
+    supabase
+      .from('page_content')
+      .select('page_slug')
+      .not('draft_content', 'is', null),
   ])
+
+  const constructionMap: Record<string, boolean> = (constructionRow?.value as Record<string, boolean>) ?? {}
+
+  // Count drafts per page
+  const draftCounts: Record<string, number> = {}
+  for (const row of (draftRows ?? [])) {
+    draftCounts[row.page_slug] = (draftCounts[row.page_slug] ?? 0) + 1
+  }
 
   const lastUpdated = rows?.reduce<Record<string, string>>((acc, row) => {
     if (!acc[row.page_slug] || row.updated_at > acc[row.page_slug]) {
@@ -93,6 +110,8 @@ export default async function ContentPage() {
           slug,
           label,
           updated: lastUpdated?.[slug],
+          status: constructionMap[slug] ? 'unpublished' as const : (draftCounts[slug] ? 'draft' as const : 'published' as const),
+          draftCount: draftCounts[slug] ?? 0,
         }))}
         subPageGroups={subPageGroups}
       />

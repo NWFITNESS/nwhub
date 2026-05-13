@@ -7,7 +7,9 @@ import {
   Home, Dumbbell, Flame, Baby, CreditCard, Building2,
   Rocket, Users, Phone, CalendarDays, ScrollText, Globe,
   Edit3, Eye, Clock, CheckCircle2, Circle, Search,
-  LucideIcon,
+  Trophy, Sparkles, PenLine, Stethoscope, UserRound,
+  Settings2, Construction,
+  type LucideIcon,
 } from 'lucide-react'
 import { SearchInput } from '@/components/ui/SearchInput'
 
@@ -15,7 +17,8 @@ export interface ContentPage {
   slug: string
   label: string
   updated?: string
-  status?: 'published' | 'draft'
+  status?: 'published' | 'draft' | 'unpublished'
+  draftCount?: number
 }
 
 interface SubPageGroup {
@@ -25,18 +28,23 @@ interface SubPageGroup {
 }
 
 const PAGE_META: Record<string, { icon: LucideIcon; color: string; bg: string; glow: string }> = {
-  home: { icon: Home, color: 'text-[#C9A70A]', bg: 'bg-[#967705]/20', glow: 'rgba(150,119,5,0.4)' },
-  training: { icon: Dumbbell, color: 'text-blue-400', bg: 'bg-blue-500/15', glow: 'rgba(59,130,246,0.35)' },
-  hyrox: { icon: Flame, color: 'text-orange-400', bg: 'bg-orange-500/15', glow: 'rgba(249,115,22,0.35)' },
-  'kids-teens': { icon: Baby, color: 'text-pink-400', bg: 'bg-pink-500/15', glow: 'rgba(236,72,153,0.35)' },
-  membership: { icon: CreditCard, color: 'text-emerald-400', bg: 'bg-emerald-500/15', glow: 'rgba(52,211,153,0.35)' },
-  'our-facilities': { icon: Building2, color: 'text-violet-400', bg: 'bg-violet-500/15', glow: 'rgba(167,139,250,0.35)' },
-  'start-here': { icon: Rocket, color: 'text-[#C9A70A]', bg: 'bg-[#967705]/20', glow: 'rgba(150,119,5,0.4)' },
-  team: { icon: Users, color: 'text-sky-400', bg: 'bg-sky-500/15', glow: 'rgba(56,189,248,0.35)' },
-  contact: { icon: Phone, color: 'text-green-400', bg: 'bg-green-500/15', glow: 'rgba(74,222,128,0.35)' },
-  timetable: { icon: CalendarDays, color: 'text-[#C9A70A]', bg: 'bg-[#967705]/20', glow: 'rgba(150,119,5,0.4)' },
-  'membership-terms': { icon: ScrollText, color: 'text-slate-400', bg: 'bg-slate-500/15', glow: 'rgba(148,163,184,0.3)' },
-  global: { icon: Globe, color: 'text-teal-400', bg: 'bg-teal-500/15', glow: 'rgba(45,212,191,0.35)' },
+  home:                { icon: Home,         color: 'text-[#C9A70A]',  bg: 'bg-[#967705]/20',    glow: 'rgba(150,119,5,0.4)'   },
+  training:            { icon: Dumbbell,     color: 'text-blue-400',   bg: 'bg-blue-500/15',     glow: 'rgba(59,130,246,0.35)' },
+  hyrox:               { icon: Flame,        color: 'text-orange-400', bg: 'bg-orange-500/15',   glow: 'rgba(249,115,22,0.35)' },
+  'kids-teens':        { icon: Baby,         color: 'text-pink-400',   bg: 'bg-pink-500/15',     glow: 'rgba(236,72,153,0.35)' },
+  membership:          { icon: CreditCard,   color: 'text-emerald-400',bg: 'bg-emerald-500/15',  glow: 'rgba(52,211,153,0.35)' },
+  'our-facilities':    { icon: Building2,    color: 'text-violet-400', bg: 'bg-violet-500/15',   glow: 'rgba(167,139,250,0.35)'},
+  'start-here':        { icon: Rocket,       color: 'text-[#C9A70A]',  bg: 'bg-[#967705]/20',    glow: 'rgba(150,119,5,0.4)'   },
+  team:                { icon: Users,        color: 'text-sky-400',    bg: 'bg-sky-500/15',      glow: 'rgba(56,189,248,0.35)' },
+  'why-us':            { icon: Sparkles,     color: 'text-amber-400',  bg: 'bg-amber-500/15',    glow: 'rgba(245,158,11,0.35)' },
+  results:             { icon: Trophy,       color: 'text-yellow-400', bg: 'bg-yellow-500/15',   glow: 'rgba(234,179,8,0.35)'  },
+  contact:             { icon: Phone,        color: 'text-green-400',  bg: 'bg-green-500/15',    glow: 'rgba(74,222,128,0.35)' },
+  'personal-training': { icon: UserRound,    color: 'text-rose-400',   bg: 'bg-rose-500/15',     glow: 'rgba(251,113,133,0.35)'},
+  physio:              { icon: Stethoscope,  color: 'text-cyan-400',   bg: 'bg-cyan-500/15',     glow: 'rgba(34,211,238,0.35)' },
+  timetable:           { icon: CalendarDays, color: 'text-indigo-400', bg: 'bg-indigo-500/15',   glow: 'rgba(129,140,248,0.35)'},
+  blog:                { icon: PenLine,      color: 'text-fuchsia-400',bg: 'bg-fuchsia-500/15',  glow: 'rgba(232,121,249,0.35)'},
+  'membership-terms':  { icon: ScrollText,   color: 'text-slate-400',  bg: 'bg-slate-500/15',    glow: 'rgba(148,163,184,0.3)' },
+  global:              { icon: Settings2,    color: 'text-teal-400',   bg: 'bg-teal-500/15',     glow: 'rgba(45,212,191,0.35)' },
 }
 
 const FALLBACK = { icon: Globe, color: 'text-white/40', bg: 'bg-white/[0.06]', glow: 'rgba(255,255,255,0.1)' }
@@ -65,7 +73,7 @@ const cardVariants: Variants = {
 export function ContentGrid({ pages, subPageGroups = [] }: { pages: ContentPage[]; subPageGroups?: SubPageGroup[] }) {
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null)
   const [search, setSearch] = useState('')
-  const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all')
+  const [filter, setFilter] = useState<'all' | 'published' | 'draft' | 'unpublished'>('all')
 
   const allPages = pages.map(p => ({ ...p, status: p.status ?? 'published' as const }))
 
@@ -79,6 +87,7 @@ export function ContentGrid({ pages, subPageGroups = [] }: { pages: ContentPage[
 
   const published = allPages.filter(p => p.status === 'published').length
   const drafts = allPages.filter(p => p.status === 'draft').length
+  const unpublished = allPages.filter(p => p.status === 'unpublished').length
 
   const latestUpdate = allPages
     .filter(p => p.updated)
@@ -86,8 +95,9 @@ export function ContentGrid({ pages, subPageGroups = [] }: { pages: ContentPage[
 
   const FILTERS = [
     { key: 'all' as const, label: 'All' },
-    { key: 'published' as const, label: 'Published' },
+    { key: 'published' as const, label: 'Live' },
     { key: 'draft' as const, label: 'Drafts' },
+    { key: 'unpublished' as const, label: 'Unpublished' },
   ]
 
   return (
@@ -134,6 +144,15 @@ export function ContentGrid({ pages, subPageGroups = [] }: { pages: ContentPage[
           <div className="text-[10px] uppercase text-nw-500 tracking-[1px]">Drafts</div>
           <div className="text-[13px] font-medium text-nw-200">{drafts}</div>
         </div>
+        {unpublished > 0 && (
+          <>
+            <span className="text-nw-600">·</span>
+            <div>
+              <div className="text-[10px] uppercase text-red-400/70 tracking-[1px]">Unpublished</div>
+              <div className="text-[13px] font-medium text-red-400">{unpublished}</div>
+            </div>
+          </>
+        )}
         {latestUpdate && (
           <>
             <span className="text-nw-600">·</span>
@@ -155,7 +174,7 @@ export function ContentGrid({ pages, subPageGroups = [] }: { pages: ContentPage[
             initial="hidden"
             animate="visible"
           >
-            {filtered.map(({ slug, label, updated, status }) => {
+            {filtered.map(({ slug, label, updated, status, draftCount }) => {
               const meta = PAGE_META[slug] ?? FALLBACK
               const Icon = meta.icon
               const isDraft = status === 'draft'
@@ -165,7 +184,11 @@ export function ContentGrid({ pages, subPageGroups = [] }: { pages: ContentPage[
                   key={slug}
                   variants={cardVariants}
                   whileHover={{ y: -4, transition: { duration: 0.2, ease: 'easeOut' } }}
-                  className="relative overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 transition-[background,border-color] duration-200 group hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700"
+                  className={`relative overflow-hidden rounded-2xl border bg-nw-750 transition-[background,border-color,opacity] duration-200 group hover:bg-nw-700 ${
+                    status === 'unpublished'
+                      ? 'border-red-500/15 opacity-70 hover:opacity-100 hover:border-red-500/25'
+                      : 'border-[rgba(255,255,255,0.11)] hover:border-[rgba(212,160,23,0.22)]'
+                  }`}
                 >
 
                   <div className="relative z-10 flex flex-col gap-4" style={{ padding: 20 }}>
@@ -177,7 +200,12 @@ export function ContentGrid({ pages, subPageGroups = [] }: { pages: ContentPage[
                       >
                         <Icon size={22} strokeWidth={1.75} />
                       </div>
-                      {isDraft ? (
+                      {status === 'unpublished' ? (
+                        <span className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
+                          <Construction size={10} />
+                          Unpublished
+                        </span>
+                      ) : isDraft ? (
                         <span className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
                           <Circle size={8} className="fill-amber-400" />
                           Draft
@@ -185,7 +213,7 @@ export function ContentGrid({ pages, subPageGroups = [] }: { pages: ContentPage[
                       ) : (
                         <span className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-green-500/10 text-green-400 border border-green-500/20">
                           <CheckCircle2 size={10} />
-                          Published
+                          Live
                         </span>
                       )}
                     </div>
@@ -195,10 +223,17 @@ export function ContentGrid({ pages, subPageGroups = [] }: { pages: ContentPage[
                       <p className="text-[13px] font-medium text-nw-200 group-hover:text-white transition-colors leading-tight">
                         {label}
                       </p>
-                      <p className="text-xs font-medium text-nw-400 mt-1 flex items-center gap-1">
-                        <Clock size={10} />
-                        {updated ? `Updated ${timeAgo(updated)} ago` : 'Not yet seeded'}
-                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-xs font-medium text-nw-400 flex items-center gap-1">
+                          <Clock size={10} />
+                          {updated ? timeAgo(updated) : 'Not yet seeded'}
+                        </p>
+                        {draftCount && draftCount > 0 && status !== 'unpublished' && (
+                          <span className="text-[10px] font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-md" style={{ padding: '1px 6px' }}>
+                            {draftCount} draft{draftCount > 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Action buttons */}
