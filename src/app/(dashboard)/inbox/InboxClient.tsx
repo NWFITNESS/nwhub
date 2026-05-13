@@ -42,10 +42,9 @@ interface Props {
   initialEmails: Email[]
   initialTasks: Task[]
   gmailConnected: boolean
-  outlookConnected: boolean
 }
 
-export function InboxClient({ initialEmails, initialTasks, gmailConnected, outlookConnected }: Props) {
+export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Props) {
   const [emails, setEmails] = useState<Email[]>(initialEmails)
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [processing, setProcessing] = useState(false)
@@ -185,33 +184,20 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected, outlo
                   {gmailConnected ? 'Gmail' : 'Gmail off'}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-nw-800 border border-[rgba(255,255,255,0.07)]">
-                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${outlookConnected ? 'bg-blue-400 animate-pulse' : 'bg-nw-600'}`} />
-                <span className="text-xs font-medium text-nw-400 whitespace-nowrap">
-                  {outlookConnected ? 'Outlook' : 'Outlook off'}
-                </span>
-              </div>
             </div>
 
-            <div className="flex items-center gap-1.5">
-              <a href="/api/gmail/connect">
-                <Button variant={gmailConnected ? 'ghost' : 'secondary'} size="sm">
-                  {gmailConnected ? 'Reconnect Gmail' : 'Connect Gmail'}
-                </Button>
-              </a>
-              <a href="/api/outlook/connect">
-                <Button variant={outlookConnected ? 'ghost' : 'secondary'} size="sm">
-                  {outlookConnected ? 'Reconnect Outlook' : 'Connect Outlook'}
-                </Button>
-              </a>
-            </div>
+            <a href="/api/gmail/connect">
+              <Button variant={gmailConnected ? 'ghost' : 'secondary'} size="sm">
+                {gmailConnected ? 'Reconnect Gmail' : 'Connect Gmail'}
+              </Button>
+            </a>
 
             <Button
               variant="secondary"
               size="sm"
               onClick={handleProcess}
               loading={processing}
-              disabled={!gmailConnected && !outlookConnected}
+              disabled={!gmailConnected}
             >
               <RefreshCw size={13} />
               Process New

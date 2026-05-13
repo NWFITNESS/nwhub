@@ -472,7 +472,6 @@ export function OverviewContent({ data, formattedDate }: Props) {
       case 'system-status': {
         const rows: { name: string; connected: boolean; detail?: string }[] = sysStatus ? [
           { name: 'Gmail',     connected: sysStatus.gmail.connected,     detail: sysStatus.gmail.email },
-          { name: 'Outlook',   connected: sysStatus.outlook.connected,   detail: sysStatus.outlook.email },
           { name: 'Xero',      connected: sysStatus.xero.connected },
           { name: 'Mailchimp', connected: sysStatus.mailchimp.connected },
           { name: 'Stripe',    connected: sysStatus.stripe.connected },
