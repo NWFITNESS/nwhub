@@ -95,6 +95,7 @@ const I = {
   kids: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="6" r="3"/><path d="M4 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M5 3c0-1 .5-2 3-2s3 1 3 2" strokeLinecap="round"/></svg>,
   todo: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="1" width="14" height="14" rx="2"/><path d="M4 5l2 2 3-3" strokeLinecap="round" strokeLinejoin="round"/><path d="M4 10h8M4 13h5" strokeLinecap="round"/></svg>,
   popup: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M6 1v2M10 1v2" strokeLinecap="round"/><path d="M5 8h6M5 10.5h4" strokeLinecap="round"/></svg>,
+  changelog: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="2" y="1" width="12" height="14" rx="2"/><path d="M5 5h6M5 8h4M5 11h5" strokeLinecap="round"/></svg>,
   chevron: <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M3 2l3.5 3L3 8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   signout: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M10 8H2M6 4l-4 4 4 4" strokeLinecap="round" strokeLinejoin="round"/><path d="M6 2h7a1 1 0 011 1v10a1 1 0 01-1 1H6" strokeLinecap="round"/></svg>,
   close: <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M3 3l10 10M13 3L3 13" strokeLinecap="round"/></svg>,
@@ -185,6 +186,7 @@ function buildNav(unreadCount: number): NavSection[] {
     {
       label: 'SYSTEM',
       items: [
+        { key: 'changelog', label: 'System Log', icon: I.changelog, href: '/changelog', permKey: 'settings' },
         { key: 'staff', label: 'Staff', icon: I.staff, href: '/staff', permKey: 'staff_management' },
         { key: 'integrations', label: 'Integrations', icon: I.integrations, href: '/sync', permKey: 'integrations' },
         { key: 'settings', label: 'Settings', icon: I.settings, href: '/settings', permKey: 'settings' },
