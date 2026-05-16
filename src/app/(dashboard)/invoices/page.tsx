@@ -251,10 +251,15 @@ export default function InvoiceVaultPage() {
     setPreviewLoading(true)
     try {
       if (source === 'email' && storagePath) {
-        const res = await fetch(`/api/invoices/vault/pdf?path=${encodeURIComponent(storagePath)}`)
-        if (res.ok) {
-          const { url } = await res.json()
-          setPreviewUrl(url)
+        if (storagePath.endsWith('.html')) {
+          // HTML invoices are served directly by our API — use the route as iframe src
+          setPreviewUrl(`/api/invoices/vault/pdf?path=${encodeURIComponent(storagePath)}`)
+        } else {
+          const res = await fetch(`/api/invoices/vault/pdf?path=${encodeURIComponent(storagePath)}`)
+          if (res.ok) {
+            const { url } = await res.json()
+            setPreviewUrl(url)
+          }
         }
       } else {
         // Xero PDF — fetch as blob and create object URL

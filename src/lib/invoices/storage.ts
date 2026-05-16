@@ -51,3 +51,19 @@ export async function getInvoicePdfUrl(storagePath: string): Promise<string | nu
   }
   return data.signedUrl
 }
+
+/**
+ * Download file content directly from storage (used for HTML invoice preview).
+ */
+export async function getInvoiceFileContent(storagePath: string): Promise<string | null> {
+  const supabase = createAdminClient()
+  const { data, error } = await supabase.storage
+    .from('invoice-pdfs')
+    .download(storagePath)
+
+  if (error || !data) {
+    console.error('[invoice-storage] Download failed:', error?.message)
+    return null
+  }
+  return await data.text()
+}
