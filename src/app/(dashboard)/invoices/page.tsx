@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { DollarSign, RefreshCw, FileText, Download, AlertTriangle, Paperclip, Mail, Link2, X, Eye } from 'lucide-react'
+import { DollarSign, RefreshCw, FileText, Download, AlertTriangle, Paperclip, Mail, Link2, X, Eye, RotateCcw } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -144,6 +144,8 @@ export default function InvoiceVaultPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [monthFilter, setMonthFilter] = useState<string>('all') // 'all' or 'YYYY-MM'
+  const [regenerating, setRegenerating] = useState(false)
+  const [regenerateResult, setRegenerateResult] = useState<string | null>(null)
 
   async function load() {
     setLoading(true)
@@ -209,6 +211,21 @@ export default function InvoiceVaultPage() {
   }
 
   useEffect(() => { load() }, [])
+
+  async function regenerateInvoices() {
+    setRegenerating(true)
+    setRegenerateResult(null)
+    try {
+      const res = await fetch('/api/invoices/vault/regenerate', { method: 'POST' })
+      if (!res.ok) throw new Error('Regeneration failed')
+      const data = await res.json()
+      setRegenerateResult(`${data.updated} invoice(s) regenerated${data.failed ? `, ${data.failed} failed` : ''}`)
+    } catch (err) {
+      setRegenerateResult('Failed to regenerate invoices')
+    } finally {
+      setRegenerating(false)
+    }
+  }
 
   async function openMatchModal(vaultId: string, supplier: string) {
     setMatchModal({ vaultId, supplier })
@@ -326,12 +343,29 @@ export default function InvoiceVaultPage() {
         }
         actions={
           !notConnected && !loading ? (
-            <Button variant="default" size="sm" onClick={load}>
-              <RefreshCw size={13} /> Refresh
-            </Button>
+            <div className="flex items-center gap-2">
+              {emailCount > 0 && (
+                <Button variant="default" size="sm" onClick={regenerateInvoices} disabled={regenerating}>
+                  <RotateCcw size={13} className={regenerating ? 'animate-spin' : ''} />
+                  {regenerating ? 'Regenerating…' : 'Regenerate Invoices'}
+                </Button>
+              )}
+              <Button variant="default" size="sm" onClick={load}>
+                <RefreshCw size={13} /> Refresh
+              </Button>
+            </div>
           ) : undefined
         }
       />
+
+      {regenerateResult && (
+        <div className="flex items-center justify-between rounded-xl border border-[rgba(34,197,94,0.2)] bg-[rgba(34,197,94,0.08)]" style={{ padding: '10px 16px' }}>
+          <p className="text-[13px] text-green-400 font-medium">{regenerateResult}</p>
+          <button onClick={() => setRegenerateResult(null)} className="text-green-400/60 hover:text-green-400">
+            <X size={14} />
+          </button>
+        </div>
+      )}
 
       {notConnected && <NotConnected />}
 
