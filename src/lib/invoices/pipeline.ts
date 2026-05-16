@@ -1,6 +1,6 @@
 import { fetchPdfAttachments } from '@/lib/gmail/attachments'
 import { extractInvoiceMetadata } from '@/lib/invoices/extractor'
-import { extractInvoiceFromEmailBody, wrapEmailAsHtml } from '@/lib/email/invoice-extractor'
+import { extractInvoiceFromEmailBody, generateInvoiceHtml } from '@/lib/email/invoice-extractor'
 import { storeInvoicePdf } from '@/lib/invoices/storage'
 import { findMatchingXeroInvoice } from '@/lib/xero/matcher'
 import { gmailFetch, extractEmailBody } from '@/lib/gmail/client'
@@ -96,9 +96,9 @@ export async function extractInvoiceFromEmail(
         return debug
       }
 
-      // Store the email HTML as a viewable receipt
-      const wrappedHtml = wrapEmailAsHtml(htmlBody, subject, sender, dateStr)
-      const htmlBuffer = Buffer.from(wrappedHtml, 'utf-8')
+      // Generate a professional invoice document from the extracted data
+      const invoiceHtml = generateInvoiceHtml(extracted, subject, sender, dateStr)
+      const htmlBuffer = Buffer.from(invoiceHtml, 'utf-8')
       const filename = `receipt-${subject.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}.html`
       const storagePath = await storeInvoicePdf(htmlBuffer, filename, classificationId)
 

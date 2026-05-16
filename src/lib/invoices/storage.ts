@@ -18,10 +18,12 @@ export async function storeInvoicePdf(
   const sanitised = filename.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 100)
   const path = `invoices/${year}/${month}/${emailId}-${sanitised}`
 
+  const contentType = sanitised.endsWith('.html') ? 'text/html' : 'application/pdf'
+
   const { error } = await supabase.storage
     .from('invoice-pdfs')
     .upload(path, pdfBuffer, {
-      contentType: 'application/pdf',
+      contentType,
       upsert: true,
     })
 
