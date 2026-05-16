@@ -41,10 +41,6 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/api/invoices/vault/pdf",
-        headers: securityHeaders.filter(h => h.key !== "X-Frame-Options"),
-      },
-      {
         source: "/(.*)",
         headers: securityHeaders,
       },

@@ -251,12 +251,14 @@ export default function InvoiceVaultPage() {
     setPreviewLoading(true)
     try {
       if (source === 'email' && storagePath) {
-        if (storagePath.endsWith('.html')) {
-          // HTML invoices are served directly by our API — use the route as iframe src
-          setPreviewUrl(`/api/invoices/vault/pdf?path=${encodeURIComponent(storagePath)}`)
-        } else {
-          const res = await fetch(`/api/invoices/vault/pdf?path=${encodeURIComponent(storagePath)}`)
-          if (res.ok) {
+        // Fetch content and create blob URL to bypass X-Frame-Options
+        const res = await fetch(`/api/invoices/vault/pdf?path=${encodeURIComponent(storagePath)}`)
+        if (res.ok) {
+          if (storagePath.endsWith('.html')) {
+            const html = await res.text()
+            const blob = new Blob([html], { type: 'text/html' })
+            setPreviewUrl(URL.createObjectURL(blob))
+          } else {
             const { url } = await res.json()
             setPreviewUrl(url)
           }
