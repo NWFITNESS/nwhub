@@ -166,7 +166,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
   }, [])
 
   // ── GA4 visitor data (replaces page_views with live Google Analytics) ──────
-  const [ga4Data, setGa4Data] = useState<{ data24h: typeof data.data24h; data7d: typeof data.data7d; data30d: typeof data.data30d; data1y: typeof data.data1y } | null>(null)
+  const [ga4Data, setGa4Data] = useState<{ data24h: typeof data.data24h; data7d: typeof data.data7d; data30d: typeof data.data30d; data1y: typeof data.data1y; comp7d?: typeof data.data7d; comp30d?: typeof data.data30d; comp1y?: typeof data.data1y } | null>(null)
   useEffect(() => {
     fetch('/api/analytics/visitors')
       .then(r => r.ok ? r.json() : null)
@@ -543,7 +543,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
                 )}
               </div>
               <div style={{ flex: 1, minHeight: 0, padding: '8px 0' }}>
-                <WebsiteVisitorsChart data24h={vd.data24h} data7d={vd.data7d} data30d={vd.data30d} data1y={vd.data1y} />
+                <WebsiteVisitorsChart data24h={vd.data24h} data7d={vd.data7d} data30d={vd.data30d} data1y={vd.data1y} comp7d={'comp7d' in vd ? vd.comp7d : undefined} comp30d={'comp30d' in vd ? vd.comp30d : undefined} comp1y={'comp1y' in vd ? vd.comp1y : undefined} />
               </div>
             </div>
           </WidgetWrapper>
