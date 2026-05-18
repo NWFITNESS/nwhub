@@ -43,9 +43,10 @@ function formatDate(yyyymmdd: string): Date {
   return new Date(`${yyyymmdd.slice(0, 4)}-${yyyymmdd.slice(4, 6)}-${yyyymmdd.slice(6, 8)}`)
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   const unauth = await requireAuth()
   if (unauth) return unauth
+  const debug = new URL(req.url).searchParams.get('debug') === '1'
 
   const propertyId = process.env.GA4_PROPERTY_ID
   if (!propertyId) {
@@ -115,6 +116,25 @@ export async function GET() {
       runGa4Report(token, propertyId, toDateStr(prevYearStart), toDateStr(prevYearEnd), [{ name: 'date' }]),
     ])
   } catch { /* comparison data is optional */ }
+
+  if (debug) {
+    return NextResponse.json({
+      queries: {
+        hourly: { start: daysAgo(1), end: today, rows: hourlyRows.length },
+        week: { start: mondayStr, end: today, rows: weekRows.length },
+        month: { start: monthStartStr, end: today, rows: monthRows.length },
+        year: { start: yearStartStr, end: today, rows: yearRows.length },
+      },
+      sampleMonthRows: monthRows.slice(0, 3),
+      sampleMonthKeys: monthRows.slice(0, 3).map(r => r.dimensionValues[0].value),
+      generatedKeys: Array.from({ length: 3 }, (_, i) => {
+        const d = new Date(now.getFullYear(), now.getMonth(), i + 1)
+        return toGaKey(d)
+      }),
+      serverTime: now.toISOString(),
+      propertyId,
+    })
+  }
 
   // Helper to build a date→sessions map from GA rows
   function buildDayMap(rows: typeof hourlyRows) {
