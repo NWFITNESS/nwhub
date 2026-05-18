@@ -97,22 +97,27 @@ export async function GET(req: NextRequest) {
   const prevYearStart = new Date(now.getFullYear() - 1, 0, 1)
   const prevYearEnd = new Date(now.getFullYear() - 1, 11, 31)
 
-  // If debug, just return env/auth info before hitting GA4
+  // If debug, do a raw GA4 fetch and show the full response
   if (debug) {
-    // Quick GA4 test — single small query
-    let testRows: unknown[] = []
-    let testError: string | null = null
-    try {
-      testRows = await runGa4Report(token, propertyId, daysAgo(7), today, [{ name: 'date' }])
-    } catch (e) {
-      testError = e instanceof Error ? e.message : String(e)
-    }
+    const rawRes = await fetch(
+      `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`,
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dateRanges: [{ startDate: daysAgo(7), endDate: today }],
+          dimensions: [{ name: 'date' }],
+          metrics: [{ name: 'sessions' }],
+        }),
+      },
+    )
+    const rawBody = await rawRes.text()
     return NextResponse.json({
       propertyId,
-      hasToken: !!token,
       serverTime: now.toISOString(),
       dateRanges: { mondayStr, monthStartStr, yearStartStr, today },
-      testQuery: { start: daysAgo(7), end: today, rowCount: testRows.length, error: testError, sample: testRows.slice(0, 3) },
+      ga4Status: rawRes.status,
+      ga4Response: rawBody.slice(0, 2000),
     })
   }
 
