@@ -18,6 +18,7 @@ const SECTIONS = [
     label: 'Kids & Teens',
     items: [
       { label: 'Kids & Teens', href: '/kids', iconColor: 'blue' as const },
+      { label: 'Register', href: '/kids/register', iconColor: 'blue' as const },
     ],
   },
   {
@@ -62,6 +63,7 @@ const ICONS: Record<string, React.ReactNode> = {
   'KPIs': <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>,
   'Calendar': <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M2 7h12M5 1v4M11 1v4" strokeLinecap="round"/></svg>,
   'Kids & Teens': <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="6" r="3"/><path d="M4 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M5 3c0-1 .5-2 3-2s3 1 3 2" strokeLinecap="round"/></svg>,
+  'Register': <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M9 1H4a1 1 0 00-1 1v12a1 1 0 001 1h8a1 1 0 001-1V5L9 1z"/><path d="M9 1v4h4"/><path d="M6 9h4M8 7v4" strokeLinecap="round"/></svg>,
   'Website Popup': <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M6 1v2M10 1v2" strokeLinecap="round"/><path d="M5 8h6M5 10.5h4" strokeLinecap="round"/></svg>,
   'All Campaigns': <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M1 5l7 5 7-5"/></svg>,
   'AI Email Creator': <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M8 2l1.5 4.5H14l-3.5 2.5L12 14 8 11l-4 3 1.5-5L2 6.5h4.5z"/></svg>,
