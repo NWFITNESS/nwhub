@@ -99,7 +99,10 @@ export function CampaignSendModal({ open, onClose, html, title, previewText, exi
   async function createDraft(): Promise<string | null> {
     if (campaignId) return campaignId
     setError('')
-    const segEmails = selectedSegments.has('all') ? undefined : selectedEmails.length > 0 ? selectedEmails : undefined
+    // Only send undefined (= full audience) when "All Subscribers" is the ONLY selection.
+    // For any specific segment, always pass the explicit email list.
+    const isAllOnly = selectedSegments.size === 1 && selectedSegments.has('all')
+    const segEmails = isAllOnly ? undefined : selectedEmails
     // Collect tags from selected segments for Mailchimp tag-based targeting
     const segTags: string[] = []
     for (const seg of segments) {

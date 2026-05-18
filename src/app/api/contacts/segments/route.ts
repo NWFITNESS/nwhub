@@ -81,7 +81,7 @@ export async function GET() {
 
   const segments = [
     // Core segments
-    { id: 'all', label: 'All Subscribers', count: allSubs.length, emails: allSubs.map(s => s.email), category: 'core' },
+    { id: 'all', label: 'Everyone in Mailchimp', count: allSubs.length, emails: allSubs.map(s => s.email), category: 'core' },
     { id: 'all_contacts', label: 'All Contacts', count: contactsWithEmail.length, emails: contactsWithEmail.map(c => c.email), category: 'core' },
 
     // Membership segments

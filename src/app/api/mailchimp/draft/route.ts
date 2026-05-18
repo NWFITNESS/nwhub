@@ -41,21 +41,23 @@ export async function POST(req: NextRequest) {
     reply_to: reply_to || from_email || settings.reply_to || settings.from_email || 'info@northernwarrior.co.uk',
   }
 
-  // Build recipients — prefer tag-based segmentation (no condition limit)
-  // over individual email conditions (Mailchimp caps at ~5 conditions)
+  // Build recipients — use tag-based segmentation if tags provided,
+  // otherwise create a temporary Mailchimp static segment for the selected emails.
+  // NEVER fall through to full audience unless explicitly intended.
   const segTags = Array.isArray(segment_tags) ? (segment_tags as string[]).filter(Boolean) : []
   const segmentEmails = Array.isArray(segment_emails)
     ? (segment_emails as string[]).filter(Boolean)
     : []
 
   let recipients: Record<string, unknown>
+
   if (segTags.length > 0) {
-    // Look up Mailchimp tag IDs by name — tags API returns segments with matching names
+    // Look up Mailchimp tag IDs by name
     const tagIds: number[] = []
-    for (const tagName of segTags) {
-      const segRes = await mc(api_key, `/lists/${audience_id}/segments?type=static&count=100`, { method: 'GET' })
-      if (segRes.ok) {
-        const segData = await segRes.json()
+    const segRes = await mc(api_key, `/lists/${audience_id}/segments?type=static&count=100`, { method: 'GET' })
+    if (segRes.ok) {
+      const segData = await segRes.json()
+      for (const tagName of segTags) {
         const match = segData.segments?.find((s: { name: string; id: number }) =>
           s.name.toLowerCase() === tagName.toLowerCase()
         )
@@ -64,7 +66,6 @@ export async function POST(req: NextRequest) {
     }
 
     if (tagIds.length > 0) {
-      // Use Mailchimp static segments (tags) by numeric ID
       recipients = {
         list_id: audience_id,
         segment_opts: {
@@ -78,25 +79,42 @@ export async function POST(req: NextRequest) {
         },
       }
     } else {
-      // Tags not found — send to full audience
-      recipients = { list_id: audience_id }
+      return NextResponse.json({ error: `Mailchimp tags not found: ${segTags.join(', ')}` }, { status: 400 })
     }
-  } else if (segmentEmails.length > 0 && segmentEmails.length <= 5) {
-    // Small email list — use individual email conditions (within Mailchimp limit)
+  } else if (segmentEmails.length > 0) {
+    // Create a temporary static segment with the exact email list.
+    // This is the only reliable way to target an arbitrary list in Mailchimp
+    // (EmailAddress conditions are capped at ~5).
+    const campaignTag = `_campaign_${Date.now()}`
+    const createSegRes = await mc(api_key, `/lists/${audience_id}/segments`, {
+      method: 'POST',
+      body: {
+        name: campaignTag,
+        static_segment: segmentEmails,
+      },
+    })
+
+    if (!createSegRes.ok) {
+      const err = await createSegRes.json().catch(() => ({}))
+      return NextResponse.json({ error: `Failed to create recipient segment: ${err.detail ?? 'unknown error'}` }, { status: 500 })
+    }
+
+    const createdSeg = await createSegRes.json()
     recipients = {
       list_id: audience_id,
       segment_opts: {
-        match: 'any',
-        conditions: segmentEmails.map((email: string) => ({
-          condition_type: 'EmailAddress',
-          field: 'EMAIL',
-          op: 'is',
-          value: email,
-        })),
+        match: 'all',
+        conditions: [{
+          condition_type: 'StaticSegment',
+          field: 'static_segment',
+          op: 'static_is',
+          value: createdSeg.id,
+        }],
       },
     }
   } else {
-    // Full audience
+    // No emails and no tags — send to full Mailchimp audience
+    // (only reached when "All Subscribers" is explicitly selected in the UI)
     recipients = { list_id: audience_id }
   }
 
