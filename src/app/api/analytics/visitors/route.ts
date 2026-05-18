@@ -69,14 +69,16 @@ export async function GET() {
   }
 
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
-  const daysAgo = (n: number) => new Date(now.getTime() - n * 86400000).toISOString().split('T')[0]
-  const toDateStr = (d: Date) => d.toISOString().split('T')[0]
+  // Use local date parts to avoid UTC timezone shift issues
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const toDateStr = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+  const today = toDateStr(now)
+  const daysAgo = (n: number) => toDateStr(new Date(now.getFullYear(), now.getMonth(), now.getDate() - n))
 
   // "This Week" = Monday to today
   const dayOfWeek = now.getDay() // 0=Sun
   const daysSinceMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
-  const monday = new Date(now.getTime() - daysSinceMonday * 86400000)
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysSinceMonday)
   const mondayStr = toDateStr(monday)
 
   // "This Month" = 1st of month to today
@@ -84,34 +86,35 @@ export async function GET() {
   const monthStartStr = toDateStr(monthStart)
 
   // "This Year" = Jan 1st to today
-  const yearStart = new Date(now.getFullYear(), 0, 1)
-  const yearStartStr = toDateStr(yearStart)
+  const yearStartStr = `${now.getFullYear()}-01-01`
 
   // Comparison periods
-  const prevMonday = new Date(monday.getTime() - 7 * 86400000)
-  const prevMondayEnd = new Date(monday.getTime() - 86400000)
+  const prevMonday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() - 7)
+  const prevMondayEnd = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() - 1)
   const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
   const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0) // last day of prev month
   const prevYearStart = new Date(now.getFullYear() - 1, 0, 1)
   const prevYearEnd = new Date(now.getFullYear() - 1, 11, 31)
 
-  // Fetch all ranges in parallel (current + comparison periods)
-  const [hourlyRows, weekRows, monthRows, yearRows, prevWeekRows, prevMonthRows, prevYearRows] = await Promise.all([
-    // 24h — hourly breakdown for today + yesterday
+  // Fetch current data first (essential), then comparisons (nice-to-have)
+  const [hourlyRows, weekRows, monthRows, yearRows] = await Promise.all([
     runGa4Report(token, propertyId, daysAgo(1), today, [{ name: 'dateHour' }]),
-    // This week — Monday to today
     runGa4Report(token, propertyId, mondayStr, today, [{ name: 'date' }]),
-    // This month — 1st to today
     runGa4Report(token, propertyId, monthStartStr, today, [{ name: 'date' }]),
-    // This year — Jan 1 to today (bucket into months)
     runGa4Report(token, propertyId, yearStartStr, today, [{ name: 'date' }]),
-    // Prev week comparison
-    runGa4Report(token, propertyId, toDateStr(prevMonday), toDateStr(prevMondayEnd), [{ name: 'date' }]),
-    // Prev month comparison
-    runGa4Report(token, propertyId, toDateStr(prevMonthStart), toDateStr(prevMonthEnd), [{ name: 'date' }]),
-    // Prev year comparison
-    runGa4Report(token, propertyId, toDateStr(prevYearStart), toDateStr(prevYearEnd), [{ name: 'date' }]),
   ])
+
+  // Comparison data — fetch in parallel but don't block if they fail
+  let prevWeekRows: typeof hourlyRows = []
+  let prevMonthRows: typeof hourlyRows = []
+  let prevYearRows: typeof hourlyRows = []
+  try {
+    ;[prevWeekRows, prevMonthRows, prevYearRows] = await Promise.all([
+      runGa4Report(token, propertyId, toDateStr(prevMonday), toDateStr(prevMondayEnd), [{ name: 'date' }]),
+      runGa4Report(token, propertyId, toDateStr(prevMonthStart), toDateStr(prevMonthEnd), [{ name: 'date' }]),
+      runGa4Report(token, propertyId, toDateStr(prevYearStart), toDateStr(prevYearEnd), [{ name: 'date' }]),
+    ])
+  } catch { /* comparison data is optional */ }
 
   // Helper to build a date→sessions map from GA rows
   function buildDayMap(rows: typeof hourlyRows) {
@@ -125,6 +128,8 @@ export async function GET() {
 
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  // GA4 returns dates as YYYYMMDD — build a matching key from a local Date
+  const toGaKey = (d: Date) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`
 
   // ── Build 24h chart ─────────────────────────────────────────────────────────
   const hourMap = new Map<string, number>()
@@ -138,7 +143,7 @@ export async function GET() {
   const data24h: ChartDataPoint[] = []
   for (let i = 23; i >= 0; i--) {
     const h = new Date(now.getTime() - i * 3600000)
-    const dateStr = h.toISOString().split('T')[0].replace(/-/g, '')
+    const dateStr = toGaKey(h)
     const hourStr = String(h.getHours()).padStart(2, '0')
     const key = `${dateStr}-${hourStr}`
     const hour = h.getHours()
@@ -153,7 +158,7 @@ export async function GET() {
   const data7d: ChartDataPoint[] = []
   for (let i = 0; i <= daysSinceMonday; i++) {
     const d = new Date(monday.getTime() + i * 86400000)
-    const key = d.toISOString().split('T')[0].replace(/-/g, '')
+    const key = toGaKey(d)
     const isToday = i === daysSinceMonday
     const label = isToday ? 'Today' : `${dayNames[d.getDay()]} ${d.getDate()}`
     data7d.push({ label, value: weekDayMap.get(key) || 0 })
@@ -164,7 +169,7 @@ export async function GET() {
   const comp7d: ChartDataPoint[] = []
   for (let i = 0; i < 7; i++) {
     const d = new Date(prevMonday.getTime() + i * 86400000)
-    const key = d.toISOString().split('T')[0].replace(/-/g, '')
+    const key = toGaKey(d)
     const label = `${dayNames[d.getDay()]} ${d.getDate()}`
     comp7d.push({ label, value: prevWeekDayMap.get(key) || 0 })
   }
@@ -175,7 +180,7 @@ export async function GET() {
   const data30d: ChartDataPoint[] = []
   for (let day = 1; day <= now.getDate(); day++) {
     const d = new Date(now.getFullYear(), now.getMonth(), day)
-    const key = d.toISOString().split('T')[0].replace(/-/g, '')
+    const key = toGaKey(d)
     const isToday = day === now.getDate()
     const label = isToday ? 'Today' : `${day} ${monthNames[now.getMonth()]}`
     data30d.push({ label, value: monthDayMap.get(key) || 0 })
@@ -187,7 +192,7 @@ export async function GET() {
   const comp30d: ChartDataPoint[] = []
   for (let day = 1; day <= prevMonthDays; day++) {
     const d = new Date(prevMonthStart.getFullYear(), prevMonthStart.getMonth(), day)
-    const key = d.toISOString().split('T')[0].replace(/-/g, '')
+    const key = toGaKey(d)
     const label = `${day} ${monthNames[prevMonthStart.getMonth()]}`
     comp30d.push({ label, value: prevMonthDayMap.get(key) || 0 })
   }
