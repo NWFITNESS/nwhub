@@ -170,7 +170,13 @@ export function OverviewContent({ data, formattedDate }: Props) {
   useEffect(() => {
     fetch('/api/analytics/visitors')
       .then(r => r.ok ? r.json() : null)
-      .then(setGa4Data)
+      .then(d => {
+        // Only use GA4 data if it has actual non-zero values, otherwise keep the Supabase fallback
+        if (!d) return
+        const hasValues = [d.data24h, d.data7d, d.data30d, d.data1y]
+          .some(arr => arr?.some((p: { value: number }) => p.value > 0))
+        if (hasValues) setGa4Data(d)
+      })
       .catch(() => {})
   }, [])
 

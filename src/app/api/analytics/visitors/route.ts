@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getGoogleAuth } from '@/lib/google-auth'
 import { requireAuth } from '@/lib/auth-guard'
 
@@ -43,10 +43,9 @@ function formatDate(yyyymmdd: string): Date {
   return new Date(`${yyyymmdd.slice(0, 4)}-${yyyymmdd.slice(4, 6)}-${yyyymmdd.slice(6, 8)}`)
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const unauth = await requireAuth()
   if (unauth) return unauth
-  const debug = req.nextUrl.searchParams.get('debug') === '1'
 
   const propertyId = process.env.GA4_PROPERTY_ID
   if (!propertyId) {
@@ -96,30 +95,6 @@ export async function GET(req: NextRequest) {
   const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0) // last day of prev month
   const prevYearStart = new Date(now.getFullYear() - 1, 0, 1)
   const prevYearEnd = new Date(now.getFullYear() - 1, 11, 31)
-
-  // If debug, do a raw GA4 fetch and show the full response
-  if (debug) {
-    const rawRes = await fetch(
-      `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`,
-      {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          dateRanges: [{ startDate: daysAgo(7), endDate: today }],
-          dimensions: [{ name: 'date' }],
-          metrics: [{ name: 'sessions' }],
-        }),
-      },
-    )
-    const rawBody = await rawRes.text()
-    return NextResponse.json({
-      propertyId,
-      serverTime: now.toISOString(),
-      dateRanges: { mondayStr, monthStartStr, yearStartStr, today },
-      ga4Status: rawRes.status,
-      ga4Response: rawBody.slice(0, 2000),
-    })
-  }
 
   // Fetch current data first (essential), then comparisons (nice-to-have)
   const [hourlyRows, weekRows, monthRows, yearRows] = await Promise.all([
