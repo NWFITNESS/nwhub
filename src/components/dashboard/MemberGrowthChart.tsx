@@ -37,20 +37,16 @@ const COMP_LABELS: Record<Range, string> = {
   '24H': '', '7D': 'Last Week', '30D': 'Last Month', '1Y': 'Last Year',
 }
 
-function hasData(data: ChartDataPoint[]) {
-  return data.length > 0 && data.some((d) => d.value > 0)
-}
-
 function sumValues(data: ChartDataPoint[]) {
   return data.reduce((a, b) => a + b.value, 0)
 }
 
 export function WebsiteVisitorsChart({ data24h, data7d, data30d, data1y, comp7d, comp30d, comp1y }: Props) {
-  const [range, setRange] = useState<Range>('7D')
+  const [range, setRange] = useState<Range>('30D')
   const [showComparison, setShowComparison] = useState(false)
 
   const datasets: Record<Range, ChartDataPoint[]> = {
-    '24H': data24h, '7D': data7d, '30D': data30d, '1Y': data1y,
+    '24H': data24h ?? [], '7D': data7d ?? [], '30D': data30d ?? [], '1Y': data1y ?? [],
   }
   const compDatasets: Record<Range, ChartDataPoint[] | undefined> = {
     '24H': undefined, '7D': comp7d, '30D': comp30d, '1Y': comp1y,
