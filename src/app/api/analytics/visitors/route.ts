@@ -97,6 +97,25 @@ export async function GET(req: NextRequest) {
   const prevYearStart = new Date(now.getFullYear() - 1, 0, 1)
   const prevYearEnd = new Date(now.getFullYear() - 1, 11, 31)
 
+  // If debug, just return env/auth info before hitting GA4
+  if (debug) {
+    // Quick GA4 test — single small query
+    let testRows: unknown[] = []
+    let testError: string | null = null
+    try {
+      testRows = await runGa4Report(token, propertyId, daysAgo(7), today, [{ name: 'date' }])
+    } catch (e) {
+      testError = e instanceof Error ? e.message : String(e)
+    }
+    return NextResponse.json({
+      propertyId,
+      hasToken: !!token,
+      serverTime: now.toISOString(),
+      dateRanges: { mondayStr, monthStartStr, yearStartStr, today },
+      testQuery: { start: daysAgo(7), end: today, rowCount: testRows.length, error: testError, sample: testRows.slice(0, 3) },
+    })
+  }
+
   // Fetch current data first (essential), then comparisons (nice-to-have)
   const [hourlyRows, weekRows, monthRows, yearRows] = await Promise.all([
     runGa4Report(token, propertyId, daysAgo(1), today, [{ name: 'dateHour' }]),
@@ -116,25 +135,6 @@ export async function GET(req: NextRequest) {
       runGa4Report(token, propertyId, toDateStr(prevYearStart), toDateStr(prevYearEnd), [{ name: 'date' }]),
     ])
   } catch { /* comparison data is optional */ }
-
-  if (debug) {
-    return NextResponse.json({
-      queries: {
-        hourly: { start: daysAgo(1), end: today, rows: hourlyRows.length },
-        week: { start: mondayStr, end: today, rows: weekRows.length },
-        month: { start: monthStartStr, end: today, rows: monthRows.length },
-        year: { start: yearStartStr, end: today, rows: yearRows.length },
-      },
-      sampleMonthRows: monthRows.slice(0, 3),
-      sampleMonthKeys: monthRows.slice(0, 3).map(r => r.dimensionValues[0].value),
-      generatedKeys: Array.from({ length: 3 }, (_, i) => {
-        const d = new Date(now.getFullYear(), now.getMonth(), i + 1)
-        return toGaKey(d)
-      }),
-      serverTime: now.toISOString(),
-      propertyId,
-    })
-  }
 
   // Helper to build a date→sessions map from GA rows
   function buildDayMap(rows: typeof hourlyRows) {
