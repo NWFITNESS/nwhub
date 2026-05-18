@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getGoogleAuth } from '@/lib/google-auth'
 import { requireAuth } from '@/lib/auth-guard'
 
@@ -43,10 +43,10 @@ function formatDate(yyyymmdd: string): Date {
   return new Date(`${yyyymmdd.slice(0, 4)}-${yyyymmdd.slice(4, 6)}-${yyyymmdd.slice(6, 8)}`)
 }
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   const unauth = await requireAuth()
   if (unauth) return unauth
-  const debug = new URL(req.url).searchParams.get('debug') === '1'
+  const debug = req.nextUrl.searchParams.get('debug') === '1'
 
   const propertyId = process.env.GA4_PROPERTY_ID
   if (!propertyId) {
