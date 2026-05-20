@@ -38,16 +38,16 @@
   --shadow-sidebar: var(--nw-shadow-sidebar);
 }
 
-/* ── Dark mode defaults (default theme) ───────────────────────────────── */
+/* ── Dark mode defaults (default theme) — Quantix-inspired premium dark ── */
 :root {
-  --nw-950: #0b0e14;
-  --nw-900: #111520;
-  --nw-850: #161c2a;
-  --nw-800: #1c2333;
-  --nw-750: #22293d;
-  --nw-700: #293248;
-  --nw-600: #374059;
-  --nw-500: #607080;
+  --nw-950: #0d1117;
+  --nw-900: #121820;
+  --nw-850: #171e2a;
+  --nw-800: #1c2434;
+  --nw-750: #212a3c;
+  --nw-700: #283346;
+  --nw-600: #364158;
+  --nw-500: #5e6e82;
   --nw-400: #8296b4;
   --nw-300: #aabdd8;
   --nw-200: #d2deee;
@@ -55,60 +55,70 @@
   --nw-shadow-gold-sm: 0 4px 24px rgba(212,160,23,0.07), 0 1px 4px rgba(212,160,23,0.04);
   --nw-shadow-gold-md: 0 6px 32px rgba(212,160,23,0.13), 0 2px 8px rgba(212,160,23,0.07);
   --nw-shadow-sidebar: 4px 0 32px rgba(212,160,23,0.08), 2px 0 8px rgba(212,160,23,0.05);
+  --nw-card-shadow: none;
+  --nw-card-bg: var(--nw-750);
+  --nw-page-bg: var(--nw-950);
+  --nw-glow-gold: 0 0 40px rgba(201,167,10,0.12);
+  --nw-content-glow: radial-gradient(ellipse at 50% 0%, rgba(201,167,10,0.04) 0%, transparent 60%);
 }
 
-/* ── Light mode overrides ─────────────────────────────────────────────── */
+/* ── Light mode overrides — Circle-inspired clean & airy ────────────── */
 html.nw-light {
-  --nw-950: #ffffff;
-  --nw-900: #f0f2f5;
-  --nw-850: #e8eaed;
-  --nw-800: #e2e5e9;
+  --nw-950: #f7f8fc;
+  --nw-900: #f0f2f7;
+  --nw-850: #e8eaef;
+  --nw-800: #e0e3e9;
   --nw-750: #ffffff;
-  --nw-700: #f5f6f8;
-  --nw-600: #d1d5db;
-  --nw-500: #9ca3af;
-  --nw-400: #6b7280;
-  --nw-300: #4b5563;
-  --nw-200: #1f2937;
-  --nw-100: #111827;
-  --nw-shadow-gold-sm: 0 4px 24px rgba(212,160,23,0.10), 0 1px 4px rgba(212,160,23,0.06);
-  --nw-shadow-gold-md: 0 6px 32px rgba(212,160,23,0.18), 0 2px 8px rgba(212,160,23,0.10);
-  --nw-shadow-sidebar: 4px 0 16px rgba(0,0,0,0.06), 2px 0 4px rgba(0,0,0,0.04);
+  --nw-700: #f4f5f9;
+  --nw-600: #cdd1d9;
+  --nw-500: #9098a8;
+  --nw-400: #636d80;
+  --nw-300: #3f4a5c;
+  --nw-200: #1c2536;
+  --nw-100: #0f1623;
+  --nw-shadow-gold-sm: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(212,160,23,0.06);
+  --nw-shadow-gold-md: 0 2px 8px rgba(0,0,0,0.08), 0 6px 24px rgba(212,160,23,0.10);
+  --nw-shadow-sidebar: 1px 0 12px rgba(0,0,0,0.06);
+  --nw-card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --nw-card-bg: #ffffff;
+  --nw-page-bg: #f7f8fc;
+  --nw-glow-gold: 0 0 30px rgba(201,167,10,0.08);
+  --nw-content-glow: none;
 }
 
 /* ── Light mode: comprehensive overrides ───────────────────────────────── */
 
 /* 1. Old --slate-* and --r-* vars used by calendar, TopBar drawer, etc */
 html.nw-light {
-  --slate-950: #f8f9fb;
-  --slate-900: #f0f2f5;
-  --slate-850: #e8eaed;
-  --slate-800: #e2e5e9;
+  --slate-950: #f7f8fc;
+  --slate-900: #f0f2f7;
+  --slate-850: #e8eaef;
+  --slate-800: #e0e3e9;
   --slate-750: #ffffff;
-  --slate-700: #f5f6f8;
-  --slate-600: #d1d5db;
-  --slate-500: #9ca3af;
-  --slate-400: #6b7280;
-  --slate-300: #4b5563;
-  --slate-200: #1f2937;
-  --slate-100: #111827;
-  --r-panel-bg: rgba(0, 0, 0, 0.03);
-  --r-panel-border: rgba(0, 0, 0, 0.08);
+  --slate-700: #f4f5f9;
+  --slate-600: #cdd1d9;
+  --slate-500: #9098a8;
+  --slate-400: #636d80;
+  --slate-300: #3f4a5c;
+  --slate-200: #1c2536;
+  --slate-100: #0f1623;
+  --r-panel-bg: rgba(0, 0, 0, 0.02);
+  --r-panel-border: rgba(0, 0, 0, 0.07);
   --r-gold-400: #e8b933;
   --r-gold-300: #f2cb55;
   --r-gold-600: #b8870f;
   --r-green: #16a34a;
   --r-amber: #d97706;
-  --bg-base: #f0f2f5;
+  --bg-base: #f7f8fc;
   --bg-surface: #ffffff;
   --bg-card: #ffffff;
-  --bg-card-high: #f8f9fb;
-  --bg-card-highest: #f0f2f5;
-  --border: rgba(0, 0, 0, 0.08);
-  --border-hover: rgba(0, 0, 0, 0.14);
-  --text: #1f2937;
-  --text-muted: #4b5563;
-  --text-subtle: rgba(0, 0, 0, 0.4);
+  --bg-card-high: #f7f8fc;
+  --bg-card-highest: #f0f2f7;
+  --border: rgba(0, 0, 0, 0.07);
+  --border-hover: rgba(0, 0, 0, 0.12);
+  --text: #1c2536;
+  --text-muted: #3f4a5c;
+  --text-subtle: rgba(0, 0, 0, 0.35);
 }
 
 /* 2. Flip rgba(255,255,255,...) borders → rgba(0,0,0,...) */
@@ -148,8 +158,8 @@ html.nw-light .text-gold-300,
 html.nw-light .text-gold-400 { color: inherit; }
 
 /* 9. Light mode html/body background */
-html.nw-light { background-color: #f0f2f5 !important; }
-html.nw-light body { color: #1f2937; }
+html.nw-light { background-color: #f7f8fc !important; }
+html.nw-light body { color: #1c2536; }
 
 /* 10. Panels & cards get a subtle shadow to stand out on light bg */
 html.nw-light .bg-nw-750 {
@@ -305,37 +315,37 @@ html.nw-light .nw-icon-dark { display: none; }
 
 :root {
   /* ── Gilded Foundry palette ─────────────────────────────── */
-  --bg-base: #131313;
-  --bg-surface: #1c1b1b;
-  --bg-card: #201f1f;
-  --bg-card-high: #2a2a2a;
-  --bg-card-highest: #353534;
-  --border: rgba(77, 70, 53, 0.28);
-  --border-hover: rgba(77, 70, 53, 0.55);
+  --bg-base: #0d1117;
+  --bg-surface: #121820;
+  --bg-card: #1c2434;
+  --bg-card-high: #283346;
+  --bg-card-highest: #364158;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.15);
   --gold: #d4af37;
   --gold-bright: #f2ca50;
   --gold-dim: #e9c349;
-  --outline-variant: #4d4635;
-  --text: #e5e2e1;
-  --text-muted: #d0c5af;
-  --text-subtle: rgba(208, 197, 175, 0.5);
+  --outline-variant: rgba(201,167,10,0.2);
+  --text: #edf3fb;
+  --text-muted: #aabdd8;
+  --text-subtle: rgba(170, 189, 216, 0.5);
   --danger: #ef4444;
   --success: #22c55e;
   --info: #3b82f6;
-  --gold-glow: 0 0 28px rgba(212, 175, 55, 0.4);
-  --gold-inset-glow: inset 0 0 8px rgba(212, 175, 55, 0.12);
-  --card-inset: inset 0 1px 0 rgba(212, 175, 55, 0.06);
+  --gold-glow: 0 0 28px rgba(212, 175, 55, 0.35);
+  --gold-inset-glow: inset 0 0 8px rgba(212, 175, 55, 0.1);
+  --card-inset: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   --sidebar-w: 17rem;
 
   /* ── Redesign tokens (slate/gold palette) ───────────────────── */
-  --slate-950: #0b0e14;
-  --slate-900: #111520;
-  --slate-850: #161c2a;
-  --slate-800: #1c2333;
-  --slate-750: #22293d;
-  --slate-700: #293248;
-  --slate-600: #374059;
-  --slate-500: #607080;
+  --slate-950: #0d1117;
+  --slate-900: #121820;
+  --slate-850: #171e2a;
+  --slate-800: #1c2434;
+  --slate-750: #212a3c;
+  --slate-700: #283346;
+  --slate-600: #364158;
+  --slate-500: #5e6e82;
   --slate-400: #8296b4;
   --slate-300: #aabdd8;
   --slate-200: #d2deee;
@@ -347,8 +357,8 @@ html.nw-light .nw-icon-dark { display: none; }
   --r-gold-200: #f8df8a;
   --r-green: #22c55e;
   --r-amber: #f59e0b;
-  --r-panel-bg: rgba(255, 255, 255, 0.04);
-  --r-panel-border: rgba(255, 255, 255, 0.09);
+  --r-panel-bg: rgba(255, 255, 255, 0.03);
+  --r-panel-border: rgba(255, 255, 255, 0.08);
 }
 
 * {
@@ -358,15 +368,29 @@ html.nw-light .nw-icon-dark { display: none; }
 }
 
 html {
-  background-color: var(--bg-base);
-  font-size: 18px;
+  background-color: var(--nw-page-bg, var(--bg-base));
+  font-size: 16px;
 }
 
 body {
   background-color: transparent;
   color: var(--text);
   font-family: var(--font-manrope), var(--font-league-spartan), system-ui, sans-serif;
+  font-size: 14px;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle warm glow behind main content area (dark mode only) */
+.nw-main-pad::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-w, 0);
+  right: 0;
+  height: 400px;
+  background: var(--nw-content-glow);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Utility: use Manrope for body content areas */
