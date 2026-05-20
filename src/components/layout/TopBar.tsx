@@ -190,18 +190,18 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
   const totalResults = categories.reduce((n, [, items]) => n + items.length, 0)
 
   return (
-    <header className="hidden md:flex h-[60px] min-h-[60px] flex-shrink-0 items-center border-b border-[rgba(255,255,255,0.1)] bg-nw-950 z-10" style={{ paddingLeft: 24, paddingRight: 24 }}>
+    <header className="hidden md:flex h-[64px] min-h-[64px] flex-shrink-0 items-center border-b border-[rgba(255,255,255,0.06)] bg-nw-950 z-10" style={{ paddingLeft: 28, paddingRight: 28 }}>
 
-      {/* ── LEFT: Page title ── */}
+      {/* ── LEFT: Breadcrumb + Page title ── */}
       <div className="flex items-center gap-3 min-w-0 flex-shrink-0">
         {segments.length > 0 && (
-          <div className="flex items-center gap-[6px] text-nw-400" style={{ fontSize: 12.5 }}>
+          <div className="flex items-center gap-[6px] text-nw-500" style={{ fontSize: 14 }}>
             {segments.map((seg, i) => (
               <span key={i} className="flex items-center gap-[6px] whitespace-nowrap">{seg} <Chevron /></span>
             ))}
           </div>
         )}
-        <span className="font-semibold text-white whitespace-nowrap" style={{ fontSize: 17, letterSpacing: '-0.01em' }}>{pageLabel}</span>
+        <span className="font-semibold text-nw-100 whitespace-nowrap" style={{ fontSize: 18, letterSpacing: '-0.01em' }}>{pageLabel}</span>
       </div>
 
       {/* ── CENTRE: Search bar ── */}
@@ -216,8 +216,8 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
               onFocus={() => { setSearchVisible(true); if (results && query.length >= 2) setSearchOpen(true) }}
               onKeyDown={e => { if (e.key === 'Escape') { setSearchOpen(false); setSearchVisible(false); setQuery('') } }}
               placeholder="Search members, posts, campaigns…"
-              className="h-10 w-full rounded-xl border border-[rgba(255,255,255,0.1)] bg-nw-800 text-sm text-nw-100 placeholder:text-nw-500 outline-none transition-all focus:border-[rgba(212,160,23,0.4)] focus:bg-nw-750 focus:shadow-[0_0_0_3px_rgba(212,160,23,0.08)]"
-              style={{ paddingLeft: 38, paddingRight: 38 }}
+              className="h-10 w-full rounded-full border border-[rgba(255,255,255,0.08)] bg-nw-800/60 text-sm text-nw-100 placeholder:text-nw-500 outline-none transition-all focus:border-[rgba(212,160,23,0.35)] focus:bg-nw-750 focus:shadow-[0_0_0_3px_rgba(212,160,23,0.06)]"
+              style={{ paddingLeft: 38, paddingRight: 38, backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
             />
             {query && (
               <button onClick={() => { setQuery(''); setSearchOpen(false) }} className="absolute right-3 top-1/2 -translate-y-1/2 text-nw-500 hover:text-nw-300 transition-colors" aria-label="Clear search">
@@ -273,7 +273,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
         {/* Refresh */}
         <button
           onClick={handleRefresh}
-          className="flex h-[36px] w-[36px] items-center justify-center rounded-[10px] text-nw-400 transition-all hover:bg-[rgba(255,255,255,0.06)] hover:text-nw-200"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-nw-400 transition-all hover:bg-[rgba(255,255,255,0.06)] hover:text-nw-200"
           title="Refresh"
           aria-label="Refresh page"
         >
@@ -287,7 +287,7 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
         <div ref={bellRef} className="relative">
           <button
             onClick={() => setBellOpen(v => !v)}
-            className={`flex h-[36px] w-[36px] items-center justify-center rounded-[10px] transition-all ${
+            className={`flex h-9 w-9 items-center justify-center rounded-full transition-all ${
               bellOpen
                 ? 'bg-[rgba(212,160,23,0.12)] text-gold-300'
                 : 'text-nw-400 hover:bg-[rgba(255,255,255,0.06)] hover:text-nw-200'
