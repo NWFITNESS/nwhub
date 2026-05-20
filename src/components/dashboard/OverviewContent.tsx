@@ -7,6 +7,8 @@ import type { DashboardData, DashboardTask } from '@/components/widgets/Dashboar
 import type { SystemStatus } from '@/app/api/system-status/route'
 import { MiniCalendar } from './MiniCalendar'
 import { WebsiteVisitorsChart } from './MemberGrowthChart'
+import { HeroStatCard } from './HeroStatCard'
+import { ActivityFeed } from './ActivityFeed'
 import { Responsive, WidthProvider } from 'react-grid-layout'
 import type { Layouts } from 'react-grid-layout'
 import {
@@ -57,8 +59,8 @@ const PRIORITY_DOT: Record<string, string> = {
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 
-function StatCard({ label, value, sub, gold, icon }: {
-  label: string; value: number | string; sub: string; gold?: boolean; icon: React.ReactNode
+function StatCard({ label, value, sub, gold, icon, alert }: {
+  label: string; value: number | string; sub: string; gold?: boolean; icon: React.ReactNode; alert?: boolean
 }) {
   return (
     <div className="relative cursor-default overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 shadow-gold-sm transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700 hover:shadow-gold-md h-full" style={{ padding: 16 }}>
@@ -688,28 +690,22 @@ export function OverviewContent({ data, formattedDate }: Props) {
         {/* Page header */}
         <div className="flex items-start justify-between gap-6">
           <div className="flex flex-col gap-[3px]">
-            <span className="text-[11px] font-bold uppercase tracking-[2px] text-nw-500">Admin Panel</span>
-            <h1 className="font-brand text-[28px] font-bold leading-none tracking-[0.3px] text-white">
+            <span className="text-nw-500" style={{ fontSize: 12, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase' }}>Admin Panel</span>
+            <h1 className="font-brand text-nw-100" style={{ fontSize: 30, fontWeight: 700, lineHeight: 1, letterSpacing: '0.3px' }}>
               Northern Warrior <span className="text-gold-400">Hub</span>
             </h1>
-            <span className="mt-px text-xs text-nw-500">{formattedDate}</span>
+            <span className="text-nw-500" style={{ fontSize: 13, marginTop: 2 }}>{formattedDate}</span>
           </div>
-
-          {/* Customise controls */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 4 }}>
             {isCustomising && (
-              <button
-                onClick={() => setPickerOpen(true)}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', color: 'var(--slate-400)', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', transition: 'color 0.15s, border-color 0.15s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--slate-200)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.2)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--slate-400)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.1)' }}
-              >
+              <button onClick={() => setPickerOpen(true)} className="text-nw-400 hover:text-nw-200 border border-[rgba(255,255,255,0.1)] hover:border-[rgba(255,255,255,0.2)] rounded-lg transition-all" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', fontSize: 13, fontWeight: 500, cursor: 'pointer', background: 'transparent' }}>
                 <Plus size={13} /> Add widgets
               </button>
             )}
             <button
               onClick={() => setIsCustomising(!isCustomising)}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', color: isCustomising ? 'var(--r-gold-300)' : 'var(--slate-400)', background: isCustomising ? 'rgba(212,160,23,0.08)' : 'transparent', border: isCustomising ? '1px solid rgba(212,160,23,0.35)' : '1px solid rgba(255,255,255,0.1)', transition: 'all 0.15s' }}
+              className={isCustomising ? 'text-gold-300 border-[rgba(212,160,23,0.35)] bg-[rgba(212,160,23,0.08)]' : 'text-nw-400 border-[rgba(255,255,255,0.1)] bg-transparent hover:text-nw-200'}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', borderWidth: 1, borderStyle: 'solid', transition: 'all 0.15s' }}
             >
               {isCustomising ? <Check size={13} /> : <Settings2 size={13} />}
               {isCustomising ? 'Done' : 'Customise'}
@@ -717,7 +713,64 @@ export function OverviewContent({ data, formattedDate }: Props) {
           </div>
         </div>
 
-        {/* Widget grid */}
+        {/* Hero stat cards — premium top row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <HeroStatCard
+            label="Total Members"
+            value={data.membersTotal}
+            sub="Active memberships"
+            icon={<svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5"/></svg>}
+            gradient="linear-gradient(135deg, rgba(201,167,10,0.12) 0%, rgba(13,17,23,1) 100%)"
+            glowColor="rgba(201,167,10,0.08)"
+          />
+          <HeroStatCard
+            label="Monthly Revenue"
+            value={`\u00a3${(7217).toLocaleString()}`}
+            sub="This month"
+            icon={<svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 11l3.5-3.5L8 10l5.5-6" strokeLinecap="round" strokeLinejoin="round"/><rect x="1" y="1" width="14" height="14" rx="2"/></svg>}
+            gradient="linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(13,17,23,1) 100%)"
+            glowColor="rgba(34,197,94,0.06)"
+          />
+        </div>
+
+        {/* Secondary stats row */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <StatCard label="Kids & Teens" value={data.kidsRegistrations} sub="Registrations" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="6" r="3"/><path d="M4 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/></svg>} />
+          <StatCard label="Lead Pipeline" value={data.leadCount} sub={`${data.convertedLeads}% converted`} icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M8 1v14M4 5l4-4 4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>} />
+          <StatCard label="Subscribers" value={data.subscribers} sub="Active subscribers" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M1 5l7 5 7-5"/></svg>} />
+          <StatCard label="Enquiries" value={data.enquiriesAlert ?? 0} sub="Unread" alert={!!data.enquiriesAlert && data.enquiriesAlert > 0} icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-4 3V3a1 1 0 011-1z"/></svg>} />
+          <StatCard label="New Contacts" value={data.newContacts} sub="This month" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3 3-5 6-5s6 2 6 5"/><path d="M12 2v4M14 4h-4" strokeLinecap="round"/></svg>} />
+        </div>
+
+        {/* Main content: Chart + Activity Feed */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          {/* Visitor chart — full area */}
+          <div className="lg:col-span-8">
+            {(() => {
+              const vd = ga4Data ?? data
+              return (
+                <div className="flex flex-col overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.08)] bg-nw-750">
+                  <div style={{ padding: '8px 0' }}>
+                    <WebsiteVisitorsChart data24h={vd.data24h} data7d={vd.data7d} data30d={vd.data30d} data1y={vd.data1y} comp7d={'comp7d' in vd ? vd.comp7d : undefined} comp30d={'comp30d' in vd ? vd.comp30d : undefined} comp1y={'comp1y' in vd ? vd.comp1y : undefined} />
+                  </div>
+                </div>
+              )
+            })()}
+          </div>
+          {/* Activity feed */}
+          <div className="lg:col-span-4">
+            <div className="flex flex-col overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.08)] bg-nw-750 h-full">
+              <div className="flex-shrink-0 border-b border-[rgba(255,255,255,0.06)]" style={{ padding: '14px 16px' }}>
+                <span className="text-nw-500" style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>Recent Activity</span>
+              </div>
+              <div className="flex-1 overflow-y-auto" style={{ maxHeight: 340 }}>
+                <ActivityFeed enquiries={data.recentEnquiries as any} tasks={data.tasks as any} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Widget grid — remaining customisable widgets */}
         <ResponsiveGridLayout
           layouts={filteredLayouts}
           breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
