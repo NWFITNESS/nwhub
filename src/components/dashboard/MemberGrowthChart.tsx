@@ -2,14 +2,14 @@
 
 import { useState } from 'react'
 import {
-  LineChart,
+  AreaChart,
+  Area,
   Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts'
 
 export interface ChartDataPoint {
@@ -127,57 +127,72 @@ export function WebsiteVisitorsChart({ data24h, data7d, data30d, data1y, comp7d,
         </div>
       </div>
 
-      {/* Chart */}
-      <ResponsiveContainer width="100%" height={240}>
-        <LineChart data={mergedData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+      {/* Chart — area with gradient fill */}
+      <ResponsiveContainer width="100%" height={280}>
+        <AreaChart data={mergedData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
+          <defs>
+            <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#C9A70A" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="#C9A70A" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.15} />
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
           <XAxis
             dataKey="label"
-            tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }}
+            tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             interval={tickInterval}
           />
           <YAxis
-            tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 11 }}
+            tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 11 }}
             axisLine={false}
             tickLine={false}
             allowDecimals={false}
           />
           <Tooltip
             contentStyle={{
-              background: '#1a1a1a',
-              border: '1px solid rgba(201,167,10,0.3)',
-              borderRadius: '8px',
+              background: '#0d1117',
+              border: '1px solid rgba(201,167,10,0.25)',
+              borderRadius: '10px',
               color: '#F0F0F0',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+              fontSize: 13,
             }}
-            labelStyle={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}
-            cursor={{ stroke: 'rgba(201,167,10,0.15)', strokeWidth: 1 }}
-          />
-          <Line
-            type="monotone"
-            dataKey="value"
-            name={RANGE_LABELS[range]}
-            stroke="#C9A70A"
-            strokeWidth={2}
-            dot={currentData.length <= 12 ? { fill: '#C9A70A', strokeWidth: 0, r: 4 } : false}
-            activeDot={{ r: 6, fill: '#C9A70A' }}
-            connectNulls
+            labelStyle={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, marginBottom: 4 }}
+            itemStyle={{ fontWeight: 600 }}
+            cursor={{ stroke: 'rgba(201,167,10,0.2)', strokeWidth: 1 }}
           />
           {showComparison && hasComp && (
-            <Line
+            <Area
               type="monotone"
               dataKey="prev"
               name={COMP_LABELS[range]}
               stroke="#3b82f6"
               strokeWidth={1.5}
               strokeDasharray="6 3"
+              fill="url(#blueGradient)"
               dot={false}
-              activeDot={{ r: 5, fill: '#3b82f6' }}
+              activeDot={{ r: 5, fill: '#3b82f6', stroke: '#0d1117', strokeWidth: 2 }}
               connectNulls
             />
           )}
-        </LineChart>
+          <Area
+            type="monotone"
+            dataKey="value"
+            name={RANGE_LABELS[range]}
+            stroke="#C9A70A"
+            strokeWidth={2.5}
+            fill="url(#goldGradient)"
+            dot={currentData.length <= 12 ? { fill: '#C9A70A', strokeWidth: 2, stroke: '#0d1117', r: 4 } : false}
+            activeDot={{ r: 6, fill: '#C9A70A', stroke: '#0d1117', strokeWidth: 2 }}
+            connectNulls
+          />
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   )

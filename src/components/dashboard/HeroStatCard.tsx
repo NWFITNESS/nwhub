@@ -1,65 +1,82 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
+import { MoreHorizontal } from 'lucide-react'
+
 interface Props {
   label: string
   value: string | number
-  sub?: string
   trend?: { value: number; label: string }
   icon: React.ReactNode
-  gradient: string
-  glowColor?: string
+  color: string        // primary accent e.g. '#C9A70A'
+  colorLight: string   // lighter shade e.g. '#f2cb55'
+  href?: string
   onClick?: () => void
 }
 
-export function HeroStatCard({ label, value, sub, trend, icon, gradient, glowColor, onClick }: Props) {
+export function HeroStatCard({ label, value, trend, icon, color, colorLight, href, onClick }: Props) {
+  const router = useRouter()
+
+  function handleClick() {
+    if (onClick) { onClick(); return }
+    if (href) router.push(href)
+  }
+
   return (
     <button
-      onClick={onClick}
-      className="relative overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.08)] transition-all hover:border-[rgba(255,255,255,0.14)] hover:shadow-lg text-left w-full group"
+      onClick={handleClick}
+      className="relative overflow-hidden rounded-2xl transition-all hover:scale-[1.02] hover:shadow-xl text-left w-full group"
       style={{
-        padding: '28px 28px 24px',
-        background: gradient,
-        boxShadow: glowColor ? `0 8px 32px ${glowColor}` : undefined,
+        padding: '24px 24px 20px',
+        background: `linear-gradient(135deg, ${color}18 0%, ${color}08 50%, transparent 100%)`,
+        border: `1px solid ${color}25`,
+        cursor: href || onClick ? 'pointer' : 'default',
       }}
     >
-      {/* Subtle glow overlay on hover */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'radial-gradient(circle at 80% 20%, rgba(255,255,255,0.04), transparent 60%)' }} />
+      {/* Decorative gradient orb */}
+      <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full opacity-20 group-hover:opacity-30 transition-opacity" style={{ background: `radial-gradient(circle, ${color}, transparent 70%)` }} />
 
-      <div className="relative z-10">
-        {/* Icon + label */}
-        <div className="flex items-center gap-2.5 mb-4">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            {icon}
-          </div>
-          <span className="text-nw-300 font-semibold" style={{ fontSize: 12, letterSpacing: '0.3px', textTransform: 'uppercase' }}>
-            {label}
-          </span>
+      {/* Top row: icon + menu */}
+      <div className="relative z-10 flex items-center justify-between mb-4">
+        <div className="flex items-center justify-center w-10 h-10 rounded-xl" style={{ background: `${color}20`, border: `1px solid ${color}30` }}>
+          <div style={{ color: colorLight }}>{icon}</div>
         </div>
-
-        {/* Big value */}
-        <p className="font-brand text-nw-100" style={{ fontSize: 44, fontWeight: 700, lineHeight: 1, letterSpacing: '-1px' }}>
-          {value}
-        </p>
-
-        {/* Subtitle + trend */}
-        <div className="flex items-center gap-3 mt-3">
-          {sub && <span className="text-nw-400" style={{ fontSize: 13 }}>{sub}</span>}
-          {trend && (
-            <span
-              className="rounded-full font-semibold"
-              style={{
-                fontSize: 11,
-                padding: '2px 8px',
-                background: trend.value >= 0 ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
-                color: trend.value >= 0 ? '#4ade80' : '#f87171',
-                border: `1px solid ${trend.value >= 0 ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`,
-              }}
-            >
-              {trend.value >= 0 ? '+' : ''}{trend.value}% {trend.label}
-            </span>
-          )}
+        <div className="text-nw-600 opacity-0 group-hover:opacity-100 transition-opacity">
+          <MoreHorizontal size={16} />
         </div>
       </div>
+
+      {/* Label */}
+      <p className="relative z-10 text-nw-400" style={{ fontSize: 13, fontWeight: 500, marginBottom: 6 }}>
+        {label}
+      </p>
+
+      {/* Value + trend inline */}
+      <div className="relative z-10 flex items-baseline gap-3">
+        <p className="font-brand text-nw-100" style={{ fontSize: 36, fontWeight: 700, lineHeight: 1, letterSpacing: '-1px' }}>
+          {value}
+        </p>
+        {trend && (
+          <span
+            className="rounded-md font-semibold"
+            style={{
+              fontSize: 12,
+              padding: '2px 8px',
+              background: trend.value >= 0 ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
+              color: trend.value >= 0 ? '#4ade80' : '#f87171',
+            }}
+          >
+            {trend.value >= 0 ? '+' : ''}{trend.value}%
+          </span>
+        )}
+      </div>
+
+      {/* Comparison text */}
+      {trend && (
+        <p className="relative z-10 text-nw-500 mt-2" style={{ fontSize: 12 }}>
+          Compared to {trend.label}
+        </p>
+      )}
     </button>
   )
 }
