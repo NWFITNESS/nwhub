@@ -192,8 +192,18 @@ export function TopBar({ title, actions, staffProfile, userEmail }: TopBarProps)
   return (
     <header className="hidden md:flex h-[64px] min-h-[64px] flex-shrink-0 items-center border-b border-[rgba(255,255,255,0.06)] bg-nw-950 z-10" style={{ paddingLeft: 28, paddingRight: 28 }}>
 
-      {/* ── LEFT: Breadcrumb + Page title ── */}
-      <div className="flex items-center gap-3 min-w-0 flex-shrink-0">
+      {/* ── LEFT: Back button + Breadcrumb + Page title ── */}
+      <div className="flex items-center gap-2.5 min-w-0 flex-shrink-0">
+        {pathname !== '/' && (
+          <button
+            onClick={() => router.back()}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-nw-400 transition-all hover:bg-[rgba(255,255,255,0.06)] hover:text-nw-200 flex-shrink-0"
+            title="Go back"
+            aria-label="Go back"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3L5 8l5 5"/></svg>
+          </button>
+        )}
         {segments.length > 0 && (
           <div className="flex items-center gap-[6px] text-nw-500" style={{ fontSize: 14 }}>
             {segments.map((seg, i) => (
