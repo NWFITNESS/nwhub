@@ -9,6 +9,7 @@ import { MiniCalendar } from './MiniCalendar'
 import { WebsiteVisitorsChart } from './MemberGrowthChart'
 import { HeroStatCard } from './HeroStatCard'
 import { ActivityFeed } from './ActivityFeed'
+import { AnalyticsPanels } from './AnalyticsPanels'
 import { Responsive, WidthProvider } from 'react-grid-layout'
 import type { Layouts } from 'react-grid-layout'
 import {
@@ -780,6 +781,9 @@ export function OverviewContent({ data, formattedDate }: Props) {
             </div>
           </div>
         </div>
+
+        {/* Analytics panels — today's stats, top pages, devices */}
+        <AnalyticsPanels />
 
         {/* Widget grid — remaining customisable widgets */}
         <ResponsiveGridLayout
