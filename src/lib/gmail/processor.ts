@@ -179,7 +179,7 @@ export async function processGmailEmails(
     rules_matched,
     duration_ms: Date.now() - startTime,
     lookback,
-  }).catch(() => {}) // Don't fail the whole run if logging fails
+  })
 
   return { processed, tasks_created, archived, debug }
 }
