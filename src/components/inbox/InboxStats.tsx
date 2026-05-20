@@ -49,39 +49,40 @@ export function InboxStats({ emails, tasks, onStatClick }: Props) {
   const maxDaily = Math.max(1, ...daily.map(d => d.total))
   const weekTotal = daily.reduce((a, d) => a + d.total, 0)
 
-  const stats = [
+  type Accent = 'gold' | 'red' | 'green' | 'amber' | 'muted'
+  const stats: { label: string; value: number; icon: typeof Mail; accent: Accent; sub?: string; onClick: () => void }[] = [
     {
       label: 'Processed (7d)',
       value: apiStats?.totals.processed ?? emails.length,
-      icon: Mail, accent: 'gold' as const,
+      icon: Mail, accent: 'gold',
       onClick: () => onStatClick?.('emails', 'all'),
     },
     {
       label: 'Needs Action',
       value: needsAction,
       icon: AlertTriangle,
-      accent: (needsAction > 0 ? 'red' : 'muted') as const,
+      accent: needsAction > 0 ? 'red' : 'muted',
       onClick: () => onStatClick?.('emails', 'needs_attention'),
     },
     {
       label: 'New Leads',
       value: newLeads,
       icon: UserPlus,
-      accent: (newLeads > 0 ? 'green' : 'muted') as const,
+      accent: newLeads > 0 ? 'green' : 'muted',
       onClick: () => onStatClick?.('emails', 'new_lead'),
     },
     {
       label: 'Auto-Archived',
       value: autoArchived,
       icon: Archive,
-      accent: 'muted' as const,
+      accent: 'muted',
       onClick: () => onStatClick?.('emails', 'archived'),
     },
     {
       label: 'Open Tasks',
       value: openTasks,
       icon: CheckSquare,
-      accent: (overdueTasks > 0 ? 'amber' : 'gold') as const,
+      accent: overdueTasks > 0 ? 'amber' : 'gold',
       sub: overdueTasks > 0 ? `${overdueTasks} overdue` : undefined,
       onClick: () => onStatClick?.('tasks'),
     },
