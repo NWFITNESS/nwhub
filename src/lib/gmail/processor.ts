@@ -29,7 +29,8 @@ export async function processGmailEmails(
   lookback: string,
 ): Promise<ProcessResult> {
   const debug: string[] = []
-  let processed = 0, tasks_created = 0, archived = 0
+  let processed = 0, tasks_created = 0, archived = 0, rules_matched = 0
+  const startTime = Date.now()
 
   // Fetch recent emails
   const listRes = await gmailFetch(`/users/me/messages?maxResults=50&q=newer_than:${lookback}+in:inbox`)
@@ -91,7 +92,8 @@ export async function processGmailEmails(
           .filter((p: { mimeType?: string }) => p.mimeType && !p.mimeType.startsWith('text/') && !p.mimeType.startsWith('multipart/'))
           .map((p: { mimeType: string }) => p.mimeType),
       }
-      const result = await applyRules(normalized, aiResult)
+      const { classification: result, matchedRuleId } = await applyRules(normalized, aiResult)
+      if (matchedRuleId) rules_matched++
       const category = result.category
 
       // Create task
@@ -120,6 +122,7 @@ export async function processGmailEmails(
         archived: category === 'spam' || category === 'newsletter' || category === 'receipt_notification',
         task_created: !!task_id,
         task_id: task_id ?? null,
+        rule_matched_id: matchedRuleId,
       }).select('id').single()
 
       // Invoice extraction
@@ -166,6 +169,17 @@ export async function processGmailEmails(
       console.error(`[gmail-processor] Error processing ${msg.id}:`, e)
     }
   }
+
+  // Write processing log
+  await supabase.from('processing_log').insert({
+    emails_fetched: newMessages.length,
+    emails_processed: processed,
+    tasks_created,
+    archived,
+    rules_matched,
+    duration_ms: Date.now() - startTime,
+    lookback,
+  }).catch(() => {}) // Don't fail the whole run if logging fails
 
   return { processed, tasks_created, archived, debug }
 }

@@ -118,7 +118,7 @@ export function TaskBoard({ tasks, onToggle, onAdd, onDelete, onBulkComplete, on
     if (items.length === 0) return null
     return (
       <div className="mb-4">
-        <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${accent ?? 'text-white/30'}`}>{label}</p>
+        <p className={`font-bold uppercase tracking-widest mb-2 ${accent ?? 'text-white/30'}`} style={{ fontSize: 11 }}>{label}</p>
         <div className="space-y-1">
           {items.map(t => (
             <TaskItem

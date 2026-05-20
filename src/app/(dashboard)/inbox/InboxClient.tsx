@@ -3,10 +3,12 @@
 import { useState } from 'react'
 import { EmailPanel } from '@/components/inbox/EmailPanel'
 import { TaskBoard } from '@/components/inbox/TaskBoard'
+import { InboxStats } from '@/components/inbox/InboxStats'
+import { EmailDetailDrawer } from '@/components/inbox/EmailDetailDrawer'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Panel } from '@/components/ui/Card'
-import { RefreshCw, Send } from 'lucide-react'
+import { RefreshCw, Send, Mail, CheckSquare, Settings2 } from 'lucide-react'
 import { RuleBuilder } from '@/components/inbox/RuleBuilder'
 import { archiveEmail, bulkArchiveEmails } from '@/app/actions/inbox'
 
@@ -24,6 +26,8 @@ interface Email {
   archived: boolean
   task_created: boolean
   task_id: string | null
+  has_invoice?: boolean
+  rule_matched_id?: string | null
 }
 
 interface Task {
@@ -44,15 +48,26 @@ interface Props {
   gmailConnected: boolean
 }
 
+type Tab = 'emails' | 'tasks' | 'rules'
+
+const TAB_CONFIG: { key: Tab; label: string; icon: typeof Mail }[] = [
+  { key: 'emails', label: 'Emails', icon: Mail },
+  { key: 'tasks', label: 'Tasks', icon: CheckSquare },
+  { key: 'rules', label: 'Rules', icon: Settings2 },
+]
+
 export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Props) {
   const [emails, setEmails] = useState<Email[]>(initialEmails)
   const [tasks, setTasks] = useState<Task[]>(initialTasks)
   const [processing, setProcessing] = useState(false)
   const [sendingDigest, setSendingDigest] = useState(false)
   const [lastResult, setLastResult] = useState<string | null>(null)
+  const [tab, setTab] = useState<Tab>('emails')
+  const [emailFilter, setEmailFilter] = useState<string | undefined>(undefined)
+  const [drawerEmail, setDrawerEmail] = useState<Email | null>(null)
 
   const needsActionCount = emails.filter(e => e.flagged && !e.archived).length
-  const totalCount = emails.length
+  const openTaskCount = tasks.filter(t => !t.completed).length
 
   async function refreshEmails() {
     const res = await fetch('/api/inbox/emails')
@@ -119,7 +134,6 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
       if (res.ok) {
         const data = await res.json()
         setLastResult(`Reclassified: ${data.old_category} → ${data.new_category}`)
-        // Refresh emails
         const emailsRes = await fetch('/api/inbox/emails')
         if (emailsRes.ok) setEmails(await emailsRes.json())
       }
@@ -168,15 +182,20 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
     setTasks(prev => prev.filter(t => !ids.includes(t.id)))
   }
 
+  function handleStatClick(targetTab: string, filter?: string) {
+    if (targetTab === 'tasks') { setTab('tasks'); return }
+    setTab('emails')
+    setEmailFilter(filter)
+  }
+
   return (
     <div className="flex flex-col gap-5">
       <PageHeader
         eyebrow="Comms"
         title="Inbox Intelligence"
-        description={`${totalCount} emails processed${needsActionCount > 0 ? ` · ${needsActionCount} need action` : ''}`}
+        description={`${emails.length} emails processed${needsActionCount > 0 ? ` · ${needsActionCount} need action` : ''}`}
         actions={
           <>
-            {/* Provider status pills */}
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-nw-800 border border-[rgba(255,255,255,0.07)]">
                 <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${gmailConnected ? 'bg-green-400 animate-pulse' : 'bg-nw-600'}`} />
@@ -192,23 +211,14 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
               </Button>
             </a>
 
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleProcess}
-              loading={processing}
-              disabled={!gmailConnected}
-            >
-              <RefreshCw size={13} />
-              Process New
+            <Button variant="secondary" size="sm" onClick={handleProcess} loading={processing} disabled={!gmailConnected}>
+              <RefreshCw size={13} /> Process New
             </Button>
 
             <Button
-              variant="ghost"
-              size="sm"
+              variant="ghost" size="sm" loading={processing} disabled={!gmailConnected}
               onClick={async () => {
-                setProcessing(true)
-                setLastResult(null)
+                setProcessing(true); setLastResult(null)
                 try {
                   const res = await fetch('/api/inbox/process?force=true&lookback=7d', { method: 'POST' })
                   const data = await res.json()
@@ -216,59 +226,100 @@ export function InboxClient({ initialEmails, initialTasks, gmailConnected }: Pro
                   refreshEmails()
                 } finally { setProcessing(false) }
               }}
-              loading={processing}
-              disabled={!gmailConnected}
             >
               Process Older (7d)
             </Button>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSendDigest}
-              loading={sendingDigest}
-            >
-              <Send size={13} />
-              Test Digest
+            <Button variant="ghost" size="sm" onClick={handleSendDigest} loading={sendingDigest}>
+              <Send size={13} /> Test Digest
             </Button>
           </>
         }
       />
 
       {lastResult && (
-        <p className="text-[12px] text-nw-500">{lastResult}</p>
+        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>{lastResult}</p>
       )}
 
-      {/* Two-panel grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-        <div className="lg:col-span-3">
-          <Panel className="flex flex-col">
-            <EmailPanel
-              emails={emails}
-              onAddTask={handleAddTask}
-              onArchive={handleArchive}
-              onBulkArchive={handleBulkArchive}
-              onRefresh={refreshEmails}
-              onReclassify={handleReclassify}
-            />
-          </Panel>
-        </div>
-        <div className="lg:col-span-2">
-          <Panel className="flex flex-col">
-            <TaskBoard
-              tasks={tasks}
-              onToggle={handleToggleTask}
-              onAdd={handleAddTask}
-              onDelete={handleDeleteTask}
-              onBulkComplete={handleBulkComplete}
-              onBulkDelete={handleBulkDelete}
-            />
-          </Panel>
-        </div>
+      {/* Stats strip */}
+      <InboxStats emails={emails} tasks={tasks} onStatClick={handleStatClick} />
+
+      {/* Tab bar */}
+      <div className="flex items-center gap-1.5 border-b border-[rgba(255,255,255,0.07)]" style={{ paddingBottom: 0 }}>
+        {TAB_CONFIG.map(t => {
+          const active = tab === t.key
+          const count = t.key === 'emails' ? needsActionCount : t.key === 'tasks' ? openTaskCount : undefined
+          return (
+            <button
+              key={t.key}
+              onClick={() => { setTab(t.key); if (t.key === 'emails') setEmailFilter(undefined) }}
+              className={`flex items-center gap-2 border-b-2 transition-colors ${
+                active
+                  ? 'border-[#C9A70A] text-[#C9A70A]'
+                  : 'border-transparent text-white/40 hover:text-white/60'
+              }`}
+              style={{ padding: '10px 16px', fontSize: 13, fontWeight: 600 }}
+            >
+              <t.icon size={15} />
+              {t.label}
+              {count !== undefined && count > 0 && (
+                <span
+                  className="rounded-full"
+                  style={{
+                    padding: '1px 7px', fontSize: 11, fontWeight: 700,
+                    background: active ? 'rgba(201,167,10,0.15)' : 'rgba(255,255,255,0.06)',
+                    color: active ? '#C9A70A' : 'rgba(255,255,255,0.4)',
+                  }}
+                >
+                  {count}
+                </span>
+              )}
+            </button>
+          )
+        })}
       </div>
 
-      {/* Rule Builder */}
-      <RuleBuilder />
+      {/* Tab content — full width */}
+      {tab === 'emails' && (
+        <Panel className="flex flex-col">
+          <EmailPanel
+            emails={emails}
+            onAddTask={handleAddTask}
+            onArchive={handleArchive}
+            onBulkArchive={handleBulkArchive}
+            onRefresh={refreshEmails}
+            onReclassify={handleReclassify}
+            onEmailClick={setDrawerEmail}
+            initialFilter={emailFilter}
+          />
+        </Panel>
+      )}
+
+      {tab === 'tasks' && (
+        <Panel className="flex flex-col">
+          <TaskBoard
+            tasks={tasks}
+            onToggle={handleToggleTask}
+            onAdd={handleAddTask}
+            onDelete={handleDeleteTask}
+            onBulkComplete={handleBulkComplete}
+            onBulkDelete={handleBulkDelete}
+          />
+        </Panel>
+      )}
+
+      {tab === 'rules' && (
+        <RuleBuilder />
+      )}
+
+      {/* Email detail drawer */}
+      <EmailDetailDrawer
+        email={drawerEmail}
+        onClose={() => setDrawerEmail(null)}
+        onAddTask={(title) => handleAddTask(title)}
+        onArchive={handleArchive}
+        onReclassify={handleReclassify}
+      />
     </div>
   )
 }

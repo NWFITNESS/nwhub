@@ -25,6 +25,7 @@ interface Props {
   onReclassify?: (emailId: string) => void
   selected?: boolean
   onToggleSelect?: (emailId: string) => void
+  onClick?: () => void
 }
 
 const CATEGORY_STYLES: Record<string, { label: string; className: string }> = {
@@ -60,7 +61,7 @@ function hashColor(str: string): string {
   return colors[Math.abs(hash)]
 }
 
-export function EmailCard({ email, onAddTask, onArchive, onReclassify, selected, onToggleSelect }: Props) {
+export function EmailCard({ email, onAddTask, onArchive, onReclassify, selected, onToggleSelect, onClick }: Props) {
   const [summaryOpen, setSummaryOpen] = useState(false)
   const [archiving, startArchiveTransition] = useTransition()
   const [reclassifying, setReclassifying] = useState(false)
@@ -72,13 +73,15 @@ export function EmailCard({ email, onAddTask, onArchive, onReclassify, selected,
 
   return (
     <div
-      className="rounded-xl border p-3.5 transition-colors"
+      className={`rounded-xl border transition-colors ${onClick ? 'cursor-pointer' : ''}`}
       style={{
+        padding: 16,
         background: isImportant ? 'rgba(212,160,23,0.05)' : 'var(--slate-750)',
         borderColor: isImportant ? 'rgba(150,119,5,0.25)' : 'var(--r-panel-border)',
       }}
       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = isImportant ? 'rgba(150,119,5,0.4)' : 'rgba(255,255,255,0.12)' }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = isImportant ? 'rgba(150,119,5,0.25)' : 'var(--r-panel-border)' }}
+      onClick={e => { if (onClick && !(e.target as HTMLElement).closest('button, input, a')) onClick() }}
     >
       <div className="flex items-start gap-3">
         {/* Select checkbox */}
@@ -93,8 +96,8 @@ export function EmailCard({ email, onAddTask, onArchive, onReclassify, selected,
 
         {/* Avatar */}
         <div
-          className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-black flex-shrink-0 mt-0.5"
-          style={{ background: avatarColor }}
+          className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-black flex-shrink-0 mt-0.5"
+          style={{ background: avatarColor, fontSize: 12 }}
         >
           {initials}
         </div>
@@ -103,53 +106,59 @@ export function EmailCard({ email, onAddTask, onArchive, onReclassify, selected,
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-[13px] font-semibold text-white/90 truncate">
+              <p className="font-semibold text-white truncate" style={{ fontSize: 15 }}>
                 {email.sender_name ?? email.sender}
               </p>
-              <p className="text-[13px] text-white/65 truncate mt-0.5">{email.subject}</p>
+              <p className="text-white/80 truncate mt-0.5" style={{ fontSize: 14 }}>{email.subject}</p>
             </div>
-            <span className="text-[11px] text-white/35 flex-shrink-0 mt-0.5">{formatTime(email.received_at)}</span>
+            <span className="text-white/45 flex-shrink-0 mt-0.5" style={{ fontSize: 12 }}>{formatTime(email.received_at)}</span>
           </div>
 
           {email.preview && (
-            <p className="text-[12px] text-white/40 mt-1.5 line-clamp-2">{email.preview}</p>
+            <p className="text-white/55 mt-1.5 line-clamp-2" style={{ fontSize: 13 }}>{email.preview}</p>
           )}
 
           {/* Tags row */}
-          <div className="flex items-center gap-2 mt-2 flex-wrap">
+          <div className="flex items-center gap-2 mt-2.5 flex-wrap">
             {email.archived ? (
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-green-500/15 text-green-400 border-green-500/25">
+              <span className="font-semibold rounded-full border bg-green-500/15 text-green-400 border-green-500/25" style={{ fontSize: 11, padding: '2px 10px' }}>
                 Handled ✓
               </span>
             ) : (
-              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${category.className}`}>
+              <span className={`font-semibold rounded-full border ${category.className}`} style={{ fontSize: 11, padding: '2px 10px' }}>
                 {category.label}
               </span>
             )}
             {email.task_created && (
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-[#967705]/15 text-[#c9a70a] border-[#967705]/25">
+              <span className="font-semibold rounded-full border bg-[#967705]/15 text-[#c9a70a] border-[#967705]/25" style={{ fontSize: 11, padding: '2px 10px' }}>
                 Task created
               </span>
             )}
             {email.has_invoice && (
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-blue-500/15 text-blue-400 border-blue-500/25">
+              <span className="font-semibold rounded-full border bg-blue-500/15 text-blue-400 border-blue-500/25" style={{ fontSize: 11, padding: '2px 10px' }}>
                 Invoice extracted
               </span>
             )}
           </div>
 
-          {/* AI Summary (collapsible for flagged) */}
-          {email.ai_summary && (
+          {/* AI Summary — always visible for important emails, collapsible for others */}
+          {email.ai_summary && isActionable && (
+            <div className="mt-3 rounded-lg" style={{ padding: '10px 14px', background: 'rgba(201,167,10,0.05)', borderLeft: '3px solid rgba(201,167,10,0.4)', fontSize: 13, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6 }}>
+              {email.ai_summary}
+            </div>
+          )}
+          {email.ai_summary && !isActionable && (
             <div className="mt-2">
               <button
-                onClick={() => setSummaryOpen(v => !v)}
-                className="flex items-center gap-1 text-[11px] text-[#c9a70a]/70 hover:text-[#c9a70a] transition-colors"
+                onClick={(e) => { e.stopPropagation(); setSummaryOpen(v => !v) }}
+                className="flex items-center gap-1 text-[#c9a70a]/70 hover:text-[#c9a70a] transition-colors"
+                style={{ fontSize: 12 }}
               >
                 <ChevronDown size={12} className={`transition-transform ${summaryOpen ? 'rotate-180' : ''}`} />
                 AI Summary
               </button>
               {summaryOpen && (
-                <p className="text-[12px] text-white/60 mt-1.5 leading-relaxed bg-white/[0.03] rounded-lg px-3 py-2 border border-white/[0.05]">
+                <p className="text-white/60 mt-1.5 leading-relaxed bg-white/[0.03] rounded-lg border border-white/[0.05]" style={{ fontSize: 13, padding: '8px 12px' }}>
                   {email.ai_summary}
                 </p>
               )}
@@ -157,14 +166,14 @@ export function EmailCard({ email, onAddTask, onArchive, onReclassify, selected,
           )}
 
           {/* Actions row */}
-          <div className="mt-2 flex items-center gap-3">
-            {/* Add task action */}
+          <div className="mt-2.5 flex items-center gap-3">
             {!email.task_created && isImportant && (
               <button
-                onClick={() => onAddTask(`Follow up: ${email.subject}`, undefined)}
-                className="flex items-center gap-1 text-[11px] text-white/40 hover:text-[#c9a70a] transition-colors"
+                onClick={(e) => { e.stopPropagation(); onAddTask(`Follow up: ${email.subject}`, undefined) }}
+                className="flex items-center gap-1 text-white/55 hover:text-[#c9a70a] transition-colors"
+                style={{ fontSize: 12 }}
               >
-                <Plus size={11} />
+                <Plus size={12} />
                 Add to tasks
               </button>
             )}
@@ -172,11 +181,12 @@ export function EmailCard({ email, onAddTask, onArchive, onReclassify, selected,
             {/* Mark as handled */}
             {isActionable && !email.archived && (
               <button
-                onClick={() => startArchiveTransition(() => onArchive(email.id))}
+                onClick={(e) => { e.stopPropagation(); startArchiveTransition(() => onArchive(email.id)) }}
                 disabled={archiving}
-                className="flex items-center gap-1 text-[11px] text-white/40 hover:text-green-400 transition-colors disabled:opacity-50"
+                className="flex items-center gap-1 text-white/55 hover:text-green-400 transition-colors disabled:opacity-50"
+                style={{ fontSize: 12 }}
               >
-                <Check size={11} />
+                <Check size={12} />
                 {archiving ? 'Done…' : 'Mark handled'}
               </button>
             )}
@@ -184,15 +194,17 @@ export function EmailCard({ email, onAddTask, onArchive, onReclassify, selected,
             {/* Reclassify */}
             {onReclassify && (
               <button
-                onClick={async () => {
+                onClick={async (e) => {
+                  e.stopPropagation()
                   setReclassifying(true)
                   await onReclassify(email.id)
                   setReclassifying(false)
                 }}
                 disabled={reclassifying}
-                className="flex items-center gap-1 text-[11px] text-white/40 hover:text-blue-400 transition-colors disabled:opacity-50"
+                className="flex items-center gap-1 text-white/55 hover:text-blue-400 transition-colors disabled:opacity-50"
+                style={{ fontSize: 12 }}
               >
-                <RefreshCw size={11} className={reclassifying ? 'animate-spin' : ''} />
+                <RefreshCw size={12} className={reclassifying ? 'animate-spin' : ''} />
                 {reclassifying ? 'Reclassifying…' : 'Reclassify'}
               </button>
             )}

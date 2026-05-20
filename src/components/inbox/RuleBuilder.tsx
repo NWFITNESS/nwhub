@@ -84,6 +84,7 @@ export function RuleBuilder() {
   const [editingRule, setEditingRule] = useState<Rule | null>(null)
   const [showNew, setShowNew] = useState(false)
   const [dragIdx, setDragIdx] = useState<number | null>(null)
+  const [matchCounts, setMatchCounts] = useState<Record<string, number>>({})
 
   async function loadRules() {
     setLoading(true)
@@ -94,7 +95,19 @@ export function RuleBuilder() {
     finally { setLoading(false) }
   }
 
-  useEffect(() => { loadRules() }, [])
+  async function loadMatchCounts() {
+    try {
+      const res = await fetch('/api/inbox/stats')
+      if (res.ok) {
+        const data = await res.json()
+        const counts: Record<string, number> = {}
+        for (const r of (data.ruleCounts ?? [])) counts[r.ruleId] = r.count
+        setMatchCounts(counts)
+      }
+    } catch { /* ignore */ }
+  }
+
+  useEffect(() => { loadRules(); loadMatchCounts() }, [])
 
   async function toggleEnabled(rule: Rule) {
     await fetch('/api/inbox/rules', {
@@ -201,10 +214,17 @@ export function RuleBuilder() {
                   {rule.enabled && <span className="text-[10px]">✓</span>}
                 </button>
 
-                {/* Name + condition count */}
+                {/* Name + condition count + match stats */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] text-nw-200 truncate">{rule.name}</p>
-                  <p className="text-[10px] text-nw-500">
+                  <div className="flex items-center gap-2">
+                    <p className="text-nw-200 truncate" style={{ fontSize: 14 }}>{rule.name}</p>
+                    {(matchCounts[rule.id] ?? 0) > 0 && (
+                      <span className="flex-shrink-0 rounded-full bg-[#967705]/15 border border-[#967705]/25 text-[#c9a70a] font-semibold" style={{ fontSize: 10, padding: '1px 8px' }}>
+                        {matchCounts[rule.id]} matched
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-nw-500" style={{ fontSize: 11 }}>
                     {rule.conditions.length} condition{rule.conditions.length !== 1 ? 's' : ''} · match {rule.match_type}
                   </p>
                 </div>

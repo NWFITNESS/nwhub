@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { EmailCard } from './EmailCard'
 import { Check } from 'lucide-react'
 
@@ -29,6 +29,8 @@ interface Props {
   onBulkArchive: (emailIds: string[]) => void
   onRefresh: () => void
   onReclassify?: (emailId: string) => void
+  onEmailClick?: (email: Email) => void
+  initialFilter?: string
 }
 
 const FILTERS: { key: FilterType; label: string }[] = [
@@ -39,11 +41,13 @@ const FILTERS: { key: FilterType; label: string }[] = [
   { key: 'spam', label: 'Archived' },
 ]
 
-export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive, onReclassify }: Props) {
-  // Default to needs_attention so the admin lands on priority emails, not the
-  // full firehose including archives and newsletters.
-  const [filter, setFilter] = useState<FilterType>('needs_attention')
+export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive, onReclassify, onEmailClick, initialFilter }: Props) {
+  const [filter, setFilter] = useState<FilterType>((initialFilter as FilterType) || 'needs_attention')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    if (initialFilter) setFilter(initialFilter as FilterType)
+  }, [initialFilter])
 
   const filtered = useMemo(() => emails.filter(e => {
     // "All" shows everything EXCEPT archived — it's the active inbox, not a
@@ -89,7 +93,7 @@ export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive, onRecl
     <div className="flex flex-col">
       {/* Panel header */}
       <div className="border-b border-white/[0.06]" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 18, paddingBottom: 16 }}>
-        <p className="text-[10px] font-semibold text-[#d4af37]/70 uppercase tracking-[0.2em]">
+        <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(212,175,55,0.7)' }}>
           Processed Emails
         </p>
         <div className="flex items-center gap-2 mt-3 flex-wrap">
@@ -104,14 +108,15 @@ export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive, onRecl
               <button
                 key={f.key}
                 onClick={() => setFilter(f.key)}
-                className={`flex-shrink-0 flex items-center gap-1.5 h-7 px-3 rounded-full text-[12px] font-medium transition-all ${
+                className={`flex-shrink-0 flex items-center gap-1.5 rounded-full font-medium transition-all ${
                   filter === f.key
                     ? 'bg-[#967705]/20 border border-[#967705]/40 text-[#c9a70a]'
                     : 'bg-white/[0.03] border border-white/[0.06] text-white/40 hover:text-white/60 hover:bg-white/[0.06]'
                 }`}
+                style={{ fontSize: 13, padding: '6px 14px' }}
               >
                 {f.label}
-                {count > 0 && <span className="text-[10px] opacity-60">{count}</span>}
+                {count > 0 && <span style={{ fontSize: 11 }} className="opacity-60">{count}</span>}
               </button>
             )
           })}
@@ -161,7 +166,7 @@ export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive, onRecl
       )}
 
       {/* Email list */}
-      <div className="space-y-2" style={{ padding: 16 }}>
+      <div className="space-y-3" style={{ padding: 16 }}>
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-white/25 text-[13px]">
             No emails in this category
@@ -176,6 +181,7 @@ export function EmailPanel({ emails, onAddTask, onArchive, onBulkArchive, onRecl
               onReclassify={onReclassify}
               selected={selectedIds.has(email.id)}
               onToggleSelect={email.archived ? undefined : toggleSelect}
+              onClick={onEmailClick ? () => onEmailClick(email) : undefined}
             />
           ))
         )}

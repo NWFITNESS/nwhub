@@ -93,7 +93,7 @@ export function TaskItem({ task, onToggle, onDelete, selectable, selected, onSel
       <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${PRIORITY_DOT[task.priority] ?? 'bg-white/20'}`} />
 
       {/* Title */}
-      <span className={`flex-1 text-[13px] min-w-0 truncate ${task.completed ? 'line-through text-white/30' : selected ? 'text-white' : 'text-white/80'}`}>
+      <span className={`flex-1 min-w-0 truncate ${task.completed ? 'line-through text-white/30' : selected ? 'text-white' : 'text-white/80'}`} style={{ fontSize: 14 }}>
         {task.title}
       </span>
 
@@ -104,7 +104,7 @@ export function TaskItem({ task, onToggle, onDelete, selectable, selected, onSel
 
       {/* Due badge */}
       {badge && (
-        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border flex-shrink-0 ${badge.className}`}>
+        <span className={`font-semibold rounded border flex-shrink-0 ${badge.className}`} style={{ fontSize: 11, padding: '2px 8px' }}>
           {badge.label}
         </span>
       )}

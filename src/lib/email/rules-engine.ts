@@ -51,15 +51,21 @@ export interface Classification {
 
 // ── Engine ───────────────────────────────────────────────────────────────────
 
+export interface ApplyRulesResult {
+  classification: Classification
+  matchedRuleId: string | null
+}
+
 /**
  * Load enabled rules and apply the first matching one to the AI classification.
  * Rules override specific fields only — unset fields keep the AI's decision.
  * First match wins (ordered by priority ASC).
+ * Returns the merged classification + the ID of the matched rule (if any).
  */
 export async function applyRules(
   email: NormalizedEmail,
   aiClassification: Classification,
-): Promise<Classification> {
+): Promise<ApplyRulesResult> {
   const supabase = createAdminClient()
   const { data: rules } = await supabase
     .from('inbox_rules')
@@ -67,7 +73,7 @@ export async function applyRules(
     .eq('enabled', true)
     .order('priority', { ascending: true })
 
-  if (!rules?.length) return aiClassification
+  if (!rules?.length) return { classification: aiClassification, matchedRuleId: null }
 
   for (const rule of rules) {
     const conditions = rule.conditions as RuleCondition[]
@@ -89,11 +95,11 @@ export async function applyRules(
       if (action.create_task !== undefined) merged.create_task = action.create_task
       if (action.task_priority !== undefined) merged.task_priority = action.task_priority
 
-      return merged // First match wins — stop processing
+      return { classification: merged, matchedRuleId: rule.id } // First match wins
     }
   }
 
-  return aiClassification
+  return { classification: aiClassification, matchedRuleId: null }
 }
 
 // ── Condition evaluator ──────────────────────────────────────────────────────
