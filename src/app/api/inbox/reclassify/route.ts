@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     has_attachment: hasAttachment,
     attachment_types: attachmentTypes,
   }
-  const result = await applyRules(normalized, aiResult)
+  const { classification: result, matchedRuleId } = await applyRules(normalized, aiResult)
 
   debug.push(`Old: ${email.category} → New: ${result.category}`)
 
@@ -81,6 +81,7 @@ export async function POST(req: NextRequest) {
     ai_summary: result.ai_summary || email.ai_summary,
     flagged: result.flagged ?? false,
     archived: isArchived,
+    rule_matched_id: matchedRuleId,
   }).eq('id', email_id)
 
   // Create task if needed and no task exists
