@@ -22,19 +22,14 @@ const ResponsiveGridLayout = WidthProvider(Responsive)
 
 // ── Widget catalogue ───────────────────────────────────────────────────────────
 
+// KPI cards + visitor chart are now rendered directly above the grid (hero section).
+// These remaining widgets form the customisable grid below.
 const OVERVIEW_WIDGETS: WidgetDef[] = [
-  { id: 'kpi-members',     name: 'Total Members',             category: 'kpi',   defaultLayout: { w: 2,  h: 3, x: 0,  y: 0  } },
-  { id: 'kpi-kids',        name: 'Kids & Teens',              category: 'kpi',   defaultLayout: { w: 2,  h: 3, x: 2,  y: 0  } },
-  { id: 'kpi-leads',       name: 'Lead Pipeline',             category: 'kpi',   defaultLayout: { w: 4,  h: 3, x: 4,  y: 0  } },
-  { id: 'kpi-subscribers', name: 'Email Subscribers',         category: 'kpi',   defaultLayout: { w: 2,  h: 3, x: 8,  y: 0  } },
-  { id: 'kpi-enquiries',   name: 'Unread Enquiries',          category: 'kpi',   defaultLayout: { w: 2,  h: 3, x: 10, y: 0  } },
-  { id: 'kpi-revenue',     name: 'Monthly Revenue',           category: 'kpi',   defaultLayout: { w: 3,  h: 3, x: 0,  y: 3  } },
-  { id: 'main-panel',      name: 'Quick Actions & Enquiries', category: 'misc',  defaultLayout: { w: 8,  h: 10, x: 0, y: 3  } },
-  { id: 'checklist',       name: 'Setup Checklist',           category: 'misc',  defaultLayout: { w: 4,  h: 7, x: 8,  y: 3  } },
-  { id: 'system-status',   name: 'System Status',             category: 'misc',  defaultLayout: { w: 4,  h: 3, x: 8,  y: 10 } },
-  { id: 'calendar',        name: 'Calendar',                  category: 'misc',  defaultLayout: { w: 4,  h: 5, x: 8,  y: 13 } },
-  { id: 'visitor-chart',   name: 'Website Visitors',          category: 'chart', defaultLayout: { w: 8,  h: 7, x: 0,  y: 13 } },
-  { id: 'todo',            name: 'To Do List',                category: 'misc',  defaultLayout: { w: 4,  h: 8, x: 0,  y: 20 } },
+  { id: 'main-panel',      name: 'Quick Actions & Enquiries', category: 'misc',  defaultLayout: { w: 8,  h: 10, x: 0, y: 0  } },
+  { id: 'checklist',       name: 'Setup Checklist',           category: 'misc',  defaultLayout: { w: 4,  h: 7, x: 8,  y: 0  } },
+  { id: 'system-status',   name: 'System Status',             category: 'misc',  defaultLayout: { w: 4,  h: 3, x: 8,  y: 7  } },
+  { id: 'calendar',        name: 'Calendar',                  category: 'misc',  defaultLayout: { w: 4,  h: 5, x: 8,  y: 10 } },
+  { id: 'todo',            name: 'To Do List',                category: 'misc',  defaultLayout: { w: 4,  h: 8, x: 0,  y: 10 } },
   { id: 'recent-posts',    name: 'Recent Blog Posts',         category: 'table', defaultLayout: { w: 8,  h: 6, x: 4,  y: 20 } },
 ]
 
