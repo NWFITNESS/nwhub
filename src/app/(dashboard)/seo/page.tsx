@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { PageStatCard } from '@/components/ui/PageStatCard'
 import { RefreshCw, Search, AlertTriangle, TrendingUp, TrendingDown, ExternalLink, Zap, Settings, Plus, Sparkles } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import Link from 'next/link'
@@ -308,14 +309,9 @@ export default function SeoEnginePage() {
 
           {/* KPI row */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <KpiCard label="Pages Live" value={data.kpis.pages_live} />
-            <KpiCard label="Indexed" value={`${data.kpis.indexed_count} / ${data.kpis.pages_live}`} sub={`${Math.round(data.kpis.indexed_rate * 100)}%`} />
-            <KpiCard
-              label="Avg Position"
-              value={data.kpis.avg_position.toFixed(1)}
-              delta={data.kpis.avg_position_delta}
-              invertDelta
-            />
+            <PageStatCard label="Pages Live" value={data.kpis.pages_live} sub="Published SEO pages" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 9h4"/></svg>} color="#22c55e" />
+            <PageStatCard label="Indexed" value={`${data.kpis.indexed_count} / ${data.kpis.pages_live}`} sub={`${Math.round(data.kpis.indexed_rate * 100)}% indexed`} icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="6.5" cy="6.5" r="4"/><path d="M10 10l4 4" strokeLinecap="round"/></svg>} color="#3b82f6" />
+            <PageStatCard label="Avg Position" value={data.kpis.avg_position.toFixed(1)} sub="Google search ranking" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M2 11l3.5-3.5L8 10l5.5-6" strokeLinecap="round" strokeLinejoin="round"/></svg>} color="#C9A70A" />
           </div>
 
           {/* Templates */}

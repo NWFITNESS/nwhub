@@ -1,10 +1,9 @@
 'use client'
 
-import { TrendingUp, Receipt, PoundSterling } from 'lucide-react'
 import { WidgetGrid } from './WidgetGrid'
 import { WidgetShell } from './WidgetShell'
 import { useWidgetLayout, type WidgetDef } from './useWidgetLayout'
-import { FinStatCard } from './financials/FinStatCard'
+import { PageStatCard } from '@/components/ui/PageStatCard'
 import { MonthlyOverviewWidget } from './financials/MonthlyOverviewWidget'
 import { IncomeBreakdownWidget } from './financials/IncomeBreakdownWidget'
 import { NetProfitTrendWidget } from './financials/NetProfitTrendWidget'
@@ -57,25 +56,25 @@ export function FinancialsWidgetGrid({ data }: Props) {
       case 'fin-kpi-month-income':
         return (
           <WidgetShell key={id} id={id} isCustomising={isCustomising} onRemove={onRemove} noPad>
-            <FinStatCard label="This Month" value={thisMonth.income} icon={TrendingUp} iconBg="rgba(34,197,94,0.15)" trend={revenueVsLastMonth} />
+            <PageStatCard label="This Month" value={`£${thisMonth.income.toLocaleString()}`} sub={`${revenueVsLastMonth >= 0 ? '+' : ''}${revenueVsLastMonth}% vs last month`} color="#22c55e" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M2 11l3.5-3.5L8 10l5.5-6" strokeLinecap="round" strokeLinejoin="round"/></svg>} />
           </WidgetShell>
         )
       case 'fin-kpi-year-income':
         return (
           <WidgetShell key={id} id={id} isCustomising={isCustomising} onRemove={onRemove} noPad>
-            <FinStatCard label="Annual Income" value={yearIncome} icon={PoundSterling} iconBg="rgba(201,167,10,0.15)" sub="Last 12 months" />
+            <PageStatCard label="Annual Income" value={`£${yearIncome.toLocaleString()}`} sub="Last 12 months" gold icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M8 1v14M4 5h8M4 9h8" strokeLinecap="round"/></svg>} />
           </WidgetShell>
         )
       case 'fin-kpi-expenses':
         return (
           <WidgetShell key={id} id={id} isCustomising={isCustomising} onRemove={onRemove} noPad>
-            <FinStatCard label="This Month Expenses" value={thisMonth.expenses} icon={Receipt} iconBg="rgba(168,85,247,0.15)" sub="From Xero P&L" />
+            <PageStatCard label="This Month Expenses" value={`£${thisMonth.expenses.toLocaleString()}`} sub="From Xero P&L" color="#8b5cf6" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M1 7h14" strokeLinecap="round"/></svg>} />
           </WidgetShell>
         )
       case 'fin-kpi-profit':
         return (
           <WidgetShell key={id} id={id} isCustomising={isCustomising} onRemove={onRemove} noPad>
-            <FinStatCard label="Net Profit" value={thisMonth.profit} icon={TrendingUp} iconBg="rgba(59,130,246,0.15)" sub="This month" negative />
+            <PageStatCard label="Net Profit" value={`£${thisMonth.profit.toLocaleString()}`} sub="This month" color={thisMonth.profit >= 0 ? '#22c55e' : '#ef4444'} alert={thisMonth.profit < 0} icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M2 11l3.5-3.5L8 10l5.5-6" strokeLinecap="round" strokeLinejoin="round"/><rect x="1" y="1" width="14" height="14" rx="2"/></svg>} />
           </WidgetShell>
         )
       case 'fin-chart-monthly':

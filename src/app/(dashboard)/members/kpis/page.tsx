@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Panel, PanelHeader } from '@/components/ui/Card'
+import { PageStatCard } from '@/components/ui/PageStatCard'
 import { MembershipGroups } from '@/components/settings/MembershipGroups'
 
 export default async function MemberKPIsPage() {
@@ -77,23 +78,11 @@ export default async function MemberKPIsPage() {
 
       {/* Stats overview */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-        {stats.map(s => {
-          const isLost = s.label === 'Lost Members'
-          return (
-            <div
-              key={s.label}
-              className="overflow-hidden rounded-2xl shadow-gold-sm"
-              style={{
-                padding: 16,
-                border: isLost ? '1px solid rgba(239,68,68,0.3)' : '1px solid rgba(255,255,255,0.12)',
-                background: isLost ? 'rgba(239,68,68,0.06)' : undefined,
-              }}
-            >
-              <span className={`text-[11px] font-bold uppercase tracking-[1.3px] ${isLost ? 'text-red-400' : 'text-nw-400'}`}>{s.label}</span>
-              <div className={`mt-3 font-brand text-[30px] font-bold leading-none tracking-[-0.5px] ${isLost ? 'text-red-400' : 'text-white'}`}>{s.value}</div>
-            </div>
-          )
-        })}
+        <PageStatCard label="Total Contacts" value={totalContacts} sub="All contacts" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5"/></svg>} color="#C9A70A" />
+        <PageStatCard label="Members" value={memberCount} sub="Active memberships" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="6" cy="5" r="2.5"/><path d="M1 14c0-2.5 2-4.5 5-4.5s5 2 5 4.5"/><circle cx="12" cy="5" r="1.5"/><path d="M15 12c0-1.5-1.2-2.8-3-2.8" strokeLinecap="round"/></svg>} color="#22c55e" />
+        <PageStatCard label="Trials" value={trialCount} sub="On trial" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2" strokeLinecap="round"/></svg>} color="#3b82f6" />
+        <PageStatCard label="Cancelled" value={cancelledCount} sub="Cancelled membership" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="8" r="6"/><path d="M5 5l6 6M11 5l-6 6" strokeLinecap="round"/></svg>} color="#f59e0b" />
+        <PageStatCard label="Lost Members" value={lostMembers} sub="No longer active" alert={lostMembers > 0} icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M8 1l7 13H1L8 1z"/><path d="M8 6v3M8 11.5v.5" strokeLinecap="round"/></svg>} />
       </div>
 
       {/* Lead conversion widget */}

@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { DollarSign, RefreshCw, FileText, Download, AlertTriangle, Paperclip, Mail, Link2, X, Eye, RotateCcw } from 'lucide-react'
+import { PageStatCard } from '@/components/ui/PageStatCard'
 import { Modal } from '@/components/ui/Modal'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -405,11 +406,11 @@ export default function InvoiceVaultPage() {
         <>
           {/* KPI Row */}
           <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-            <StatCard label="Unpaid Invoices" value={data.stats.unpaidCount} sub="Awaiting payment" />
-            <StatCard label="Overdue" value={data.stats.overdueCount} sub="Past due date" danger={data.stats.overdueCount > 0} />
-            <StatCard label="Unreconciled" value={data.stats.unreconciledCount} sub="Payments to reconcile" danger={data.stats.unreconciledCount > 0} />
-            <StatCard label="Unmatched" value={data.stats.unmatchedEmailCount} sub="Email invoices to match" danger={data.stats.unmatchedEmailCount > 0} />
-            <StatCard label="Month Spend" value={formatCurrency(data.stats.monthSpend)} sub="Bills paid this month" />
+            <PageStatCard label="Unpaid Invoices" value={data.stats.unpaidCount} sub="Awaiting payment" color="#f59e0b" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="3" y="1" width="10" height="14" rx="1.5"/><path d="M6 5h4M6 8h4M6 11h2" strokeLinecap="round"/></svg>} />
+            <PageStatCard label="Overdue" value={data.stats.overdueCount} sub="Past due date" alert={data.stats.overdueCount > 0} icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M8 1l7 13H1L8 1z"/><path d="M8 6v3M8 11.5v.5" strokeLinecap="round"/></svg>} />
+            <PageStatCard label="Unreconciled" value={data.stats.unreconciledCount} sub="Payments to reconcile" alert={data.stats.unreconciledCount > 0} icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2" strokeLinecap="round"/></svg>} />
+            <PageStatCard label="Unmatched" value={data.stats.unmatchedEmailCount} sub="Email invoices to match" alert={data.stats.unmatchedEmailCount > 0} icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M8 1v6M5 4l3 3 3-3" strokeLinecap="round" strokeLinejoin="round"/><rect x="1" y="9" width="14" height="6" rx="2"/></svg>} />
+            <PageStatCard label="Month Spend" value={formatCurrency(data.stats.monthSpend)} sub="Bills paid this month" gold icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M2 11l3.5-3.5L8 10l5.5-6" strokeLinecap="round" strokeLinejoin="round"/><rect x="1" y="1" width="14" height="14" rx="2"/></svg>} />
           </div>
 
           {/* Filter Tabs + Month Picker */}
