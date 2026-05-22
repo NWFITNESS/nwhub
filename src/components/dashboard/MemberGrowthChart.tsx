@@ -69,7 +69,28 @@ export function WebsiteVisitorsChart({ data24h, data7d, data30d, data1y, comp7d,
   const tickInterval = range === '30D' ? Math.max(0, Math.floor(currentData.length / 8) - 1) : range === '24H' ? 2 : 0
 
   return (
-    <div className="rounded-2xl" style={{ padding: '24px 24px 16px', background: 'var(--slate-750)', border: '1px solid var(--r-panel-border)' }}>
+    <div className="rounded-2xl relative overflow-hidden group" style={{ padding: '24px 24px 16px', background: 'var(--slate-750)', border: '1px solid var(--r-panel-border)' }}>
+      {/* Decorative illustration — globe with analytics pulse */}
+      <svg viewBox="0 0 280 220" fill="none" className="absolute -right-6 -top-6 w-[240px] h-[190px] opacity-50 group-hover:opacity-60 transition-opacity pointer-events-none" aria-hidden="true">
+        {/* Globe */}
+        <circle cx="160" cy="100" r="70" stroke="#C9A70A" strokeWidth="1.5" opacity="0.12" />
+        <ellipse cx="160" cy="100" rx="70" ry="30" stroke="#C9A70A" strokeWidth="1" opacity="0.08" />
+        <ellipse cx="160" cy="100" rx="30" ry="70" stroke="#C9A70A" strokeWidth="1" opacity="0.08" />
+        <path d="M90 100h140" stroke="#C9A70A" strokeWidth="0.8" opacity="0.06" />
+        <path d="M160 30v140" stroke="#C9A70A" strokeWidth="0.8" opacity="0.06" />
+        {/* Pulse rings */}
+        <circle cx="130" cy="80" r="8" fill="#C9A70A" opacity="0.12" />
+        <circle cx="130" cy="80" r="16" stroke="#C9A70A" strokeWidth="1" opacity="0.06" />
+        <circle cx="130" cy="80" r="24" stroke="#C9A70A" strokeWidth="0.5" opacity="0.04" />
+        {/* Data points on globe */}
+        <circle cx="180" cy="70" r="4" fill="#C9A70A" opacity="0.15" />
+        <circle cx="145" cy="120" r="3" fill="#C9A70A" opacity="0.1" />
+        <circle cx="195" cy="105" r="3.5" fill="#C9A70A" opacity="0.12" />
+        {/* Rising line */}
+        <path d="M40 170L80 145L120 155L160 120L200 90L240 60" stroke="#C9A70A" strokeWidth="2" opacity="0.1" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M232 56L242 60L236 70" stroke="#C9A70A" strokeWidth="1.5" opacity="0.08" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+
       {/* Header */}
       <div className="flex items-start justify-between mb-2 flex-wrap gap-3">
         <div>
