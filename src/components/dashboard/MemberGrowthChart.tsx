@@ -70,25 +70,61 @@ export function WebsiteVisitorsChart({ data24h, data7d, data30d, data1y, comp7d,
 
   return (
     <div className="rounded-2xl relative overflow-hidden group" style={{ padding: '24px 24px 16px', background: 'var(--slate-750)', border: '1px solid var(--r-panel-border)' }}>
-      {/* Decorative illustration — globe with analytics pulse */}
-      <svg viewBox="0 0 280 220" fill="none" className="absolute -right-6 -top-6 w-[240px] h-[190px] opacity-50 group-hover:opacity-60 transition-opacity pointer-events-none" aria-hidden="true">
-        {/* Globe */}
-        <circle cx="160" cy="100" r="70" stroke="#C9A70A" strokeWidth="1.5" opacity="0.12" />
-        <ellipse cx="160" cy="100" rx="70" ry="30" stroke="#C9A70A" strokeWidth="1" opacity="0.08" />
-        <ellipse cx="160" cy="100" rx="30" ry="70" stroke="#C9A70A" strokeWidth="1" opacity="0.08" />
-        <path d="M90 100h140" stroke="#C9A70A" strokeWidth="0.8" opacity="0.06" />
-        <path d="M160 30v140" stroke="#C9A70A" strokeWidth="0.8" opacity="0.06" />
-        {/* Pulse rings */}
-        <circle cx="130" cy="80" r="8" fill="#C9A70A" opacity="0.12" />
-        <circle cx="130" cy="80" r="16" stroke="#C9A70A" strokeWidth="1" opacity="0.06" />
-        <circle cx="130" cy="80" r="24" stroke="#C9A70A" strokeWidth="0.5" opacity="0.04" />
-        {/* Data points on globe */}
-        <circle cx="180" cy="70" r="4" fill="#C9A70A" opacity="0.15" />
-        <circle cx="145" cy="120" r="3" fill="#C9A70A" opacity="0.1" />
-        <circle cx="195" cy="105" r="3.5" fill="#C9A70A" opacity="0.12" />
-        {/* Rising line */}
-        <path d="M40 170L80 145L120 155L160 120L200 90L240 60" stroke="#C9A70A" strokeWidth="2" opacity="0.1" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M232 56L242 60L236 70" stroke="#C9A70A" strokeWidth="1.5" opacity="0.08" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Decorative illustration — filled globe with data visualization */}
+      <svg viewBox="0 0 400 350" fill="none" className="absolute -right-10 -top-10 w-[380px] h-[330px] opacity-[0.45] group-hover:opacity-[0.55] transition-opacity pointer-events-none" aria-hidden="true">
+        <defs>
+          <radialGradient id="globeGrad" cx="45%" cy="40%" r="50%">
+            <stop offset="0%" stopColor="#C9A70A" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="#C9A70A" stopOpacity="0.03" />
+          </radialGradient>
+          <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#C9A70A" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#C9A70A" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        {/* Large filled globe */}
+        <circle cx="240" cy="140" r="110" fill="url(#globeGrad)" />
+        <circle cx="240" cy="140" r="110" stroke="#C9A70A" strokeWidth="1.5" opacity="0.12" />
+        {/* Globe grid lines */}
+        <ellipse cx="240" cy="140" rx="110" ry="44" stroke="#C9A70A" strokeWidth="0.8" opacity="0.08" />
+        <ellipse cx="240" cy="140" rx="80" ry="110" stroke="#C9A70A" strokeWidth="0.8" opacity="0.06" />
+        <ellipse cx="240" cy="140" rx="44" ry="110" stroke="#C9A70A" strokeWidth="0.8" opacity="0.05" />
+
+        {/* Filled continents / land masses (abstract shapes) */}
+        <path d="M195 80c10-5 30-8 45 0s20 25 10 35-25 5-35 0-25-30-20-35z" fill="#C9A70A" opacity="0.12" />
+        <path d="M270 110c8 0 20 10 22 25s-5 30-18 28-20-15-18-28 6-25 14-25z" fill="#C9A70A" opacity="0.1" />
+        <path d="M200 150c5-3 18-2 22 8s0 22-10 22-18-8-18-18 2-10 6-12z" fill="#C9A70A" opacity="0.08" />
+
+        {/* Pulse marker — main location */}
+        <circle cx="215" cy="120" r="6" fill="#C9A70A" opacity="0.35" />
+        <circle cx="215" cy="120" r="12" stroke="#C9A70A" strokeWidth="1.5" opacity="0.15" />
+        <circle cx="215" cy="120" r="20" stroke="#C9A70A" strokeWidth="1" opacity="0.08" />
+        <circle cx="215" cy="120" r="28" stroke="#C9A70A" strokeWidth="0.5" opacity="0.04" />
+
+        {/* Secondary markers */}
+        <circle cx="275" cy="100" r="4" fill="#C9A70A" opacity="0.2" />
+        <circle cx="260" cy="170" r="3.5" fill="#C9A70A" opacity="0.15" />
+        <circle cx="195" cy="165" r="3" fill="#C9A70A" opacity="0.12" />
+
+        {/* Connection lines between markers */}
+        <path d="M215 120L275 100" stroke="#C9A70A" strokeWidth="0.8" opacity="0.08" strokeDasharray="4 3" />
+        <path d="M215 120L260 170" stroke="#C9A70A" strokeWidth="0.8" opacity="0.06" strokeDasharray="4 3" />
+
+        {/* Rising area chart overlay */}
+        <path d="M30 290L80 260L130 275L180 230L230 200L280 170L330 140L370 110" stroke="#C9A70A" strokeWidth="2.5" opacity="0.15" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M30 290L80 260L130 275L180 230L230 200L280 170L330 140L370 110L370 310L30 310Z" fill="url(#areaGrad)" />
+
+        {/* Chart dots */}
+        <circle cx="80" cy="260" r="4" fill="#C9A70A" opacity="0.2" />
+        <circle cx="180" cy="230" r="4" fill="#C9A70A" opacity="0.2" />
+        <circle cx="280" cy="170" r="5" fill="#C9A70A" opacity="0.25" />
+        <circle cx="370" cy="110" r="5" fill="#C9A70A" opacity="0.3" />
+
+        {/* Floating bar chart (small, bottom-left) */}
+        <rect x="40" y="270" width="14" height="30" rx="3" fill="#C9A70A" opacity="0.08" />
+        <rect x="60" y="255" width="14" height="45" rx="3" fill="#C9A70A" opacity="0.1" />
+        <rect x="80" y="240" width="14" height="60" rx="3" fill="#C9A70A" opacity="0.12" />
       </svg>
 
       {/* Header */}
