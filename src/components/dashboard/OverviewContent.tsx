@@ -717,6 +717,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
             icon={<svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5"/></svg>}
             color="#C9A70A"
             colorLight="#f2cb55"
+            illustration="members"
             href="/leads"
           />
           <HeroStatCard
@@ -725,6 +726,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
             icon={<svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 11l3.5-3.5L8 10l5.5-6" strokeLinecap="round" strokeLinejoin="round"/><rect x="1" y="1" width="14" height="14" rx="2"/></svg>}
             color="#22c55e"
             colorLight="#4ade80"
+            illustration="revenue"
             href="/financials"
           />
           <HeroStatCard
@@ -734,6 +736,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
             icon={<svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 1v14M4 5l4-4 4 4" strokeLinecap="round" strokeLinejoin="round"/></svg>}
             color="#8b5cf6"
             colorLight="#a78bfa"
+            illustration="leads"
             href="/leads/pipeline"
           />
           <HeroStatCard
@@ -742,6 +745,7 @@ export function OverviewContent({ data, formattedDate }: Props) {
             icon={<svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-4 3V3a1 1 0 011-1z"/></svg>}
             color="#3b82f6"
             colorLight="#60a5fa"
+            illustration="enquiries"
             href="/enquiries"
           />
         </div>
