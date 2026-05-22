@@ -19,7 +19,7 @@ interface Props {
 
 function MembersIllustration({ color }: { color: string }) {
   return (
-    <svg viewBox="0 0 200 160" fill="none" className="absolute -right-4 -bottom-4 w-[180px] h-[144px] opacity-[0.07] group-hover:opacity-[0.12] transition-opacity" aria-hidden="true">
+    <svg viewBox="0 0 200 160" fill="none" className="absolute -right-4 -bottom-4 w-[180px] h-[144px] opacity-50 group-hover:opacity-60 transition-opacity" aria-hidden="true">
       {/* Group of people silhouettes */}
       <circle cx="100" cy="48" r="22" fill={color} />
       <path d="M60 140c0-22 18-40 40-40s40 18 40 40" fill={color} />
@@ -37,7 +37,7 @@ function MembersIllustration({ color }: { color: string }) {
 
 function RevenueIllustration({ color }: { color: string }) {
   return (
-    <svg viewBox="0 0 200 160" fill="none" className="absolute -right-2 -bottom-2 w-[170px] h-[136px] opacity-[0.07] group-hover:opacity-[0.12] transition-opacity" aria-hidden="true">
+    <svg viewBox="0 0 200 160" fill="none" className="absolute -right-2 -bottom-2 w-[170px] h-[136px] opacity-50 group-hover:opacity-60 transition-opacity" aria-hidden="true">
       {/* Rising bar chart with trend line */}
       <rect x="20" y="100" width="24" height="40" rx="4" fill={color} opacity="0.4" />
       <rect x="56" y="80" width="24" height="60" rx="4" fill={color} opacity="0.5" />
@@ -55,7 +55,7 @@ function RevenueIllustration({ color }: { color: string }) {
 
 function LeadsIllustration({ color }: { color: string }) {
   return (
-    <svg viewBox="0 0 200 160" fill="none" className="absolute -right-2 -bottom-2 w-[170px] h-[136px] opacity-[0.07] group-hover:opacity-[0.12] transition-opacity" aria-hidden="true">
+    <svg viewBox="0 0 200 160" fill="none" className="absolute -right-2 -bottom-2 w-[170px] h-[136px] opacity-50 group-hover:opacity-60 transition-opacity" aria-hidden="true">
       {/* Funnel shape */}
       <path d="M40 20L160 20L130 70L110 130L90 130L70 70Z" fill={color} opacity="0.3" />
       <path d="M50 20L150 20" stroke={color} strokeWidth="2" opacity="0.5" />
@@ -79,7 +79,7 @@ function LeadsIllustration({ color }: { color: string }) {
 
 function EnquiriesIllustration({ color }: { color: string }) {
   return (
-    <svg viewBox="0 0 200 160" fill="none" className="absolute -right-2 -bottom-4 w-[170px] h-[136px] opacity-[0.07] group-hover:opacity-[0.12] transition-opacity" aria-hidden="true">
+    <svg viewBox="0 0 200 160" fill="none" className="absolute -right-2 -bottom-4 w-[170px] h-[136px] opacity-50 group-hover:opacity-60 transition-opacity" aria-hidden="true">
       {/* Chat bubbles */}
       <rect x="30" y="20" width="100" height="60" rx="16" fill={color} />
       <path d="M50 80L40 100L70 80" fill={color} />

@@ -55,20 +55,58 @@ const PRIORITY_DOT: Record<string, string> = {
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 
-function StatCard({ label, value, sub, gold, icon, alert }: {
-  label: string; value: number | string; sub: string; gold?: boolean; icon: React.ReactNode; alert?: boolean
+function StatCard({ label, value, sub, gold, icon, alert, illustration }: {
+  label: string; value: number | string; sub: string; gold?: boolean; icon: React.ReactNode; alert?: boolean; illustration?: React.ReactNode
 }) {
   return (
-    <div className="relative cursor-default overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 shadow-gold-sm transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700 hover:shadow-gold-md h-full" style={{ padding: 16 }}>
-      <div className="flex items-start justify-between">
+    <div className="relative cursor-default overflow-hidden rounded-2xl border border-[rgba(255,255,255,0.12)] bg-nw-750 shadow-gold-sm transition-[background,border-color,box-shadow] duration-[180ms] hover:border-[rgba(212,160,23,0.22)] hover:bg-nw-700 hover:shadow-gold-md h-full group" style={{ padding: 16 }}>
+      {illustration}
+      <div className="relative z-10 flex items-start justify-between">
         <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">{label}</span>
         <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.06)]">{icon}</div>
       </div>
-      <div className={`mt-3 font-brand text-[34px] font-bold leading-none tracking-[-0.5px] ${gold ? 'text-gold-300' : 'text-white'}`}>{value}</div>
-      <div className="mt-2 text-xs font-medium text-nw-400">{sub}</div>
+      <div className={`relative z-10 mt-3 font-brand text-[34px] font-bold leading-none tracking-[-0.5px] ${gold ? 'text-gold-300' : 'text-white'}`}>{value}</div>
+      <div className="relative z-10 mt-2 text-xs font-medium text-nw-400">{sub}</div>
       <div className={`absolute bottom-0 left-0 right-0 h-[2px] ${gold ? 'bg-gradient-to-r from-[rgba(212,160,23,0.65)] to-transparent' : 'bg-gradient-to-r from-nw-600 to-transparent'}`} />
     </div>
   )
+}
+
+// ── Small card illustrations ────────────────────────────────────────────────
+
+const SmallIllustrations = {
+  kids: (
+    <svg viewBox="0 0 120 100" fill="none" className="absolute -right-2 -bottom-2 w-[100px] h-[84px] opacity-50 group-hover:opacity-60 transition-opacity" aria-hidden="true">
+      <circle cx="40" cy="30" r="14" fill="#C9A70A" opacity="0.15" />
+      <path d="M20 85c0-12 9-22 20-22s20 10 20 22" fill="#C9A70A" opacity="0.12" />
+      <circle cx="80" cy="35" r="11" fill="#C9A70A" opacity="0.1" />
+      <path d="M63 85c0-10 7-17 17-17s17 7 17 17" fill="#C9A70A" opacity="0.08" />
+      <path d="M35 18c0-4 2-7 5-7s5 3 5 7" stroke="#C9A70A" strokeWidth="1.5" opacity="0.15" strokeLinecap="round" />
+    </svg>
+  ),
+  subscribers: (
+    <svg viewBox="0 0 120 100" fill="none" className="absolute -right-2 -bottom-2 w-[100px] h-[84px] opacity-50 group-hover:opacity-60 transition-opacity" aria-hidden="true">
+      <rect x="15" y="25" width="70" height="45" rx="8" fill="#C9A70A" opacity="0.1" />
+      <path d="M15 33l35 22 35-22" stroke="#C9A70A" strokeWidth="2" opacity="0.15" />
+      <circle cx="90" cy="22" r="14" fill="#C9A70A" opacity="0.08" />
+      <path d="M85 20l4 4 8-8" stroke="#C9A70A" strokeWidth="2" opacity="0.15" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
+  contacts: (
+    <svg viewBox="0 0 120 100" fill="none" className="absolute -right-2 -bottom-2 w-[100px] h-[84px] opacity-50 group-hover:opacity-60 transition-opacity" aria-hidden="true">
+      <circle cx="50" cy="32" r="16" fill="#C9A70A" opacity="0.12" />
+      <path d="M28 82c0-14 10-24 22-24s22 10 22 24" fill="#C9A70A" opacity="0.1" />
+      <path d="M78 30v16M86 38h-16" stroke="#C9A70A" strokeWidth="2.5" opacity="0.15" strokeLinecap="round" />
+    </svg>
+  ),
+  tasks: (
+    <svg viewBox="0 0 120 100" fill="none" className="absolute -right-2 -bottom-2 w-[100px] h-[84px] opacity-50 group-hover:opacity-60 transition-opacity" aria-hidden="true">
+      <rect x="20" y="15" width="60" height="65" rx="10" fill="#C9A70A" opacity="0.08" />
+      <path d="M35 38l8 8 16-16" stroke="#C9A70A" strokeWidth="2.5" opacity="0.2" strokeLinecap="round" strokeLinejoin="round" />
+      <rect x="35" y="55" width="30" height="3" rx="1.5" fill="#C9A70A" opacity="0.1" />
+      <rect x="35" y="64" width="20" height="3" rx="1.5" fill="#C9A70A" opacity="0.08" />
+    </svg>
+  ),
 }
 
 // ── Quick Action ──────────────────────────────────────────────────────────────
@@ -752,10 +790,10 @@ export function OverviewContent({ data, formattedDate }: Props) {
 
         {/* Secondary stats row — smaller supporting numbers */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatCard label="Kids & Teens" value={data.kidsRegistrations} sub="Registrations" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="6" r="3"/><path d="M4 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/></svg>} />
-          <StatCard label="Subscribers" value={data.subscribers} sub="Active subscribers" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M1 5l7 5 7-5"/></svg>} />
-          <StatCard label="New Contacts" value={data.newContacts} sub="This month" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3 3-5 6-5s6 2 6 5"/><path d="M12 2v4M14 4h-4" strokeLinecap="round"/></svg>} />
-          <StatCard label="Open Tasks" value={data.tasks?.filter((t: DashboardTask) => !t.completed).length ?? 0} sub="To do" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="1" width="14" height="14" rx="2"/><path d="M4 5l2 2 3-3" strokeLinecap="round" strokeLinejoin="round"/><path d="M4 10h8" strokeLinecap="round"/></svg>} />
+          <StatCard label="Kids & Teens" value={data.kidsRegistrations} sub="Registrations" illustration={SmallIllustrations.kids} icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="6" r="3"/><path d="M4 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/></svg>} />
+          <StatCard label="Subscribers" value={data.subscribers} sub="Active subscribers" illustration={SmallIllustrations.subscribers} icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M1 5l7 5 7-5"/></svg>} />
+          <StatCard label="New Contacts" value={data.newContacts} sub="This month" illustration={SmallIllustrations.contacts} icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3 3-5 6-5s6 2 6 5"/><path d="M12 2v4M14 4h-4" strokeLinecap="round"/></svg>} />
+          <StatCard label="Open Tasks" value={data.tasks?.filter((t: DashboardTask) => !t.completed).length ?? 0} sub="To do" illustration={SmallIllustrations.tasks} icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="1" width="14" height="14" rx="2"/><path d="M4 5l2 2 3-3" strokeLinecap="round" strokeLinejoin="round"/><path d="M4 10h8" strokeLinecap="round"/></svg>} />
         </div>
 
         {/* Main content: Chart + Activity Feed */}
