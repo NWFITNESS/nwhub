@@ -1,7 +1,11 @@
 type BadgeVariant = 'done' | 'todo' | 'gold' | 'active' | 'paused' | 'sent' | 'draft' | 'amber' | 'danger'
   | 'new' | 'read' | 'replied' | 'published' | 'subscribed' | 'unsubscribed' | 'bounced' | 'default' | 'green'
 
-const base = 'inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.8px]'
+const base = 'inline-flex items-center rounded-lg font-bold uppercase' + ' '
+  + 'tracking-[0.6px]'
+
+// Sizing via inline style to bypass the global text-[10px] override
+const badgeStyle = { fontSize: 11, padding: '3px 10px' }
 
 const variantStyles: Record<BadgeVariant, string> = {
   done:         'bg-[rgba(74,222,128,0.12)]  text-[#22c55e] border border-[rgba(74,222,128,0.22)]',
@@ -32,7 +36,7 @@ interface BadgeProps {
 
 export function Badge({ variant = 'default', children, className = '' }: BadgeProps) {
   return (
-    <span className={`${base} ${variantStyles[variant]} ${className}`}>
+    <span className={`${base} ${variantStyles[variant]} ${className}`} style={badgeStyle}>
       {children}
     </span>
   )

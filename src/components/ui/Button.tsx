@@ -23,10 +23,10 @@ const variantMap: Record<Variant, string> = {
   destructive: 'border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.12)] text-red-400 hover:bg-[rgba(239,68,68,0.2)]',
 }
 
-const sizes: Record<Size, string> = {
-  sm: 'px-3.5 py-1.5 text-xs',
-  md: 'px-5 py-2.5 text-sm',
-  lg: 'px-6 py-3 text-sm',
+const sizes: Record<Size, { cls: string; style: React.CSSProperties }> = {
+  sm: { cls: 'font-semibold', style: { padding: '7px 14px', fontSize: 13 } },
+  md: { cls: 'font-semibold', style: { padding: '10px 20px', fontSize: 14 } },
+  lg: { cls: 'font-semibold', style: { padding: '12px 24px', fontSize: 14 } },
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -35,7 +35,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         disabled={disabled || loading}
-        className={`${base} ${variantMap[variant]} ${sizes[size]} ${className}`}
+        className={`${base} ${variantMap[variant]} ${sizes[size].cls} ${className}`}
+        style={sizes[size].style}
         {...props}
       >
         {loading && (

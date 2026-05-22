@@ -201,6 +201,60 @@ html.nw-light .recharts-cartesian-grid-horizontal line,
 html.nw-light .recharts-cartesian-grid-vertical line { stroke: rgba(0,0,0,0.06) !important; }
 html.nw-light .recharts-text { fill: #4b5563 !important; }
 
+/* 19. Light mode premium card styling */
+html.nw-light .bg-nw-750 {
+  background-color: #ffffff !important;
+  border-color: rgba(0,0,0,0.06) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03) !important;
+}
+html.nw-light .bg-nw-800 {
+  background-color: #f7f8fc !important;
+}
+html.nw-light .border-nw-700 {
+  border-color: rgba(0,0,0,0.06) !important;
+}
+
+/* ─── Premium global typography ──────────────────────────────────────────── */
+
+/* Bump minimum text sizes for readability across all pages */
+.text-\[10px\] { font-size: 11px !important; }
+.text-\[11px\] { font-size: 12px !important; }
+.text-\[9px\] { font-size: 10px !important; }
+.text-\[9\.5px\] { font-size: 11px !important; }
+
+/* Premium table styling — applies to all tables in the app */
+table {
+  font-size: 14px;
+}
+table th {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+table td {
+  font-size: 14px !important;
+}
+table thead th {
+  border-bottom-width: 1px !important;
+}
+table tbody tr {
+  transition: background-color 0.15s;
+}
+
+/* ─── Premium input styling ──────────────────────────────────────────────── */
+input[type="text"], input[type="email"], input[type="search"],
+input[type="tel"], input[type="url"], input[type="number"],
+input[type="password"], input[type="date"], input[type="time"],
+textarea, select {
+  font-size: 14px !important;
+}
+
+/* ─── Button text minimum ────────────────────────────────────────────────── */
+button {
+  font-size: max(12px, inherit);
+}
+
 @keyframes accordion-down {
   from { height: 0; }
   to { height: var(--radix-accordion-content-height); }
