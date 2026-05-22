@@ -10,7 +10,7 @@ import { format } from 'date-fns'
 import { Panel, PanelHeader } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { StatCard } from '@/components/widgets/dashboard/StatCard'
+import { PageStatCard } from '@/components/ui/PageStatCard'
 import type { MailchimpSettings, MailchimpAudience, MailchimpAudienceStats, MailchimpCampaignRow, MailchimpCampaignStatus } from '@/lib/types'
 
 interface EmailTemplate {
@@ -198,10 +198,10 @@ export function MailchimpDashboard({ initialSettings, initialStats }: Props) {
       {/* Stat cards */}
       {stats && (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <StatCard label="Subscribers" value={stats.audience.member_count.toLocaleString()} icon={Users} iconBg="rgba(212,160,23,0.15)" />
-          <StatCard label="Campaigns Sent" value={campaigns.filter(c => c.status === 'sent').length} icon={Send} iconBg="rgba(74,222,128,0.15)" />
-          <StatCard label="Avg Open Rate" value={`${(stats.audience.open_rate * 100).toFixed(1)}%`} icon={Mail} iconBg="rgba(59,130,246,0.15)" />
-          <StatCard label="Avg Click Rate" value={`${(stats.audience.click_rate * 100).toFixed(1)}%`} icon={BarChart2} iconBg="rgba(168,85,247,0.15)" />
+          <PageStatCard label="Subscribers" value={stats.audience.member_count.toLocaleString()} sub="Total audience" icon={<Users size={14} className="text-gold-400" />} />
+          <PageStatCard label="Campaigns Sent" value={campaigns.filter(c => c.status === 'sent').length} sub="Delivered" color="#22c55e" icon={<Send size={14} className="text-green-400" />} />
+          <PageStatCard label="Avg Open Rate" value={`${(stats.audience.open_rate * 100).toFixed(1)}%`} sub="Opens per campaign" color="#3b82f6" icon={<Mail size={14} className="text-blue-400" />} />
+          <PageStatCard label="Avg Click Rate" value={`${(stats.audience.click_rate * 100).toFixed(1)}%`} sub="Clicks per campaign" color="#8b5cf6" icon={<BarChart2 size={14} className="text-purple-400" />} />
         </div>
       )}
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Panel } from '@/components/ui/Card'
+import { PageStatCard } from '@/components/ui/PageStatCard'
 import { Button } from '@/components/ui/Button'
 import { Input, Field } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
@@ -88,24 +89,10 @@ export function StaffPageClient({ callerRole }: Props) {
 
       {/* Stats row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[
-          { label: 'Total Users', value: totalUsers, icon: Users, color: 'rgba(255,255,255,0.06)', textColor: 'text-nw-100' },
-          { label: 'Active', value: activeCount, icon: CheckCircle2, color: 'rgba(34,197,94,0.08)', textColor: 'text-green-400' },
-          { label: 'Admins', value: adminCount, icon: ShieldCheck, color: 'rgba(59,130,246,0.08)', textColor: 'text-blue-400' },
-          { label: 'Staff', value: staffCount, icon: UserCog, color: 'rgba(212,160,23,0.08)', textColor: 'text-gold-400' },
-        ].map(({ label, value, icon: Icon, color, textColor }) => (
-          <div
-            key={label}
-            className="rounded-xl border border-white/8"
-            style={{ padding: '16px 20px', background: color }}
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <Icon size={14} className={textColor} />
-              <span className="text-nw-400 text-[11px] uppercase tracking-wider font-medium">{label}</span>
-            </div>
-            <p className={`text-2xl font-bold ${textColor}`}>{value}</p>
-          </div>
-        ))}
+        <PageStatCard label="Total Users" value={totalUsers} sub="All staff accounts" icon={<Users size={14} className="text-nw-200" />} />
+        <PageStatCard label="Active" value={activeCount} sub="Currently active" color="#22c55e" icon={<CheckCircle2 size={14} className="text-green-400" />} />
+        <PageStatCard label="Admins" value={adminCount} sub="Full access" color="#3b82f6" icon={<ShieldCheck size={14} className="text-blue-400" />} />
+        <PageStatCard label="Staff" value={staffCount} sub="Limited access" gold icon={<UserCog size={14} className="text-gold-400" />} />
       </div>
 
       {/* Search */}
