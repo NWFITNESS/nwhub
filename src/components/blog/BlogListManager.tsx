@@ -5,14 +5,14 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { Panel, PanelHeader } from '@/components/ui/Card'
+import { PageStatCard } from '@/components/ui/PageStatCard'
 import { ColumnToggle } from '@/components/ui/ColumnToggle'
 import { useColumnVisibility } from '@/lib/use-column-visibility'
 import { format } from 'date-fns'
 import {
-  ArrowUpDown, ArrowUp, ArrowDown, Plus, PenLine, Eye,
+  ArrowUpDown, ArrowUp, ArrowDown, PenLine, Eye, FileText, CheckCircle, Clock,
 } from 'lucide-react'
 import type { BlogPost, BlogCategory } from '@/lib/types'
 
@@ -92,33 +92,24 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
   const publishedCount = posts.filter((p) => p.status === 'published').length
   const draftCount = posts.filter((p) => p.status === 'draft').length
 
+  // Most recent post
+  const lastPublished = posts.filter(p => p.published_at).sort((a, b) => (b.published_at ?? '').localeCompare(a.published_at ?? ''))[0]
+  const lastPublishedLabel = lastPublished?.published_at ? format(new Date(lastPublished.published_at), 'dd MMM yyyy') : 'Never'
+
   function SortIcon({ col }: { col: SortKey }) {
-    if (sortKey !== col) return <ArrowUpDown size={11} className="text-nw-600" />
-    return sortDir === 'asc' ? <ArrowUp size={11} className="text-gold-400" /> : <ArrowDown size={11} className="text-gold-400" />
+    if (sortKey !== col) return <ArrowUpDown size={12} className="text-nw-600" />
+    return sortDir === 'asc' ? <ArrowUp size={12} className="text-gold-400" /> : <ArrowDown size={12} className="text-gold-400" />
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       {/* Stats row */}
-      <Panel>
-        <PanelHeader eyebrow="Stats" title="Blog Overview" />
-        <div className="flex items-center gap-6" style={{ padding: 20 }}>
-          <div>
-            <div className="text-[10px] uppercase text-nw-500 tracking-[1px]">Posts</div>
-            <div className="text-[13px] font-medium text-nw-200">{posts.length}</div>
-          </div>
-          <span className="text-nw-600">·</span>
-          <div>
-            <div className="text-[10px] uppercase text-nw-500 tracking-[1px]">Published</div>
-            <div className="text-[13px] font-medium text-[#22c55e]">{publishedCount}</div>
-          </div>
-          <span className="text-nw-600">·</span>
-          <div>
-            <div className="text-[10px] uppercase text-nw-500 tracking-[1px]">Drafts</div>
-            <div className="text-[13px] font-medium text-nw-200">{draftCount}</div>
-          </div>
-        </div>
-      </Panel>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <PageStatCard label="Total Posts" value={posts.length} sub="All articles" icon={<FileText size={14} className="text-nw-200" />} />
+        <PageStatCard label="Published" value={publishedCount} sub="Live on site" color="#22c55e" icon={<CheckCircle size={14} className="text-green-400" />} />
+        <PageStatCard label="Drafts" value={draftCount} sub="In progress" color="#f59e0b" icon={<Clock size={14} className="text-amber-400" />} />
+        <PageStatCard label="Last Published" value={lastPublishedLabel} sub={lastPublished?.title?.slice(0, 30) ?? ''} gold icon={<Eye size={14} className="text-gold-400" />} />
+      </div>
 
       {/* Table Panel */}
       <Panel>
@@ -131,16 +122,20 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
               placeholder="Search posts..."
               className="w-52"
             />
-            <div className="flex gap-0.5">
+            <div className="flex gap-1 rounded-xl bg-nw-800 border border-[rgba(255,255,255,0.06)]" style={{ padding: 4 }}>
               {(['all', 'published', 'draft'] as const).map((s) => (
                 <button
                   key={s}
                   onClick={() => setFilterStatus(s)}
-                  className={`rounded-[7px] px-2.5 py-1 text-[11px] font-semibold capitalize transition-colors ${
-                    filterStatus === s
-                      ? 'bg-[rgba(212,160,23,0.15)] text-gold-300 border border-[rgba(212,160,23,0.3)]'
-                      : 'text-nw-400 hover:text-nw-200 border border-transparent'
-                  }`}
+                  className="rounded-lg capitalize transition-all"
+                  style={{
+                    padding: '5px 12px',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    background: filterStatus === s ? 'rgba(201,167,10,0.12)' : 'transparent',
+                    color: filterStatus === s ? '#C9A70A' : 'rgba(255,255,255,0.4)',
+                    border: filterStatus === s ? '1px solid rgba(201,167,10,0.2)' : '1px solid transparent',
+                  }}
                 >
                   {s}
                 </button>
@@ -150,7 +145,8 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="h-9 rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 text-[13px] text-nw-200 outline-none transition-colors focus:border-[rgba(212,160,23,0.4)] focus:bg-nw-750"
+                className="h-9 rounded-lg border border-[rgba(255,255,255,0.08)] bg-nw-800 text-nw-200 outline-none transition-colors focus:border-[rgba(212,160,23,0.4)] focus:bg-nw-750"
+                style={{ padding: '0 12px', fontSize: 13 }}
               >
                 <option value="">All categories</option>
                 {categories.map((cat) => (<option key={cat.id} value={cat.id}>{cat.name}</option>))}
@@ -162,42 +158,43 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
 
         {/* Desktop table */}
         <div className="hidden md:block">
-          {/* Header */}
-          <div className="grid gap-4 border-b border-[rgba(255,255,255,0.07)] py-2.5" style={{ gridTemplateColumns: gridTemplate, paddingLeft: 20, paddingRight: 20 }}>
-            <button onClick={() => handleSort('title')} className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500 hover:text-nw-300 transition-colors text-left">
+          <div className="grid gap-4 border-b border-[rgba(255,255,255,0.06)]" style={{ gridTemplateColumns: gridTemplate, padding: '10px 20px' }}>
+            <button onClick={() => handleSort('title')} className="flex items-center gap-1.5 text-nw-500 hover:text-nw-300 transition-colors text-left" style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
               Title <SortIcon col="title" />
             </button>
             {visible.has('status') && (
-              <button onClick={() => handleSort('status')} className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500 hover:text-nw-300 transition-colors">
+              <button onClick={() => handleSort('status')} className="flex items-center gap-1.5 text-nw-500 hover:text-nw-300 transition-colors" style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                 Status <SortIcon col="status" />
               </button>
             )}
             {visible.has('category') && (
-              <button onClick={() => handleSort('category')} className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500 hover:text-nw-300 transition-colors">
+              <button onClick={() => handleSort('category')} className="flex items-center gap-1.5 text-nw-500 hover:text-nw-300 transition-colors" style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                 Category <SortIcon col="category" />
               </button>
             )}
             {visible.has('published') && (
-              <button onClick={() => handleSort('published_at')} className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500 hover:text-nw-300 transition-colors">
+              <button onClick={() => handleSort('published_at')} className="flex items-center gap-1.5 text-nw-500 hover:text-nw-300 transition-colors" style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                 Published <SortIcon col="published_at" />
               </button>
             )}
-            <span className="text-[11px] font-bold uppercase tracking-[1.3px] text-nw-500">Actions</span>
+            <span className="text-nw-500" style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>Actions</span>
           </div>
 
-          {/* Rows */}
           {filtered.length === 0 ? (
-            <div className="py-12 text-center text-[13px] text-nw-500" style={{ paddingLeft: 20, paddingRight: 20 }}>
-              {search || filterStatus !== 'all' || filterCategory ? 'No posts match your filters.' : 'No blog posts yet. Create your first post.'}
+            <div className="flex flex-col items-center justify-center" style={{ padding: '48px 20px' }}>
+              <FileText size={32} className="text-nw-600 mb-3" />
+              <p className="text-nw-400" style={{ fontSize: 14 }}>
+                {search || filterStatus !== 'all' || filterCategory ? 'No posts match your filters.' : 'No blog posts yet. Create your first post.'}
+              </p>
             </div>
           ) : (
             filtered.map((post) => (
-              <div key={post.id} className="grid items-center gap-4 border-b border-[rgba(255,255,255,0.05)] py-3 transition-colors hover:bg-[rgba(255,255,255,0.03)]" style={{ gridTemplateColumns: gridTemplate, paddingLeft: 20, paddingRight: 20 }}>
+              <div key={post.id} className="grid items-center gap-4 border-b border-[rgba(255,255,255,0.04)] transition-colors hover:bg-[rgba(255,255,255,0.02)]" style={{ gridTemplateColumns: gridTemplate, padding: '14px 20px' }}>
                 <div className="min-w-0">
-                  <Link href={`/blog/manage/${post.id}`} className="text-[13px] font-medium text-nw-200 hover:text-gold-300 transition-colors truncate block">
+                  <Link href={`/blog/manage/${post.id}`} className="text-nw-100 hover:text-gold-300 transition-colors truncate block" style={{ fontSize: 15, fontWeight: 500 }}>
                     {post.title}
                   </Link>
-                  {post.slug && <span className="text-xs font-medium text-nw-400 font-mono">/blog/{post.slug}</span>}
+                  {post.slug && <span className="text-nw-500 font-mono" style={{ fontSize: 12 }}>/blog/{post.slug}</span>}
                 </div>
                 {visible.has('status') && (
                   <div className="flex items-center gap-2">
@@ -206,22 +203,22 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
                       onClick={() => handleToggleStatus(post)}
                       disabled={toggling === post.id}
                       title={post.status === 'published' ? 'Unpublish' : 'Publish'}
-                      className={`w-8 h-[18px] rounded-[9px] relative transition-colors ${post.status === 'published' ? 'bg-gold-500' : 'bg-nw-600'} ${toggling === post.id ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
+                      className={`w-9 h-5 rounded-full relative transition-colors ${post.status === 'published' ? 'bg-gold-500' : 'bg-nw-600'} ${toggling === post.id ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
                     >
-                      <span className={`absolute top-[3px] w-3 h-3 rounded-full bg-white shadow transition-transform ${post.status === 'published' ? 'translate-x-[17px]' : 'translate-x-[3px]'}`} />
+                      <span className={`absolute top-[3px] w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ${post.status === 'published' ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
                     </button>
                   </div>
                 )}
-                {visible.has('category') && <span className="text-[13px] text-nw-400">{post.category?.name ?? <span className="text-nw-600">—</span>}</span>}
+                {visible.has('category') && <span className="text-nw-300" style={{ fontSize: 14 }}>{post.category?.name ?? <span className="text-nw-600">—</span>}</span>}
                 {visible.has('published') && (
-                  <span className="text-xs font-medium text-nw-400 whitespace-nowrap">
+                  <span className="text-nw-400 whitespace-nowrap" style={{ fontSize: 13, fontWeight: 500 }}>
                     {post.published_at ? format(new Date(post.published_at), 'dd MMM yyyy') : <span className="text-nw-600">—</span>}
                   </span>
                 )}
                 <div className="flex items-center gap-1">
-                  <Link href={`/blog/manage/${post.id}`}><Button variant="ghost" size="sm"><PenLine size={13} /> Edit</Button></Link>
+                  <Link href={`/blog/manage/${post.id}`}><Button variant="ghost" size="sm"><PenLine size={14} /> Edit</Button></Link>
                   {post.status === 'published' && post.slug && (
-                    <a href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer"><Button variant="ghost" size="sm"><Eye size={13} /></Button></a>
+                    <a href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer"><Button variant="ghost" size="sm"><Eye size={14} /></Button></a>
                   )}
                 </div>
               </div>
@@ -232,19 +229,22 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
         {/* Mobile card rows */}
         <div className="md:hidden">
           {filtered.length === 0 ? (
-            <div className="py-12 text-center text-[13px] text-nw-500" style={{ paddingLeft: 20, paddingRight: 20 }}>No posts found.</div>
+            <div className="flex flex-col items-center justify-center" style={{ padding: '48px 20px' }}>
+              <FileText size={32} className="text-nw-600 mb-3" />
+              <p className="text-nw-400" style={{ fontSize: 14 }}>No posts found.</p>
+            </div>
           ) : (
             filtered.map((post) => (
-              <div key={post.id} className="border-b border-[rgba(255,255,255,0.05)]" style={{ padding: 20 }}>
+              <div key={post.id} className="border-b border-[rgba(255,255,255,0.04)]" style={{ padding: 20 }}>
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <Link href={`/blog/manage/${post.id}`} className="text-[13px] font-medium text-nw-200 hover:text-gold-300 transition-colors">
+                  <Link href={`/blog/manage/${post.id}`} className="text-nw-100 hover:text-gold-300 transition-colors" style={{ fontSize: 15, fontWeight: 500 }}>
                     {post.title}
                   </Link>
                   <Badge variant={post.status === 'published' ? 'sent' : 'draft'}>{post.status}</Badge>
                 </div>
-                {post.slug && <p className="text-xs font-medium text-nw-400 font-mono mb-2">/blog/{post.slug}</p>}
+                {post.slug && <p className="text-nw-500 font-mono mb-2" style={{ fontSize: 12 }}>/blog/{post.slug}</p>}
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-nw-400">
+                  <span className="text-nw-400" style={{ fontSize: 13, fontWeight: 500 }}>
                     {post.published_at ? format(new Date(post.published_at), 'dd MMM yyyy') : 'Draft'}
                   </span>
                   <Link href={`/blog/manage/${post.id}`}><Button variant="ghost" size="sm">Edit</Button></Link>
@@ -256,7 +256,7 @@ export function BlogListManager({ initialPosts, categories }: BlogListManagerPro
       </Panel>
 
       {filtered.length > 0 && (
-        <p className="text-xs font-medium text-nw-400 text-right">{filtered.length} of {posts.length} posts</p>
+        <p className="text-nw-400 text-right" style={{ fontSize: 13, fontWeight: 500 }}>{filtered.length} of {posts.length} posts</p>
       )}
     </div>
   )

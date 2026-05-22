@@ -445,54 +445,56 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
 
   return (
     <div className="max-w-none pb-16">
-      {/* Sticky top action bar */}
-      <div className="sticky top-0 z-20 bg-[#0a0a0a]/95 backdrop-blur border-b border-white/[0.07] -mx-6 px-6 py-3 mb-6 flex items-center gap-3">
-        <div className="flex-1 min-w-0">
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => handleTitleChange(e.target.value)}
-            placeholder="Post title…"
-            className="w-full bg-transparent text-lg font-semibold text-white placeholder-white/20 outline-none border-none"
-          />
-          {initialPost && (
-            <p className="text-xs text-white/25 mt-0.5">
-              {isPublished ? 'Published' : 'Draft'} · Last saved {new Date(initialPost.updated_at).toLocaleDateString()}
-            </p>
-          )}
-        </div>
+      {/* Sticky top action bar — premium glass effect */}
+      <div className="sticky top-0 z-20 -mx-6 mb-6 border-b border-[rgba(255,255,255,0.06)]" style={{ padding: '16px 24px', background: 'rgba(13,17,23,0.92)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+        <div className="flex items-center gap-4">
+          <div className="flex-1 min-w-0">
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              placeholder="Post title…"
+              className="w-full bg-transparent font-brand text-nw-100 placeholder-nw-600 outline-none border-none"
+              style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.3px' }}
+            />
+            {initialPost && (
+              <div className="flex items-center gap-2 mt-1">
+                <span className={`inline-block w-2 h-2 rounded-full ${isPublished ? 'bg-green-400' : 'bg-amber-400'}`} />
+                <span className="text-nw-500" style={{ fontSize: 13 }}>
+                  {isPublished ? 'Published' : 'Draft'} · Last saved {new Date(initialPost.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            )}
+          </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          {initialPost && (
-            <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
-              <Trash2 size={14} /> Delete
+          <div className="flex items-center gap-2 shrink-0">
+            {initialPost && (
+              <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
+                <Trash2 size={14} /> Delete
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" onClick={() => setPreviewOpen(true)}>
+              <Eye size={14} /> Preview
             </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setPreviewOpen(true)}
-          >
-            <Eye size={14} /> Preview
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => handleSave('draft')}
-            loading={saving === 'draft'}
-            disabled={saving !== null}
-          >
-            <Save size={14} /> Save Draft
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => handleSave('published')}
-            loading={saving === 'published'}
-            disabled={saving !== null}
-          >
-            <Globe size={14} /> {isPublished ? 'Update' : 'Publish'}
-          </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => handleSave('draft')}
+              loading={saving === 'draft'}
+              disabled={saving !== null}
+            >
+              <Save size={14} /> Save Draft
+            </Button>
+            <Button
+              variant="gold"
+              size="sm"
+              onClick={() => handleSave('published')}
+              loading={saving === 'published'}
+              disabled={saving !== null}
+            >
+              <Globe size={14} /> {isPublished ? 'Update' : 'Publish'}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -504,7 +506,7 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
 
       <div className="flex gap-6 items-start">
         {/* Main editor column */}
-        <div className="flex-1 min-w-0 space-y-5">
+        <div className="flex-1 min-w-0 space-y-6">
           <Field label="Slug">
             <div className="flex items-center gap-2">
               <span className="text-white/30 text-sm shrink-0">/blog/</span>
@@ -586,10 +588,10 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
         </div>
 
         {/* Sidebar */}
-        <div className="w-80 shrink-0 space-y-5">
+        <div className="w-[340px] shrink-0 space-y-5">
           {/* Status + details */}
-          <div className="rounded-xl border border-white/[0.08] bg-[#111111] p-4 space-y-4">
-            <p className="text-xs font-semibold text-white/30 uppercase tracking-widest">Details</p>
+          <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-nw-750 space-y-4" style={{ padding: 20 }}>
+            <p className="text-nw-500" style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>Details</p>
 
             <Field label="Status">
               <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium ${
@@ -630,8 +632,8 @@ export function BlogPostEditor({ initialPost, categories }: Props) {
           </div>
 
           {/* Featured image */}
-          <div className="rounded-xl border border-white/[0.08] bg-[#111111] p-4 space-y-3">
-            <p className="text-xs font-semibold text-white/30 uppercase tracking-widest">Featured Image</p>
+          <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-nw-750 space-y-3" style={{ padding: 20 }}>
+            <p className="text-nw-500" style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase' }}>Featured Image</p>
 
             {featuredImageUrl ? (
               <div className="relative group">
