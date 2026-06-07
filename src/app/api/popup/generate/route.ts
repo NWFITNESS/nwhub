@@ -27,7 +27,7 @@ The popup uses a block-based grid system:
 Available block types:
 - "text": text content with font styling
 - "image": image URL (leave content empty, user will add)
-- "button": CTA button with link
+- "button": CTA button. Put the destination in style.buttonLink (NOT a top-level "link" field). Use a REAL site path only — one of: /start-here, /membership, /training, /timetable, /contact, /kids-teens, /hyrox, /physio, /personal-training. For a free-trial / "claim my 2 weeks" CTA use /start-here. Never invent paths.
 - "badge": small pill label
 - "divider": horizontal line
 - "icon": emoji/symbol
@@ -82,6 +82,18 @@ Design 5-8 blocks that create an attractive, professional popup. Use the brand c
     // Validate blocks exist
     if (!Array.isArray(design.blocks)) {
       return NextResponse.json({ error: 'Invalid response from AI' }, { status: 500 })
+    }
+
+    // Normalise button links: the manual builder + public renderer use style.buttonLink,
+    // but the AI sometimes emits a top-level "link" field. Fold it in so the link is
+    // always editable in the StylePanel and never lost. Default to /start-here.
+    for (const block of design.blocks) {
+      if (block?.type !== 'button') continue
+      block.style = block.style ?? {}
+      const link = block.link ?? block.style.buttonLink ?? block.style.link
+      block.style.buttonLink = link && link !== '#' ? link : '/start-here'
+      delete block.link
+      delete block.style.link
     }
 
     return NextResponse.json(design)
