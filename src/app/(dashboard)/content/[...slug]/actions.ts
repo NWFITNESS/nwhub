@@ -4,6 +4,30 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 /**
+ * Tell the public website (northernwarrior-v2) to revalidate its CDN-cached
+ * ISR page for this slug, so published edits appear instantly instead of waiting
+ * for the 5-minute time-based revalidate window.
+ *
+ * Fire-and-forget: a failed/unconfigured revalidation must never block a publish.
+ * Requires WEBSITE_URL and REVALIDATE_SECRET env vars (shared secret with the site).
+ */
+async function revalidateWebsite(slug: string) {
+  const base = process.env.WEBSITE_URL
+  const secret = process.env.REVALIDATE_SECRET
+  if (!base || !secret) return // not configured — site falls back to 5-min ISR
+  try {
+    await fetch(`${base.replace(/\/$/, '')}/api/revalidate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ secret, slug }),
+      cache: 'no-store',
+    })
+  } catch {
+    // Network error reaching the site — the page still updates within 5 min.
+  }
+}
+
+/**
  * Save all live edits directly to content (no draft step) and publish in one shot.
  * Also promotes any pre-existing drafts not covered by liveEdits.
  */
@@ -57,6 +81,7 @@ export async function saveAndPublishAction(
   }
 
   revalidatePath(`/content/${slug}`)
+  await revalidateWebsite(slug)
 }
 
 /**
@@ -108,6 +133,7 @@ export async function toggleConstructionAction(slug: string, enabled: boolean) {
     )
 
   revalidatePath(`/content/${slug}`)
+  await revalidateWebsite(slug)
 }
 
 /**
@@ -141,4 +167,5 @@ export async function publishPageAction(slug: string) {
   )
 
   revalidatePath(`/content/${slug}`)
+  await revalidateWebsite(slug)
 }
