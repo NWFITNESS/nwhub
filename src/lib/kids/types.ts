@@ -24,6 +24,12 @@ export interface KidsBlock {
   closes_at: string | null
   /** Optional short badge label for the limited-edition card, e.g. "Summer · Ltd". */
   tagline: string | null
+  /** Optional custom session start time "HH:MM" (24h). Falls back to category time. */
+  start_time: string | null
+  /** Optional custom session end time "HH:MM" (24h). */
+  end_time: string | null
+  /** Optional free-text blurb ("what's involved") shown on the public drop card. */
+  description: string | null
   created_at: string
 }
 

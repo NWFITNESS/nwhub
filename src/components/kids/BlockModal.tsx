@@ -33,6 +33,9 @@ export function BlockModal({ open, onClose, onCreated }: Props) {
   const [isSpecial, setIsSpecial] = useState(false)
   const [tagline, setTagline] = useState('Summer · Ltd')
   const [closesAt, setClosesAt] = useState('')
+  const [startTime, setStartTime] = useState('')
+  const [endTime, setEndTime] = useState('')
+  const [description, setDescription] = useState('')
   const [pricing, setPricing] = useState<Record<KidsCategory, { capacity: number; price: number }>>({
     minis:   { capacity: 12, price: 45 },
     littles: { capacity: 12, price: 45 },
@@ -55,6 +58,9 @@ export function BlockModal({ open, onClose, onCreated }: Props) {
           is_special: isSpecial,
           tagline: isSpecial ? tagline : null,
           closes_at: isSpecial && closesAt ? new Date(closesAt).toISOString() : null,
+          start_time: isSpecial ? startTime || null : null,
+          end_time: isSpecial ? endTime || null : null,
+          description: isSpecial ? description : null,
         })
         await saveBlockPricing(id, (['minis', 'littles', 'teens'] as KidsCategory[]).map((cat) => ({
           category: cat,
@@ -153,6 +159,33 @@ export function BlockModal({ open, onClose, onCreated }: Props) {
                   className="w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-sm text-nw-100 focus:border-[#9b6bff] focus:outline-none"
                 />
               </Field>
+              <Field label="Start time">
+                <input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-sm text-nw-100 focus:border-[#9b6bff] focus:outline-none"
+                />
+              </Field>
+              <Field label="Finish time">
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-sm text-nw-100 focus:border-[#9b6bff] focus:outline-none"
+                />
+              </Field>
+              <div className="col-span-2">
+                <Field label="Description — what's involved">
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={4}
+                    placeholder="e.g. Six weeks of strength & conditioning built for teens — barbell technique, conditioning games and confidence work. All abilities welcome."
+                    className="w-full resize-y rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-sm text-nw-100 focus:border-[#9b6bff] focus:outline-none"
+                  />
+                </Field>
+              </div>
               <p className="col-span-2 text-[10px] leading-relaxed text-nw-500">
                 Runs alongside your normal block. It auto-activates if no other drop is live. The website shows the <strong className="text-nw-300">teens</strong> price below as a limited-edition card with a countdown.
               </p>

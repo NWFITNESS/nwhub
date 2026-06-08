@@ -19,6 +19,9 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
   const [isSpecial, setIsSpecial] = useState(block.is_special)
   const [tagline, setTagline] = useState(block.tagline ?? '')
   const [closesAt, setClosesAt] = useState(isoToLocalInput(block.closes_at))
+  const [startTime, setStartTime] = useState(block.start_time ?? '')
+  const [endTime, setEndTime] = useState(block.end_time ?? '')
+  const [description, setDescription] = useState(block.description ?? '')
   const [pending, startTransition] = useTransition()
   const [savedAt, setSavedAt] = useState<number | null>(null)
 
@@ -33,7 +36,10 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
     setIsSpecial(block.is_special)
     setTagline(block.tagline ?? '')
     setClosesAt(isoToLocalInput(block.closes_at))
-  }, [block.id, block.name, block.start_date, block.session_count, block.is_recurring, block.is_special, block.tagline, block.closes_at])
+    setStartTime(block.start_time ?? '')
+    setEndTime(block.end_time ?? '')
+    setDescription(block.description ?? '')
+  }, [block.id, block.name, block.start_date, block.session_count, block.is_recurring, block.is_special, block.tagline, block.closes_at, block.start_time, block.end_time, block.description])
 
   function handleSave() {
     startTransition(async () => {
@@ -47,6 +53,9 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
           is_special: isSpecial,
           tagline: isSpecial ? tagline : null,
           closes_at: isSpecial && closesAt ? new Date(closesAt).toISOString() : null,
+          start_time: isSpecial ? startTime || null : null,
+          end_time: isSpecial ? endTime || null : null,
+          description: isSpecial ? description : null,
         })
         setSavedAt(Date.now())
         setTimeout(() => setSavedAt(null), 2500)
@@ -203,6 +212,33 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
                   value={closesAt}
                   onChange={(e) => setClosesAt(e.target.value)}
                   className="w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-sm text-nw-100 focus:border-[#9b6bff] focus:outline-none"
+                />
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Start time">
+                  <input
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    className="w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-sm text-nw-100 focus:border-[#9b6bff] focus:outline-none"
+                  />
+                </Field>
+                <Field label="Finish time">
+                  <input
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    className="w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-sm text-nw-100 focus:border-[#9b6bff] focus:outline-none"
+                  />
+                </Field>
+              </div>
+              <Field label="Description — what's involved">
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={4}
+                  placeholder="e.g. Six weeks of strength &amp; conditioning built for teens — barbell technique, conditioning games and confidence work. All abilities welcome. Bring trainers, water and a positive attitude."
+                  className="w-full resize-y rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-sm text-nw-100 focus:border-[#9b6bff] focus:outline-none"
                 />
               </Field>
               <p className="text-[10px] leading-relaxed text-nw-500">

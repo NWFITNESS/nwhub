@@ -66,6 +66,12 @@ interface SaveBlockInput {
   closes_at?: string | null
   /** Short badge label for the public limited-edition card. */
   tagline?: string | null
+  /** Custom session start time "HH:MM" (24h). Null clears it. */
+  start_time?: string | null
+  /** Custom session end time "HH:MM" (24h). Null clears it. */
+  end_time?: string | null
+  /** Free-text "what's involved" blurb for the public drop card. Null clears it. */
+  description?: string | null
 }
 
 /**
@@ -113,6 +119,9 @@ export async function saveBlock(input: SaveBlockInput): Promise<{ id: string }> 
   if (input.is_special !== undefined) specialFields.is_special = input.is_special
   if (input.closes_at !== undefined) specialFields.closes_at = input.closes_at || null
   if (input.tagline !== undefined) specialFields.tagline = input.tagline?.trim() || null
+  if (input.start_time !== undefined) specialFields.start_time = input.start_time || null
+  if (input.end_time !== undefined) specialFields.end_time = input.end_time || null
+  if (input.description !== undefined) specialFields.description = input.description?.trim() || null
 
   let blockId = input.id
   if (blockId) {
