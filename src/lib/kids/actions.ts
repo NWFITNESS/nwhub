@@ -15,11 +15,43 @@ import { CATEGORY_LABEL, CATEGORY_TIME, DROPIN_PRICE_PENCE, categoryFromDob, for
 const KIDS_ADMIN_EMAIL = 'info@nwfitnesskids.co.uk'
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Cross-app revalidation
+//
+// NWHub and the public site (northernwarrior-v2) are SEPARATE Vercel
+// deployments. `revalidatePath('/kids-teens')` here only clears NWHub's own
+// cache — it does nothing to the public site's CDN. To make block changes go
+// live instantly we must POST to the public site's /api/revalidate endpoint
+// with the shared secret (same mechanism the CMS content editor uses).
+//
+// Fire-and-forget: a failed/unconfigured revalidation must never block the
+// admin action — the public page still self-heals within its 5-min ISR window.
+// Requires WEBSITE_URL + REVALIDATE_SECRET env vars (already set for the CMS
+// content editor in the same Vercel project).
+// ─────────────────────────────────────────────────────────────────────────────
+async function revalidatePublicKids(): Promise<void> {
+  const base = process.env.WEBSITE_URL
+  const secret = process.env.REVALIDATE_SECRET
+  if (!base || !secret) return // not configured — site falls back to 5-min ISR
+  try {
+    await fetch(`${base.replace(/\/$/, '')}/api/revalidate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ secret, paths: ['/kids-teens'] }),
+      cache: 'no-store',
+    })
+  } catch {
+    // Network error reaching the site — the page still updates within 5 min.
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Kids & Teens — server actions
 //
-// Every action revalidates /kids so the page reflects the change. Stripe is
-// stubbed in this phase — Phase 3 replaces the dropin link generator and
-// adds createBlockCheckoutSession + the webhook.
+// Every action revalidates /kids so the NWHub page reflects the change. Actions
+// that change what the PUBLIC block card shows (name, dates, sessions, prices,
+// which block is active) also call revalidatePublicKids() to push the change to
+// the live site immediately. Stripe is stubbed in this phase — Phase 3 replaces
+// the dropin link generator and adds createBlockCheckoutSession + the webhook.
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface SaveBlockInput {
@@ -143,7 +175,7 @@ export async function saveBlock(input: SaveBlockInput): Promise<{ id: string }> 
   }
 
   revalidatePath('/kids')
-  revalidatePath('/kids-teens')
+  await revalidatePublicKids()
   return { id: blockId! }
 }
 
@@ -205,6 +237,7 @@ export async function deleteBlock(blockId: string): Promise<void> {
   }
 
   revalidatePath('/kids')
+  await revalidatePublicKids()
 }
 
 /**
@@ -216,6 +249,7 @@ export async function setActiveBlock(blockId: string): Promise<void> {
   await admin.from('kids_blocks').update({ is_active: false }).neq('id', blockId)
   await admin.from('kids_blocks').update({ is_active: true }).eq('id', blockId)
   revalidatePath('/kids')
+  await revalidatePublicKids()
 }
 
 /**
@@ -231,6 +265,7 @@ export async function deactivateBlock(blockId: string): Promise<void> {
     .eq('id', blockId)
   if (error) throw new Error(`Failed to deactivate block: ${error.message}`)
   revalidatePath('/kids')
+  await revalidatePublicKids()
 }
 
 /**
@@ -248,7 +283,7 @@ export async function setSessionBreak(
     .eq('id', sessionId)
   if (error) throw new Error(`Failed to update break: ${error.message}`)
   revalidatePath('/kids')
-  revalidatePath('/kids-teens')
+  await revalidatePublicKids()
 }
 
 /**
@@ -269,6 +304,7 @@ export async function saveBlockPricing(
     if (error) throw new Error(`Failed to save pricing for ${row.category}: ${error.message}`)
   }
   revalidatePath('/kids')
+  await revalidatePublicKids()
 }
 
 interface CreateDropInLinkInput {
