@@ -17,6 +17,13 @@ export interface KidsBlock {
   session_count: number
   is_recurring: boolean
   is_active: boolean
+  /** Limited-edition drop (e.g. summer teens session) — renders as its own card
+   *  on the public site and can be active alongside the normal block. */
+  is_special: boolean
+  /** Optional booking deadline (ISO). Public card shows a countdown to this. */
+  closes_at: string | null
+  /** Optional short badge label for the limited-edition card, e.g. "Summer · Ltd". */
+  tagline: string | null
   created_at: string
 }
 

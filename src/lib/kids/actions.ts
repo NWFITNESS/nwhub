@@ -60,6 +60,12 @@ interface SaveBlockInput {
   start_date: string
   session_count: number
   is_recurring: boolean
+  /** Limited-edition drop. Defaults to false (a normal block). */
+  is_special?: boolean
+  /** Booking deadline (ISO datetime) for the countdown. Null clears it. */
+  closes_at?: string | null
+  /** Short badge label for the public limited-edition card. */
+  tagline?: string | null
 }
 
 /**
@@ -100,6 +106,14 @@ export async function saveBlock(input: SaveBlockInput): Promise<{ id: string }> 
     }
   }
 
+  // Special-block fields are only written when the caller explicitly provides
+  // them, so older callers that don't know about is_special/closes_at/tagline
+  // can't accidentally clear an existing drop's settings.
+  const specialFields: Record<string, unknown> = {}
+  if (input.is_special !== undefined) specialFields.is_special = input.is_special
+  if (input.closes_at !== undefined) specialFields.closes_at = input.closes_at || null
+  if (input.tagline !== undefined) specialFields.tagline = input.tagline?.trim() || null
+
   let blockId = input.id
   if (blockId) {
     const { error } = await admin
@@ -109,19 +123,22 @@ export async function saveBlock(input: SaveBlockInput): Promise<{ id: string }> 
         start_date: input.start_date,
         session_count: input.session_count,
         is_recurring: input.is_recurring,
+        ...specialFields,
       })
       .eq('id', blockId)
     if (error) throw new Error(`Failed to update block: ${error.message}`)
   } else {
-    // Auto-activate this block if there's no other active block. Avoids the
-    // common surprise where a freshly created block doesn't show on the
-    // public site because it was created inactive and the admin forgot to
-    // click "Make active". If another block IS active, we don't touch it —
-    // creating a future block shouldn't accidentally swap your live one.
+    // Auto-activate this block if there's no other active block OF THE SAME
+    // KIND. Avoids the common surprise where a freshly created block doesn't
+    // show on the public site because it was created inactive. Scoping by
+    // is_special means creating a special drop won't deactivate the normal
+    // block (and vice versa) — the two run side by side.
+    const isSpecial = input.is_special ?? false
     const { count: activeCount } = await admin
       .from('kids_blocks')
       .select('id', { count: 'exact', head: true })
       .eq('is_active', true)
+      .eq('is_special', isSpecial)
     const shouldActivate = (activeCount ?? 0) === 0
 
     const { data, error } = await admin
@@ -132,6 +149,8 @@ export async function saveBlock(input: SaveBlockInput): Promise<{ id: string }> 
         session_count: input.session_count,
         is_recurring: input.is_recurring,
         is_active: shouldActivate,
+        is_special: isSpecial,
+        ...specialFields,
       })
       .select('id')
       .single()
@@ -241,12 +260,28 @@ export async function deleteBlock(blockId: string): Promise<void> {
 }
 
 /**
- * Set a block as the active block. Only one block is active at a time, so
- * this also clears `is_active` on every other block.
+ * Set a block as the active block. Only one block is active at a time PER KIND
+ * (one normal block + one special/limited-edition drop can be live at once), so
+ * this clears `is_active` on every other block of the SAME kind, then activates
+ * the target. Scoping by is_special is what lets the summer teens drop run
+ * alongside the regular Sunday block without either knocking the other offline.
  */
 export async function setActiveBlock(blockId: string): Promise<void> {
   const admin = createAdminClient()
-  await admin.from('kids_blocks').update({ is_active: false }).neq('id', blockId)
+
+  // Look up which kind this block is so we only deactivate its peers.
+  const { data: target, error: lookupError } = await admin
+    .from('kids_blocks')
+    .select('is_special')
+    .eq('id', blockId)
+    .single()
+  if (lookupError || !target) throw new Error(`Block not found: ${lookupError?.message ?? 'unknown'}`)
+
+  await admin
+    .from('kids_blocks')
+    .update({ is_active: false })
+    .neq('id', blockId)
+    .eq('is_special', target.is_special)
   await admin.from('kids_blocks').update({ is_active: true }).eq('id', blockId)
   revalidatePath('/kids')
   await revalidatePublicKids()

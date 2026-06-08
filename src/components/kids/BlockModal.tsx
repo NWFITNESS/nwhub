@@ -30,6 +30,9 @@ export function BlockModal({ open, onClose, onCreated }: Props) {
   })
   const [sessionCount, setSessionCount] = useState(6)
   const [isRecurring, setIsRecurring] = useState(true)
+  const [isSpecial, setIsSpecial] = useState(false)
+  const [tagline, setTagline] = useState('Summer · Ltd')
+  const [closesAt, setClosesAt] = useState('')
   const [pricing, setPricing] = useState<Record<KidsCategory, { capacity: number; price: number }>>({
     minis:   { capacity: 12, price: 45 },
     littles: { capacity: 12, price: 45 },
@@ -49,6 +52,9 @@ export function BlockModal({ open, onClose, onCreated }: Props) {
           start_date: startDate,
           session_count: sessionCount,
           is_recurring: isRecurring,
+          is_special: isSpecial,
+          tagline: isSpecial ? tagline : null,
+          closes_at: isSpecial && closesAt ? new Date(closesAt).toISOString() : null,
         })
         await saveBlockPricing(id, (['minis', 'littles', 'teens'] as KidsCategory[]).map((cat) => ({
           category: cat,
@@ -109,6 +115,50 @@ export function BlockModal({ open, onClose, onCreated }: Props) {
           />
           Weekly recurring
         </label>
+
+        <div
+          className="rounded-[8px] border p-3"
+          style={{
+            borderColor: isSpecial ? 'rgba(155,107,255,0.35)' : 'rgba(255,255,255,0.07)',
+            background: isSpecial ? 'rgba(155,107,255,0.06)' : 'transparent',
+          }}
+        >
+          <label className="flex items-center gap-2 text-xs text-nw-200">
+            <input
+              type="checkbox"
+              checked={isSpecial}
+              onChange={(e) => setIsSpecial(e.target.checked)}
+              className="h-4 w-4 accent-[#9b6bff]"
+            />
+            <span className="font-medium">Limited edition drop</span>
+            <span className="text-[10px] text-nw-500">— e.g. extra summer teens session</span>
+          </label>
+
+          {isSpecial && (
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <Field label="Badge label">
+                <input
+                  type="text"
+                  value={tagline}
+                  onChange={(e) => setTagline(e.target.value)}
+                  placeholder="Summer · Ltd"
+                  className="w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-sm text-nw-100 focus:border-[#9b6bff] focus:outline-none"
+                />
+              </Field>
+              <Field label="Booking closes (optional)">
+                <input
+                  type="datetime-local"
+                  value={closesAt}
+                  onChange={(e) => setClosesAt(e.target.value)}
+                  className="w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-sm text-nw-100 focus:border-[#9b6bff] focus:outline-none"
+                />
+              </Field>
+              <p className="col-span-2 text-[10px] leading-relaxed text-nw-500">
+                Runs alongside your normal block. It auto-activates if no other drop is live. The website shows the <strong className="text-nw-300">teens</strong> price below as a limited-edition card with a countdown.
+              </p>
+            </div>
+          )}
+        </div>
 
         <div className="mt-2 rounded-[8px] border border-[rgba(255,255,255,0.07)] p-3">
           <div className="mb-2 text-[11px] font-bold uppercase tracking-[1.3px] text-nw-400">

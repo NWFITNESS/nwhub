@@ -16,6 +16,9 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
   const [startDate, setStartDate] = useState(block.start_date)
   const [sessionCount, setSessionCount] = useState(block.session_count)
   const [isRecurring, setIsRecurring] = useState(block.is_recurring)
+  const [isSpecial, setIsSpecial] = useState(block.is_special)
+  const [tagline, setTagline] = useState(block.tagline ?? '')
+  const [closesAt, setClosesAt] = useState(isoToLocalInput(block.closes_at))
   const [pending, startTransition] = useTransition()
   const [savedAt, setSavedAt] = useState<number | null>(null)
 
@@ -27,7 +30,10 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
     setStartDate(block.start_date)
     setSessionCount(block.session_count)
     setIsRecurring(block.is_recurring)
-  }, [block.id, block.name, block.start_date, block.session_count, block.is_recurring])
+    setIsSpecial(block.is_special)
+    setTagline(block.tagline ?? '')
+    setClosesAt(isoToLocalInput(block.closes_at))
+  }, [block.id, block.name, block.start_date, block.session_count, block.is_recurring, block.is_special, block.tagline, block.closes_at])
 
   function handleSave() {
     startTransition(async () => {
@@ -38,6 +44,9 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
           start_date: startDate,
           session_count: sessionCount,
           is_recurring: isRecurring,
+          is_special: isSpecial,
+          tagline: isSpecial ? tagline : null,
+          closes_at: isSpecial && closesAt ? new Date(closesAt).toISOString() : null,
         })
         setSavedAt(Date.now())
         setTimeout(() => setSavedAt(null), 2500)
@@ -87,6 +96,11 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
         </span>
         <div className="h-3 w-px bg-[rgba(255,255,255,0.09)]" />
         <span className="text-[13px] font-medium text-nw-200">Settings</span>
+        {block.is_special && (
+          <span className="rounded-full border border-[#9b6bff]/40 bg-[#9b6bff]/12 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.8px] text-[#c4a6ff]">
+            Ltd
+          </span>
+        )}
         {block.is_active ? (
           <div className="ml-auto flex items-center gap-2">
             <span className="rounded-full bg-[rgba(212,160,23,0.15)] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.8px] text-gold-300">
@@ -152,6 +166,52 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
           </label>
         </div>
 
+        {/* Limited-edition drop */}
+        <div
+          className="rounded-[8px] border"
+          style={{
+            padding: 12,
+            borderColor: isSpecial ? 'rgba(155,107,255,0.35)' : 'rgba(255,255,255,0.07)',
+            background: isSpecial ? 'rgba(155,107,255,0.06)' : 'transparent',
+          }}
+        >
+          <label className="flex items-center gap-2 text-xs text-nw-200">
+            <input
+              type="checkbox"
+              checked={isSpecial}
+              onChange={(e) => setIsSpecial(e.target.checked)}
+              className="h-4 w-4 accent-[#9b6bff]"
+            />
+            <span className="font-medium">Limited edition drop</span>
+            <span className="text-[10px] text-nw-500">— shows as its own card on the website, alongside the normal block</span>
+          </label>
+
+          {isSpecial && (
+            <div className="mt-3 flex flex-col gap-3">
+              <Field label="Badge label">
+                <input
+                  type="text"
+                  value={tagline}
+                  onChange={(e) => setTagline(e.target.value)}
+                  placeholder="Summer · Ltd"
+                  className="w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-sm text-nw-100 focus:border-[#9b6bff] focus:outline-none"
+                />
+              </Field>
+              <Field label="Booking closes (optional — drives the countdown)">
+                <input
+                  type="datetime-local"
+                  value={closesAt}
+                  onChange={(e) => setClosesAt(e.target.value)}
+                  className="w-full rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 px-3 py-2 text-sm text-nw-100 focus:border-[#9b6bff] focus:outline-none"
+                />
+              </Field>
+              <p className="text-[10px] leading-relaxed text-nw-500">
+                A limited drop can be active at the same time as your normal block. Set the teens price under <strong className="text-nw-300">Capacity &amp; pricing</strong> — the website card shows the teens price for this drop.
+              </p>
+            </div>
+          )}
+        </div>
+
         {/* Fixed times reference */}
         <div className="mt-1 flex flex-col gap-1.5 rounded-[8px] border border-[rgba(255,255,255,0.07)] bg-nw-800/50" style={{ padding: 12 }}>
           <span className="text-[9px] font-semibold uppercase tracking-[1.4px] text-nw-500">
@@ -181,6 +241,19 @@ export function BlockSettingsPanel({ block, onOpenPricing }: Props) {
       </div>
     </div>
   )
+}
+
+/**
+ * Convert a stored ISO timestamp to the `YYYY-MM-DDTHH:mm` shape that a
+ * <input type="datetime-local"> expects, in the admin's LOCAL wall-clock time.
+ * Returns '' for null so the input renders empty.
+ */
+function isoToLocalInput(iso: string | null): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+  return local.toISOString().slice(0, 16)
 }
 
 function Field({ label, children, className = '' }: { label: string; children: React.ReactNode; className?: string }) {
