@@ -36,7 +36,10 @@ async function revalidatePublicKids(): Promise<void> {
     await fetch(`${base.replace(/\/$/, '')}/api/revalidate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ secret, paths: ['/kids-teens'] }),
+      // Both public pages render live block info and are statically CDN-cached:
+      // /kids-teens (landing card) and /kids-teens/register (booking form, made
+      // static July 2026). Push both so an activated block appears immediately.
+      body: JSON.stringify({ secret, paths: ['/kids-teens', '/kids-teens/register'] }),
       cache: 'no-store',
     })
   } catch {
