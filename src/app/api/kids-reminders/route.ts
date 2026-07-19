@@ -67,12 +67,20 @@ export async function POST(req: NextRequest) {
   const [parentsRes, childrenRes, blocksRes] = await Promise.all([
     admin.from('kids_parents').select('id, email, name').in('id', parentIds),
     admin.from('kids_children').select('id, child_name').in('id', childIds),
-    admin.from('kids_blocks').select('id, name').in('id', blockIds),
+    admin.from('kids_blocks').select('id, name, start_time, end_time').in('id', blockIds),
   ])
 
   const parentById = new Map((parentsRes.data ?? []).map((p) => [p.id, p]))
   const childById = new Map((childrenRes.data ?? []).map((c) => [c.id, c.child_name]))
   const blockById = new Map((blocksRes.data ?? []).map((b) => [b.id, b.name]))
+  // Limited-edition drops run at a custom slot (e.g. 12:00–13:00), not the fixed
+  // per-category Sunday times — map each block to its custom time when set.
+  const blockTimeById = new Map(
+    (blocksRes.data ?? []).map((b) => [
+      b.id,
+      b.start_time && b.end_time ? `${b.start_time} – ${b.end_time}` : null,
+    ]),
+  )
 
   // Group bookings by parent
   const byParent = new Map<string, typeof bookings>()
@@ -94,7 +102,7 @@ export async function POST(req: NextRequest) {
     const children = parentBookings.map((b) => ({
       name: childById.get(b.child_id) ?? 'Your child',
       category: b.category as KidsCategory,
-      time: CATEGORY_TIME[b.category as KidsCategory],
+      time: blockTimeById.get(b.block_id) ?? CATEGORY_TIME[b.category as KidsCategory],
       label: CATEGORY_LABEL[b.category as KidsCategory],
     }))
 

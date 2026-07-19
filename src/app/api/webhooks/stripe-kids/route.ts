@@ -184,7 +184,7 @@ async function sendBlockConfirmationEmail(bookingIds: string[]): Promise<void> {
 
   const [parentRes, blockRes, childrenRes, sessionsRes] = await Promise.all([
     admin.from('kids_parents').select('email, name').eq('id', parentId).single(),
-    admin.from('kids_blocks').select('name, start_date').eq('id', blockId).single(),
+    admin.from('kids_blocks').select('name, start_date, start_time, end_time').eq('id', blockId).single(),
     admin.from('kids_children').select('id, child_name').in('id', childIds),
     admin
       .from('kids_sessions')
@@ -204,12 +204,19 @@ async function sendBlockConfirmationEmail(bookingIds: string[]): Promise<void> {
   }))
   const sessions = sessionsRes.data ?? []
 
+  // Limited-edition drops run at their own custom slot (e.g. 12:00–13:00), not
+  // the fixed Sunday per-category times. When the block carries start/end times,
+  // use them for every child row so the email matches the session they booked.
+  const customTime =
+    block.start_time && block.end_time ? `${block.start_time} – ${block.end_time}` : null
+
   const html = renderBlockConfirmationEmail({
     parentName: parent.name,
     blockName: block.name,
     blockStartDate: block.start_date,
     children: childRows,
     sessions,
+    customTime,
   })
 
   const resend = getResend()
@@ -276,10 +283,13 @@ function renderBlockConfirmationEmail(args: {
   blockStartDate: string
   children: { name: string; category: KidsCategory }[]
   sessions: { session_date: string; is_break: boolean; break_label: string | null }[]
+  /** Custom session time for a limited-edition drop ("12:00 – 13:00"). When set,
+   *  overrides the fixed per-category Sunday time on every child row. */
+  customTime?: string | null
 }): string {
   const childRows = args.children
     .map(
-      (c) => `<tr><td style="padding:6px 0;color:#fff;font-size:14px;">${escapeHtml(c.name)}</td><td style="padding:6px 0;color:#f2cb55;font-size:12px;text-align:right;">${CATEGORY_LABEL[c.category]} &middot; ${CATEGORY_TIME[c.category]}</td></tr>`,
+      (c) => `<tr><td style="padding:6px 0;color:#fff;font-size:14px;">${escapeHtml(c.name)}</td><td style="padding:6px 0;color:#f2cb55;font-size:12px;text-align:right;">${CATEGORY_LABEL[c.category]} &middot; ${args.customTime ?? CATEGORY_TIME[c.category]}</td></tr>`,
     )
     .join('')
 
