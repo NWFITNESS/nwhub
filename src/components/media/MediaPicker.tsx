@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import * as tus from 'tus-js-client'
 import { createClient } from '@/lib/supabase/client'
 import { Upload, X, Check, Image as ImageIcon, Video, Play } from 'lucide-react'
 import type { Media } from '@/lib/types'
@@ -87,25 +88,74 @@ async function uploadViaApi(file: File): Promise<{ data: Media | null; error: st
 }
 
 /**
- * Videos and other non-compressible files → straight to Supabase Storage, then
- * record the DB row via /api/media/record. This bypasses the Vercel serverless
- * request-body limit (~4.5 MB), so large Canva video exports actually upload.
+ * Videos and other non-compressible files → straight to Supabase Storage via a
+ * RESUMABLE (TUS) upload, then record the DB row via /api/media/record.
+ *
+ * Why TUS rather than the plain .upload():
+ *   • Going direct bypasses the Vercel serverless request-body limit (~4.5 MB),
+ *     so large Canva video exports actually upload at all.
+ *   • .upload() sends the whole file in one shot with NO progress events — a
+ *     100 MB file just sits on "Uploading…" for minutes. TUS reports progress
+ *     and uploads in 6 MB chunks, so we can show a real % bar.
+ *   • It resumes after a dropped connection (gym wifi), instead of restarting.
  * Ceiling becomes the `media` bucket's file_size_limit.
  */
-async function uploadDirect(file: File): Promise<{ data: Media | null; error: string | null }> {
+async function uploadDirect(
+  file: File,
+  onProgress?: (pct: number) => void,
+): Promise<{ data: Media | null; error: string | null }> {
   const supabase = createClient()
+  const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+  if (!projectUrl || !session) {
+    return { data: null, error: 'Session expired — reload the page and try again.' }
+  }
+
   const path = `media/${Date.now()}-${file.name.replace(/[^a-z0-9.-]/gi, '_')}`
 
-  const { error: storageError } = await supabase.storage
-    .from('media')
-    .upload(path, file, { contentType: file.type })
-  if (storageError) {
-    // Surface the bucket limit clearly rather than a raw storage error.
-    const msg = /exceeded|maximum|too large|size/i.test(storageError.message)
-      ? 'File is larger than the media bucket allows. Ask an admin to raise the limit.'
-      : storageError.message
-    return { data: null, error: msg }
-  }
+  const uploadError = await new Promise<string | null>((resolve) => {
+    const upload = new tus.Upload(file, {
+      endpoint: `${projectUrl}/storage/v1/upload/resumable`,
+      retryDelays: [0, 3000, 5000, 10000, 20000], // survive brief wifi drops
+      headers: {
+        authorization: `Bearer ${session.access_token}`,
+        'x-upsert': 'true',
+      },
+      uploadDataDuringCreation: true,
+      removeFingerprintOnSuccess: true,
+      chunkSize: 6 * 1024 * 1024, // Supabase requires exactly 6 MB chunks
+      metadata: {
+        bucketName: 'media',
+        objectName: path,
+        contentType: file.type,
+        cacheControl: '3600',
+      },
+      onError: (err) => {
+        const m = err instanceof Error ? err.message : String(err)
+        resolve(
+          /exceeded|maximum|too large|413|payload/i.test(m)
+            ? 'File is larger than the media bucket allows. Ask an admin to raise the limit.'
+            : m || 'Upload failed.',
+        )
+      },
+      onProgress: (uploaded, total) => {
+        if (total > 0) onProgress?.(Math.round((uploaded / total) * 100))
+      },
+      onSuccess: () => resolve(null),
+    })
+    // Resume a prior interrupted upload of the same file if one exists.
+    upload
+      .findPreviousUploads()
+      .then((prev) => {
+        if (prev.length) upload.resumeFromPreviousUpload(prev[0])
+        upload.start()
+      })
+      .catch(() => upload.start())
+  })
+
+  if (uploadError) return { data: null, error: uploadError }
 
   const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path)
 
@@ -136,14 +186,17 @@ async function uploadDirect(file: File): Promise<{ data: Media | null; error: st
   return { data: JSON.parse(text) as Media, error: null }
 }
 
-async function uploadFile(file: File): Promise<{ data: Media | null; error: string | null }> {
+async function uploadFile(
+  file: File,
+  onProgress?: (pct: number) => void,
+): Promise<{ data: Media | null; error: string | null }> {
   try {
     // Small, Sharp-compressible images take the API path (server-side
     // compression is worth keeping for enormous Canva PNGs). Everything else —
     // videos, GIFs, SVGs — uploads directly to storage to dodge the 4.5 MB limit.
     return SERVER_COMPRESSIBLE.has(file.type)
       ? await uploadViaApi(file)
-      : await uploadDirect(file)
+      : await uploadDirect(file, onProgress)
   } catch (e) {
     return { data: null, error: e instanceof Error ? e.message : 'Network error' }
   }
@@ -161,6 +214,7 @@ export function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalP
   const [media, setMedia]         = useState<Media[]>([])
   const [loading, setLoading]     = useState(true)
   const [uploading, setUploading] = useState(false)
+  const [progress, setProgress]   = useState<number | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [filter, setFilter]       = useState<'all' | 'images' | 'videos'>('all')
   const fileInput = useRef<HTMLInputElement>(null)
@@ -180,9 +234,10 @@ export function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalP
   async function handleUpload(files: FileList | null) {
     if (!files || files.length === 0) return
     setUploading(true)
+    setProgress(null)
     setUploadError(null)
     for (const file of Array.from(files)) {
-      const { data: row, error } = await uploadFile(file)
+      const { data: row, error } = await uploadFile(file, setProgress)
       if (error) { setUploadError(error); setUploading(false); return }
       if (row) {
         setMedia((prev) => [row, ...prev])
@@ -259,9 +314,19 @@ export function MediaPickerModal({ value, onSelect, onClose }: MediaPickerModalP
             onDrop={(e) => { e.preventDefault(); handleUpload(e.dataTransfer.files) }}
           >
             {uploading ? (
-              <div className="flex items-center justify-center gap-2 text-sm text-white/50">
-                <div className="w-4 h-4 border-2 border-[#967705] border-t-transparent rounded-full animate-spin" />
-                Uploading…
+              <div className="flex flex-col items-center justify-center gap-2 text-sm text-white/50">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-[#967705] border-t-transparent rounded-full animate-spin" />
+                  {progress === null ? 'Uploading…' : `Uploading… ${progress}%`}
+                </div>
+                {progress !== null && (
+                  <div className="w-full max-w-[220px] h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#967705] transition-[width] duration-200"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                )}
               </div>
             ) : (
               <>
@@ -370,6 +435,7 @@ export function MediaPickerMultiModal({ selected: initial, onDone, onClose, max 
   const [media, setMedia]         = useState<Media[]>([])
   const [loading, setLoading]     = useState(true)
   const [uploading, setUploading] = useState(false)
+  const [progress, setProgress]   = useState<number | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [filter, setFilter]       = useState<'all' | 'images' | 'videos'>('all')
   const [selected, setSelected]   = useState<string[]>(initial)
@@ -394,9 +460,10 @@ export function MediaPickerMultiModal({ selected: initial, onDone, onClose, max 
   async function handleUpload(files: FileList | null) {
     if (!files || files.length === 0) return
     setUploading(true)
+    setProgress(null)
     setUploadError(null)
     for (const file of Array.from(files)) {
-      const { data: row, error } = await uploadFile(file)
+      const { data: row, error } = await uploadFile(file, setProgress)
       if (error) { setUploadError(error); setUploading(false); return }
       if (row) {
         setMedia((prev) => [row, ...prev])
@@ -493,9 +560,19 @@ export function MediaPickerMultiModal({ selected: initial, onDone, onClose, max 
             onDrop={(e) => { e.preventDefault(); handleUpload(e.dataTransfer.files) }}
           >
             {uploading ? (
-              <div className="flex items-center justify-center gap-2 text-sm text-white/50">
-                <div className="w-4 h-4 border-2 border-[#967705] border-t-transparent rounded-full animate-spin" />
-                Uploading…
+              <div className="flex flex-col items-center justify-center gap-2 text-sm text-white/50">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-[#967705] border-t-transparent rounded-full animate-spin" />
+                  {progress === null ? 'Uploading…' : `Uploading… ${progress}%`}
+                </div>
+                {progress !== null && (
+                  <div className="w-full max-w-[220px] h-1.5 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#967705] transition-[width] duration-200"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                )}
               </div>
             ) : (
               <>
