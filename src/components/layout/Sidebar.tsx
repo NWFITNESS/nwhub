@@ -58,6 +58,7 @@ const I = {
   editor: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M10.5 2.5l3 3M4 9l-1 4 4-1 7.5-7.5-3-3L4 9z" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   media: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="2" width="14" height="12" rx="2"/><circle cx="5" cy="6" r="1.5"/><path d="M1 12l4-4 3 3 3-3 4 4"/></svg>,
   integrations: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M8 1v4M4.5 3l2 3M11.5 3l-2 3M8 11v4M4.5 13l2-3M11.5 13l-2-3" strokeLinecap="round"/><circle cx="8" cy="8" r="2.5"/></svg>,
+  screens: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1.5" y="2.5" width="13" height="9" rx="1.5"/><path d="M5.5 14h5M8 11.5V14" strokeLinecap="round"/></svg>,
   staff: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="6" cy="5" r="2.5"/><path d="M1 14c0-2.5 2-4.5 5-4.5s5 2 5 4.5"/><circle cx="12" cy="5" r="1.5"/><path d="M15 12c0-1.5-1.2-2.8-3-2.8" strokeLinecap="round"/></svg>,
   settings: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4" strokeLinecap="round"/></svg>,
   calendar: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M2 7h12M5 1v4M11 1v4" strokeLinecap="round"/></svg>,
@@ -115,6 +116,7 @@ function buildNav(unreadCount: number): NavSection[] {
       { key: 'seo', label: 'SEO Engine', icon: I.seo, href: '/seo', permKey: 'seo' },
       { key: 'editor', label: 'Website Editor', icon: I.editor, href: '/content', permKey: 'content_editor' },
       { key: 'media', label: 'Media Library', icon: I.media, href: '/media', permKey: 'media' },
+      { key: 'screens', label: 'Screens', icon: I.screens, href: '/screens', permKey: 'media' },
     ]},
     { label: 'System', items: [
       { key: 'ai-chat', label: 'AI Chat', icon: I.ai, href: '/ai-chat', tag: 'Bot', permKey: 'ai_chat' },
