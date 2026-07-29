@@ -45,21 +45,105 @@ async function compressImage(file: File): Promise<File> {
   return new File([blob], name, { type: 'image/jpeg' })
 }
 
+// Types the server compresses with Sharp. These go through /api/media (they're
+// small after client compression, so the ~4.5 MB Vercel body limit is fine).
+const SERVER_COMPRESSIBLE = new Set(['image/jpeg', 'image/png', 'image/webp'])
+
+/** Best-effort natural dimensions of a video, for the media row. */
+function readVideoDimensions(file: File): Promise<{ width: number | null; height: number | null }> {
+  return new Promise((resolve) => {
+    try {
+      const v = document.createElement('video')
+      v.preload = 'metadata'
+      v.onloadedmetadata = () => {
+        resolve({ width: v.videoWidth || null, height: v.videoHeight || null })
+        URL.revokeObjectURL(v.src)
+      }
+      v.onerror = () => resolve({ width: null, height: null })
+      v.src = URL.createObjectURL(file)
+    } catch {
+      resolve({ width: null, height: null })
+    }
+  })
+}
+
+/**
+ * Compressible images → POST /api/media (Sharp compresses server-side).
+ */
+async function uploadViaApi(file: File): Promise<{ data: Media | null; error: string | null }> {
+  const compressed = await compressImage(file)
+  const form = new FormData()
+  form.append('file', compressed)
+  form.append('alt', '')
+  form.append('category', 'general')
+  const res = await fetch('/api/media', { method: 'POST', body: form })
+  const text = await res.text()
+  if (!res.ok) {
+    let msg = text
+    try { msg = JSON.parse(text)?.error ?? text } catch { /* keep raw text */ }
+    return { data: null, error: msg || `Upload failed (${res.status})` }
+  }
+  return { data: JSON.parse(text) as Media, error: null }
+}
+
+/**
+ * Videos and other non-compressible files → straight to Supabase Storage, then
+ * record the DB row via /api/media/record. This bypasses the Vercel serverless
+ * request-body limit (~4.5 MB), so large Canva video exports actually upload.
+ * Ceiling becomes the `media` bucket's file_size_limit.
+ */
+async function uploadDirect(file: File): Promise<{ data: Media | null; error: string | null }> {
+  const supabase = createClient()
+  const path = `media/${Date.now()}-${file.name.replace(/[^a-z0-9.-]/gi, '_')}`
+
+  const { error: storageError } = await supabase.storage
+    .from('media')
+    .upload(path, file, { contentType: file.type })
+  if (storageError) {
+    // Surface the bucket limit clearly rather than a raw storage error.
+    const msg = /exceeded|maximum|too large|size/i.test(storageError.message)
+      ? 'File is larger than the media bucket allows. Ask an admin to raise the limit.'
+      : storageError.message
+    return { data: null, error: msg }
+  }
+
+  const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path)
+
+  const { width, height } = file.type.startsWith('video/')
+    ? await readVideoDimensions(file)
+    : { width: null, height: null }
+
+  const res = await fetch('/api/media/record', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      filename: file.name,
+      storage_path: path,
+      url: publicUrl,
+      alt: '',
+      category: 'general',
+      size: file.size,
+      width,
+      height,
+    }),
+  })
+  const text = await res.text()
+  if (!res.ok) {
+    let msg = text
+    try { msg = JSON.parse(text)?.error ?? text } catch { /* keep raw text */ }
+    return { data: null, error: msg || `Record failed (${res.status})` }
+  }
+  return { data: JSON.parse(text) as Media, error: null }
+}
+
 async function uploadFile(file: File): Promise<{ data: Media | null; error: string | null }> {
   try {
-    const compressed = await compressImage(file)
-    const form = new FormData()
-    form.append('file', compressed)
-    form.append('alt', '')
-    form.append('category', 'general')
-    const res = await fetch('/api/media', { method: 'POST', body: form })
-    const text = await res.text()
-    if (!res.ok) {
-      let msg = text
-      try { msg = JSON.parse(text)?.error ?? text } catch { /* keep raw text */ }
-      return { data: null, error: msg || `Upload failed (${res.status})` }
-    }
-    return { data: JSON.parse(text) as Media, error: null }
+    // Small, Sharp-compressible images take the API path (server-side
+    // compression is worth keeping for enormous Canva PNGs). Everything else —
+    // videos, GIFs, SVGs — uploads directly to storage to dodge the 4.5 MB limit.
+    return SERVER_COMPRESSIBLE.has(file.type)
+      ? await uploadViaApi(file)
+      : await uploadDirect(file)
   } catch (e) {
     return { data: null, error: e instanceof Error ? e.message : 'Network error' }
   }
