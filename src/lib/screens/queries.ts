@@ -24,6 +24,20 @@ export async function getReceptionScreen(): Promise<Screen | null> {
   return (data as Screen | null) ?? null
 }
 
+/** Fetch every screen, oldest first (Reception, the seed, is always first). */
+export async function getScreens(): Promise<Screen[]> {
+  const admin = createAdminClient()
+  const { data } = await admin.from('screens').select('*').order('created_at', { ascending: true })
+  return (data as Screen[] | null) ?? []
+}
+
+/** Fetch a single screen by id (admin editor, after a screen is selected). */
+export async function getScreenById(id: string): Promise<Screen | null> {
+  const admin = createAdminClient()
+  const { data } = await admin.from('screens').select('*').eq('id', id).maybeSingle()
+  return (data as Screen | null) ?? null
+}
+
 /** Fetch a screen by its opaque token (used by the unauthed display endpoints). */
 export async function getScreenByToken(token: string): Promise<Screen | null> {
   // Guard against obviously malformed tokens before hitting the DB.

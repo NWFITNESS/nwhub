@@ -1,5 +1,6 @@
 'use server'
 
+import { randomBytes } from 'crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import type { PublishedManifest, PublishedSlide, SlideTransition } from './types'
@@ -36,28 +37,23 @@ async function screenIdForSlide(admin: ReturnType<typeof createAdminClient>, sli
 
 interface CreateSlideInput {
   screenId: string
-  /** A URL from the media library (the media picker returns this). */
-  url: string
-  /** Optional display name; defaults to the media filename. */
+  /** A URL from the media library (the media picker returns this). Omit for an embed. */
+  url?: string
+  /** An external page URL to render in an iframe. Makes this an `embed` slide. */
+  embedUrl?: string
+  /** Optional display name; defaults to the media filename / embed host. */
   name?: string
 }
 
 export async function createSlide(input: CreateSlideInput): Promise<{ id: string }> {
   const admin = createAdminClient()
   if (!input.screenId) throw new Error('Screen is required.')
-  if (!input.url?.trim()) throw new Error('Pick a file from the media library first.')
 
-  // Resolve the media row so we can store the FK (enables cascade + dimensions).
-  const { data: media } = await admin
-    .from('media')
-    .select('id, filename')
-    .eq('url', input.url)
-    .maybeSingle()
+  const embed = input.embedUrl?.trim()
+  const url = input.url?.trim()
+  if (!embed && !url) throw new Error('Pick a file from the media library, or paste an embed URL.')
 
-  const kind = isVideoUrl(input.url) ? 'video' : 'image'
-  const name = (input.name?.trim() || media?.filename || 'Slide').slice(0, 120)
-
-  // Append to the end of the running order.
+  // Resolve the shared position + unpublished flag once we know the screen.
   const { data: last } = await admin
     .from('screen_slides')
     .select('position')
@@ -67,18 +63,50 @@ export async function createSlide(input: CreateSlideInput): Promise<{ id: string
     .maybeSingle()
   const position = (last?.position ?? -1) + 1
 
-  const { data: row, error } = await admin
-    .from('screen_slides')
-    .insert({
+  let insertRow: Record<string, unknown>
+
+  if (embed) {
+    let host: string
+    try {
+      const u = new URL(embed)
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') throw new Error()
+      host = u.hostname.replace(/^www\./, '')
+    } catch {
+      throw new Error('Enter a valid http(s) embed URL.')
+    }
+    insertRow = {
       screen_id: input.screenId,
       position,
-      name,
-      kind,
+      name: (input.name?.trim() || host).slice(0, 120),
+      kind: 'embed',
+      embed_url: embed,
+      // Embeds have no natural length, so they use the timed duration like images.
+      duration_seconds: 15,
+      transition: 'fade',
+      is_live: true,
+    }
+  } else {
+    // Resolve the media row so we can store the FK (enables cascade + dimensions).
+    const { data: media } = await admin
+      .from('media')
+      .select('id, filename')
+      .eq('url', url!)
+      .maybeSingle()
+    insertRow = {
+      screen_id: input.screenId,
+      position,
+      name: (input.name?.trim() || media?.filename || 'Slide').slice(0, 120),
+      kind: isVideoUrl(url!) ? 'video' : 'image',
       media_id: media?.id ?? null,
       duration_seconds: 10,
       transition: 'fade',
       is_live: true,
-    })
+    }
+  }
+
+  const { data: row, error } = await admin
+    .from('screen_slides')
+    .insert(insertRow)
     .select('id')
     .single()
 
@@ -212,5 +240,76 @@ export async function publishScreen(screenId: string): Promise<void> {
     .eq('id', screenId)
   if (pubError) throw new Error(pubError.message)
 
+  revalidatePath('/screens')
+}
+
+// ─── Screens (multi-screen management) ───────────────────────────────────────
+
+function slugify(name: string): string {
+  return (
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 48) || 'screen'
+  )
+}
+
+/** Turn a name into a slug that is unique across the screens table. */
+async function uniqueSlug(admin: ReturnType<typeof createAdminClient>, name: string): Promise<string> {
+  const base = slugify(name)
+  const { data } = await admin.from('screens').select('slug').like('slug', `${base}%`)
+  const taken = new Set((data ?? []).map((r) => r.slug as string))
+  if (!taken.has(base)) return base
+  for (let i = 2; i < 1000; i++) {
+    const candidate = `${base}-${i}`
+    if (!taken.has(candidate)) return candidate
+  }
+  // Astronomically unlikely; fall back to a random suffix.
+  return `${base}-${randomBytes(3).toString('hex')}`
+}
+
+/** Create a new screen (display). Generates a stable slug + opaque token. */
+export async function createScreen(input: { name: string }): Promise<{ id: string }> {
+  const admin = createAdminClient()
+  const name = input.name?.trim()
+  if (!name) throw new Error('Give the screen a name.')
+
+  const slug = await uniqueSlug(admin, name)
+  const token = randomBytes(16).toString('hex')
+
+  const { data: row, error } = await admin
+    .from('screens')
+    .insert({ name: name.slice(0, 80), slug, token })
+    .select('id')
+    .single()
+
+  if (error) throw new Error(error.message)
+  revalidatePath('/screens')
+  return { id: row.id as string }
+}
+
+/** Rename a screen (display name only; the slug/token stay stable). */
+export async function renameScreen(input: { id: string; name: string }): Promise<void> {
+  const admin = createAdminClient()
+  const name = input.name?.trim()
+  if (!input.id) throw new Error('Screen is required.')
+  if (!name) throw new Error('Give the screen a name.')
+
+  const { error } = await admin.from('screens').update({ name: name.slice(0, 80) }).eq('id', input.id)
+  if (error) throw new Error(error.message)
+  revalidatePath('/screens')
+}
+
+/** Delete a screen and all its slides (cascade). Refuses the last remaining screen. */
+export async function deleteScreen(id: string): Promise<void> {
+  const admin = createAdminClient()
+  if (!id) throw new Error('Screen is required.')
+
+  const { count } = await admin.from('screens').select('id', { count: 'exact', head: true })
+  if ((count ?? 0) <= 1) throw new Error('You must keep at least one screen.')
+
+  const { error } = await admin.from('screens').delete().eq('id', id)
+  if (error) throw new Error(error.message)
   revalidatePath('/screens')
 }
