@@ -26,6 +26,7 @@ import { Panel, PanelHeader, PanelBody } from '@/components/ui/Card'
 import { Modal, ConfirmModal } from '@/components/ui/Modal'
 import { Input, Select, Field } from '@/components/ui/Input'
 import { MediaPickerModal } from '@/components/media/MediaPicker'
+import { ScreenPreview } from './ScreenPreview'
 import {
   createScreen,
   createSlide,
@@ -266,6 +267,21 @@ export function ScreensPageClient({ screens, screen, slides: initialSlides }: Pr
         </div>
       )}
 
+      {/* ── Preview + timeline ─────────────────────────────────────────────── */}
+      <Panel>
+        <PanelHeader
+          title="Preview"
+          action={
+            <span className="text-nw-500" style={{ fontSize: 12 }}>
+              Live slides only · drag the timeline to scrub
+            </span>
+          }
+        />
+        <PanelBody>
+          <ScreenPreview slides={slides} />
+        </PanelBody>
+      </Panel>
+
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
         {/* ── Slide list ─────────────────────────────────────────────────── */}
         <Panel>
@@ -306,6 +322,10 @@ export function ScreensPageClient({ screens, screen, slides: initialSlides }: Pr
                     onTransition={(t) => {
                       patchLocal(slide.id, { transition: t })
                       run(() => updateSlide({ id: slide.id, transition: t }))
+                    }}
+                    onSpeed={(ms) => {
+                      patchLocal(slide.id, { transition_ms: ms })
+                      run(() => updateSlide({ id: slide.id, transition_ms: ms }))
                     }}
                     onDays={(days) => {
                       patchLocal(slide.id, { days_of_week: days })
@@ -450,6 +470,7 @@ function SlideRow({
   onToggleLive,
   onDuration,
   onTransition,
+  onSpeed,
   onDays,
   onDates,
   onDelete,
@@ -461,6 +482,7 @@ function SlideRow({
   onToggleLive: () => void
   onDuration: (seconds: number) => void
   onTransition: (t: SlideTransition) => void
+  onSpeed: (ms: number) => void
   onDays: (days: number[]) => void
   onDates: (patch: { starts_on?: string | null; ends_on?: string | null }) => void
   onDelete: () => void
@@ -634,10 +656,10 @@ function SlideRow({
           className="border-t border-[rgba(255,255,255,0.08)] flex flex-col gap-4"
           style={{ padding: 14 }}
         >
-          {/* Transition */}
-          <div className="flex items-center gap-3">
+          {/* Transition + speed */}
+          <div className="flex items-center gap-3 flex-wrap">
             <span className="text-nw-400 shrink-0" style={{ fontSize: 12, width: 88 }}>Transition</span>
-            <div style={{ width: 160 }}>
+            <div style={{ width: 130 }}>
               <Select
                 value={slide.transition}
                 disabled={busy}
@@ -648,8 +670,27 @@ function SlideRow({
                 <option value="slide">Slide</option>
               </Select>
             </div>
-            {isVideo && (
+            {isVideo ? (
               <span className="text-nw-600" style={{ fontSize: 11 }}>Videos always cut.</span>
+            ) : (
+              slide.transition !== 'cut' && (
+                <div className="flex items-center gap-2">
+                  <span className="text-nw-500" style={{ fontSize: 12 }}>Speed</span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={2000}
+                    step={100}
+                    value={slide.transition_ms ?? 700}
+                    disabled={busy}
+                    onChange={(e) => onSpeed(Number(e.target.value))}
+                    style={{ width: 130, accentColor: GOLD }}
+                  />
+                  <span className="text-nw-400 tabular-nums" style={{ fontSize: 12, width: 34 }}>
+                    {((slide.transition_ms ?? 700) / 1000).toFixed(1)}s
+                  </span>
+                </div>
+              )
             )}
           </div>
 

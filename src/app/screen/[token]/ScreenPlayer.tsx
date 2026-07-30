@@ -26,7 +26,7 @@ import type { Manifest, ManifestSlide } from '@/lib/screens/types'
 // ─────────────────────────────────────────────────────────────────────────────
 
 const POLL_MS = 30_000
-const TRANSITION_MS = 700
+const DEFAULT_TRANSITION_MS = 700
 // If a video's `ended`/`error` never fires (a rare mid-stream stall), advance
 // anyway after this cap so the loop can never lock up on one slide.
 const VIDEO_SAFETY_MS = 10 * 60_000
@@ -81,7 +81,10 @@ export function ScreenPlayer({ token, initial }: { token: string; initial: Manif
     const nextIdx = (baseIdxRef.current + 1) % slides.length
     const next = slides[nextIdx]
     const animate =
-      next.transition !== 'cut' && next.kind === 'image' && cur.kind === 'image'
+      next.transition !== 'cut' &&
+      (next.transitionMs ?? DEFAULT_TRANSITION_MS) > 0 &&
+      next.kind === 'image' &&
+      cur.kind === 'image'
     if (animate) {
       setTopIdx(nextIdx) // fades/slides in over the base, then settles
     } else {
@@ -200,11 +203,12 @@ function SlideLayer({
   onEntered?: () => void
   onVideoEnded?: () => void
 }) {
+  const ms = slide.transitionMs ?? DEFAULT_TRANSITION_MS
   const anim =
     entering && slide.transition === 'slide'
-      ? `nw-slide-in ${TRANSITION_MS}ms ease forwards`
+      ? `nw-slide-in ${ms}ms ease forwards`
       : entering
-        ? `nw-fade-in ${TRANSITION_MS}ms ease forwards`
+        ? `nw-fade-in ${ms}ms ease forwards`
         : undefined
 
   const style: React.CSSProperties = {

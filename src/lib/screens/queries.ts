@@ -103,6 +103,7 @@ export function resolveManifest(published: PublishedManifest, now: Date = new Da
       url: s.url,
       duration: s.duration,
       transition: s.transition,
+      transitionMs: s.transition_ms ?? 700,
     }))
 
   // Version = first 12 chars of sha256 over the canonical body. Deterministic

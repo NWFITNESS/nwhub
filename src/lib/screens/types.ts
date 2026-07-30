@@ -30,6 +30,8 @@ export interface ScreenSlide {
   embed_url: string | null
   duration_seconds: number
   transition: SlideTransition
+  /** Transition length in milliseconds (0 = instant). */
+  transition_ms: number
   is_live: boolean
   starts_on: string | null
   ends_on: string | null
@@ -54,6 +56,7 @@ export interface PublishedSlide {
   url: string
   duration: number
   transition: SlideTransition
+  transition_ms: number
   is_live: boolean
   starts_on: string | null
   ends_on: string | null
@@ -73,6 +76,8 @@ export interface ManifestSlide {
   url: string
   duration: number
   transition: SlideTransition
+  /** Transition length in milliseconds (0 = instant). */
+  transitionMs: number
 }
 
 /** The JSON the display polls. */

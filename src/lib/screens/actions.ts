@@ -123,6 +123,7 @@ interface UpdateSlideInput {
   name?: string
   duration_seconds?: number
   transition?: SlideTransition
+  transition_ms?: number
   is_live?: boolean
   starts_on?: string | null
   ends_on?: string | null
@@ -141,6 +142,11 @@ export async function updateSlide(input: UpdateSlideInput): Promise<void> {
     patch.duration_seconds = d
   }
   if (input.transition !== undefined) patch.transition = input.transition
+  if (input.transition_ms !== undefined) {
+    const ms = Math.round(input.transition_ms)
+    if (!Number.isInteger(ms) || ms < 0 || ms > 5000) throw new Error('Transition speed must be between 0 and 5000ms.')
+    patch.transition_ms = ms
+  }
   if (input.is_live !== undefined) patch.is_live = input.is_live
   if (input.starts_on !== undefined) patch.starts_on = input.starts_on
   if (input.ends_on !== undefined) patch.ends_on = input.ends_on
@@ -220,6 +226,7 @@ export async function publishScreen(screenId: string): Promise<void> {
         url,
         duration: s.duration_seconds,
         transition: s.transition,
+        transition_ms: s.transition_ms ?? 700,
         is_live: s.is_live,
         starts_on: s.starts_on,
         ends_on: s.ends_on,
