@@ -107,8 +107,91 @@ export function StaffPageClient({ callerRole }: Props) {
         />
       </div>
 
-      {/* Staff table */}
-      <Panel>
+      {/* Staff — mobile cards */}
+      <div className="md:hidden flex flex-col gap-2">
+        {loading ? (
+          <div className="rounded-xl border border-white/8 bg-white/[0.02] text-center text-nw-500 text-sm" style={{ padding: 32 }}>Loading…</div>
+        ) : filtered.length === 0 ? (
+          <div className="rounded-xl border border-white/8 bg-white/[0.02] text-center text-nw-500 text-sm" style={{ padding: 32 }}>No staff members found</div>
+        ) : (
+          filtered.map(member => (
+            <div key={member.id} className="rounded-xl border border-white/8 bg-white/[0.02]" style={{ padding: 12 }}>
+              <div className="flex items-center gap-3">
+                <div
+                  className="flex items-center justify-center rounded-full flex-shrink-0 overflow-hidden"
+                  style={{
+                    width: 40, height: 40,
+                    background: member.avatar_url ? undefined : `linear-gradient(135deg, ${
+                      member.role === 'owner' ? '#967705, #c9a70a' : member.role === 'admin' ? '#2563eb, #60a5fa' : '#4b5563, #9ca3af'
+                    })`,
+                    fontSize: 13, fontWeight: 700, color: '#fff',
+                  }}
+                >
+                  {member.avatar_url ? (
+                    <img src={member.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : member.display_name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[14px] font-medium text-nw-100 truncate">{member.display_name}</p>
+                  <p className="text-[12px] text-nw-500 truncate">{member.email}</p>
+                </div>
+                {member.role !== 'owner' && (
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => setEditTarget(member)}
+                      className="flex h-11 w-11 items-center justify-center rounded-lg text-nw-500 hover:text-nw-200 hover:bg-white/[0.05] transition-colors"
+                      title="Edit permissions"
+                    >
+                      <Shield size={17} />
+                    </button>
+                    <div className="relative">
+                      <button
+                        onClick={() => setActionMenuId(actionMenuId === member.id ? null : member.id)}
+                        className="flex h-11 w-11 items-center justify-center rounded-lg text-nw-500 hover:text-nw-200 hover:bg-white/[0.05] transition-colors"
+                      >
+                        <MoreVertical size={17} />
+                      </button>
+                      {actionMenuId === member.id && (
+                        <div className="absolute right-0 top-full mt-1 z-50 w-[180px] rounded-lg border border-white/10 bg-nw-750 shadow-xl overflow-hidden">
+                          {member.status === 'active' ? (
+                            <button onClick={() => handleStatusChange(member.id, 'suspended')} className="flex w-full items-center gap-2.5 text-[13px] text-nw-300 hover:bg-white/[0.05] transition-colors" style={{ padding: '12px 14px' }}>
+                              <Ban size={15} className="text-orange-400" /> Suspend Access
+                            </button>
+                          ) : member.status === 'suspended' ? (
+                            <button onClick={() => handleStatusChange(member.id, 'active')} className="flex w-full items-center gap-2.5 text-[13px] text-nw-300 hover:bg-white/[0.05] transition-colors" style={{ padding: '12px 14px' }}>
+                              <CheckCircle2 size={15} className="text-green-400" /> Reactivate
+                            </button>
+                          ) : null}
+                          {callerRole === 'owner' && (
+                            <button onClick={() => handleDelete(member.id)} className="flex w-full items-center gap-2.5 text-[13px] text-red-400 hover:bg-red-500/8 transition-colors" style={{ padding: '12px 14px' }}>
+                              <Trash2 size={15} /> Remove User
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2 flex-wrap" style={{ marginTop: 10 }}>
+                <span className="inline-flex items-center gap-1.5 rounded-md text-[11px] font-semibold" style={{ padding: '3px 10px', background: ROLE_COLOURS[member.role]?.bg, color: ROLE_COLOURS[member.role]?.text, border: `1px solid ${ROLE_COLOURS[member.role]?.border}` }}>
+                  {ROLE_LABELS[member.role]}
+                </span>
+                <span className={`inline-flex items-center gap-1.5 text-[12px] font-medium ${member.status === 'active' ? 'text-green-400' : member.status === 'invited' ? 'text-blue-400' : 'text-red-400'}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${member.status === 'active' ? 'bg-green-400' : member.status === 'invited' ? 'bg-blue-400' : 'bg-red-400'}`} />
+                  {member.status.charAt(0).toUpperCase() + member.status.slice(1)}
+                </span>
+                <span className="text-[11px] text-nw-500" style={{ marginLeft: 'auto' }}>
+                  {member.last_login_at ? new Date(member.last_login_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Never'}
+                </span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Staff table — desktop */}
+      <Panel className="hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

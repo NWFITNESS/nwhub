@@ -136,23 +136,56 @@ export function DataTable<T>({
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(0) }}
           placeholder={searchPlaceholder}
-          className="h-8 w-52 rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 text-[13px] text-nw-200 outline-none transition-colors focus:border-[rgba(212,160,23,0.4)]"
+          className="h-11 w-full md:h-8 md:w-52 rounded-[7px] border border-[rgba(255,255,255,0.09)] bg-nw-800 text-[13px] text-nw-200 outline-none transition-colors focus:border-[rgba(212,160,23,0.4)]"
           style={{ padding: '0 10px' }}
         />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full md:w-auto">
           {toolbar}
           {hideableCols.length > 0 && (
-            <ColumnToggle
-              columns={hideableCols.map((c) => ({ key: c.key, label: c.label }))}
-              visible={visible}
-              onToggle={toggle}
-            />
+            <div className="hidden md:block">
+              <ColumnToggle
+                columns={hideableCols.map((c) => ({ key: c.key, label: c.label }))}
+                visible={visible}
+                onToggle={toggle}
+              />
+            </div>
           )}
         </div>
       </div>
 
-      {/* Table */}
-      <div className="w-full overflow-x-auto">
+      {/* Mobile: card list (no horizontal scroll) */}
+      <div className="md:hidden flex flex-col gap-2">
+        {pagedRows.length === 0 ? (
+          <div className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-nw-800 text-center text-nw-500" style={{ padding: '40px 16px', fontSize: 13 }}>
+            {emptyState ?? emptyText}
+          </div>
+        ) : (
+          pagedRows.map((row) => (
+            <div
+              key={rowKey(row)}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
+              className={`rounded-xl border border-[rgba(255,255,255,0.07)] bg-nw-800 transition-colors ${onRowClick ? 'cursor-pointer active:bg-white/[0.03]' : ''}`}
+              style={{ padding: 12 }}
+            >
+              {visibleColumns.map((col, i) => (
+                i === 0 ? (
+                  <div key={col.key} className="text-nw-100" style={{ fontSize: 14, fontWeight: 600, marginBottom: visibleColumns.length > 1 ? 8 : 0 }}>
+                    {col.render(row)}
+                  </div>
+                ) : (
+                  <div key={col.key} className="flex items-start justify-between gap-3" style={{ padding: '4px 0' }}>
+                    <span className="text-nw-500 uppercase shrink-0" style={{ fontSize: 10, letterSpacing: '0.5px', fontWeight: 600, paddingTop: 1 }}>{col.label}</span>
+                    <span className="text-nw-200 text-right min-w-0" style={{ fontSize: 13 }}>{col.render(row)}</span>
+                  </div>
+                )
+              ))}
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop: table */}
+      <div className="hidden md:block w-full overflow-x-auto">
         <table className="w-full border-collapse text-[13px]">
           <thead>
             <tr>

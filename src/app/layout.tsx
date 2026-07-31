@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter, League_Spartan, Manrope, Oswald, Roboto_Slab, Rajdhani } from 'next/font/google'
 import './globals.css'
 import 'react-grid-layout/css/styles.css'
@@ -30,6 +30,15 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'NWHub',
   },
+}
+
+// viewportFit: 'cover' lets env(safe-area-inset-*) work under the translucent
+// status bar / home indicator on iOS (the app runs as an installed PWA).
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#090c12',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
