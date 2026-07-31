@@ -244,7 +244,31 @@ function RecentDropInsCard({ rows }: { rows: DropInRow[] }) {
       {rows.length === 0 ? (
         <div className="py-12 text-center text-xs text-nw-500" style={{ paddingLeft: 20, paddingRight: 20 }}>No drop-ins yet</div>
       ) : (
-        <div className="overflow-x-auto">
+        <>
+        {/* Mobile cards */}
+        <div className="md:hidden flex flex-col gap-2" style={{ padding: 12 }}>
+          {rows.map((r) => {
+            const canCancel = r.payment_status === 'pending' || r.payment_status === 'link_sent'
+            const canRefund = r.payment_status === 'paid'
+            return (
+              <div key={r.id} className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-nw-800" style={{ padding: 12 }}>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium text-nw-100 truncate" style={{ fontSize: 14 }}>{r.child_name}</span>
+                  <StatusPill status={r.payment_status} />
+                </div>
+                <div className="flex items-center justify-between gap-2" style={{ marginTop: 8 }}>
+                  <span className="text-nw-400" style={{ fontSize: 12 }}>{CATEGORY_LABEL[r.category]} · {formatPence(r.price_pence)}</span>
+                  <div className="flex items-center gap-3">
+                    {canCancel && <button onClick={() => handleCancel(r.id, r.child_name)} disabled={pending} className="text-[12px] font-medium text-nw-400 hover:text-[#ef4444] disabled:opacity-50 transition-colors" style={{ minHeight: 32 }}>Cancel</button>}
+                    {canRefund && <button onClick={() => handleRefund(r.id, r.child_name)} disabled={pending} className="text-[12px] font-medium text-nw-400 hover:text-[#ef4444] disabled:opacity-50 transition-colors" style={{ minHeight: 32 }}>Refund</button>}
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[rgba(255,255,255,0.05)]">
@@ -293,6 +317,7 @@ function RecentDropInsCard({ rows }: { rows: DropInRow[] }) {
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   )

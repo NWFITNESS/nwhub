@@ -53,7 +53,37 @@ export function DiscountsSection({ discounts }: Props) {
             No discounts yet. Click <span className="text-gold-300">+ New discount</span> to create one.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* Mobile cards */}
+          <div className="md:hidden flex flex-col gap-2" style={{ padding: 12 }}>
+            {discounts.map((d) => (
+              <div key={d.id} className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-nw-800" style={{ padding: 12 }}>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="font-mono text-[13px] text-nw-100 truncate">{d.code}</span>
+                    {d.auto_apply && <span className="rounded-full px-1.5 py-0.5 text-[9px] font-semibold shrink-0" style={{ background: 'rgba(59,130,246,0.12)', color: '#3b82f6' }}>AUTO</span>}
+                  </div>
+                  <button onClick={() => handleToggle(d)} disabled={pending} className="rounded-full px-2 py-0.5 text-[10px] font-semibold disabled:opacity-50 shrink-0 transition-colors" style={{ background: d.is_active ? 'rgba(74,222,128,0.12)' : 'rgba(248,113,113,0.12)', color: d.is_active ? '#22c55e' : '#ef4444' }}>
+                    {d.is_active ? 'Active' : 'Inactive'}
+                  </button>
+                </div>
+                {d.description && <p className="text-nw-400" style={{ marginTop: 6, fontSize: 12 }}>{d.description}</p>}
+                <div className="flex items-center gap-x-3 gap-y-1 flex-wrap text-nw-400" style={{ marginTop: 6, fontSize: 12 }}>
+                  <span className="text-nw-200 font-medium">{d.discount_type === 'percentage' ? `${d.value}%` : formatPence(d.value)}</span>
+                  <span className="text-nw-600">·</span>
+                  <span>Min {d.min_children}</span>
+                  <span className="text-nw-600">·</span>
+                  <span>{d.times_used}{d.max_uses != null ? ` / ${d.max_uses}` : ''} used</span>
+                </div>
+                <div className="flex items-center gap-3" style={{ marginTop: 10 }}>
+                  <button onClick={() => setEditing(d)} disabled={pending} className="text-[12px] font-medium text-nw-300 hover:text-gold-300 disabled:opacity-50 transition-colors" style={{ minHeight: 32 }}>Edit</button>
+                  <button onClick={() => handleDelete(d)} disabled={pending} className="text-[12px] font-medium text-nw-400 hover:text-[#ef4444] disabled:opacity-50 transition-colors" style={{ minHeight: 32 }}>Delete</button>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[rgba(255,255,255,0.05)]">
@@ -121,6 +151,7 @@ export function DiscountsSection({ discounts }: Props) {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
 

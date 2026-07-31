@@ -313,7 +313,57 @@ function RosterTable({ rows, totalRows, onClearFilters, onEdit }: { rows: Roster
   }
 
   return (
-    <div className="overflow-x-auto">
+    <>
+    {/* Mobile cards */}
+    <div className="md:hidden flex flex-col gap-2" style={{ padding: 12 }}>
+      {rows.map((r) => (
+        <div
+          key={r.booking_id}
+          onClick={() => onEdit(r.booking_id)}
+          className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-nw-800 active:bg-white/[0.03] cursor-pointer"
+          style={{ padding: 12 }}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <CameraIcon active={r.photo_consent} />
+              <span className="font-medium text-nw-100 truncate" style={{ fontSize: 14 }}>{r.child_name}</span>
+            </div>
+            <CategoryBadge category={r.category} />
+          </div>
+          <div className="flex items-center gap-x-3 gap-y-1 flex-wrap text-nw-400" style={{ marginTop: 8, fontSize: 12 }}>
+            <span>{r.date_of_birth ? `${ageFromDob(r.date_of_birth)}y` : '—'}</span>
+            <span className="text-nw-600">·</span>
+            <span className="truncate">{r.parent_name}</span>
+            <span className="text-nw-600">·</span>
+            <span>Waiver {r.waiver_signed ? <span className="text-[#22c55e]">✓</span> : <span className="text-[#ef4444]">✗</span>}</span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap" style={{ marginTop: 10 }}>
+            {r.payment_status === 'paid' ? (
+              <span className="rounded-full bg-[rgba(74,222,128,0.12)] px-2 py-0.5 text-[10px] font-semibold text-[#22c55e]">Paid</span>
+            ) : r.payment_status === 'refunded' ? (
+              <span className="rounded-full bg-[rgba(248,113,113,0.12)] px-2 py-0.5 text-[10px] font-semibold text-[#ef4444]">Refunded</span>
+            ) : (
+              <span className="rounded-full bg-[rgba(245,158,11,0.12)] px-2 py-0.5 text-[10px] font-semibold text-[#f59e0b]">Pending</span>
+            )}
+            <div className="ml-auto flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+              {r.payment_status === 'paid' && (
+                <button onClick={() => handleRefund(r.booking_id, r.child_name)} disabled={pending} className="text-[12px] font-medium text-nw-400 hover:text-[#ef4444] disabled:opacity-50 transition-colors" style={{ minHeight: 32 }}>
+                  Refund
+                </button>
+              )}
+              {r.payment_status === 'pending' && (
+                <button onClick={() => handleDeletePending(r.booking_id, r.child_name)} disabled={pending} className="text-[12px] font-medium text-nw-400 hover:text-[#ef4444] disabled:opacity-50 transition-colors" style={{ minHeight: 32 }}>
+                  Delete
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Desktop table */}
+    <div className="hidden md:block overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-[rgba(255,255,255,0.05)]">
@@ -372,5 +422,6 @@ function RosterTable({ rows, totalRows, onClearFilters, onEdit }: { rows: Roster
         </tbody>
       </table>
     </div>
+    </>
   )
 }

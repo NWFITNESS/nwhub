@@ -88,7 +88,41 @@ export function TrialsSection({ trials, blocks }: Props) {
                 : 'No converted trials yet.'}
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* Mobile cards */}
+          <div className="md:hidden flex flex-col gap-2" style={{ padding: 12 }}>
+            {filtered.map((t) => (
+              <div key={t.id} className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-nw-800" style={{ padding: 12 }}>
+                <div className="flex items-start justify-between gap-2">
+                  <span className="font-medium text-nw-100 truncate" style={{ fontSize: 14 }}>{t.child_name}</span>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <StatusPill status={t.status} />
+                    <ConversionPill converted={t.converted} status={t.status} />
+                  </div>
+                </div>
+                <div className="text-nw-400" style={{ marginTop: 6, fontSize: 12 }}>
+                  <span>{CATEGORY_LABEL[t.category]}</span>
+                  <span className="text-nw-600"> · </span>
+                  <span>{t.source === 'admin' ? 'NWHub' : 'Website'}</span>
+                  {t.session_date && (<><span className="text-nw-600"> · </span><span>{new Date(t.session_date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</span></>)}
+                </div>
+                <div className="text-nw-500 truncate" style={{ marginTop: 2, fontSize: 12 }}>{t.parent_name} · {t.parent_email}</div>
+                <div className="flex items-center gap-3 flex-wrap" style={{ marginTop: 10 }}>
+                  {t.status === 'confirmed' ? (
+                    <>
+                      <button onClick={() => handleStatusChange(t.id, 'attended', t.child_name)} disabled={pending} className="text-[12px] font-medium text-nw-300 hover:text-[#22c55e] disabled:opacity-50 transition-colors" style={{ minHeight: 32 }}>Attended</button>
+                      <button onClick={() => handleStatusChange(t.id, 'no_show', t.child_name)} disabled={pending} className="text-[12px] font-medium text-nw-300 hover:text-[#f59e0b] disabled:opacity-50 transition-colors" style={{ minHeight: 32 }}>No-show</button>
+                      <button onClick={() => handleStatusChange(t.id, 'cancelled', t.child_name)} disabled={pending} className="text-[12px] font-medium text-nw-300 hover:text-[#ef4444] disabled:opacity-50 transition-colors" style={{ minHeight: 32 }}>Cancel</button>
+                    </>
+                  ) : (
+                    <button onClick={() => handleDelete(t.id, t.child_name)} disabled={pending} className="text-[12px] font-medium text-nw-500 hover:text-[#ef4444] disabled:opacity-50 transition-colors" style={{ minHeight: 32 }}>Delete</button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[rgba(255,255,255,0.05)]">
@@ -166,6 +200,7 @@ export function TrialsSection({ trials, blocks }: Props) {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
 
