@@ -221,8 +221,32 @@ export function AiChatDashboard({ initialSettings, initialSessions }: Props) {
             />
           </div>
 
-          {/* Sessions table */}
-          <div className="rounded-xl border border-white/[0.08] overflow-hidden">
+          {/* Sessions — mobile cards */}
+          <div className="md:hidden flex flex-col gap-2">
+            {sessions.length === 0 ? (
+              <div className="rounded-xl border border-white/[0.08] text-center text-white/30 flex flex-col items-center gap-3" style={{ padding: 32 }}>
+                <Bot size={28} className="text-white/15" />
+                <p>No conversations yet. Enable the widget and share the blog to get started.</p>
+              </div>
+            ) : sessions.map((s) => (
+              <div key={s.id} onClick={() => setSelectedSession(s)} className="rounded-xl border border-white/[0.08] bg-white/[0.02] active:bg-white/[0.04] cursor-pointer" style={{ padding: 12 }}>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-white/70 text-xs">{format(new Date(s.created_at), 'dd MMM yyyy, HH:mm')}</span>
+                  {s.lead_captured && (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-green-400 bg-green-500/10 border border-green-500/20 px-2 py-0.5 rounded-full"><CheckCircle size={10} /> Lead</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 flex-wrap text-white/40 text-xs" style={{ marginTop: 6 }}>
+                  <span>{s.messages.length} messages</span>
+                  <span className="font-mono">{s.ip_address ?? '—'}</span>
+                  <span className="ml-auto flex items-center gap-1.5 text-white/60"><Eye size={13} /> View</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Sessions table — desktop */}
+          <div className="hidden md:block rounded-xl border border-white/[0.08] overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/[0.08]">

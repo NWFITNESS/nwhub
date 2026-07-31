@@ -245,6 +245,61 @@ export default function RegisterPageClient({ blocks, initialBlockId }: Props) {
                   No children booked for this session in {CATEGORY_LABEL[selectedCategory]}
                 </div>
               ) : (
+                <>
+                {/* Mobile cards */}
+                <div className="md:hidden flex flex-col gap-2" style={{ padding: 12 }}>
+                  {currentRows.map((row) => (
+                    <div
+                      key={`m-${row.child_id}-${row.booking_type}-${row.booking_id}`}
+                      className="rounded-xl border border-[rgba(255,255,255,0.08)]"
+                      style={{ padding: 12, background: row.status === 'present' ? 'rgba(74,222,128,0.06)' : row.status === 'late' ? 'rgba(245,158,11,0.06)' : 'rgba(255,255,255,0.02)' }}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-medium text-nw-100" style={{ fontSize: 14 }}>{row.child_name}</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {row.date_of_birth && <span className="text-xs text-nw-400">{ageFromDob(row.date_of_birth)}y</span>}
+                          <BookingTypeBadge type={row.booking_type} />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2" style={{ marginTop: 10 }}>
+                        <button
+                          onClick={() => handleToggle(row)}
+                          disabled={pending}
+                          className={`flex-1 rounded-lg text-[13px] font-semibold transition-all ${row.status === 'present' ? 'bg-[#22c55e] text-black' : 'bg-[rgba(255,255,255,0.06)] text-white/50'}`}
+                          style={{ minHeight: 44 }}
+                        >
+                          Present
+                        </button>
+                        <button
+                          onClick={() => handleMarkLate(row)}
+                          disabled={pending}
+                          className={`flex-1 rounded-lg text-[13px] font-semibold transition-all ${row.status === 'late' ? 'bg-[#f59e0b] text-black' : 'bg-[rgba(255,255,255,0.06)] text-white/50'}`}
+                          style={{ minHeight: 44 }}
+                        >
+                          Late
+                        </button>
+                        {(row.status === 'present' || row.status === 'late') && (
+                          <button
+                            onClick={() => {
+                              startTransition(async () => {
+                                await markAttendance({ session_id: selectedSessionId!, child_id: row.child_id, booking_type: row.booking_type, booking_id: row.booking_id, status: 'absent' })
+                                await fetchRegister()
+                              })
+                            }}
+                            disabled={pending}
+                            className="rounded-lg bg-[rgba(255,255,255,0.06)] text-white/40 hover:text-[#ef4444] transition-colors"
+                            style={{ minHeight: 44, paddingLeft: 16, paddingRight: 16 }}
+                          >
+                            ✗
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop table */}
+                <div className="hidden md:block">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-[rgba(255,255,255,0.06)]">
@@ -323,6 +378,8 @@ export default function RegisterPageClient({ blocks, initialBlockId }: Props) {
                     ))}
                   </tbody>
                 </table>
+                </div>
+                </>
               )}
             </div>
           </div>

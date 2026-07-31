@@ -29,7 +29,29 @@ interface Props {
 
 export function BankTransactionsWidget({ transactions }: Props) {
   return (
-    <div className="w-full overflow-x-auto h-full">
+    <div className="h-full w-full">
+      {/* Mobile cards */}
+      <div className="md:hidden flex flex-col gap-2" style={{ padding: 12 }}>
+        {transactions.length === 0 ? (
+          <p className="text-center text-[13px] text-nw-500" style={{ padding: '32px 0' }}>No transactions found</p>
+        ) : (
+          transactions.map((txn, i) => (
+            <div key={i} className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-nw-800" style={{ padding: 12 }}>
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-nw-200 font-medium truncate" style={{ fontSize: 13 }}>{txn.contact || '—'}</span>
+                <span className={`font-medium shrink-0 ${txn.type === 'IN' ? 'text-[#22c55e]' : 'text-red-400'}`} style={{ fontSize: 13 }}>{txn.type === 'OUT' ? '-' : ''}£{(txn.amount ?? 0).toLocaleString()}</span>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap text-nw-500" style={{ marginTop: 6, fontSize: 11 }}>
+                <Badge variant={txn.type === 'IN' ? 'active' : 'danger'}>{txn.type === 'IN' ? 'Income' : 'Expense'}</Badge>
+                <span>{formatDate(txn.date)}</span>
+                {txn.reference && <><span className="text-nw-700">·</span><span className="truncate">{txn.reference}</span></>}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+      {/* Desktop table */}
+      <div className="hidden md:block w-full overflow-x-auto h-full">
       <table className="w-full border-collapse text-[13px]">
         <thead>
           <tr>
@@ -64,6 +86,7 @@ export function BankTransactionsWidget({ transactions }: Props) {
           )}
         </tbody>
       </table>
+      </div>
     </div>
   )
 }
