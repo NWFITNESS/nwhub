@@ -449,8 +449,87 @@ export default function InvoiceVaultPage() {
             </select>
           </div>
 
-          {/* Invoice Table */}
-          <div className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 overflow-hidden">
+          {/* Invoice list — mobile cards */}
+          <div className="md:hidden flex flex-col gap-2">
+            {filtered.length === 0 ? (
+              <div className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 text-center text-nw-500" style={{ padding: '40px 16px', fontSize: 13 }}>
+                No invoices found
+              </div>
+            ) : (
+              filtered.map((inv) => (
+                <div key={inv.invoiceId} className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750" style={{ padding: 14 }}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-nw-100 font-medium truncate" style={{ fontSize: 14 }}>{inv.contact}</p>
+                      <p className="text-nw-500 flex items-center gap-1.5" style={{ fontSize: 12, marginTop: 2 }}>
+                        {inv.invoiceNumber}
+                        {inv.hasAttachments && <Paperclip size={11} />}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-nw-100 font-semibold" style={{ fontSize: 15 }}>{formatCurrency(inv.total)}</p>
+                      {inv.amountDue > 0 && inv.amountDue < inv.total && (
+                        <p className="text-nw-500" style={{ fontSize: 10 }}>{formatCurrency(inv.amountDue)} due</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 flex-wrap" style={{ marginTop: 10 }}>
+                    <Badge variant={inv.source === 'email' ? 'gold' : inv.source === 'manual' ? 'default' : 'active'}>
+                      {inv.source === 'email' ? 'Email' : inv.source === 'manual' ? 'Manual' : 'Xero'}
+                    </Badge>
+                    <Badge variant={inv.type === 'ACCREC' ? 'green' : 'amber'}>
+                      {inv.type === 'ACCREC' ? 'Invoice' : 'Bill'}
+                    </Badge>
+                    {inv.source === 'email' ? (
+                      inv.xeroMatchStatus === 'matched' ? <Badge variant="done">Matched</Badge> : <Badge variant="amber">Unmatched</Badge>
+                    ) : (
+                      <>
+                        {inv.status === 'PAID' ? <Badge variant="done">Paid</Badge> : inv.isOverdue ? <Badge variant="danger">Overdue</Badge> : <Badge variant="amber">Unpaid</Badge>}
+                        {inv.hasUnreconciledPayment && <Badge variant="danger">Unreconciled</Badge>}
+                      </>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 text-nw-500" style={{ marginTop: 8, fontSize: 11 }}>
+                    <span>{formatDate(inv.date)}</span>
+                    <span>·</span>
+                    <span>Due {formatDate(inv.dueDate)}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2" style={{ marginTop: 12 }}>
+                    <button
+                      onClick={() => previewPdf(inv.invoiceId, inv.source, inv.pdfStoragePath ?? undefined)}
+                      className="flex items-center justify-center gap-1.5 rounded-lg border border-[rgba(255,255,255,0.09)] bg-transparent text-[12px] font-semibold text-nw-300 transition-colors hover:text-nw-100"
+                      style={{ padding: '9px 14px', minHeight: 40 }}
+                    >
+                      <Eye size={14} /> Preview
+                    </button>
+                    <button
+                      onClick={() => downloadPdf(inv.invoiceId, inv.source, inv.pdfStoragePath ?? undefined)}
+                      disabled={downloading === inv.invoiceId}
+                      className="flex items-center justify-center gap-1.5 rounded-lg border border-[rgba(255,255,255,0.09)] bg-transparent text-[12px] font-semibold text-nw-300 transition-colors hover:text-nw-100 disabled:opacity-40"
+                      style={{ padding: '9px 14px', minHeight: 40 }}
+                    >
+                      <Download size={13} /> PDF
+                    </button>
+                    {inv.source === 'email' && inv.xeroMatchStatus === 'unmatched' && inv.vaultId && (
+                      <button
+                        onClick={() => openMatchModal(inv.vaultId!, inv.contact)}
+                        className="flex items-center justify-center gap-1.5 rounded-lg border border-[rgba(212,160,23,0.28)] bg-[rgba(212,160,23,0.12)] text-[12px] font-semibold text-gold-300 transition-colors hover:bg-[rgba(212,160,23,0.22)]"
+                        style={{ padding: '9px 14px', minHeight: 40 }}
+                      >
+                        <Link2 size={13} /> Match
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Invoice Table — desktop */}
+          <div className="hidden md:block rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 overflow-hidden">
             <div className="w-full overflow-x-auto">
               <table className="w-full border-collapse text-[13px]">
                 <thead>
