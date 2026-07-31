@@ -13,58 +13,93 @@ interface ScheduledCampaign {
   created_at: string
 }
 
+// Session-only snooze list. Cleared when the app/tab is closed, so a snoozed
+// campaign re-appears on the next login — that's the "Later, remind me again"
+// behaviour. A permanent "Cancel" instead removes the campaign from the stored
+// list (global_settings) so it never comes back.
+const SNOOZE_KEY = 'nw-dismissed-campaigns'
+
+function readSnoozed(): string[] {
+  try {
+    return JSON.parse(sessionStorage.getItem(SNOOZE_KEY) ?? '[]')
+  } catch {
+    return []
+  }
+}
+
 export function ScheduledCampaignPopup() {
+  // `all` is the full stored list (so Cancel can write back the remainder);
+  // `campaigns` is the subset actually shown (due + not snoozed this session).
+  const [all, setAll] = useState<ScheduledCampaign[]>([])
   const [campaigns, setCampaigns] = useState<ScheduledCampaign[]>([])
-  const [dismissed, setDismissed] = useState<Set<string>>(new Set())
   const [visible, setVisible] = useState(false)
+  const [busy, setBusy] = useState<string | null>(null)
 
   useEffect(() => {
-    // Check for scheduled campaigns
     fetch('/api/settings-read?key=scheduled_campaigns')
-      .then(r => r.json())
-      .then(data => {
+      .then((r) => r.json())
+      .then((data) => {
         if (!Array.isArray(data?.value)) return
+        const list = data.value as ScheduledCampaign[]
+        setAll(list)
         const now = new Date()
-        // Show campaigns that are due (scheduled time is now or in the past)
-        const due = (data.value as ScheduledCampaign[]).filter(c => {
-          const scheduledDate = new Date(c.scheduled_for)
-          return scheduledDate <= now
-        })
-        // Also check sessionStorage for already dismissed ones this session
-        const sessionDismissed = new Set(JSON.parse(sessionStorage.getItem('nw-dismissed-campaigns') ?? '[]'))
-        const undismissed = due.filter(c => !sessionDismissed.has(c.campaign_id))
-        if (undismissed.length > 0) {
-          setCampaigns(undismissed)
+        const due = list.filter((c) => new Date(c.scheduled_for) <= now)
+        const snoozed = new Set(readSnoozed())
+        const show = due.filter((c) => !snoozed.has(c.campaign_id))
+        if (show.length > 0) {
+          setCampaigns(show)
           setVisible(true)
         }
       })
       .catch(() => {})
   }, [])
 
-  function dismiss(campaignId: string) {
-    const next = new Set(dismissed)
-    next.add(campaignId)
-    setDismissed(next)
-    sessionStorage.setItem('nw-dismissed-campaigns', JSON.stringify([...next]))
-    const remaining = campaigns.filter(c => !next.has(c.campaign_id))
-    if (remaining.length === 0) setVisible(false)
+  function hideIfEmpty(next: ScheduledCampaign[]) {
+    setCampaigns(next)
+    if (next.length === 0) setVisible(false)
   }
 
-  function dismissAll() {
-    const allIds = campaigns.map(c => c.campaign_id)
-    sessionStorage.setItem('nw-dismissed-campaigns', JSON.stringify(allIds))
+  // Later — snooze for this session; reappears on the next login.
+  function later(id: string) {
+    const snoozed = readSnoozed()
+    if (!snoozed.includes(id)) snoozed.push(id)
+    sessionStorage.setItem(SNOOZE_KEY, JSON.stringify(snoozed))
+    hideIfEmpty(campaigns.filter((c) => c.campaign_id !== id))
+  }
+
+  // Snooze everything (backdrop / header close) — same "remind me later" intent.
+  function laterAll() {
+    const ids = campaigns.map((c) => c.campaign_id)
+    sessionStorage.setItem(SNOOZE_KEY, JSON.stringify([...new Set([...readSnoozed(), ...ids])]))
     setVisible(false)
+  }
+
+  // Cancel — permanently remove from the stored list so it never appears again.
+  async function cancel(id: string) {
+    setBusy(id)
+    const remaining = all.filter((c) => c.campaign_id !== id)
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'scheduled_campaigns', value: remaining }),
+      })
+      if (!res.ok) throw new Error('save failed')
+      setAll(remaining)
+      hideIfEmpty(campaigns.filter((c) => c.campaign_id !== id))
+    } catch {
+      // Left in place — the user can try Cancel again.
+    } finally {
+      setBusy(null)
+    }
   }
 
   if (!visible || campaigns.length === 0) return null
 
-  const activeCampaigns = campaigns.filter(c => !dismissed.has(c.campaign_id))
-  if (activeCampaigns.length === 0) return null
-
   return (
     <>
-      {/* Backdrop */}
-      <div onClick={dismissAll} className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm" />
+      {/* Backdrop — closing it just snoozes (Later) */}
+      <div onClick={laterAll} className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm" />
 
       {/* Popup */}
       <div className="fixed z-[70] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] max-w-[calc(100vw-32px)] overflow-hidden rounded-[14px] border border-[rgba(255,255,255,0.11)] bg-nw-900 shadow-2xl">
@@ -79,22 +114,23 @@ export function ScheduledCampaignPopup() {
               <p className="text-nw-500" style={{ fontSize: 11 }}>Your scheduled campaign is due</p>
             </div>
           </div>
-          <button onClick={dismissAll} className="text-nw-500 hover:text-nw-300 transition-colors">
+          <button onClick={laterAll} title="Remind me later" className="text-nw-500 hover:text-nw-300 transition-colors">
             <X size={16} />
           </button>
         </div>
 
         {/* Campaigns */}
         <div className="p-5 flex flex-col gap-3">
-          {activeCampaigns.map(c => {
+          {campaigns.map((c) => {
             const scheduledDate = new Date(c.scheduled_for)
             const timeStr = scheduledDate.toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+            const isBusy = busy === c.campaign_id
 
             return (
               <div key={c.campaign_id} className="rounded-2xl border border-[rgba(255,255,255,0.11)] bg-nw-750 p-4">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <p className="text-nw-200 font-medium" style={{ fontSize: 14 }}>{c.name}</p>
-                  <button onClick={() => dismiss(c.campaign_id)} className="text-nw-600 hover:text-nw-400 transition-colors flex-shrink-0">
+                  <button onClick={() => later(c.campaign_id)} title="Remind me later" className="text-nw-600 hover:text-nw-400 transition-colors flex-shrink-0">
                     <X size={14} />
                   </button>
                 </div>
@@ -109,10 +145,19 @@ export function ScheduledCampaignPopup() {
                       <Send size={12} /> Go to Campaigns
                     </Button>
                   </Link>
-                  <Button variant="default" size="sm" onClick={() => dismiss(c.campaign_id)}>
+                  <Button variant="default" size="sm" onClick={() => later(c.campaign_id)} disabled={isBusy}>
                     Later
                   </Button>
                 </div>
+                <button
+                  onClick={() => cancel(c.campaign_id)}
+                  disabled={isBusy}
+                  className="mt-2.5 text-nw-500 hover:text-red-400 transition-colors disabled:opacity-50"
+                  style={{ fontSize: 11 }}
+                  title="Stop reminding me about this campaign"
+                >
+                  {isBusy ? 'Cancelling…' : 'Cancel reminder — don’t show again'}
+                </button>
               </div>
             )
           })}
