@@ -28,7 +28,7 @@ export function StatsRow({ stats }: Props) {
       </div>
 
       {/* Financials */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <PageStatCard label="Gross Revenue" value={formatGbp(stats.gross_pence)} gold icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M8 1v14M4 5h8M4 9h8" strokeLinecap="round"/></svg>} />
         <PageStatCard label="Stripe Fees" value={`−${formatGbp(stats.stripe_fees_pence)}`} alert icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M1 7h14" strokeLinecap="round"/></svg>} />
         <PageStatCard label="Net Revenue" value={formatGbp(stats.net_pence)} color="#22c55e" icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M2 11l3.5-3.5L8 10l5.5-6" strokeLinecap="round" strokeLinejoin="round"/><rect x="1" y="1" width="14" height="14" rx="2"/></svg>} />

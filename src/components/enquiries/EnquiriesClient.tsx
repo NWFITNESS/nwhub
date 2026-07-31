@@ -100,7 +100,7 @@ export function EnquiriesClient({ initialEnquiries, selectedId }: Props) {
   return (
     <div className="flex flex-col gap-5">
       {/* Stats strip */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {(Object.keys(STATUS_CONFIG) as Array<keyof typeof STATUS_CONFIG>).map(key => {
           const cfg = STATUS_CONFIG[key]
           const Icon = cfg.icon

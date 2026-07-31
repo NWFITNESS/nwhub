@@ -571,7 +571,7 @@ function TemplateCard({ template: t, onEdit, onGenerate, isGenerating }: { templ
       </div>
 
       {/* Mini stats grid */}
-      <div className="grid grid-cols-4 gap-3 mt-4">
+      <div className="grid grid-cols-2 gap-3 mt-4 md:grid-cols-4">
         <MiniStat label="Pages" value={t.pages_count} />
         <MiniStat label="Impressions" value={fmt(t.impressions_28d)} />
         <MiniStat label="Clicks" value={fmt(t.clicks_28d)} />

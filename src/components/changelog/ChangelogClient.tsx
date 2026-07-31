@@ -170,7 +170,7 @@ export function ChangelogClient() {
       </div>
 
       {/* Stats cards */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {[
           { label: 'Total', value: stats.total, color: '#f0f2f5' },
           { label: 'Improvements', value: stats.improvement, color: '#22c55e' },
