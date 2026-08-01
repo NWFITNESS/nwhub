@@ -670,27 +670,26 @@ function SlideRow({
                 <option value="slide">Slide</option>
               </Select>
             </div>
-            {isVideo ? (
-              <span className="text-nw-600" style={{ fontSize: 11 }}>Videos always cut.</span>
-            ) : (
-              slide.transition !== 'cut' && (
-                <div className="flex items-center gap-2">
-                  <span className="text-nw-500" style={{ fontSize: 12 }}>Speed</span>
-                  <input
-                    type="range"
-                    min={0}
-                    max={2000}
-                    step={100}
-                    value={slide.transition_ms ?? 700}
-                    disabled={busy}
-                    onChange={(e) => onSpeed(Number(e.target.value))}
-                    style={{ width: 130, accentColor: GOLD }}
-                  />
-                  <span className="text-nw-400 tabular-nums" style={{ fontSize: 12, width: 34 }}>
-                    {((slide.transition_ms ?? 700) / 1000).toFixed(1)}s
-                  </span>
-                </div>
-              )
+            {slide.transition !== 'cut' && (
+              <div className="flex items-center gap-2">
+                <span className="text-nw-500" style={{ fontSize: 12 }}>Speed</span>
+                <input
+                  type="range"
+                  min={0}
+                  max={2000}
+                  step={100}
+                  value={slide.transition_ms ?? 700}
+                  disabled={busy}
+                  onChange={(e) => onSpeed(Number(e.target.value))}
+                  style={{ width: 130, accentColor: GOLD }}
+                />
+                <span className="text-nw-400 tabular-nums" style={{ fontSize: 12, width: 34 }}>
+                  {((slide.transition_ms ?? 700) / 1000).toFixed(1)}s
+                </span>
+              </div>
+            )}
+            {isVideo && slide.transition !== 'cut' && (
+              <span className="text-nw-600 w-full" style={{ fontSize: 11 }}>Cuts if the previous slide is also a video.</span>
             )}
           </div>
 

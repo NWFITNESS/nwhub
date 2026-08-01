@@ -15,13 +15,18 @@ import type { Manifest, ManifestSlide } from '@/lib/screens/types'
 //   • No localStorage (Chrome kiosk may run --incognito and clear it).
 // All scheduling/filtering already happened server-side — this does none.
 //
-// Phase 2 additions:
-//   • Video plays its NATURAL length: advances on `ended`, not a fixed timer,
-//     with a generous safety cap so a stalled video can never freeze the wall.
-//   • Transitions: image→image swaps animate (fade dissolve / slide-in) via a
-//     top layer that settles onto the base. Anything involving a video, or a
-//     slide marked `cut`, is an instant swap (video crossfades are heavy and
-//     jank on a mini PC).
+// Layers: two full-bleed layers keyed by SLIDE ID. During a transition the
+// incoming layer animates in over the current one; when it settles it simply
+// becomes the current layer. Because both are keyed by slide id, the incoming
+// element is REUSED (not remounted) when promoted — so a video that fades in
+// keeps playing uninterrupted rather than restarting. That's what makes
+// video↔image transitions work.
+//
+//   • Video plays its NATURAL length: advances on `ended`, with a generous
+//     safety cap so a stalled video can never freeze the wall.
+//   • Transitions animate for every combination EXCEPT video→video and anything
+//     involving an embed (crossfading two videos / iframes janks a mini PC) —
+//     those cut. `cut` / 0ms also cut.
 //   • Embed slides render in a display-only iframe (no pointer events).
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -58,46 +63,49 @@ export function ScreenPlayer({ token, initial }: { token: string; initial: Manif
   const slides = manifest.slides
   const single = slides.length === 1
 
-  // base = the settled, fully-shown slide. top = a slide animating in over it
-  // during a transition (null when idle). Promoting top→base ends a transition.
-  const [baseIdx, setBaseIdx] = useState(0)
-  const [topIdx, setTopIdx] = useState<number | null>(null)
-  const baseIdxRef = useRef(0)
-  const topIdxRef = useRef<number | null>(null)
+  // curIdx = the settled, fully-shown slide. incoming = a slide animating in over
+  // it during a transition (null when idle). Settling makes incoming the current.
+  const [curIdx, setCurIdx] = useState(0)
+  const [incoming, setIncoming] = useState<number | null>(null)
+  const curIdxRef = useRef(0)
+  const incomingRef = useRef<number | null>(null)
   useEffect(() => {
-    baseIdxRef.current = baseIdx
-  }, [baseIdx])
+    curIdxRef.current = curIdx
+  }, [curIdx])
   useEffect(() => {
-    topIdxRef.current = topIdx
-  }, [topIdx])
+    incomingRef.current = incoming
+  }, [incoming])
 
-  const base = slides.length > 0 ? slides[baseIdx % slides.length] : null
-  const top = topIdx != null && slides.length > 0 ? slides[topIdx % slides.length] : null
+  const cur = slides.length > 0 ? slides[curIdx % slides.length] : null
+  const inc = incoming != null && slides.length > 0 ? slides[incoming % slides.length] : null
 
-  // ── Advance to the next slide, animating the swap when it's image→image. ────
+  // ── Advance to the next slide, animating unless the pair can't crossfade. ────
   const advance = useCallback(() => {
     if (slides.length <= 1) return
-    const cur = slides[baseIdxRef.current % slides.length]
-    const nextIdx = (baseIdxRef.current + 1) % slides.length
+    if (incomingRef.current != null) return // already mid-transition
+    const current = slides[curIdxRef.current % slides.length]
+    const nextIdx = (curIdxRef.current + 1) % slides.length
     const next = slides[nextIdx]
+    const bothVideo = current.kind === 'video' && next.kind === 'video'
+    const anyEmbed = current.kind === 'embed' || next.kind === 'embed'
     const animate =
       next.transition !== 'cut' &&
       (next.transitionMs ?? DEFAULT_TRANSITION_MS) > 0 &&
-      next.kind === 'image' &&
-      cur.kind === 'image'
+      !bothVideo &&
+      !anyEmbed
     if (animate) {
-      setTopIdx(nextIdx) // fades/slides in over the base, then settles
+      setIncoming(nextIdx) // fades/slides in over the current, then settles
     } else {
-      setBaseIdx(nextIdx) // instant swap
+      setCurIdx(nextIdx) // instant swap
     }
   }, [slides])
 
-  // Transition finished animating — promote the top layer to base.
-  const settleTop = useCallback(() => {
-    const t = topIdxRef.current
-    if (t != null) {
-      setBaseIdx(t)
-      setTopIdx(null)
+  // Transition finished animating — the incoming layer becomes the current one.
+  const settle = useCallback(() => {
+    const next = incomingRef.current
+    if (next != null) {
+      setCurIdx(next)
+      setIncoming(null)
     }
   }, [])
 
@@ -122,8 +130,8 @@ export function ScreenPlayer({ token, initial }: { token: string; initial: Manif
       await preloadImages(next.slides) // decode BEFORE switching over
       versionRef.current = next.version
       setManifest(next)
-      setBaseIdx(0)
-      setTopIdx(null)
+      setCurIdx(0)
+      setIncoming(null)
       setReady(true)
     } catch {
       // Network dropped — keep playing what's on screen. Never surface an error.
@@ -137,22 +145,22 @@ export function ScreenPlayer({ token, initial }: { token: string; initial: Manif
 
   // ── Timed advance for image/embed slides (video drives itself via onEnded). ─
   useEffect(() => {
-    if (!ready || slides.length <= 1 || topIdx != null) return
-    const cur = slides[baseIdx % slides.length]
-    if (!cur || cur.kind === 'video') return
-    const ms = Math.max(3, cur.duration || 10) * 1000
+    if (!ready || slides.length <= 1 || incoming != null) return
+    const current = slides[curIdx % slides.length]
+    if (!current || current.kind === 'video') return
+    const ms = Math.max(3, current.duration || 10) * 1000
     const t = setTimeout(advance, ms)
     return () => clearTimeout(t)
-  }, [ready, baseIdx, topIdx, slides, advance])
+  }, [ready, curIdx, incoming, slides, advance])
 
   // ── Safety net: never let a stalled video freeze the loop. ──────────────────
   useEffect(() => {
-    if (!ready || slides.length <= 1 || topIdx != null) return
-    const cur = slides[baseIdx % slides.length]
-    if (!cur || cur.kind !== 'video') return
+    if (!ready || slides.length <= 1 || incoming != null) return
+    const current = slides[curIdx % slides.length]
+    if (!current || current.kind !== 'video') return
     const t = setTimeout(advance, VIDEO_SAFETY_MS)
     return () => clearTimeout(t)
-  }, [ready, baseIdx, topIdx, slides, advance])
+  }, [ready, curIdx, incoming, slides, advance])
 
   return (
     <div
@@ -166,22 +174,27 @@ export function ScreenPlayer({ token, initial }: { token: string; initial: Manif
     >
       <style>{KEYFRAMES}</style>
 
-      {base && (
+      {/* Keyed by slide id so the incoming layer is reused (not remounted) when
+          it becomes current — a fading-in video keeps playing. */}
+      {cur && (
         <SlideLayer
-          key={`base-${baseIdx}-${base.id}`}
-          slide={base}
+          key={`s-${cur.id}`}
+          slide={cur}
           single={single}
+          z={1}
+          active={incoming == null}
           onVideoEnded={advance}
         />
       )}
 
-      {top && (
+      {inc && (
         <SlideLayer
-          key={`top-${topIdx}-${top.id}`}
-          slide={top}
+          key={`s-${inc.id}`}
+          slide={inc}
           single={false}
+          z={2}
           entering
-          onEntered={settleTop}
+          onEntered={settle}
         />
       )}
     </div>
@@ -193,13 +206,19 @@ export function ScreenPlayer({ token, initial }: { token: string; initial: Manif
 function SlideLayer({
   slide,
   single,
+  z,
   entering,
+  active,
   onEntered,
   onVideoEnded,
 }: {
   slide: ManifestSlide
   single: boolean
+  z: number
+  /** Animating in over the layer below. */
   entering?: boolean
+  /** The settled current layer — only this one drives the loop on video end. */
+  active?: boolean
   onEntered?: () => void
   onVideoEnded?: () => void
 }) {
@@ -214,9 +233,12 @@ function SlideLayer({
   const style: React.CSSProperties = {
     position: 'absolute',
     inset: 0,
-    zIndex: entering ? 2 : 1,
+    zIndex: z,
     animation: anim,
   }
+
+  // A video only advances the loop once it's the settled current layer.
+  const videoAdvance = active && !single ? onVideoEnded : undefined
 
   return (
     <div style={style} onAnimationEnd={entering ? onEntered : undefined}>
@@ -226,9 +248,11 @@ function SlideLayer({
           autoPlay
           muted
           playsInline
-          loop={single}
-          onEnded={single ? undefined : onVideoEnded}
-          onError={single ? undefined : onVideoEnded}
+          // Loop while entering (so a short clip doesn't freeze mid-transition)
+          // or when it's the only slide; otherwise play once and advance on end.
+          loop={single || entering}
+          onEnded={videoAdvance}
+          onError={videoAdvance}
           style={MEDIA_STYLE}
         />
       ) : slide.kind === 'embed' ? (
