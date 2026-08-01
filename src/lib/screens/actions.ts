@@ -127,6 +127,8 @@ interface UpdateSlideInput {
   is_live?: boolean
   starts_on?: string | null
   ends_on?: string | null
+  start_time?: string | null
+  end_time?: string | null
   days_of_week?: number[]
 }
 
@@ -150,6 +152,8 @@ export async function updateSlide(input: UpdateSlideInput): Promise<void> {
   if (input.is_live !== undefined) patch.is_live = input.is_live
   if (input.starts_on !== undefined) patch.starts_on = input.starts_on
   if (input.ends_on !== undefined) patch.ends_on = input.ends_on
+  if (input.start_time !== undefined) patch.start_time = input.start_time || null
+  if (input.end_time !== undefined) patch.end_time = input.end_time || null
   if (input.days_of_week !== undefined) patch.days_of_week = input.days_of_week
 
   if (Object.keys(patch).length === 0) return
@@ -230,6 +234,8 @@ export async function publishScreen(screenId: string): Promise<void> {
         is_live: s.is_live,
         starts_on: s.starts_on,
         ends_on: s.ends_on,
+        start_time: s.start_time ?? null,
+        end_time: s.end_time ?? null,
         days_of_week: s.days_of_week ?? [0, 1, 2, 3, 4, 5, 6],
       }
     })

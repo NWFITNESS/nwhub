@@ -77,13 +77,34 @@ function scheduleSummary(slide: SlideWithMedia): string | null {
     else dayPart = DOW.filter((d) => days.includes(d.n)).map((d) => SHORT[d.n]).join(', ')
   }
 
+  let timePart = ''
+  if (slide.start_time && slide.end_time) timePart = `${slide.start_time}–${slide.end_time}`
+  else if (slide.end_time) timePart = `until ${slide.end_time}`
+  else if (slide.start_time) timePart = `from ${slide.start_time}`
+
   let datePart = ''
   if (slide.starts_on && slide.ends_on) datePart = `${fmtDate(slide.starts_on)}–${fmtDate(slide.ends_on)}`
   else if (slide.ends_on) datePart = `until ${fmtDate(slide.ends_on)}`
   else if (slide.starts_on) datePart = `from ${fmtDate(slide.starts_on)}`
 
-  if (!dayPart && !datePart) return null
-  return [dayPart, datePart].filter(Boolean).join(' · ')
+  if (!dayPart && !timePart && !datePart) return null
+  return [dayPart, timePart, datePart].filter(Boolean).join(' · ')
+}
+
+/** Is a display considered online? (polls every 30s → allow ~3 missed polls.) */
+function screenOnline(lastSeen: string | null): boolean {
+  if (!lastSeen) return false
+  return Date.now() - new Date(lastSeen).getTime() < 95_000
+}
+
+/** Human "last seen" label. */
+function lastSeenLabel(lastSeen: string | null): string {
+  if (!lastSeen) return 'Never connected'
+  const secs = Math.floor((Date.now() - new Date(lastSeen).getTime()) / 1000)
+  if (secs < 95) return 'Online now'
+  if (secs < 3600) return `Last seen ${Math.floor(secs / 60)}m ago`
+  if (secs < 86400) return `Last seen ${Math.floor(secs / 3600)}h ago`
+  return `Last seen ${Math.floor(secs / 86400)}d ago`
 }
 
 interface Props {
@@ -107,6 +128,15 @@ export function ScreensPageClient({ screens, screen, slides: initialSlides }: Pr
   // reconciles it. Keep it in sync when the server data changes.
   const [slides, setSlides] = useState<SlideWithMedia[]>(initialSlides)
   useEffect(() => setSlides(initialSlides), [initialSlides])
+
+  // Re-pull server data periodically so online/offline status stays fresh
+  // (slide edits are already persisted server-side, so a refresh is safe).
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (document.visibilityState === 'visible') router.refresh()
+    }, 45_000)
+    return () => clearInterval(id)
+  }, [router])
 
   const dragId = useRef<string | null>(null)
 
@@ -229,6 +259,7 @@ export function ScreensPageClient({ screens, screen, slides: initialSlides }: Pr
       <div className="flex items-center gap-2 flex-wrap">
         {screens.map((s) => {
           const active = s.id === screen.id
+          const online = screenOnline(s.last_seen_at)
           return (
             <button
               key={s.id}
@@ -244,7 +275,11 @@ export function ScreensPageClient({ screens, screen, slides: initialSlides }: Pr
                 color: active ? GOLD : 'var(--nw-300, #b3bac6)',
               }}
             >
-              <Monitor size={13} /> {s.name}
+              <span
+                title={online ? 'Online' : 'Offline'}
+                style={{ width: 7, height: 7, borderRadius: '50%', background: online ? '#22c55e' : '#6b7280', boxShadow: online ? '0 0 6px #22c55e' : 'none', flexShrink: 0 }}
+              />
+              {s.name}
             </button>
           )
         })}
@@ -311,6 +346,10 @@ export function ScreensPageClient({ screens, screen, slides: initialSlides }: Pr
                     busy={isPending}
                     onDragStart={() => (dragId.current = slide.id)}
                     onDropRow={() => onDrop(slide.id)}
+                    onRename={(name) => {
+                      patchLocal(slide.id, { name })
+                      run(() => updateSlide({ id: slide.id, name }))
+                    }}
                     onToggleLive={() => {
                       patchLocal(slide.id, { is_live: !slide.is_live })
                       run(() => updateSlide({ id: slide.id, is_live: !slide.is_live }))
@@ -373,6 +412,18 @@ export function ScreensPageClient({ screens, screen, slides: initialSlides }: Pr
             />
             <PanelBody>
               <div className="flex flex-col gap-3">
+                <div>
+                  <p className="text-nw-500" style={{ fontSize: 11, letterSpacing: '1px', textTransform: 'uppercase', fontWeight: 600 }}>
+                    Display
+                  </p>
+                  <div className="flex items-center gap-2" style={{ marginTop: 5 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: screenOnline(screen.last_seen_at) ? '#22c55e' : '#6b7280', boxShadow: screenOnline(screen.last_seen_at) ? '0 0 6px #22c55e' : 'none' }} />
+                    <span className="text-nw-100" style={{ fontSize: 14 }}>
+                      {screenOnline(screen.last_seen_at) ? 'Online' : 'Offline'}
+                    </span>
+                    <span className="text-nw-500" style={{ fontSize: 12 }}>· {lastSeenLabel(screen.last_seen_at)}</span>
+                  </div>
+                </div>
                 <div>
                   <p className="text-nw-500" style={{ fontSize: 11, letterSpacing: '1px', textTransform: 'uppercase', fontWeight: 600 }}>
                     Status
@@ -467,6 +518,7 @@ function SlideRow({
   busy,
   onDragStart,
   onDropRow,
+  onRename,
   onToggleLive,
   onDuration,
   onTransition,
@@ -479,17 +531,31 @@ function SlideRow({
   busy: boolean
   onDragStart: () => void
   onDropRow: () => void
+  onRename: (name: string) => void
   onToggleLive: () => void
   onDuration: (seconds: number) => void
   onTransition: (t: SlideTransition) => void
   onSpeed: (ms: number) => void
   onDays: (days: number[]) => void
-  onDates: (patch: { starts_on?: string | null; ends_on?: string | null }) => void
+  onDates: (patch: { starts_on?: string | null; ends_on?: string | null; start_time?: string | null; end_time?: string | null }) => void
   onDelete: () => void
 }) {
   const [duration, setDuration] = useState(String(slide.duration_seconds))
   const [open, setOpen] = useState(false)
+  const [editingName, setEditingName] = useState(false)
+  const [name, setName] = useState(slide.name)
   useEffect(() => setDuration(String(slide.duration_seconds)), [slide.duration_seconds])
+  useEffect(() => setName(slide.name), [slide.name])
+
+  function commitName() {
+    setEditingName(false)
+    const next = name.trim()
+    if (!next || next === slide.name) {
+      setName(slide.name)
+      return
+    }
+    onRename(next)
+  }
 
   const isVideo = slide.kind === 'video'
   const isEmbed = slide.kind === 'embed'
@@ -566,9 +632,32 @@ function SlideRow({
 
         {/* Name + kind + schedule summary */}
         <div className="flex-1 min-w-0">
-          <p className="text-nw-100 truncate" style={{ fontSize: 14, fontWeight: 500 }}>
-            {slide.name}
-          </p>
+          {editingName ? (
+            <input
+              autoFocus
+              value={name}
+              disabled={busy}
+              onChange={(e) => setName(e.target.value)}
+              onBlur={commitName}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                if (e.key === 'Escape') { setName(slide.name); setEditingName(false) }
+              }}
+              className="w-full bg-nw-900 border border-[rgba(212,160,23,0.4)] rounded-lg text-nw-100 focus:outline-none"
+              style={{ padding: '3px 8px', fontSize: 14, fontWeight: 500 }}
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setEditingName(true)}
+              title="Click to rename"
+              className="group flex items-center gap-1.5 text-nw-100 truncate max-w-full"
+              style={{ fontSize: 14, fontWeight: 500 }}
+            >
+              <span className="truncate">{slide.name}</span>
+              <Pencil size={11} className="text-nw-600 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+            </button>
+          )}
           <p className="text-nw-500 flex items-center gap-1.5" style={{ fontSize: 11 }}>
             <span className="capitalize">{slide.kind}</span>
             {summary && (
@@ -762,6 +851,44 @@ function SlideRow({
                 style={{ fontSize: 11 }}
               >
                 Clear dates
+              </button>
+            )}
+          </div>
+
+          {/* Time of day */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-nw-400 shrink-0" style={{ fontSize: 12, width: 88 }}>Time of day</span>
+            <label className="flex items-center gap-2 text-nw-500" style={{ fontSize: 12 }}>
+              From
+              <input
+                type="time"
+                value={slide.start_time ?? ''}
+                disabled={busy}
+                onChange={(e) => onDates({ start_time: e.target.value || null })}
+                className="bg-nw-900 border border-[rgba(255,255,255,0.1)] rounded-lg text-nw-100 focus:outline-none focus:border-gold-500/50 disabled:opacity-40"
+                style={{ padding: '5px 8px', fontSize: 12, colorScheme: 'dark' }}
+              />
+            </label>
+            <label className="flex items-center gap-2 text-nw-500" style={{ fontSize: 12 }}>
+              Until
+              <input
+                type="time"
+                value={slide.end_time ?? ''}
+                disabled={busy}
+                onChange={(e) => onDates({ end_time: e.target.value || null })}
+                className="bg-nw-900 border border-[rgba(255,255,255,0.1)] rounded-lg text-nw-100 focus:outline-none focus:border-gold-500/50 disabled:opacity-40"
+                style={{ padding: '5px 8px', fontSize: 12, colorScheme: 'dark' }}
+              />
+            </label>
+            {(slide.start_time || slide.end_time) && (
+              <button
+                type="button"
+                onClick={() => onDates({ start_time: null, end_time: null })}
+                disabled={busy}
+                className="text-nw-500 hover:text-nw-200 transition-colors disabled:opacity-40"
+                style={{ fontSize: 11 }}
+              >
+                Clear times
               </button>
             )}
           </div>

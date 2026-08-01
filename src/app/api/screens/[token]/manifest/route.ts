@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getScreenByToken, resolveManifest, emptyManifest } from '@/lib/screens/queries'
+import { getScreenByToken, resolveManifest, emptyManifest, touchScreenSeen } from '@/lib/screens/queries'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/screens/[token]/manifest  — PUBLIC, unauthenticated
@@ -32,6 +32,10 @@ export async function GET(_req: Request, { params }: { params: Promise<{ token: 
   if (!screen || !screen.is_active) {
     return new NextResponse('Not found', { status: 404, headers: NO_STORE })
   }
+
+  // Heartbeat: this poll proves the display is online. Best-effort; never let a
+  // write failure break playback.
+  await touchScreenSeen(screen.id).catch(() => {})
 
   const manifest = screen.published_manifest
     ? resolveManifest(screen.published_manifest)

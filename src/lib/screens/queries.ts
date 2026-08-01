@@ -62,8 +62,8 @@ export async function getSlidesForScreen(screenId: string): Promise<SlideWithMed
 // Scheduling is date-based and the UK observes DST, so we resolve the current
 // calendar date in Europe/London rather than UTC or the server's local zone.
 
-/** Returns today's date in Europe/London as { ymd: 'YYYY-MM-DD', dow: 0..6 } where dow 0=Sunday (matching Postgres `dow` and the days_of_week schema). */
-export function londonToday(now: Date = new Date()): { ymd: string; dow: number } {
+/** Returns "now" in Europe/London as { ymd: 'YYYY-MM-DD', dow: 0..6 (0=Sun), minutes: 0..1439 } — dow matches Postgres `dow` / the days_of_week schema, minutes is the wall-clock time since midnight for time-of-day windows. */
+export function londonToday(now: Date = new Date()): { ymd: string; dow: number; minutes: number } {
   const ymd = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Europe/London',
     year: 'numeric',
@@ -72,7 +72,25 @@ export function londonToday(now: Date = new Date()): { ymd: string; dow: number 
   }).format(now) // en-CA yields YYYY-MM-DD
   // Day-of-week from the London calendar date. Noon UTC avoids any TZ edge.
   const dow = new Date(`${ymd}T12:00:00Z`).getUTCDay()
-  return { ymd, dow }
+  // Wall-clock time in London → minutes since midnight.
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(now)
+  const hh = Number(parts.find((p) => p.type === 'hour')?.value ?? '0') % 24
+  const mm = Number(parts.find((p) => p.type === 'minute')?.value ?? '0')
+  return { ymd, dow, minutes: hh * 60 + mm }
+}
+
+/** Parse an 'HH:MM' string to minutes since midnight, or null if empty/invalid. */
+function hmToMinutes(t: string | null | undefined): number | null {
+  if (!t) return null
+  const m = /^(\d{1,2}):(\d{2})$/.exec(t.trim())
+  if (!m) return null
+  const mins = Number(m[1]) * 60 + Number(m[2])
+  return Number.isFinite(mins) ? mins : null
 }
 
 /**
@@ -85,7 +103,29 @@ export function isSlideLiveNow(slide: PublishedSlide, today = londonToday()): bo
   if (slide.ends_on && today.ymd > slide.ends_on) return false
   const days = slide.days_of_week ?? [0, 1, 2, 3, 4, 5, 6]
   if (days.length > 0 && !days.includes(today.dow)) return false
+
+  // Time-of-day window. A start>end pair means an overnight window (e.g. 22:00–02:00).
+  const st = hmToMinutes(slide.start_time)
+  const et = hmToMinutes(slide.end_time)
+  const now = today.minutes
+  if (st != null && et != null) {
+    if (st <= et) {
+      if (now < st || now >= et) return false
+    } else if (now < st && now >= et) {
+      return false
+    }
+  } else if (st != null && now < st) {
+    return false
+  } else if (et != null && now >= et) {
+    return false
+  }
   return true
+}
+
+/** Heartbeat — record that a display polled just now (for online/offline status). */
+export async function touchScreenSeen(id: string): Promise<void> {
+  const admin = createAdminClient()
+  await admin.from('screens').update({ last_seen_at: new Date().toISOString() }).eq('id', id)
 }
 
 /**

@@ -35,6 +35,9 @@ export interface ScreenSlide {
   is_live: boolean
   starts_on: string | null
   ends_on: string | null
+  /** Clock-time window 'HH:MM' (Europe/London), null = no bound. */
+  start_time: string | null
+  end_time: string | null
   days_of_week: number[]
   created_at: string
   updated_at: string
@@ -60,6 +63,8 @@ export interface PublishedSlide {
   is_live: boolean
   starts_on: string | null
   ends_on: string | null
+  start_time: string | null
+  end_time: string | null
   days_of_week: number[]
 }
 
