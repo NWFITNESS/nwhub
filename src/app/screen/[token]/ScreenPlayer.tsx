@@ -24,9 +24,10 @@ import type { Manifest, ManifestSlide } from '@/lib/screens/types'
 //
 //   • Video plays its NATURAL length: advances on `ended`, with a generous
 //     safety cap so a stalled video can never freeze the wall.
-//   • Transitions animate for every combination EXCEPT video→video and anything
-//     involving an embed (crossfading two videos / iframes janks a mini PC) —
-//     those cut. `cut` / 0ms also cut.
+//   • Transitions animate for every combination EXCEPT video→video (crossfading
+//     two decoding videos janks a mini PC). Images and webpage embeds all fade /
+//     slide. `cut` / 0ms also cut. The incoming layer is reused on settle, so a
+//     fading-in video or iframe never reloads.
 //   • Embed slides render in a display-only iframe (no pointer events).
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -86,13 +87,13 @@ export function ScreenPlayer({ token, initial }: { token: string; initial: Manif
     const current = slides[curIdxRef.current % slides.length]
     const nextIdx = (curIdxRef.current + 1) % slides.length
     const next = slides[nextIdx]
+    // Only video→video cuts unconditionally — crossfading two decoding videos
+    // janks a mini PC. Everything else (images, webpage embeds) animates.
     const bothVideo = current.kind === 'video' && next.kind === 'video'
-    const anyEmbed = current.kind === 'embed' || next.kind === 'embed'
     const animate =
       next.transition !== 'cut' &&
       (next.transitionMs ?? DEFAULT_TRANSITION_MS) > 0 &&
-      !bothVideo &&
-      !anyEmbed
+      !bothVideo
     if (animate) {
       setIncoming(nextIdx) // fades/slides in over the current, then settles
     } else {

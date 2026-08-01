@@ -140,19 +140,17 @@ export function ScreenPreview({ slides }: { slides: SlideWithMedia[] }) {
   const p = cur && tms > 0 ? Math.min(1, local / tms) : 1
 
   // The slide underneath during a transition (crossfade / slide). Mirrors the
-  // display: animate every pair except video→video and anything with an embed.
+  // display: animate every pair except video→video.
   const prevIdx = idx > 0 ? idx - 1 : segs.length > 1 ? segs.length - 1 : -1
   const prevSlide = prevIdx >= 0 ? segs[prevIdx].slide : null
   const bothVideo = !!cur && !!prevSlide && cur.slide.kind === 'video' && prevSlide.kind === 'video'
-  const anyEmbed = (!!cur && cur.slide.kind === 'embed') || (!!prevSlide && prevSlide.kind === 'embed')
   const showUnder =
     p < 1 &&
     !!cur &&
     cur.slide.transition !== 'cut' &&
     prevIdx >= 0 &&
     prevIdx !== idx &&
-    !bothVideo &&
-    !anyEmbed
+    !bothVideo
   const under = showUnder ? segs[prevIdx].slide : null
 
   // Incoming layer style from transition progress.
