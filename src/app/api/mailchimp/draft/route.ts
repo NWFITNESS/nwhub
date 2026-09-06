@@ -49,12 +49,13 @@ export async function POST(req: NextRequest) {
     ? (segment_emails as string[]).filter(Boolean)
     : []
 
-  let recipients: Record<string, unknown>
+  let recipients: Record<string, unknown> | null = null
 
+  // 1) Prefer real Mailchimp tags/segments when they already exist in the audience.
   if (segTags.length > 0) {
-    // Look up Mailchimp tag IDs by name
+    // Look up Mailchimp tag IDs by name (Mailchimp stores tags as static segments)
     const tagIds: number[] = []
-    const segRes = await mc(api_key, `/lists/${audience_id}/segments?type=static&count=100`, { method: 'GET' })
+    const segRes = await mc(api_key, `/lists/${audience_id}/segments?type=static&count=1000`, { method: 'GET' })
     if (segRes.ok) {
       const segData = await segRes.json()
       for (const tagName of segTags) {
@@ -78,13 +79,16 @@ export async function POST(req: NextRequest) {
           })),
         },
       }
-    } else {
-      return NextResponse.json({ error: `Mailchimp tags not found: ${segTags.join(', ')}` }, { status: 400 })
     }
-  } else if (segmentEmails.length > 0) {
-    // Create a temporary static segment with the exact email list.
-    // This is the only reliable way to target an arbitrary list in Mailchimp
-    // (EmailAddress conditions are capped at ~5).
+    // If the tag doesn't exist in Mailchimp yet (e.g. it lives only in our local
+    // subscriber DB and hasn't been synced), don't fail — fall through to the
+    // explicit email list below, which targets the same recipients.
+  }
+
+  // 2) Fall back to a temporary static segment built from the explicit email list.
+  // This is the only reliable way to target an arbitrary list in Mailchimp
+  // (EmailAddress conditions are capped at ~5).
+  if (!recipients && segmentEmails.length > 0) {
     const campaignTag = `_campaign_${Date.now()}`
     const createSegRes = await mc(api_key, `/lists/${audience_id}/segments`, {
       method: 'POST',
@@ -112,9 +116,16 @@ export async function POST(req: NextRequest) {
         }],
       },
     }
-  } else {
-    // No emails and no tags — send to full Mailchimp audience
-    // (only reached when "All Subscribers" is explicitly selected in the UI)
+  }
+
+  // 3) Still nothing to target. If tags were requested but neither found in
+  // Mailchimp nor backed by an email list, surface the original error. Only send
+  // to the full audience when the caller explicitly selected "everyone"
+  // (no tags AND no emails) — never silently.
+  if (!recipients) {
+    if (segTags.length > 0) {
+      return NextResponse.json({ error: `Mailchimp tags not found: ${segTags.join(', ')}` }, { status: 400 })
+    }
     recipients = { list_id: audience_id }
   }
 
