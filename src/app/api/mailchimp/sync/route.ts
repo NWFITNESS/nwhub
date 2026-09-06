@@ -34,6 +34,7 @@ export async function POST() {
 
   let synced = 0
   let failed = 0
+  let firstError: string | undefined
 
   for (let i = 0; i < subscribers.length; i += 10) {
     const chunk = subscribers.slice(i, i + 10)
@@ -47,16 +48,28 @@ export async function POST() {
             status: 'subscribed',
             merge_fields: { FNAME: sub.first_name ?? '', LNAME: sub.last_name ?? '' },
           },
-        }).then((r) => {
-          if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        }).then(async (r) => {
+          if (!r.ok) {
+            const e = await r.json().catch(() => ({}))
+            throw new Error(e.detail || e.title || `HTTP ${r.status}`)
+          }
           return r
         })
       )
     )
     for (const r of results) {
       if (r.status === 'fulfilled') synced++
-      else failed++
+      else { failed++; if (!firstError) firstError = (r.reason as Error)?.message }
     }
+  }
+
+  // Every push failing almost always means a bad/disabled key or wrong audience —
+  // return an error so the UI shows the reason instead of a silent "0 synced".
+  if (synced === 0 && failed > 0) {
+    return NextResponse.json(
+      { synced, failed, total: subscribers.length, error: `Sync failed — ${firstError ?? 'Mailchimp rejected every request'}. Check the Mailchimp API key.` },
+      { status: 502 }
+    )
   }
 
   return NextResponse.json({ synced, failed, total: subscribers.length })

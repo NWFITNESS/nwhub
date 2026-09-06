@@ -56,6 +56,14 @@ export async function POST(req: NextRequest) {
     // Look up Mailchimp tag IDs by name (Mailchimp stores tags as static segments)
     const tagIds: number[] = []
     const segRes = await mc(api_key, `/lists/${audience_id}/segments?type=static&count=1000`, { method: 'GET' })
+    // A rejected key must not masquerade as "tag not found" — surface it clearly.
+    if (!segRes.ok && (segRes.status === 401 || segRes.status === 403)) {
+      const err = await segRes.json().catch(() => ({}))
+      return NextResponse.json(
+        { error: `Mailchimp rejected the API key${err.detail ? ` — ${err.detail}` : ' — check it in Mailchimp settings'}.` },
+        { status: 502 }
+      )
+    }
     if (segRes.ok) {
       const segData = await segRes.json()
       for (const tagName of segTags) {
