@@ -13,7 +13,9 @@ import type {
   KidsParent,
   KidsSession,
   KidsStats,
+  PaymentStatus,
   RegisterRow,
+  RegistrationFull,
   RosterRow,
   TrialRow,
   TrialStatus,
@@ -107,6 +109,67 @@ export async function getRosterForBlock(blockId: string): Promise<RosterRow[]> {
       payment_status: b.payment_status,
       photo_consent: child?.photo_consent ?? false,
       waiver_signed: b.waiver_signed,
+    }
+  })
+}
+
+/**
+ * Fetch EVERY block registration across all blocks, fully denormalised, most
+ * recent first. Powers the Registrations page (individual form view, bulk PDF
+ * export, and the CSV export that includes parent + emergency phone numbers).
+ */
+export async function getAllRegistrations(): Promise<RegistrationFull[]> {
+  const supabase = await createClient()
+  const { data: bookings } = await supabase
+    .from('kids_block_bookings')
+    .select('id, block_id, child_id, parent_id, category, payment_status, waiver_signed, waiver_signed_at, paid_at, created_at')
+    .order('created_at', { ascending: false })
+
+  if (!bookings?.length) return []
+
+  const childIds = [...new Set(bookings.map((b) => b.child_id))]
+  const parentIds = [...new Set(bookings.map((b) => b.parent_id))]
+  const blockIds = [...new Set(bookings.map((b) => b.block_id))]
+
+  const [childrenRes, parentsRes, blocksRes] = await Promise.all([
+    supabase.from('kids_children').select('*').in('id', childIds),
+    supabase.from('kids_parents').select('*').in('id', parentIds),
+    supabase.from('kids_blocks').select('id, name').in('id', blockIds),
+  ])
+
+  const childById = new Map<string, KidsChild>()
+  for (const c of (childrenRes.data ?? []) as KidsChild[]) childById.set(c.id, c)
+  const parentById = new Map<string, KidsParent>()
+  for (const p of (parentsRes.data ?? []) as KidsParent[]) parentById.set(p.id, p)
+  const blockNameById = new Map<string, string>()
+  for (const b of (blocksRes.data ?? []) as { id: string; name: string }[]) blockNameById.set(b.id, b.name)
+
+  return bookings.map((b): RegistrationFull => {
+    const child = childById.get(b.child_id)
+    const parent = parentById.get(b.parent_id)
+    return {
+      booking_id: b.id,
+      block_id: b.block_id,
+      block_name: blockNameById.get(b.block_id) ?? 'Block',
+      category: b.category as KidsCategory,
+      payment_status: b.payment_status as PaymentStatus,
+      waiver_signed: b.waiver_signed,
+      waiver_signed_at: b.waiver_signed_at ?? null,
+      paid_at: b.paid_at ?? null,
+      created_at: b.created_at,
+      child_id: b.child_id,
+      child_name: child?.child_name ?? 'Unknown',
+      date_of_birth: child?.date_of_birth ?? '',
+      medical_notes: child?.medical_notes ?? null,
+      authorised_pickups: child?.authorised_pickups ?? null,
+      photo_consent: child?.photo_consent ?? false,
+      parent_id: b.parent_id,
+      parent_name: parent?.name ?? 'Unknown',
+      parent_email: parent?.email ?? '',
+      parent_phone: parent?.phone ?? null,
+      emergency_contact_name: parent?.emergency_contact_name ?? null,
+      emergency_contact_phone: parent?.emergency_contact_phone ?? null,
+      emergency_contact_relation: parent?.emergency_contact_relation ?? null,
     }
   })
 }

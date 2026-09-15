@@ -162,6 +162,39 @@ export interface DropInRow {
   session_date: string | null
 }
 
+/**
+ * A full block registration — every field captured at signup, denormalised
+ * across booking + child + parent. Used by the Registrations page (individual
+ * form view, bulk PDF export, and the CSV export that includes phone numbers).
+ */
+export interface RegistrationFull {
+  // Booking
+  booking_id: string
+  block_id: string
+  block_name: string
+  category: KidsCategory
+  payment_status: PaymentStatus
+  waiver_signed: boolean
+  waiver_signed_at: string | null
+  paid_at: string | null
+  created_at: string
+  // Child
+  child_id: string
+  child_name: string
+  date_of_birth: string
+  medical_notes: string | null
+  authorised_pickups: string | null
+  photo_consent: boolean
+  // Parent / guardian + emergency contact
+  parent_id: string
+  parent_name: string
+  parent_email: string
+  parent_phone: string | null
+  emergency_contact_name: string | null
+  emergency_contact_phone: string | null
+  emergency_contact_relation: string | null
+}
+
 export interface SearchResultRow {
   child_id: string
   child_name: string

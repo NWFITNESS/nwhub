@@ -96,6 +96,7 @@ function buildNav(unreadCount: number): NavSection[] {
       { key: 'kids', label: 'Kids & Teens', icon: I.kids, permKey: 'kids', sub: [
         { label: 'Dashboard', href: '/kids' },
         { label: 'Register', href: '/kids/register' },
+        { label: 'Forms & Data', href: '/kids/forms' },
       ]},
     ]},
     { label: 'Marketing', items: [
