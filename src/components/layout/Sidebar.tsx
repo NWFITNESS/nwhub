@@ -63,6 +63,7 @@ const I = {
   settings: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.1 3.1l1.4 1.4M11.5 11.5l1.4 1.4M3.1 12.9l1.4-1.4M11.5 4.5l1.4-1.4" strokeLinecap="round"/></svg>,
   calendar: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M2 7h12M5 1v4M11 1v4" strokeLinecap="round"/></svg>,
   kids: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="8" cy="6" r="3"/><path d="M4 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/><path d="M5 3c0-1 .5-2 3-2s3 1 3 2" strokeLinecap="round"/></svg>,
+  rota: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M2 7h12M5 1v4M11 1v4" strokeLinecap="round"/><path d="M6 10.5l1.4 1.4 2.8-2.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   popup: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M6 1v2M10 1v2" strokeLinecap="round"/><path d="M5 8h6M5 10.5h4" strokeLinecap="round"/></svg>,
   changelog: <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="2" y="1" width="12" height="14" rx="2"/><path d="M5 5h6M5 8h4M5 11h5" strokeLinecap="round"/></svg>,
   chevron: <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.9"><path d="M3 2l3.5 3L3 8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
@@ -97,6 +98,12 @@ function buildNav(unreadCount: number): NavSection[] {
         { label: 'Dashboard', href: '/kids' },
         { label: 'Register', href: '/kids/register' },
         { label: 'Forms & Data', href: '/kids/forms' },
+      ]},
+      { key: 'coach-rota', label: 'Coach Rota', icon: I.rota, permKey: 'coach_rota', sub: [
+        { label: 'Rota', href: '/coach-rota' },
+        { label: 'Hours & Wages', href: '/coach-rota/hours' },
+        { label: 'Coaches', href: '/coach-rota/coaches' },
+        { label: 'Classes & Template', href: '/coach-rota/setup' },
       ]},
     ]},
     { label: 'Marketing', items: [
@@ -147,6 +154,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0, staf
     if (pathname.startsWith('/email') || pathname.startsWith('/mailchimp')) auto.push('email')
     if (pathname.startsWith('/branding')) auto.push('branding')
     if (pathname.startsWith('/kids')) auto.push('kids')
+    if (pathname.startsWith('/coach-rota')) auto.push('coach-rota')
     return auto
   })
   const tooltipRef = useRef<HTMLDivElement>(null)
@@ -165,6 +173,7 @@ export function Sidebar({ onToggle, onNavigate, userEmail, unreadCount = 0, staf
     if (pathname.startsWith('/email') || pathname.startsWith('/mailchimp')) auto.push('email')
     if (pathname.startsWith('/branding')) auto.push('branding')
     if (pathname.startsWith('/kids')) auto.push('kids')
+    if (pathname.startsWith('/coach-rota')) auto.push('coach-rota')
     if (auto.length) setOpenSections(prev => [...new Set([...prev, ...auto])])
   }, [pathname])
 

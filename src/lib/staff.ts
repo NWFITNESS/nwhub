@@ -30,6 +30,7 @@ export interface StaffPermissions {
   integrations: boolean
   settings: boolean
   staff_management: boolean
+  coach_rota: boolean
 }
 
 export const DEFAULT_STAFF_PERMISSIONS: StaffPermissions = {
@@ -49,6 +50,7 @@ export const DEFAULT_STAFF_PERMISSIONS: StaffPermissions = {
   integrations: false,
   settings: false,
   staff_management: false,
+  coach_rota: false,
 }
 
 export const FULL_PERMISSIONS: StaffPermissions = {
@@ -68,6 +70,7 @@ export const FULL_PERMISSIONS: StaffPermissions = {
   integrations: true,
   settings: true,
   staff_management: true,
+  coach_rota: true,
 }
 
 export const PERMISSION_LABELS: Record<keyof StaffPermissions, string> = {
@@ -87,6 +90,7 @@ export const PERMISSION_LABELS: Record<keyof StaffPermissions, string> = {
   integrations: 'Integrations',
   settings: 'Settings',
   staff_management: 'Staff Management',
+  coach_rota: 'Coach Rota',
 }
 
 export const PERMISSION_DESCRIPTIONS: Record<keyof StaffPermissions, string> = {
@@ -106,6 +110,7 @@ export const PERMISSION_DESCRIPTIONS: Record<keyof StaffPermissions, string> = {
   integrations: 'Configure third-party integrations and sync settings',
   settings: 'Access system settings, digest, and GDPR tools',
   staff_management: 'Invite, edit, and remove staff members',
+  coach_rota: 'Manage the coach rota, class types, coaches, rates, and hours',
 }
 
 export const ROLE_LABELS: Record<string, string> = {
@@ -143,6 +148,7 @@ export const PERMISSION_ROUTE_MAP: Record<string, keyof StaffPermissions> = {
   '/sync': 'integrations',
   '/settings': 'settings',
   '/staff': 'staff_management',
+  '/coach-rota': 'coach_rota',
 }
 
 /** Check if a user has access to a given route */
