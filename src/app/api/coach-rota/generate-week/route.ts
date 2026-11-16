@@ -19,14 +19,6 @@ export async function POST(req: NextRequest) {
 
   const dates = weekDates(week)
 
-  // What already exists this week (to avoid duplicating template slots)
-  const { data: existing } = await admin
-    .from('rota_sessions')
-    .select('template_slot_id')
-    .gte('date', dates[0])
-    .lte('date', dates[6])
-  const takenSlotIds = new Set((existing ?? []).map(r => r.template_slot_id).filter(Boolean))
-
   let rows: Record<string, unknown>[] = []
 
   if (mode === 'copy') {
@@ -52,25 +44,58 @@ export async function POST(req: NextRequest) {
       claimed_at: includeCoaches && s.coach_id ? new Date().toISOString() : null,
     }))
   } else {
+    // Template mode: update existing template-sourced sessions to match the
+    // current template (class/time/notes — coaches preserved), and insert any
+    // slots that aren't on this week yet (e.g. a newly added class).
     const { data: slots } = await admin
       .from('rota_template_slots')
       .select('*')
       .eq('active', true)
       .order('sort_order', { ascending: true })
-    rows = (slots as RotaTemplateSlot[] ?? [])
-      .filter(slot => !takenSlotIds.has(slot.id))
-      .map(slot => ({
-        date: dates[slot.day_of_week],
-        start_time: slot.start_time,
-        end_time: slot.end_time,
-        class_type_id: slot.class_type_id,
-        coach_id: null,
-        notes: slot.notes,
-        locked: false,
-        source: 'template',
-        template_slot_id: slot.id,
-        created_by: caller.userId,
-      }))
+
+    const { data: existing } = await admin
+      .from('rota_sessions')
+      .select('id, template_slot_id')
+      .gte('date', dates[0]).lte('date', dates[6])
+      .not('template_slot_id', 'is', null)
+    const existingBySlot = new Map((existing ?? []).map(e => [e.template_slot_id as string, e.id as string]))
+
+    const updateOps: PromiseLike<unknown>[] = []
+    for (const slot of (slots as RotaTemplateSlot[] ?? [])) {
+      const id = existingBySlot.get(slot.id)
+      if (id) {
+        updateOps.push(
+          admin.from('rota_sessions').update({
+            class_type_id: slot.class_type_id,
+            start_time: slot.start_time,
+            end_time: slot.end_time,
+            notes: slot.notes,
+          }).eq('id', id)
+        )
+      } else {
+        rows.push({
+          date: dates[slot.day_of_week],
+          start_time: slot.start_time,
+          end_time: slot.end_time,
+          class_type_id: slot.class_type_id,
+          coach_id: null,
+          notes: slot.notes,
+          locked: false,
+          source: 'template',
+          template_slot_id: slot.id,
+          created_by: caller.userId,
+        })
+      }
+    }
+    await Promise.all(updateOps)
+
+    let inserted = 0
+    if (rows.length > 0) {
+      const { data, error } = await admin.from('rota_sessions').insert(rows).select('id')
+      if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+      inserted = data?.length ?? 0
+    }
+    return NextResponse.json({ inserted, updated: updateOps.length })
   }
 
   if (rows.length === 0) return NextResponse.json({ inserted: 0 })

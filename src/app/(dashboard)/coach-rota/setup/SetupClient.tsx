@@ -12,7 +12,9 @@ import type { RotaClassType, RotaTemplateSlot } from '@/lib/rota'
 const fieldStyle: React.CSSProperties = {
   padding: '9px 12px', fontSize: 14, width: '100%', borderRadius: 10,
   background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', color: '#edf3fb',
+  colorScheme: 'dark',
 }
+const optionStyle: React.CSSProperties = { background: '#121820', color: '#edf3fb' }
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -201,7 +203,7 @@ export function SetupClient() {
           <div className="flex flex-col gap-3">
             <Field label="Day">
               <select style={fieldStyle} value={slotDraft.day_of_week} onChange={e => setSlotDraft({ ...slotDraft, day_of_week: Number(e.target.value) })}>
-                {DAY_LABELS_LONG.map((label, d) => <option key={d} value={d}>{label}</option>)}
+                {DAY_LABELS_LONG.map((label, d) => <option key={d} value={d} style={optionStyle}>{label}</option>)}
               </select>
             </Field>
             <div className="grid grid-cols-2 gap-3">
@@ -210,8 +212,8 @@ export function SetupClient() {
             </div>
             <Field label="Class type">
               <select style={fieldStyle} value={slotDraft.class_type_id ?? ''} onChange={e => setSlotDraft({ ...slotDraft, class_type_id: e.target.value || null })}>
-                <option value="">— None —</option>
-                {classTypes.map(ct => <option key={ct.id} value={ct.id}>{ct.name}</option>)}
+                <option value="" style={optionStyle}>— None —</option>
+                {classTypes.map(ct => <option key={ct.id} value={ct.id} style={optionStyle}>{ct.name}</option>)}
               </select>
             </Field>
             <Field label="Notes"><input style={fieldStyle} value={slotDraft.notes} placeholder="Optional" onChange={e => setSlotDraft({ ...slotDraft, notes: e.target.value })} /></Field>

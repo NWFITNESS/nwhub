@@ -17,7 +17,9 @@ interface Props { coach: { id: string; name: string; hourly_rate: number; color:
 const fieldStyle: React.CSSProperties = {
   padding: '12px 14px', fontSize: 16, width: '100%', borderRadius: 12,
   background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.14)', color: '#edf3fb',
+  colorScheme: 'dark',
 }
+const optionStyle: React.CSSProperties = { background: '#121820', color: '#edf3fb' }
 
 export function CoachApp({ coach }: Props) {
   const supabase = useMemo(() => createClient(), [])
@@ -349,8 +351,8 @@ function AddSessionSheet({ supabase, coach, classTypes, defaultDate, onClose, on
           {!newClass ? (
             <>
               <select style={fieldStyle} value={classId} onChange={e => setClassId(e.target.value)}>
-                <option value="">— No class type —</option>
-                {classTypes.map(ct => <option key={ct.id} value={ct.id}>{ct.name}</option>)}
+                <option value="" style={optionStyle}>— No class type —</option>
+                {classTypes.map(ct => <option key={ct.id} value={ct.id} style={optionStyle}>{ct.name}</option>)}
               </select>
               <button onClick={() => setNewClass(true)} style={{ fontSize: 13, color: '#c9a70a', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>+ New class type</button>
             </>
