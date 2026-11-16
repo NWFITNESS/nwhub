@@ -23,7 +23,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 const t5 = (t: string) => (t || '').slice(0, 5)
 
-interface ClassDraft { id?: string; name: string; color: string }
+interface ClassDraft { id?: string; name: string; color: string; paid: boolean }
 interface SlotDraft { id?: string; day_of_week: number; start_time: string; end_time: string; class_type_id: string | null; notes: string }
 
 export function SetupClient() {
@@ -33,28 +33,41 @@ export function SetupClient() {
   const [classDraft, setClassDraft] = useState<ClassDraft | null>(null)
   const [slotDraft, setSlotDraft] = useState<SlotDraft | null>(null)
   const [saving, setSaving] = useState(false)
+  const [weekdayRate, setWeekdayRate] = useState(13)
+  const [weekendRate, setWeekendRate] = useState(20)
+  const [ratesSaved, setRatesSaved] = useState(false)
 
   const classMap = useMemo(() => new Map(classTypes.map(c => [c.id, c])), [classTypes])
 
   const load = useCallback(async () => {
     setLoading(true)
-    const [ct, tp] = await Promise.all([
+    const [ct, tp, st] = await Promise.all([
       fetch('/api/coach-rota/class-types').then(r => r.json()),
       fetch('/api/coach-rota/template').then(r => r.json()),
+      fetch('/api/coach-rota/settings').then(r => r.json()),
     ])
     setClassTypes(ct.classTypes ?? [])
     setTemplate(tp.template ?? [])
+    if (st.settings) { setWeekdayRate(Number(st.settings.weekday_rate)); setWeekendRate(Number(st.settings.weekend_rate)) }
     setLoading(false)
   }, [])
   useEffect(() => { load() }, [load])
+
+  async function saveRates() {
+    setSaving(true)
+    const res = await fetch('/api/coach-rota/settings', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ weekday_rate: weekdayRate, weekend_rate: weekendRate }) })
+    setSaving(false)
+    if (res.ok) { setRatesSaved(true); setTimeout(() => setRatesSaved(false), 2000) }
+  }
 
   // ── class types ──
   async function saveClass() {
     if (!classDraft) return
     setSaving(true)
+    const payload = { name: classDraft.name, color: classDraft.color, paid: classDraft.paid }
     const res = classDraft.id
-      ? await fetch('/api/coach-rota/class-types', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: classDraft.id, name: classDraft.name, color: classDraft.color }) })
-      : await fetch('/api/coach-rota/class-types', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: classDraft.name, color: classDraft.color }) })
+      ? await fetch('/api/coach-rota/class-types', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: classDraft.id, ...payload }) })
+      : await fetch('/api/coach-rota/class-types', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
     setSaving(false)
     if (res.ok) { setClassDraft(null); load() }
   }
@@ -89,11 +102,31 @@ export function SetupClient() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader eyebrow="Coaching" title="Classes & Template" description="Colour-code your classes and set the standard weekly timetable" />
+      <PageHeader eyebrow="Coaching" title="Classes & Template" description="Pay rates, colour-coded classes, and the standard weekly timetable" />
+
+      {/* Pay rates */}
+      <Panel>
+        <PanelHeader title="Pay rates" />
+        <PanelBody>
+          <div className="flex flex-col gap-3 md:flex-row md:items-end">
+            <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#8296b4', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Weekday £/hr</span>
+              <input type="number" step="0.5" min="0" value={weekdayRate} onChange={e => setWeekdayRate(Number(e.target.value))} style={{ ...fieldStyle, width: 120 }} />
+            </label>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#8296b4', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Weekend £/hr</span>
+              <input type="number" step="0.5" min="0" value={weekendRate} onChange={e => setWeekendRate(Number(e.target.value))} style={{ ...fieldStyle, width: 120 }} />
+            </label>
+            <Button variant="gold" size="sm" onClick={saveRates} loading={saving}>Save rates</Button>
+            {ratesSaved && <span style={{ fontSize: 13, color: '#22c55e' }}>Saved ✓</span>}
+          </div>
+          <p className="text-nw-400" style={{ fontSize: 12, marginTop: 10 }}>Mon–Fri classes pay the weekday rate, Sat–Sun the weekend rate. Classes marked unpaid (e.g. CF Kids) count hours but £0.</p>
+        </PanelBody>
+      </Panel>
 
       {/* Class types */}
       <Panel>
-        <PanelHeader title="Class types" action={<Button variant="gold" size="sm" onClick={() => setClassDraft({ name: '', color: CLASS_COLOUR_PRESETS[0] })}><Plus size={15} /> Add class</Button>} />
+        <PanelHeader title="Class types" action={<Button variant="gold" size="sm" onClick={() => setClassDraft({ name: '', color: CLASS_COLOUR_PRESETS[0], paid: true })}><Plus size={15} /> Add class</Button>} />
         <PanelBody>
           <div className="flex flex-wrap gap-2">
             {loading && <span style={{ color: '#8296b4', fontSize: 14 }}>Loading…</span>}
@@ -101,7 +134,8 @@ export function SetupClient() {
               <div key={c.id} className="inline-flex items-center gap-2" style={{ padding: '7px 10px 7px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}>
                 <span style={{ width: 12, height: 12, borderRadius: 4, background: c.color, flexShrink: 0 }} />
                 <span style={{ fontSize: 14, fontWeight: 600, color: '#edf3fb' }}>{c.name}</span>
-                <button onClick={() => setClassDraft({ id: c.id, name: c.name, color: c.color })} style={miniBtn} aria-label="Edit"><Pencil size={12} /></button>
+                {!c.paid && <span style={{ fontSize: 10, fontWeight: 700, color: '#8296b4', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 5, padding: '1px 5px' }}>UNPAID</span>}
+                <button onClick={() => setClassDraft({ id: c.id, name: c.name, color: c.color, paid: c.paid })} style={miniBtn} aria-label="Edit"><Pencil size={12} /></button>
                 <button onClick={() => archiveClass(c)} style={miniBtn} aria-label="Remove"><Trash2 size={12} /></button>
               </div>
             ))}
@@ -150,6 +184,9 @@ export function SetupClient() {
                 ))}
               </div>
             </Field>
+            <label className="inline-flex items-center gap-2" style={{ fontSize: 13, color: '#8296b4', cursor: 'pointer' }}>
+              <input type="checkbox" checked={classDraft.paid} onChange={e => setClassDraft({ ...classDraft, paid: e.target.checked })} /> Paid (counts toward wages)
+            </label>
             <div className="flex justify-end gap-2" style={{ marginTop: 8 }}>
               <Button variant="ghost" size="sm" onClick={() => setClassDraft(null)}>Cancel</Button>
               <Button variant="gold" size="sm" onClick={saveClass} loading={saving}>{classDraft.id ? 'Save' : 'Add'}</Button>

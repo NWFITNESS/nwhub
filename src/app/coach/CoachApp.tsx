@@ -6,9 +6,10 @@ import { createClient } from '@/lib/supabase/client'
 import { CoachSignOut } from './CoachSignOut'
 import {
   DAY_LABELS_LONG, mondayOf, weekDates, addDays, fromISODate, toISODate,
-  formatTime, hexWithAlpha, sessionHours, formatHours, formatMoney, CLASS_COLOUR_PRESETS,
+  formatTime, hexWithAlpha, sessionHours, sessionPay, formatHours, formatMoney,
+  CLASS_COLOUR_PRESETS, DEFAULT_RATES,
 } from '@/lib/rota'
-import type { RotaSession, RotaClassType } from '@/lib/rota'
+import type { RotaSession, RotaClassType, RotaSettings } from '@/lib/rota'
 
 interface CoachLite { id: string; name: string; color: string | null }
 interface Props { coach: { id: string; name: string; hourly_rate: number; color: string | null }; userEmail: string }
@@ -24,6 +25,7 @@ export function CoachApp({ coach }: Props) {
   const [week, setWeek] = useState(() => mondayOf())
   const [sessions, setSessions] = useState<RotaSession[]>([])
   const [classTypes, setClassTypes] = useState<RotaClassType[]>([])
+  const [rates, setRates] = useState<RotaSettings>(DEFAULT_RATES)
   const [coachNames, setCoachNames] = useState<Map<string, CoachLite>>(new Map())
   const [filter, setFilter] = useState<'all' | 'open' | 'mine'>('all')
   const [loading, setLoading] = useState(true)
@@ -37,12 +39,14 @@ export function CoachApp({ coach }: Props) {
   function flash(m: string) { setToast(m); setTimeout(() => setToast(null), 2600) }
 
   const loadMeta = useCallback(async () => {
-    const [{ data: ct }, { data: cs }] = await Promise.all([
+    const [{ data: ct }, { data: cs }, { data: st }] = await Promise.all([
       supabase.from('rota_class_types').select('*').eq('archived', false).order('sort_order'),
       supabase.from('rota_coaches_public').select('*').eq('active', true),
+      supabase.from('rota_settings').select('weekday_rate, weekend_rate').eq('id', true).maybeSingle(),
     ])
     setClassTypes((ct as RotaClassType[]) ?? [])
     setCoachNames(new Map(((cs as CoachLite[]) ?? []).map(c => [c.id, c])))
+    if (st) setRates(st as RotaSettings)
   }, [supabase])
 
   const loadWeek = useCallback(async () => {
@@ -189,7 +193,7 @@ export function CoachApp({ coach }: Props) {
           </div>
         </>
       ) : (
-        <MyHours supabase={supabase} coach={coach} classMap={classMap} />
+        <MyHours supabase={supabase} coach={coach} classMap={classMap} rates={rates} />
       )}
 
       {/* FAB: add own session */}
@@ -221,7 +225,7 @@ const claimBtn: React.CSSProperties = { padding: '9px 16px', borderRadius: 10, f
 const releaseBtn: React.CSSProperties = { padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#8296b4', flexShrink: 0 }
 
 // ── My hours tab ─────────────────────────────────────────────────────────────
-function MyHours({ supabase, coach, classMap }: { supabase: ReturnType<typeof createClient>; coach: Props['coach']; classMap: Map<string, RotaClassType> }) {
+function MyHours({ supabase, coach, classMap, rates }: { supabase: ReturnType<typeof createClient>; coach: Props['coach']; classMap: Map<string, RotaClassType>; rates: RotaSettings }) {
   const [month, setMonth] = useState(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` })
   const [rows, setRows] = useState<RotaSession[]>([])
   const [loading, setLoading] = useState(true)
@@ -248,7 +252,10 @@ function MyHours({ supabase, coach, classMap }: { supabase: ReturnType<typeof cr
   const [y, m] = month.split('-').map(Number)
   const label = new Date(y, m - 1, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
   const totalHours = rows.reduce((n, s) => n + sessionHours(s.start_time, s.end_time), 0)
-  const pay = totalHours * coach.hourly_rate
+  const pay = rows.reduce((n, s) => {
+    const paid = s.class_type_id ? (classMap.get(s.class_type_id)?.paid ?? true) : true
+    return n + sessionPay(s, paid, rates)
+  }, 0)
 
   return (
     <div style={{ padding: '0 16px' }}>

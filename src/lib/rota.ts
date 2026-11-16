@@ -7,9 +7,17 @@ export interface RotaClassType {
   color: string
   sort_order: number
   archived: boolean
+  paid: boolean
   created_by: string | null
   created_at: string
 }
+
+export interface RotaSettings {
+  weekday_rate: number
+  weekend_rate: number
+}
+
+export const DEFAULT_RATES: RotaSettings = { weekday_rate: 13, weekend_rate: 20 }
 
 export interface RotaCoach {
   id: string
@@ -107,6 +115,27 @@ export function timeToMinutes(t: string): number {
 export function sessionHours(start: string, end: string): number {
   const mins = timeToMinutes(end) - timeToMinutes(start)
   return mins > 0 ? mins / 60 : 0
+}
+
+/** True for Saturday or Sunday. */
+export function isWeekendISO(iso: string): boolean {
+  const dow = fromISODate(iso).getDay()
+  return dow === 0 || dow === 6
+}
+
+/** The hourly rate for a session: 0 if the class is unpaid, else weekend/weekday rate. */
+export function sessionRate(dateISO: string, classPaid: boolean, rates: RotaSettings): number {
+  if (!classPaid) return 0
+  return isWeekendISO(dateISO) ? rates.weekend_rate : rates.weekday_rate
+}
+
+/** Pay for a single session = hours × its rate. */
+export function sessionPay(
+  s: { date: string; start_time: string; end_time: string },
+  classPaid: boolean,
+  rates: RotaSettings,
+): number {
+  return sessionHours(s.start_time, s.end_time) * sessionRate(s.date, classPaid, rates)
 }
 
 /** '06:00:00' → '6:00am'. */

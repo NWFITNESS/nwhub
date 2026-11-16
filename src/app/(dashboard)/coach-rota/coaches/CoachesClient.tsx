@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Panel } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
-import { CLASS_COLOUR_PRESETS, formatMoney } from '@/lib/rota'
+import { CLASS_COLOUR_PRESETS } from '@/lib/rota'
 import type { RotaCoach } from '@/lib/rota'
 
 const fieldStyle: React.CSSProperties = {
@@ -23,7 +23,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   )
 }
 
-interface Draft { id?: string; name: string; email: string; phone: string; hourly_rate: number; color: string; active: boolean }
+interface Draft { id?: string; name: string; email: string; phone: string; color: string; active: boolean }
 
 export function CoachesClient() {
   const [coaches, setCoaches] = useState<RotaCoach[]>([])
@@ -40,14 +40,14 @@ export function CoachesClient() {
   }, [])
   useEffect(() => { load() }, [load])
 
-  function openNew() { setErr(null); setDraft({ name: '', email: '', phone: '', hourly_rate: 0, color: CLASS_COLOUR_PRESETS[0], active: true }) }
-  function openEdit(c: RotaCoach) { setErr(null); setDraft({ id: c.id, name: c.name, email: c.email, phone: c.phone ?? '', hourly_rate: c.hourly_rate, color: c.color ?? CLASS_COLOUR_PRESETS[0], active: c.active }) }
+  function openNew() { setErr(null); setDraft({ name: '', email: '', phone: '', color: CLASS_COLOUR_PRESETS[0], active: true }) }
+  function openEdit(c: RotaCoach) { setErr(null); setDraft({ id: c.id, name: c.name, email: c.email, phone: c.phone ?? '', color: c.color ?? CLASS_COLOUR_PRESETS[0], active: c.active }) }
 
   async function save() {
     if (!draft) return
     setSaving(true); setErr(null)
     const res = draft.id
-      ? await fetch('/api/coach-rota/coaches', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: draft.id, name: draft.name, phone: draft.phone, hourly_rate: draft.hourly_rate, color: draft.color, active: draft.active }) })
+      ? await fetch('/api/coach-rota/coaches', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: draft.id, name: draft.name, phone: draft.phone, color: draft.color, active: draft.active }) })
       : await fetch('/api/coach-rota/coaches', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(draft) })
     setSaving(false)
     if (!res.ok) { const e = await res.json().catch(() => ({})); setErr(e.error ?? 'Save failed'); return }
@@ -85,7 +85,6 @@ export function CoachesClient() {
                   {c.phone && <span className="inline-flex items-center gap-1"><Phone size={11} />{c.phone}</span>}
                 </div>
               </div>
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#e8c75a', whiteSpace: 'nowrap' }}>{formatMoney(c.hourly_rate)}/h</span>
               <button onClick={() => openEdit(c)} style={iconBtn} aria-label="Edit"><Pencil size={14} /></button>
               {c.active && <button onClick={() => deactivate(c)} style={iconBtn} aria-label="Deactivate"><Trash2 size={14} /></button>}
             </div>
@@ -98,10 +97,7 @@ export function CoachesClient() {
           <div className="flex flex-col gap-3">
             <Field label="Name"><input style={fieldStyle} value={draft.name} onChange={e => setDraft({ ...draft, name: e.target.value })} /></Field>
             <Field label="Email (their login)"><input style={{ ...fieldStyle, opacity: draft.id ? 0.6 : 1 }} type="email" value={draft.email} disabled={!!draft.id} onChange={e => setDraft({ ...draft, email: e.target.value })} /></Field>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Phone"><input style={fieldStyle} value={draft.phone} onChange={e => setDraft({ ...draft, phone: e.target.value })} /></Field>
-              <Field label="Hourly rate (£)"><input style={fieldStyle} type="number" step="0.5" min="0" value={draft.hourly_rate} onChange={e => setDraft({ ...draft, hourly_rate: Number(e.target.value) })} /></Field>
-            </div>
+            <Field label="Phone"><input style={fieldStyle} value={draft.phone} onChange={e => setDraft({ ...draft, phone: e.target.value })} /></Field>
             <Field label="Colour (on the rota)">
               <div className="flex gap-2 flex-wrap" style={{ marginTop: 2 }}>
                 {CLASS_COLOUR_PRESETS.map(col => (

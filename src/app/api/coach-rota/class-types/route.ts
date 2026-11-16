@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   if (!name) return NextResponse.json({ error: 'Name is required' }, { status: 400 })
 
   const { data, error } = await admin.from('rota_class_types')
-    .insert({ name, color, sort_order: b.sort_order ?? 100, created_by: caller.userId })
+    .insert({ name, color, paid: b.paid ?? true, sort_order: b.sort_order ?? 100, created_by: caller.userId })
     .select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ classType: data })
@@ -43,7 +43,7 @@ export async function PATCH(req: NextRequest) {
   const { id, ...rest } = b as Record<string, unknown> & { id?: string }
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
-  const allowed = ['name', 'color', 'sort_order', 'archived'] as const
+  const allowed = ['name', 'color', 'sort_order', 'archived', 'paid'] as const
   const updates: Record<string, unknown> = {}
   for (const k of allowed) if (k in rest) updates[k] = rest[k]
 
