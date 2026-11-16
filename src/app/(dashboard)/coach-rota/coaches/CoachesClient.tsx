@@ -30,6 +30,7 @@ export function CoachesClient() {
   const [loading, setLoading] = useState(true)
   const [draft, setDraft] = useState<Draft | null>(null)
   const [saving, setSaving] = useState(false)
+  const [activating, setActivating] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
 
   const load = useCallback(async () => {
@@ -60,6 +61,15 @@ export function CoachesClient() {
     load()
   }
 
+  async function activate(c: RotaCoach) {
+    if (!confirm(`Turn on login for ${c.name}? Nothing is sent to them — they can then sign in at /coach with a link they request themselves.`)) return
+    setActivating(c.id)
+    const res = await fetch('/api/coach-rota/coaches/activate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: c.id }) })
+    setActivating(null)
+    if (!res.ok) { const e = await res.json().catch(() => ({})); alert(e.error ?? 'Could not activate'); return }
+    load()
+  }
+
   const active = coaches.filter(c => c.active)
   const inactive = coaches.filter(c => !c.active)
 
@@ -78,13 +88,16 @@ export function CoachesClient() {
                 <div className="flex items-center gap-2">
                   <span style={{ fontSize: 14, fontWeight: 600, color: '#edf3fb' }}>{c.name}</span>
                   {!c.active && <Badge variant="paused">Inactive</Badge>}
-                  {!c.user_id && <Badge variant="amber">No login</Badge>}
+                  {c.user_id ? <Badge variant="green">Login on</Badge> : <Badge variant="amber">No login</Badge>}
                 </div>
                 <div className="flex items-center gap-3" style={{ fontSize: 12, color: '#8296b4', marginTop: 2 }}>
                   <span className="inline-flex items-center gap-1"><Mail size={11} />{c.email}</span>
                   {c.phone && <span className="inline-flex items-center gap-1"><Phone size={11} />{c.phone}</span>}
                 </div>
               </div>
+              {c.active && !c.user_id && (
+                <Button variant="secondary" size="sm" onClick={() => activate(c)} loading={activating === c.id}>Activate login</Button>
+              )}
               <button onClick={() => openEdit(c)} style={iconBtn} aria-label="Edit"><Pencil size={14} /></button>
               {c.active && <button onClick={() => deactivate(c)} style={iconBtn} aria-label="Deactivate"><Trash2 size={14} /></button>}
             </div>
