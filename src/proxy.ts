@@ -38,6 +38,10 @@ export async function proxy(request: NextRequest) {
     pathname === '/blog' ||
     (pathname.startsWith('/blog/') && !pathname.startsWith('/blog/manage'))
 
+  // Coach app — self-authenticating (magic link); renders its own login when
+  // logged out, so it must NOT be bounced to the admin /login page.
+  const isCoachApp = pathname === '/coach' || pathname.startsWith('/coach/')
+
   // Vercel cron / internal routes — protected by CRON_SECRET header, no session needed
   const cronSecret = process.env.CRON_SECRET
   const isCronRequest =
@@ -58,7 +62,7 @@ export async function proxy(request: NextRequest) {
     pathname === '/api/branding/schedule/process' || // cron job (uses CRON_SECRET)
     !!isCronRequest                          // internal cron routes with valid secret
 
-  if (!user && !isLoginPage && !isAuthPage && !isPublicBlog && !isPublicApi) {
+  if (!user && !isLoginPage && !isAuthPage && !isPublicBlog && !isPublicApi && !isCoachApp) {
     // API consumers must receive 401 JSON — never redirect them to /login
     if (pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
