@@ -90,9 +90,11 @@ export function RotaBoard() {
       fetch('/api/coach-rota/coaches').then(r => r.json()),
       fetch('/api/coach-rota/class-types').then(r => r.json()),
     ])
-    setCoaches((cRes.coaches ?? []).filter((c: RotaCoach) => c.active))
+    setCoaches(cRes.coaches ?? [])   // keep all for name lookup; dropdown filters to active
     setClassTypes(ctRes.classTypes ?? [])
   }, [])
+
+  const activeCoaches = useMemo(() => coaches.filter(c => c.active), [coaches])
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -195,10 +197,10 @@ export function RotaBoard() {
         <div className="flex flex-col gap-3" style={{ padding: '12px 14px' }}>
           <div className="flex items-center justify-between gap-3 flex-wrap">
             {/* View toggle */}
-            <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: 3 }}>
+            <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.05)', borderRadius: 11, padding: 4 }}>
               {(['month', 'week'] as const).map(v => (
                 <button key={v} onClick={() => setView(v)} style={{
-                  padding: '7px 16px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', border: 'none', textTransform: 'capitalize',
+                  padding: '11px 24px', borderRadius: 9, fontSize: 14, fontWeight: 700, cursor: 'pointer', border: 'none', textTransform: 'capitalize',
                   background: view === v ? 'rgba(212,160,23,0.18)' : 'transparent', color: view === v ? '#f5d775' : '#8296b4',
                 }}>{v}</button>
               ))}
@@ -226,7 +228,7 @@ export function RotaBoard() {
       </Panel>
 
       {view === 'month'
-        ? <MonthGrid days={range.days} byDay={byDay} curMonth={curMonth} todayISO={todayISO} classMap={classMap} onDay={setDaySheet} loading={loading} />
+        ? <MonthGrid days={range.days} byDay={byDay} curMonth={curMonth} todayISO={todayISO} classMap={classMap} coachMap={coachMap} onDay={setDaySheet} loading={loading} />
         : <WeekGrid days={range.days} byDay={byDay} todayISO={todayISO} classMap={classMap} coachMap={coachMap} loading={loading} onEdit={openEdit} onAdd={openNew} />
       }
 
@@ -260,7 +262,7 @@ export function RotaBoard() {
             <Field label="Coach">
               <select style={fieldStyle} value={draft.coach_id ?? ''} onChange={e => setDraft({ ...draft, coach_id: e.target.value || null })}>
                 <option value="" style={optionStyle}>— Needs filling —</option>
-                {coaches.map(c => <option key={c.id} value={c.id} style={optionStyle}>{c.name}</option>)}
+                {activeCoaches.map(c => <option key={c.id} value={c.id} style={optionStyle}>{c.name}</option>)}
               </select>
             </Field>
             <Field label="Notes"><input type="text" style={fieldStyle} value={draft.notes} placeholder="Optional" onChange={e => setDraft({ ...draft, notes: e.target.value })} /></Field>
@@ -311,10 +313,12 @@ export function RotaBoard() {
 const navBtn: React.CSSProperties = { padding: 9, borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', color: '#8296b4', cursor: 'pointer', display: 'flex', minWidth: 40, justifyContent: 'center' }
 const genChoiceStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', width: '100%', padding: '14px 16px', borderRadius: 12, cursor: 'pointer', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }
 
-// ── Month calendar (condensed, tap a day for detail) ─────────────────────────
-function MonthGrid({ days, byDay, curMonth, todayISO, classMap, onDay, loading }: {
+// ── Month calendar — shows time + coach at a glance; open slots flagged amber ─
+function firstName(name?: string) { return name ? name.split(' ')[0] : 'Assigned' }
+
+function MonthGrid({ days, byDay, curMonth, todayISO, classMap, coachMap, onDay, loading }: {
   days: string[]; byDay: Record<string, RotaSession[]>; curMonth: number; todayISO: string
-  classMap: Map<string, RotaClassType>; onDay: (d: string) => void; loading: boolean
+  classMap: Map<string, RotaClassType>; coachMap: Map<string, RotaCoach>; onDay: (d: string) => void; loading: boolean
 }) {
   return (
     <Panel>
@@ -332,28 +336,32 @@ function MonthGrid({ days, byDay, curMonth, todayISO, classMap, onDay, loading }
             return (
               <button key={date} onClick={() => onDay(date)} style={{
                 textAlign: 'left', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 3,
-                minHeight: 92, padding: 6, borderRadius: 10,
+                minHeight: 110, padding: 5, borderRadius: 10,
                 border: `1px solid ${isToday ? 'rgba(212,160,23,0.4)' : 'rgba(255,255,255,0.06)'}`,
                 background: inMonth ? 'rgba(255,255,255,0.02)' : 'transparent', opacity: inMonth ? 1 : 0.4,
               }}>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between" style={{ marginBottom: 1 }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: isToday ? '#e8c75a' : '#b9c6da' }}>{fromISODate(date).getDate()}</span>
-                  {open > 0 && <span style={{ fontSize: 9, fontWeight: 800, color: '#f59e0b', background: 'rgba(245,158,11,0.16)', borderRadius: 5, padding: '0 4px' }}>{open}</span>}
+                  {open > 0 && <span style={{ fontSize: 9, fontWeight: 800, color: '#f59e0b', background: 'rgba(245,158,11,0.16)', borderRadius: 5, padding: '0 4px' }}>{open} open</span>}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2, overflow: 'hidden' }}>
-                  {list.slice(0, 3).map(s => {
+                  {list.slice(0, 6).map(s => {
                     const color = classMap.get(s.class_type_id ?? '')?.color ?? '#64748b'
                     const needs = !s.coach_id
+                    const who = needs ? 'OPEN' : firstName(coachMap.get(s.coach_id ?? '')?.name)
                     return (
-                      <span key={s.id} style={{
-                        fontSize: 10, lineHeight: '14px', borderRadius: 3, padding: '0 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      <span key={s.id} title={`${formatTime(s.start_time)} ${classMap.get(s.class_type_id ?? '')?.name ?? ''} — ${needs ? 'needs coach' : coachMap.get(s.coach_id ?? '')?.name ?? ''}`} style={{
+                        display: 'flex', gap: 3, alignItems: 'baseline', fontSize: 10, lineHeight: '15px', borderRadius: 3, padding: '0 3px',
+                        whiteSpace: 'nowrap', overflow: 'hidden',
                         borderLeft: `2px solid ${needs ? '#f59e0b' : color}`,
-                        background: needs ? 'rgba(245,158,11,0.12)' : hexWithAlpha(color, 0.16),
-                        color: needs ? '#f5b74e' : '#cdd8e8',
-                      }}>{formatTime(s.start_time)}</span>
+                        background: needs ? 'rgba(245,158,11,0.14)' : hexWithAlpha(color, 0.18),
+                      }}>
+                        <span style={{ fontWeight: 700, color: needs ? '#f5b74e' : '#edf3fb', flexShrink: 0 }}>{formatTime(s.start_time)}</span>
+                        <span style={{ color: needs ? '#f5b74e' : '#b9c6da', fontWeight: needs ? 800 : 500, overflow: 'hidden', textOverflow: 'ellipsis' }}>{who}</span>
+                      </span>
                     )
                   })}
-                  {list.length > 3 && <span style={{ fontSize: 10, color: '#5e6e82', paddingLeft: 2 }}>+{list.length - 3} more</span>}
+                  {list.length > 6 && <span style={{ fontSize: 10, color: '#5e6e82', paddingLeft: 2 }}>+{list.length - 6} more</span>}
                 </div>
               </button>
             )
