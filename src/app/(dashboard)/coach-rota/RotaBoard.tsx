@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Panel } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
+import { DarkSelect } from '@/components/ui/DarkSelect'
 import {
   DAY_LABELS, mondayOf, weekDates, addDays, fromISODate, toISODate,
   formatTime, hexWithAlpha, sessionHours, formatHours,
@@ -19,7 +20,6 @@ const fieldStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', color: '#edf3fb',
   colorScheme: 'dark',
 }
-const optionStyle: React.CSSProperties = { background: '#121820', color: '#edf3fb' }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -254,16 +254,12 @@ export function RotaBoard() {
               <Field label="End"><input type="time" style={fieldStyle} value={draft.end_time} onChange={e => setDraft({ ...draft, end_time: e.target.value })} /></Field>
             </div>
             <Field label="Class type">
-              <select style={fieldStyle} value={draft.class_type_id ?? ''} onChange={e => setDraft({ ...draft, class_type_id: e.target.value || null })}>
-                <option value="" style={optionStyle}>— None —</option>
-                {classTypes.map(ct => <option key={ct.id} value={ct.id} style={optionStyle}>{ct.name}</option>)}
-              </select>
+              <DarkSelect value={draft.class_type_id ?? ''} onChange={v => setDraft({ ...draft, class_type_id: v || null })} style={fieldStyle}
+                options={[{ value: '', label: '— None —' }, ...classTypes.map(ct => ({ value: ct.id, label: ct.name }))]} />
             </Field>
             <Field label="Coach">
-              <select style={fieldStyle} value={draft.coach_id ?? ''} onChange={e => setDraft({ ...draft, coach_id: e.target.value || null })}>
-                <option value="" style={optionStyle}>— Needs filling —</option>
-                {activeCoaches.map(c => <option key={c.id} value={c.id} style={optionStyle}>{c.name}</option>)}
-              </select>
+              <DarkSelect value={draft.coach_id ?? ''} onChange={v => setDraft({ ...draft, coach_id: v || null })} style={fieldStyle}
+                options={[{ value: '', label: '— Needs filling —' }, ...activeCoaches.map(c => ({ value: c.id, label: c.name }))]} />
             </Field>
             <Field label="Notes"><input type="text" style={fieldStyle} value={draft.notes} placeholder="Optional" onChange={e => setDraft({ ...draft, notes: e.target.value })} /></Field>
             <div className="flex items-center gap-4" style={{ marginTop: 2 }}>
@@ -411,9 +407,9 @@ function DaySheet({ date, sessions, classMap, coachMap, onClose, onEdit, onAdd }
 }) {
   const list = sessions.filter(s => s.status === 'active' || s.status === 'cancelled')
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)' }} />
-      <div className="md:!max-w-lg" style={{ position: 'relative', width: '100%', maxWidth: 560, background: '#121820', borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTop: '1px solid rgba(255,255,255,0.1)', padding: 18, paddingBottom: 'max(18px, env(safe-area-inset-bottom))', maxHeight: '85dvh', overflowY: 'auto' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(2px)' }} />
+      <div style={{ position: 'relative', width: '100%', maxWidth: 520, background: '#121820', borderRadius: 16, border: '1px solid rgba(255,255,255,0.12)', padding: 20, maxHeight: '85dvh', overflowY: 'auto', boxShadow: '0 24px 60px rgba(0,0,0,0.55)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <h2 style={{ fontSize: 17, fontWeight: 800, color: '#edf3fb' }}>{fromISODate(date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#8296b4', cursor: 'pointer' }}><X size={20} /></button>

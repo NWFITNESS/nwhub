@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, Plus, Lock, Check, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { DarkSelect } from '@/components/ui/DarkSelect'
 import { CoachSignOut } from './CoachSignOut'
 import {
   DAY_LABELS_LONG, mondayOf, weekDates, addDays, fromISODate, toISODate,
@@ -19,7 +20,6 @@ const fieldStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.14)', color: '#edf3fb',
   colorScheme: 'dark',
 }
-const optionStyle: React.CSSProperties = { background: '#121820', color: '#edf3fb' }
 
 export function CoachApp({ coach }: Props) {
   const supabase = useMemo(() => createClient(), [])
@@ -350,10 +350,8 @@ function AddSessionSheet({ supabase, coach, classTypes, defaultDate, onClose, on
           </div>
           {!newClass ? (
             <>
-              <select style={fieldStyle} value={classId} onChange={e => setClassId(e.target.value)}>
-                <option value="" style={optionStyle}>— No class type —</option>
-                {classTypes.map(ct => <option key={ct.id} value={ct.id} style={optionStyle}>{ct.name}</option>)}
-              </select>
+              <DarkSelect value={classId} onChange={setClassId} style={fieldStyle}
+                options={[{ value: '', label: '— No class type —' }, ...classTypes.map(ct => ({ value: ct.id, label: ct.name }))]} />
               <button onClick={() => setNewClass(true)} style={{ fontSize: 13, color: '#c9a70a', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>+ New class type</button>
             </>
           ) : (

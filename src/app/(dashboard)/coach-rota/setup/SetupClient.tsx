@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Panel, PanelHeader, PanelBody } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
+import { DarkSelect } from '@/components/ui/DarkSelect'
 import { CLASS_COLOUR_PRESETS, DAY_LABELS_LONG, formatTime } from '@/lib/rota'
 import type { RotaClassType, RotaTemplateSlot } from '@/lib/rota'
 
@@ -14,7 +15,6 @@ const fieldStyle: React.CSSProperties = {
   background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', color: '#edf3fb',
   colorScheme: 'dark',
 }
-const optionStyle: React.CSSProperties = { background: '#121820', color: '#edf3fb' }
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -202,19 +202,16 @@ export function SetupClient() {
         {slotDraft && (
           <div className="flex flex-col gap-3">
             <Field label="Day">
-              <select style={fieldStyle} value={slotDraft.day_of_week} onChange={e => setSlotDraft({ ...slotDraft, day_of_week: Number(e.target.value) })}>
-                {DAY_LABELS_LONG.map((label, d) => <option key={d} value={d} style={optionStyle}>{label}</option>)}
-              </select>
+              <DarkSelect value={String(slotDraft.day_of_week)} onChange={v => setSlotDraft({ ...slotDraft, day_of_week: Number(v) })} style={fieldStyle}
+                options={DAY_LABELS_LONG.map((label, d) => ({ value: String(d), label }))} />
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Start"><input type="time" style={fieldStyle} value={slotDraft.start_time} onChange={e => setSlotDraft({ ...slotDraft, start_time: e.target.value })} /></Field>
               <Field label="End"><input type="time" style={fieldStyle} value={slotDraft.end_time} onChange={e => setSlotDraft({ ...slotDraft, end_time: e.target.value })} /></Field>
             </div>
             <Field label="Class type">
-              <select style={fieldStyle} value={slotDraft.class_type_id ?? ''} onChange={e => setSlotDraft({ ...slotDraft, class_type_id: e.target.value || null })}>
-                <option value="" style={optionStyle}>— None —</option>
-                {classTypes.map(ct => <option key={ct.id} value={ct.id} style={optionStyle}>{ct.name}</option>)}
-              </select>
+              <DarkSelect value={slotDraft.class_type_id ?? ''} onChange={v => setSlotDraft({ ...slotDraft, class_type_id: v || null })} style={fieldStyle}
+                options={[{ value: '', label: '— None —' }, ...classTypes.map(ct => ({ value: ct.id, label: ct.name }))]} />
             </Field>
             <Field label="Notes"><input style={fieldStyle} value={slotDraft.notes} placeholder="Optional" onChange={e => setSlotDraft({ ...slotDraft, notes: e.target.value })} /></Field>
             <div className="flex items-center justify-between gap-2" style={{ marginTop: 8 }}>
