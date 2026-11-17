@@ -8,6 +8,8 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      // Keep sessions alive ~30 days (rolling) so coaches/staff don't re-login each visit
+      cookieOptions: { maxAge: 60 * 60 * 24 * 30 },
       cookies: {
         getAll() {
           return cookieStore.getAll()

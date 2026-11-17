@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { InstallPrompt } from './InstallPrompt'
 
 export const metadata: Metadata = {
   title: 'NW Coach Rota',
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 export default function CoachLayout({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ minHeight: '100dvh', background: '#090c12', color: '#edf3fb' }}>
+      <InstallPrompt />
       {children}
     </div>
   )
