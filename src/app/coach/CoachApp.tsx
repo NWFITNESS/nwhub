@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { DarkSelect } from '@/components/ui/DarkSelect'
 import { CoachSignOut } from './CoachSignOut'
 import {
-  DAY_LABELS, DAY_LABELS_LONG, mondayOf, weekDates, addDays, fromISODate, toISODate,
+  DAY_LABELS, DAY_LABELS_LONG, mondayOf, weekDates, addDays, fromISODate, toISODate, dayOfWeekIndex,
   formatTime, hexWithAlpha, sessionHours, sessionPay, formatHours, formatMoney,
   CLASS_COLOUR_PRESETS, DEFAULT_RATES,
 } from '@/lib/rota'
@@ -41,12 +41,18 @@ export function CoachApp({ coach }: Props) {
   const [addOpen, setAddOpen] = useState(false)
   const [daySheet, setDaySheet] = useState<string | null>(null)
   const [notes, setNotes] = useState<Record<string, string>>({})
+  const [gapsOnly, setGapsOnly] = useState(false)
 
   const range = useMemo(() => {
     if (view === 'week') { const mon = mondayOf(cursor); return { start: mon, end: addDays(mon, 6), days: weekDates(mon) } }
-    const gridStart = mondayOf(firstOfMonth(cursor))
-    const days = Array.from({ length: 42 }, (_, i) => addDays(gridStart, i))
-    return { start: days[0], end: days[41], days }
+    const first = firstOfMonth(cursor)
+    const d = fromISODate(first)
+    const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()
+    const lastOfMonth = toISODate(new Date(d.getFullYear(), d.getMonth(), daysInMonth))
+    const gridStart = mondayOf(first)
+    const totalCells = Math.ceil((dayOfWeekIndex(first) + daysInMonth) / 7) * 7
+    const days = Array.from({ length: totalCells }, (_, i) => addDays(gridStart, i))
+    return { start: first, end: lastOfMonth, days }
   }, [view, cursor])
   const classMap = useMemo(() => new Map(classTypes.map(c => [c.id, c])), [classTypes])
 
@@ -165,7 +171,7 @@ export function CoachApp({ coach }: Props) {
           </div>
 
           {/* Filter chips */}
-          <div style={{ display: 'flex', gap: 6, padding: '0 16px 12px' }}>
+          <div style={{ display: 'flex', gap: 6, padding: '0 16px 12px', flexWrap: 'wrap' }}>
             {(['all', 'open', 'mine'] as const).map(f => (
               <button key={f} onClick={() => setFilter(f)} style={{
                 padding: '6px 14px', borderRadius: 999, fontSize: 13, fontWeight: 600, cursor: 'pointer',
@@ -173,10 +179,17 @@ export function CoachApp({ coach }: Props) {
                 background: filter === f ? 'rgba(212,160,23,0.14)' : 'transparent', color: filter === f ? '#f5d775' : '#8296b4',
               }}>{f === 'all' ? 'All' : f === 'open' ? 'Needs coach' : 'My sessions'}</button>
             ))}
+            {view === 'month' && (
+              <button onClick={() => setGapsOnly(g => !g)} style={{
+                marginLeft: 'auto', padding: '6px 14px', borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                border: `1px solid ${gapsOnly ? 'rgba(245,158,11,0.5)' : 'rgba(255,255,255,0.1)'}`,
+                background: gapsOnly ? 'rgba(245,158,11,0.18)' : 'transparent', color: gapsOnly ? '#f5b74e' : '#8296b4',
+              }}>{gapsOnly ? '● Highlighting gaps' : 'Highlight gaps'}</button>
+            )}
           </div>
 
           {view === 'month' ? (
-            <CoachMonth days={range.days} byDay={byDay} curMonth={curMonth} todayISO={todayISO} classMap={classMap} coachId={coach.id} notes={notes} onDay={setDaySheet} loading={loading} />
+            <CoachMonth days={range.days} byDay={byDay} curMonth={curMonth} todayISO={todayISO} classMap={classMap} coachId={coach.id} notes={notes} gapsOnly={gapsOnly} onDay={setDaySheet} loading={loading} />
           ) : (
             <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {loading && <p style={{ color: '#8296b4', fontSize: 14, textAlign: 'center', padding: 24 }}>Loading…</p>}
@@ -275,46 +288,49 @@ function CoachSessionCard({ s, ct, mine, coachName, busy, onClaim, onRelease }: 
 }
 
 // ── Month calendar for coaches ───────────────────────────────────────────────
-function CoachMonth({ days, byDay, curMonth, todayISO, classMap, coachId, notes, onDay, loading }: {
+function CoachMonth({ days, byDay, curMonth, todayISO, classMap, coachId, notes, gapsOnly, onDay, loading }: {
   days: string[]; byDay: Record<string, RotaSession[]>; curMonth: number; todayISO: string
-  classMap: Map<string, RotaClassType>; coachId: string; notes: Record<string, string>; onDay: (d: string) => void; loading: boolean
+  classMap: Map<string, RotaClassType>; coachId: string; notes: Record<string, string>; gapsOnly: boolean; onDay: (d: string) => void; loading: boolean
 }) {
   return (
     <div style={{ padding: '0 10px' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 3, marginBottom: 3 }}>
-        {DAY_LABELS.map(d => <div key={d} style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, color: '#5e6e82', textTransform: 'uppercase' }}>{d}</div>)}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 4, marginBottom: 4 }}>
+        {DAY_LABELS.map(d => <div key={d} style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: '#5e6e82', textTransform: 'uppercase' }}>{d}</div>)}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 3 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 4 }}>
         {days.map(date => {
-          const list = byDay[date] ?? []
           const inMonth = fromISODate(date).getMonth() === curMonth
+          if (!inMonth) return <div key={date} />   // this month only
+          const list = byDay[date] ?? []
           const isToday = date === todayISO
           const open = list.filter(s => !s.coach_id).length
+          const dimCell = gapsOnly && open === 0 && list.length > 0
           return (
             <button key={date} onClick={() => onDay(date)} style={{
-              textAlign: 'left', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 2, minHeight: 72, padding: 4, borderRadius: 9,
-              border: `1px solid ${isToday ? 'rgba(212,160,23,0.4)' : 'rgba(255,255,255,0.06)'}`,
-              background: inMonth ? 'rgba(255,255,255,0.02)' : 'transparent', opacity: inMonth ? 1 : 0.4,
+              textAlign: 'left', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 3, minHeight: 118, padding: 6, borderRadius: 11,
+              border: `1px solid ${isToday ? 'rgba(212,160,23,0.45)' : open > 0 && gapsOnly ? 'rgba(245,158,11,0.4)' : 'rgba(255,255,255,0.07)'}`,
+              background: 'rgba(255,255,255,0.025)', opacity: dimCell ? 0.4 : 1,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: isToday ? '#e8c75a' : '#b9c6da' }}>{fromISODate(date).getDate()}</span>
-                {open > 0 && <span style={{ fontSize: 8.5, fontWeight: 800, color: '#f59e0b', background: 'rgba(245,158,11,0.16)', borderRadius: 4, padding: '0 3px' }}>{open}</span>}
+                <span style={{ fontSize: 14, fontWeight: 800, color: isToday ? '#e8c75a' : '#dce5f0' }}>{fromISODate(date).getDate()}</span>
+                {open > 0 && <span style={{ fontSize: 9.5, fontWeight: 800, color: '#f59e0b', background: 'rgba(245,158,11,0.18)', borderRadius: 5, padding: '0 4px' }}>{open}</span>}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2, overflow: 'hidden' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2.5, overflow: 'hidden' }}>
                 {notes[date] && (
-                  <span title={notes[date]} style={{ fontSize: 9, lineHeight: '13px', borderRadius: 3, padding: '1px 3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', background: 'rgba(245,158,11,0.18)', color: '#f5b74e', fontWeight: 700 }}>📌 {notes[date]}</span>
+                  <span title={notes[date]} style={{ fontSize: 10, lineHeight: '15px', borderRadius: 4, padding: '1px 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', background: 'rgba(245,158,11,0.18)', color: '#f5b74e', fontWeight: 700 }}>📌 {notes[date]}</span>
                 )}
-                {list.slice(0, 4).map(s => {
+                {list.slice(0, 5).map(s => {
                   const color = classMap.get(s.class_type_id ?? '')?.color ?? '#64748b'
                   const isOpen = !s.coach_id
                   const isMine = s.coach_id === coachId
                   const bar = isOpen ? '#f59e0b' : isMine ? '#22c55e' : color
-                  const bg = isOpen ? 'rgba(245,158,11,0.16)' : isMine ? 'rgba(34,197,94,0.16)' : hexWithAlpha(color, 0.16)
+                  const bg = isOpen ? 'rgba(245,158,11,0.18)' : isMine ? 'rgba(34,197,94,0.16)' : hexWithAlpha(color, 0.16)
+                  const faded = gapsOnly && !isOpen
                   return (
-                    <span key={s.id} style={{ fontSize: 9, lineHeight: '13px', borderRadius: 3, padding: '0 3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', borderLeft: `2px solid ${bar}`, background: bg, color: isOpen ? '#f5b74e' : '#cdd8e8', fontWeight: isOpen || isMine ? 700 : 500 }}>{formatTime(s.start_time)}</span>
+                    <span key={s.id} style={{ fontSize: 10.5, lineHeight: '16px', borderRadius: 4, padding: '1px 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', borderLeft: `3px solid ${bar}`, background: bg, color: isOpen ? '#f5b74e' : '#cdd8e8', fontWeight: isOpen || isMine ? 700 : 500, opacity: faded ? 0.3 : 1, boxShadow: isOpen && gapsOnly ? '0 0 0 1px rgba(245,158,11,0.5)' : 'none' }}>{formatTime(s.start_time)}</span>
                   )
                 })}
-                {list.length > 4 && <span style={{ fontSize: 9, color: '#5e6e82', paddingLeft: 2 }}>+{list.length - 4}</span>}
+                {list.length > 5 && <span style={{ fontSize: 10, color: '#5e6e82', paddingLeft: 2 }}>+{list.length - 5}</span>}
               </div>
             </button>
           )
