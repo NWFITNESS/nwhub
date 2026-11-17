@@ -6,11 +6,15 @@ import { createClient } from '@/lib/supabase/client'
 import { DarkSelect } from '@/components/ui/DarkSelect'
 import { CoachSignOut } from './CoachSignOut'
 import {
-  DAY_LABELS_LONG, mondayOf, weekDates, addDays, fromISODate, toISODate,
+  DAY_LABELS, DAY_LABELS_LONG, mondayOf, weekDates, addDays, fromISODate, toISODate,
   formatTime, hexWithAlpha, sessionHours, sessionPay, formatHours, formatMoney,
   CLASS_COLOUR_PRESETS, DEFAULT_RATES,
 } from '@/lib/rota'
 import type { RotaSession, RotaClassType, RotaSettings } from '@/lib/rota'
+
+function monthLabel(iso: string) { return fromISODate(iso).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) }
+function firstOfMonth(iso: string) { const d = fromISODate(iso); return toISODate(new Date(d.getFullYear(), d.getMonth(), 1)) }
+function shiftMonth(iso: string, delta: number) { const d = fromISODate(iso); return toISODate(new Date(d.getFullYear(), d.getMonth() + delta, 1)) }
 
 interface CoachLite { id: string; name: string; color: string | null }
 interface Props { coach: { id: string; name: string; hourly_rate: number; color: string | null }; userEmail: string }
@@ -24,7 +28,8 @@ const fieldStyle: React.CSSProperties = {
 export function CoachApp({ coach }: Props) {
   const supabase = useMemo(() => createClient(), [])
   const [tab, setTab] = useState<'rota' | 'hours'>('rota')
-  const [week, setWeek] = useState(() => mondayOf())
+  const [view, setView] = useState<'month' | 'week'>('month')
+  const [cursor, setCursor] = useState(() => toISODate(new Date()))
   const [sessions, setSessions] = useState<RotaSession[]>([])
   const [classTypes, setClassTypes] = useState<RotaClassType[]>([])
   const [rates, setRates] = useState<RotaSettings>(DEFAULT_RATES)
@@ -34,8 +39,14 @@ export function CoachApp({ coach }: Props) {
   const [busyId, setBusyId] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [addOpen, setAddOpen] = useState(false)
+  const [daySheet, setDaySheet] = useState<string | null>(null)
 
-  const dates = useMemo(() => weekDates(week), [week])
+  const range = useMemo(() => {
+    if (view === 'week') { const mon = mondayOf(cursor); return { start: mon, end: addDays(mon, 6), days: weekDates(mon) } }
+    const gridStart = mondayOf(firstOfMonth(cursor))
+    const days = Array.from({ length: 42 }, (_, i) => addDays(gridStart, i))
+    return { start: days[0], end: days[41], days }
+  }, [view, cursor])
   const classMap = useMemo(() => new Map(classTypes.map(c => [c.id, c])), [classTypes])
 
   function flash(m: string) { setToast(m); setTimeout(() => setToast(null), 2600) }
@@ -51,17 +62,17 @@ export function CoachApp({ coach }: Props) {
     if (st) setRates(st as RotaSettings)
   }, [supabase])
 
-  const loadWeek = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setLoading(true)
     const { data } = await supabase.from('rota_sessions').select('*')
-      .gte('date', dates[0]).lte('date', dates[6])
+      .gte('date', range.start).lte('date', range.end)
       .order('date').order('start_time')
     setSessions((data as RotaSession[]) ?? [])
     setLoading(false)
-  }, [supabase, dates])
+  }, [supabase, range.start, range.end])
 
   useEffect(() => { loadMeta() }, [loadMeta])
-  useEffect(() => { loadWeek() }, [loadWeek])
+  useEffect(() => { loadData() }, [loadData])
 
   async function claim(s: RotaSession) {
     setBusyId(s.id)
@@ -70,8 +81,8 @@ export function CoachApp({ coach }: Props) {
       .eq('id', s.id).is('coach_id', null).eq('locked', false).eq('status', 'active')
       .select()
     setBusyId(null)
-    if (error || !data || data.length === 0) { flash('That session was just taken or locked.'); loadWeek(); return }
-    flash('Claimed ✓'); loadWeek()
+    if (error || !data || data.length === 0) { flash('That session was just taken or locked.'); loadData(); return }
+    flash('Claimed ✓'); loadData()
   }
 
   async function release(s: RotaSession) {
@@ -80,13 +91,13 @@ export function CoachApp({ coach }: Props) {
       .update({ coach_id: null, claimed_at: null })
       .eq('id', s.id).eq('coach_id', coach.id).eq('locked', false)
     setBusyId(null)
-    if (error) { flash('Could not release — it may be locked.'); loadWeek(); return }
-    flash('Released'); loadWeek()
+    if (error) { flash('Could not release — it may be locked.'); loadData(); return }
+    flash('Released'); loadData()
   }
 
   const byDay = useMemo(() => {
     const m: Record<string, RotaSession[]> = {}
-    for (const d of dates) m[d] = []
+    for (const d of range.days) m[d] = []
     for (const s of sessions) {
       if (s.status === 'cancelled') continue
       if (filter === 'open' && s.coach_id) continue
@@ -94,9 +105,14 @@ export function CoachApp({ coach }: Props) {
       if (m[s.date]) m[s.date].push(s)
     }
     return m
-  }, [sessions, dates, filter, coach.id])
+  }, [sessions, range.days, filter, coach.id])
 
-  const rangeLabel = `${fromISODate(dates[0]).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – ${fromISODate(dates[6]).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
+  const todayISO = toISODate(new Date())
+  const curMonth = fromISODate(cursor).getMonth()
+  const periodLabel = view === 'month' ? monthLabel(cursor)
+    : `${fromISODate(range.days[0]).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} – ${fromISODate(range.days[6]).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`
+  function prev() { setCursor(view === 'month' ? shiftMonth(cursor, -1) : addDays(mondayOf(cursor), -7)) }
+  function next() { setCursor(view === 'month' ? shiftMonth(cursor, 1) : addDays(mondayOf(cursor), 7)) }
   const firstName = coach.name.split(' ')[0]
 
   return (
@@ -124,11 +140,23 @@ export function CoachApp({ coach }: Props) {
 
       {tab === 'rota' ? (
         <>
-          {/* Week nav */}
+          {/* View toggle */}
+          <div style={{ display: 'flex', padding: '0 16px 10px' }}>
+            <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.05)', borderRadius: 11, padding: 4, width: '100%' }}>
+              {(['month', 'week'] as const).map(v => (
+                <button key={v} onClick={() => setView(v)} style={{
+                  flex: 1, padding: '9px', borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer', border: 'none', textTransform: 'capitalize',
+                  background: view === v ? 'rgba(212,160,23,0.18)' : 'transparent', color: view === v ? '#f5d775' : '#8296b4',
+                }}>{v}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* Nav */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px 10px' }}>
-            <button onClick={() => setWeek(addDays(week, -7))} style={navBtn} aria-label="Previous week"><ChevronLeft size={18} /></button>
-            <button onClick={() => setWeek(mondayOf())} style={{ fontSize: 14, fontWeight: 700, color: '#edf3fb', background: 'none', border: 'none', cursor: 'pointer' }}>{rangeLabel}</button>
-            <button onClick={() => setWeek(addDays(week, 7))} style={navBtn} aria-label="Next week"><ChevronRight size={18} /></button>
+            <button onClick={prev} style={navBtn} aria-label="Previous"><ChevronLeft size={18} /></button>
+            <button onClick={() => setCursor(todayISO)} style={{ fontSize: 15, fontWeight: 700, color: '#edf3fb', background: 'none', border: 'none', cursor: 'pointer' }}>{periodLabel}</button>
+            <button onClick={next} style={navBtn} aria-label="Next"><ChevronRight size={18} /></button>
           </div>
 
           {/* Filter chips */}
@@ -142,60 +170,47 @@ export function CoachApp({ coach }: Props) {
             ))}
           </div>
 
-          {/* Days */}
-          <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {loading && <p style={{ color: '#8296b4', fontSize: 14, textAlign: 'center', padding: 24 }}>Loading…</p>}
-            {!loading && dates.map((date, i) => {
-              const list = byDay[date] ?? []
-              if (list.length === 0) return null
-              const isToday = date === toISODate(new Date())
-              return (
-                <div key={date}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: isToday ? '#e8c75a' : '#8296b4', marginBottom: 8 }}>
-                    {DAY_LABELS_LONG[i]} <span style={{ color: '#5e6e82', fontWeight: 500 }}>{fromISODate(date).getDate()}</span>
+          {view === 'month' ? (
+            <CoachMonth days={range.days} byDay={byDay} curMonth={curMonth} todayISO={todayISO} classMap={classMap} coachId={coach.id} onDay={setDaySheet} loading={loading} />
+          ) : (
+            <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {loading && <p style={{ color: '#8296b4', fontSize: 14, textAlign: 'center', padding: 24 }}>Loading…</p>}
+              {!loading && range.days.map((date, i) => {
+                const list = byDay[date] ?? []
+                if (list.length === 0) return null
+                return (
+                  <div key={date}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: date === todayISO ? '#e8c75a' : '#8296b4', marginBottom: 8 }}>
+                      {DAY_LABELS_LONG[i]} <span style={{ color: '#5e6e82', fontWeight: 500 }}>{fromISODate(date).getDate()}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {list.map(s => (
+                        <CoachSessionCard key={s.id} s={s} ct={classMap.get(s.class_type_id ?? '')} mine={s.coach_id === coach.id}
+                          coachName={coachNames.get(s.coach_id ?? '')?.name} busy={busyId === s.id}
+                          onClaim={() => claim(s)} onRelease={() => release(s)} />
+                      ))}
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {list.map(s => {
-                      const ct = classMap.get(s.class_type_id ?? '')
-                      const color = ct?.color ?? '#64748b'
-                      const mine = s.coach_id === coach.id
-                      const open = !s.coach_id
-                      const other = coachNames.get(s.coach_id ?? '')
-                      return (
-                        <div key={s.id} style={{ borderRadius: 14, border: `1px solid ${hexWithAlpha(color, 0.3)}`, borderLeft: `4px solid ${color}`, background: hexWithAlpha(color, 0.1), padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 15, fontWeight: 700 }}>{formatTime(s.start_time)} – {formatTime(s.end_time)}</div>
-                            <div style={{ fontSize: 13, color: '#b9c6da', marginTop: 1 }}>{ct?.name ?? 'Class'}{s.notes ? ` · ${s.notes}` : ''}</div>
-                            <div style={{ marginTop: 5 }}>
-                              {open
-                                ? <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.4px', color: '#f59e0b', background: 'rgba(245,158,11,0.14)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 6, padding: '2px 7px' }}>NEEDS COACH</span>
-                                : mine
-                                  ? <span style={{ fontSize: 12, fontWeight: 700, color: '#22c55e', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Check size={13} /> You{s.locked && <Lock size={11} style={{ color: '#8296b4' }} />}</span>
-                                  : <span style={{ fontSize: 12, color: '#8296b4' }}>{other?.name ?? 'Assigned'}</span>}
-                            </div>
-                          </div>
-                          {open && !s.locked && (
-                            <button onClick={() => claim(s)} disabled={busyId === s.id} style={claimBtn}>{busyId === s.id ? '…' : 'Claim'}</button>
-                          )}
-                          {mine && !s.locked && (
-                            <button onClick={() => release(s)} disabled={busyId === s.id} style={releaseBtn}>{busyId === s.id ? '…' : 'Release'}</button>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )
-            })}
-            {!loading && dates.every(d => (byDay[d] ?? []).length === 0) && (
-              <p style={{ color: '#8296b4', fontSize: 14, textAlign: 'center', padding: 24 }}>
-                {filter === 'mine' ? 'You have no sessions this week.' : filter === 'open' ? 'Nothing needs a coach this week.' : 'No sessions this week yet.'}
-              </p>
-            )}
-          </div>
+                )
+              })}
+              {!loading && range.days.every(d => (byDay[d] ?? []).length === 0) && (
+                <p style={{ color: '#8296b4', fontSize: 14, textAlign: 'center', padding: 24 }}>
+                  {filter === 'mine' ? 'You have no sessions this week.' : filter === 'open' ? 'Nothing needs a coach this week.' : 'No sessions this week yet.'}
+                </p>
+              )}
+            </div>
+          )}
         </>
       ) : (
         <MyHours supabase={supabase} coach={coach} classMap={classMap} rates={rates} />
+      )}
+
+      {/* Day detail sheet (month-view tap) */}
+      {daySheet && (
+        <CoachDaySheet
+          date={daySheet} sessions={byDay[daySheet] ?? []} classMap={classMap} coachNames={coachNames}
+          coachId={coach.id} busyId={busyId} onClaim={claim} onRelease={release} onClose={() => setDaySheet(null)}
+        />
       )}
 
       {/* FAB: add own session */}
@@ -209,9 +224,9 @@ export function CoachApp({ coach }: Props) {
 
       {addOpen && (
         <AddSessionSheet
-          supabase={supabase} coach={coach} classTypes={classTypes} defaultDate={dates[0]}
+          supabase={supabase} coach={coach} classTypes={classTypes} defaultDate={todayISO}
           onClose={() => setAddOpen(false)}
-          onAdded={() => { setAddOpen(false); loadMeta(); loadWeek(); flash('Session added') }}
+          onAdded={() => { setAddOpen(false); loadMeta(); loadData(); flash('Session added') }}
         />
       )}
 
@@ -225,6 +240,110 @@ export function CoachApp({ coach }: Props) {
 const navBtn: React.CSSProperties = { padding: 8, borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', color: '#8296b4', cursor: 'pointer', display: 'flex' }
 const claimBtn: React.CSSProperties = { padding: '9px 16px', borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: 'pointer', border: '1px solid rgba(74,222,128,0.35)', background: 'rgba(74,222,128,0.16)', color: '#4ade80', flexShrink: 0 }
 const releaseBtn: React.CSSProperties = { padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: '#8296b4', flexShrink: 0 }
+
+// ── Session card (week list + day sheet) ─────────────────────────────────────
+function CoachSessionCard({ s, ct, mine, coachName, busy, onClaim, onRelease }: {
+  s: RotaSession; ct?: RotaClassType; mine: boolean; coachName?: string; busy: boolean; onClaim: () => void; onRelease: () => void
+}) {
+  const color = ct?.color ?? '#64748b'
+  const open = !s.coach_id
+  return (
+    <div style={{ borderRadius: 14, border: `1px solid ${hexWithAlpha(color, 0.3)}`, borderLeft: `4px solid ${color}`, background: hexWithAlpha(color, 0.1), padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 700 }}>{formatTime(s.start_time)} – {formatTime(s.end_time)}</div>
+        <div style={{ fontSize: 13, color: '#b9c6da', marginTop: 1 }}>{ct?.name ?? 'Class'}{s.notes ? ` · ${s.notes}` : ''}</div>
+        <div style={{ marginTop: 5 }}>
+          {open
+            ? <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.4px', color: '#f59e0b', background: 'rgba(245,158,11,0.14)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 6, padding: '2px 7px' }}>NEEDS COACH</span>
+            : mine
+              ? <span style={{ fontSize: 12, fontWeight: 700, color: '#22c55e', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Check size={13} /> You{s.locked && <Lock size={11} style={{ color: '#8296b4' }} />}</span>
+              : <span style={{ fontSize: 12, color: '#8296b4' }}>{coachName ?? 'Assigned'}</span>}
+        </div>
+      </div>
+      {open && !s.locked && <button onClick={onClaim} disabled={busy} style={claimBtn}>{busy ? '…' : 'Claim'}</button>}
+      {mine && !s.locked && <button onClick={onRelease} disabled={busy} style={releaseBtn}>{busy ? '…' : 'Release'}</button>}
+    </div>
+  )
+}
+
+// ── Month calendar for coaches ───────────────────────────────────────────────
+function CoachMonth({ days, byDay, curMonth, todayISO, classMap, coachId, onDay, loading }: {
+  days: string[]; byDay: Record<string, RotaSession[]>; curMonth: number; todayISO: string
+  classMap: Map<string, RotaClassType>; coachId: string; onDay: (d: string) => void; loading: boolean
+}) {
+  return (
+    <div style={{ padding: '0 10px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 3, marginBottom: 3 }}>
+        {DAY_LABELS.map(d => <div key={d} style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, color: '#5e6e82', textTransform: 'uppercase' }}>{d}</div>)}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 3 }}>
+        {days.map(date => {
+          const list = byDay[date] ?? []
+          const inMonth = fromISODate(date).getMonth() === curMonth
+          const isToday = date === todayISO
+          const open = list.filter(s => !s.coach_id).length
+          return (
+            <button key={date} onClick={() => onDay(date)} style={{
+              textAlign: 'left', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 2, minHeight: 72, padding: 4, borderRadius: 9,
+              border: `1px solid ${isToday ? 'rgba(212,160,23,0.4)' : 'rgba(255,255,255,0.06)'}`,
+              background: inMonth ? 'rgba(255,255,255,0.02)' : 'transparent', opacity: inMonth ? 1 : 0.4,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: isToday ? '#e8c75a' : '#b9c6da' }}>{fromISODate(date).getDate()}</span>
+                {open > 0 && <span style={{ fontSize: 8.5, fontWeight: 800, color: '#f59e0b', background: 'rgba(245,158,11,0.16)', borderRadius: 4, padding: '0 3px' }}>{open}</span>}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2, overflow: 'hidden' }}>
+                {list.slice(0, 4).map(s => {
+                  const color = classMap.get(s.class_type_id ?? '')?.color ?? '#64748b'
+                  const isOpen = !s.coach_id
+                  const isMine = s.coach_id === coachId
+                  const bar = isOpen ? '#f59e0b' : isMine ? '#22c55e' : color
+                  const bg = isOpen ? 'rgba(245,158,11,0.16)' : isMine ? 'rgba(34,197,94,0.16)' : hexWithAlpha(color, 0.16)
+                  return (
+                    <span key={s.id} style={{ fontSize: 9, lineHeight: '13px', borderRadius: 3, padding: '0 3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', borderLeft: `2px solid ${bar}`, background: bg, color: isOpen ? '#f5b74e' : '#cdd8e8', fontWeight: isOpen || isMine ? 700 : 500 }}>{formatTime(s.start_time)}</span>
+                  )
+                })}
+                {list.length > 4 && <span style={{ fontSize: 9, color: '#5e6e82', paddingLeft: 2 }}>+{list.length - 4}</span>}
+              </div>
+            </button>
+          )
+        })}
+      </div>
+      {loading && <p style={{ padding: 12, color: '#8296b4', fontSize: 13, textAlign: 'center' }}>Loading…</p>}
+      <div style={{ display: 'flex', gap: 16, justifyContent: 'center', padding: '14px 0 4px', fontSize: 12, color: '#8296b4' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: 3, background: '#f59e0b', display: 'inline-block' }} />Needs coach</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: 3, background: '#22c55e', display: 'inline-block' }} />You</span>
+      </div>
+      <p style={{ fontSize: 12, color: '#5e6e82', textAlign: 'center' }}>Tap a day to claim or view sessions</p>
+    </div>
+  )
+}
+
+// ── Day detail sheet for coaches ─────────────────────────────────────────────
+function CoachDaySheet({ date, sessions, classMap, coachNames, coachId, busyId, onClaim, onRelease, onClose }: {
+  date: string; sessions: RotaSession[]; classMap: Map<string, RotaClassType>; coachNames: Map<string, CoachLite>
+  coachId: string; busyId: string | null; onClaim: (s: RotaSession) => void; onRelease: (s: RotaSession) => void; onClose: () => void
+}) {
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)' }} />
+      <div style={{ position: 'relative', width: '100%', maxWidth: 560, background: '#121820', borderTopLeftRadius: 20, borderTopRightRadius: 20, borderTop: '1px solid rgba(255,255,255,0.1)', padding: 18, paddingBottom: 'max(18px, env(safe-area-inset-bottom))', maxHeight: '85dvh', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <h2 style={{ fontSize: 17, fontWeight: 800 }}>{fromISODate(date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#8296b4', cursor: 'pointer' }}><X size={20} /></button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {sessions.length === 0 && <p style={{ fontSize: 14, color: '#8296b4', padding: '8px 0' }}>No sessions.</p>}
+          {sessions.map(s => (
+            <CoachSessionCard key={s.id} s={s} ct={classMap.get(s.class_type_id ?? '')} mine={s.coach_id === coachId}
+              coachName={coachNames.get(s.coach_id ?? '')?.name} busy={busyId === s.id}
+              onClaim={() => onClaim(s)} onRelease={() => onRelease(s)} />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // ── My hours tab ─────────────────────────────────────────────────────────────
 function MyHours({ supabase, coach, classMap, rates }: { supabase: ReturnType<typeof createClient>; coach: Props['coach']; classMap: Map<string, RotaClassType>; rates: RotaSettings }) {
