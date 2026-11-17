@@ -40,6 +40,7 @@ export function CoachApp({ coach }: Props) {
   const [toast, setToast] = useState<string | null>(null)
   const [addOpen, setAddOpen] = useState(false)
   const [daySheet, setDaySheet] = useState<string | null>(null)
+  const [notes, setNotes] = useState<Record<string, string>>({})
 
   const range = useMemo(() => {
     if (view === 'week') { const mon = mondayOf(cursor); return { start: mon, end: addDays(mon, 6), days: weekDates(mon) } }
@@ -64,10 +65,14 @@ export function CoachApp({ coach }: Props) {
 
   const loadData = useCallback(async () => {
     setLoading(true)
-    const { data } = await supabase.from('rota_sessions').select('*')
-      .gte('date', range.start).lte('date', range.end)
-      .order('date').order('start_time')
-    setSessions((data as RotaSession[]) ?? [])
+    const [{ data: sess }, { data: nts }] = await Promise.all([
+      supabase.from('rota_sessions').select('*').gte('date', range.start).lte('date', range.end).order('date').order('start_time'),
+      supabase.from('rota_day_notes').select('date, note').gte('date', range.start).lte('date', range.end),
+    ])
+    setSessions((sess as RotaSession[]) ?? [])
+    const m: Record<string, string> = {}
+    for (const n of ((nts as { date: string; note: string }[]) ?? [])) m[n.date] = n.note
+    setNotes(m)
     setLoading(false)
   }, [supabase, range.start, range.end])
 
@@ -171,18 +176,21 @@ export function CoachApp({ coach }: Props) {
           </div>
 
           {view === 'month' ? (
-            <CoachMonth days={range.days} byDay={byDay} curMonth={curMonth} todayISO={todayISO} classMap={classMap} coachId={coach.id} onDay={setDaySheet} loading={loading} />
+            <CoachMonth days={range.days} byDay={byDay} curMonth={curMonth} todayISO={todayISO} classMap={classMap} coachId={coach.id} notes={notes} onDay={setDaySheet} loading={loading} />
           ) : (
             <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {loading && <p style={{ color: '#8296b4', fontSize: 14, textAlign: 'center', padding: 24 }}>Loading…</p>}
               {!loading && range.days.map((date, i) => {
                 const list = byDay[date] ?? []
-                if (list.length === 0) return null
+                if (list.length === 0 && !notes[date]) return null
                 return (
                   <div key={date}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: date === todayISO ? '#e8c75a' : '#8296b4', marginBottom: 8 }}>
                       {DAY_LABELS_LONG[i]} <span style={{ color: '#5e6e82', fontWeight: 500 }}>{fromISODate(date).getDate()}</span>
                     </div>
+                    {notes[date] && (
+                      <div style={{ marginBottom: 8, padding: '8px 12px', borderRadius: 10, background: 'rgba(245,158,11,0.14)', border: '1px solid rgba(245,158,11,0.3)', color: '#f5b74e', fontSize: 13, fontWeight: 600 }}>📌 {notes[date]}</div>
+                    )}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {list.map(s => (
                         <CoachSessionCard key={s.id} s={s} ct={classMap.get(s.class_type_id ?? '')} mine={s.coach_id === coach.id}
@@ -193,7 +201,7 @@ export function CoachApp({ coach }: Props) {
                   </div>
                 )
               })}
-              {!loading && range.days.every(d => (byDay[d] ?? []).length === 0) && (
+              {!loading && range.days.every(d => (byDay[d] ?? []).length === 0 && !notes[d]) && (
                 <p style={{ color: '#8296b4', fontSize: 14, textAlign: 'center', padding: 24 }}>
                   {filter === 'mine' ? 'You have no sessions this week.' : filter === 'open' ? 'Nothing needs a coach this week.' : 'No sessions this week yet.'}
                 </p>
@@ -209,7 +217,7 @@ export function CoachApp({ coach }: Props) {
       {daySheet && (
         <CoachDaySheet
           date={daySheet} sessions={byDay[daySheet] ?? []} classMap={classMap} coachNames={coachNames}
-          coachId={coach.id} busyId={busyId} onClaim={claim} onRelease={release} onClose={() => setDaySheet(null)}
+          coachId={coach.id} busyId={busyId} note={notes[daySheet] ?? ''} onClaim={claim} onRelease={release} onClose={() => setDaySheet(null)}
         />
       )}
 
@@ -267,9 +275,9 @@ function CoachSessionCard({ s, ct, mine, coachName, busy, onClaim, onRelease }: 
 }
 
 // ── Month calendar for coaches ───────────────────────────────────────────────
-function CoachMonth({ days, byDay, curMonth, todayISO, classMap, coachId, onDay, loading }: {
+function CoachMonth({ days, byDay, curMonth, todayISO, classMap, coachId, notes, onDay, loading }: {
   days: string[]; byDay: Record<string, RotaSession[]>; curMonth: number; todayISO: string
-  classMap: Map<string, RotaClassType>; coachId: string; onDay: (d: string) => void; loading: boolean
+  classMap: Map<string, RotaClassType>; coachId: string; notes: Record<string, string>; onDay: (d: string) => void; loading: boolean
 }) {
   return (
     <div style={{ padding: '0 10px' }}>
@@ -293,6 +301,9 @@ function CoachMonth({ days, byDay, curMonth, todayISO, classMap, coachId, onDay,
                 {open > 0 && <span style={{ fontSize: 8.5, fontWeight: 800, color: '#f59e0b', background: 'rgba(245,158,11,0.16)', borderRadius: 4, padding: '0 3px' }}>{open}</span>}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2, overflow: 'hidden' }}>
+                {notes[date] && (
+                  <span title={notes[date]} style={{ fontSize: 9, lineHeight: '13px', borderRadius: 3, padding: '1px 3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', background: 'rgba(245,158,11,0.18)', color: '#f5b74e', fontWeight: 700 }}>📌 {notes[date]}</span>
+                )}
                 {list.slice(0, 4).map(s => {
                   const color = classMap.get(s.class_type_id ?? '')?.color ?? '#64748b'
                   const isOpen = !s.coach_id
@@ -320,9 +331,9 @@ function CoachMonth({ days, byDay, curMonth, todayISO, classMap, coachId, onDay,
 }
 
 // ── Day detail sheet for coaches ─────────────────────────────────────────────
-function CoachDaySheet({ date, sessions, classMap, coachNames, coachId, busyId, onClaim, onRelease, onClose }: {
+function CoachDaySheet({ date, sessions, classMap, coachNames, coachId, busyId, note, onClaim, onRelease, onClose }: {
   date: string; sessions: RotaSession[]; classMap: Map<string, RotaClassType>; coachNames: Map<string, CoachLite>
-  coachId: string; busyId: string | null; onClaim: (s: RotaSession) => void; onRelease: (s: RotaSession) => void; onClose: () => void
+  coachId: string; busyId: string | null; note: string; onClaim: (s: RotaSession) => void; onRelease: (s: RotaSession) => void; onClose: () => void
 }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
@@ -332,6 +343,9 @@ function CoachDaySheet({ date, sessions, classMap, coachNames, coachId, busyId, 
           <h2 style={{ fontSize: 17, fontWeight: 800 }}>{fromISODate(date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#8296b4', cursor: 'pointer' }}><X size={20} /></button>
         </div>
+        {note && (
+          <div style={{ marginBottom: 14, padding: '12px 14px', borderRadius: 12, background: 'rgba(245,158,11,0.14)', border: '1px solid rgba(245,158,11,0.3)', color: '#f5b74e', fontSize: 14, fontWeight: 600 }}>📌 {note}</div>
+        )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {sessions.length === 0 && <p style={{ fontSize: 14, color: '#8296b4', padding: '8px 0' }}>No sessions.</p>}
           {sessions.map(s => (

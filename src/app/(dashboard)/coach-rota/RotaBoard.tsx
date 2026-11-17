@@ -70,6 +70,7 @@ export function RotaBoard() {
   const [genBusy, setGenBusy] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const [daySheet, setDaySheet] = useState<string | null>(null)
+  const [notes, setNotes] = useState<Record<string, string>>({})
 
   const classMap = useMemo(() => new Map(classTypes.map(c => [c.id, c])), [classTypes])
   const coachMap = useMemo(() => new Map(coaches.map(c => [c.id, c])), [coaches])
@@ -98,10 +99,22 @@ export function RotaBoard() {
 
   const loadData = useCallback(async () => {
     setLoading(true)
-    const res = await fetch(`/api/coach-rota/sessions?from=${range.start}&to=${range.end}`).then(r => r.json())
-    setSessions(res.sessions ?? [])
+    const [sRes, nRes] = await Promise.all([
+      fetch(`/api/coach-rota/sessions?from=${range.start}&to=${range.end}`).then(r => r.json()),
+      fetch(`/api/coach-rota/notes?from=${range.start}&to=${range.end}`).then(r => r.json()),
+    ])
+    setSessions(sRes.sessions ?? [])
+    const m: Record<string, string> = {}
+    for (const n of (nRes.notes ?? [])) m[n.date] = n.note
+    setNotes(m)
     setLoading(false)
   }, [range.start, range.end])
+
+  async function saveNote(date: string, text: string) {
+    await fetch('/api/coach-rota/notes', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, note: text }) })
+    flash(text.trim() ? 'Note saved' : 'Note cleared')
+    loadData()
+  }
 
   useEffect(() => { loadMeta() }, [loadMeta])
   useEffect(() => { loadData() }, [loadData])
@@ -228,8 +241,8 @@ export function RotaBoard() {
       </Panel>
 
       {view === 'month'
-        ? <MonthGrid days={range.days} byDay={byDay} curMonth={curMonth} todayISO={todayISO} classMap={classMap} coachMap={coachMap} onDay={setDaySheet} loading={loading} />
-        : <WeekGrid days={range.days} byDay={byDay} todayISO={todayISO} classMap={classMap} coachMap={coachMap} loading={loading} onEdit={openEdit} onAdd={openNew} />
+        ? <MonthGrid days={range.days} byDay={byDay} curMonth={curMonth} todayISO={todayISO} classMap={classMap} coachMap={coachMap} notes={notes} onDay={setDaySheet} loading={loading} />
+        : <WeekGrid days={range.days} byDay={byDay} todayISO={todayISO} classMap={classMap} coachMap={coachMap} notes={notes} loading={loading} onEdit={openEdit} onAdd={openNew} onDayNote={setDaySheet} />
       }
 
       {/* Day detail sheet (month view tap) */}
@@ -238,6 +251,8 @@ export function RotaBoard() {
           date={daySheet}
           sessions={byDay[daySheet] ?? []}
           classMap={classMap} coachMap={coachMap}
+          note={notes[daySheet] ?? ''}
+          onSaveNote={(t) => saveNote(daySheet, t)}
           onClose={() => setDaySheet(null)}
           onEdit={(s) => { setDaySheet(null); openEdit(s) }}
           onAdd={() => { const d = daySheet; setDaySheet(null); openNew(d) }}
@@ -312,9 +327,9 @@ const genChoiceStyle: React.CSSProperties = { display: 'flex', alignItems: 'cent
 // ── Month calendar — shows time + coach at a glance; open slots flagged amber ─
 function firstName(name?: string) { return name ? name.split(' ')[0] : 'Assigned' }
 
-function MonthGrid({ days, byDay, curMonth, todayISO, classMap, coachMap, onDay, loading }: {
+function MonthGrid({ days, byDay, curMonth, todayISO, classMap, coachMap, notes, onDay, loading }: {
   days: string[]; byDay: Record<string, RotaSession[]>; curMonth: number; todayISO: string
-  classMap: Map<string, RotaClassType>; coachMap: Map<string, RotaCoach>; onDay: (d: string) => void; loading: boolean
+  classMap: Map<string, RotaClassType>; coachMap: Map<string, RotaCoach>; notes: Record<string, string>; onDay: (d: string) => void; loading: boolean
 }) {
   return (
     <Panel>
@@ -341,6 +356,9 @@ function MonthGrid({ days, byDay, curMonth, todayISO, classMap, coachMap, onDay,
                   {open > 0 && <span style={{ fontSize: 9, fontWeight: 800, color: '#f59e0b', background: 'rgba(245,158,11,0.16)', borderRadius: 5, padding: '0 4px' }}>{open} open</span>}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2, overflow: 'hidden' }}>
+                  {notes[date] && (
+                    <span title={notes[date]} style={{ fontSize: 9, lineHeight: '13px', borderRadius: 3, padding: '1px 3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', background: 'rgba(245,158,11,0.18)', color: '#f5b74e', fontWeight: 700 }}>📌 {notes[date]}</span>
+                  )}
                   {list.slice(0, 6).map(s => {
                     const color = classMap.get(s.class_type_id ?? '')?.color ?? '#64748b'
                     const needs = !s.coach_id
@@ -370,10 +388,10 @@ function MonthGrid({ days, byDay, curMonth, todayISO, classMap, coachMap, onDay,
 }
 
 // ── Week grid (columns of days) ──────────────────────────────────────────────
-function WeekGrid({ days, byDay, todayISO, classMap, coachMap, loading, onEdit, onAdd }: {
+function WeekGrid({ days, byDay, todayISO, classMap, coachMap, notes, loading, onEdit, onAdd, onDayNote }: {
   days: string[]; byDay: Record<string, RotaSession[]>; todayISO: string
-  classMap: Map<string, RotaClassType>; coachMap: Map<string, RotaCoach>; loading: boolean
-  onEdit: (s: RotaSession) => void; onAdd: (date: string) => void
+  classMap: Map<string, RotaClassType>; coachMap: Map<string, RotaCoach>; notes: Record<string, string>; loading: boolean
+  onEdit: (s: RotaSession) => void; onAdd: (date: string) => void; onDayNote: (date: string) => void
 }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-7 gap-2">
@@ -382,10 +400,13 @@ function WeekGrid({ days, byDay, todayISO, classMap, coachMap, loading, onEdit, 
         const list = byDay[date] ?? []
         return (
           <div key={date} className="rounded-2xl border" style={{ borderColor: isToday ? 'rgba(212,160,23,0.35)' : 'rgba(255,255,255,0.08)', background: 'var(--nw-750, #121820)', minHeight: 120, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+            <button onClick={() => onDayNote(date)} style={{ textAlign: 'left', cursor: 'pointer', background: 'none', border: 'none', padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', width: '100%' }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: isToday ? '#e8c75a' : '#edf3fb' }}>{DAY_LABELS[i]}</span>
               <span style={{ fontSize: 12, color: '#5e6e82' }}>{fromISODate(date).getDate()}</span>
-            </div>
+            </button>
+            {notes[date] && (
+              <div style={{ margin: '6px 8px 0', padding: '5px 8px', borderRadius: 7, background: 'rgba(245,158,11,0.14)', border: '1px solid rgba(245,158,11,0.3)', color: '#f5b74e', fontSize: 11.5, fontWeight: 600 }}>📌 {notes[date]}</div>
+            )}
             <div style={{ padding: 8, display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
               {list.map(s => <SessionCell key={s.id} s={s} ct={classMap.get(s.class_type_id ?? '')} coach={coachMap.get(s.coach_id ?? '')} onClick={() => onEdit(s)} />)}
               {list.length === 0 && !loading && <span style={{ fontSize: 12, color: '#5e6e82', textAlign: 'center', padding: '8px 0' }}>—</span>}
@@ -401,10 +422,12 @@ function WeekGrid({ days, byDay, todayISO, classMap, coachMap, loading, onEdit, 
 }
 
 // ── Day detail bottom sheet ──────────────────────────────────────────────────
-function DaySheet({ date, sessions, classMap, coachMap, onClose, onEdit, onAdd }: {
+function DaySheet({ date, sessions, classMap, coachMap, note, onSaveNote, onClose, onEdit, onAdd }: {
   date: string; sessions: RotaSession[]; classMap: Map<string, RotaClassType>; coachMap: Map<string, RotaCoach>
+  note: string; onSaveNote: (text: string) => void
   onClose: () => void; onEdit: (s: RotaSession) => void; onAdd: () => void
 }) {
+  const [noteText, setNoteText] = useState(note)
   const list = sessions.filter(s => s.status === 'active' || s.status === 'cancelled')
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
@@ -414,6 +437,20 @@ function DaySheet({ date, sessions, classMap, coachMap, onClose, onEdit, onAdd }
           <h2 style={{ fontSize: 17, fontWeight: 800, color: '#edf3fb' }}>{fromISODate(date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#8296b4', cursor: 'pointer' }}><X size={20} /></button>
         </div>
+
+        {/* Day note — coaches see this on the rota */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#8296b4', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>📌 Day note <span style={{ textTransform: 'none', fontWeight: 400 }}>— all coaches see this</span></div>
+          <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="e.g. Closed for maintenance 2–4pm" rows={2}
+            style={{ ...fieldStyle, resize: 'vertical', fontFamily: 'inherit' }} />
+          {noteText !== note && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
+              <Button variant="ghost" size="sm" onClick={() => setNoteText(note)}>Cancel</Button>
+              <Button variant="gold" size="sm" onClick={() => onSaveNote(noteText)}>{noteText.trim() ? 'Save note' : 'Clear note'}</Button>
+            </div>
+          )}
+        </div>
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {list.length === 0 && <p style={{ fontSize: 14, color: '#8296b4', padding: '8px 0' }}>No sessions.</p>}
           {list.map(s => {
