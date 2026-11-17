@@ -4,6 +4,8 @@ import { InstallPrompt } from './InstallPrompt'
 export const metadata: Metadata = {
   title: 'NW Coach Rota',
   manifest: '/coach.webmanifest',
+  // Distinct home-screen icon from the admin "NWHub" app (gold NW·COACH tile)
+  icons: { apple: [{ url: '/icons/coach-apple-180.png', sizes: '180x180' }] },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',

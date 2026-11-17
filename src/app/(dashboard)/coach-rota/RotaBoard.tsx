@@ -8,7 +8,7 @@ import { Panel } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { DarkSelect } from '@/components/ui/DarkSelect'
 import {
-  DAY_LABELS, mondayOf, weekDates, addDays, fromISODate, toISODate,
+  DAY_LABELS, mondayOf, weekDates, addDays, fromISODate, toISODate, dayOfWeekIndex,
   formatTime, hexWithAlpha, sessionHours, formatHours,
 } from '@/lib/rota'
 import type { RotaSession, RotaCoach, RotaClassType } from '@/lib/rota'
@@ -71,19 +71,26 @@ export function RotaBoard() {
   const [toast, setToast] = useState<string | null>(null)
   const [daySheet, setDaySheet] = useState<string | null>(null)
   const [notes, setNotes] = useState<Record<string, string>>({})
+  const [gapsOnly, setGapsOnly] = useState(false)
 
   const classMap = useMemo(() => new Map(classTypes.map(c => [c.id, c])), [classTypes])
   const coachMap = useMemo(() => new Map(coaches.map(c => [c.id, c])), [coaches])
 
-  // Visible date range for the current view
+  // Visible date range for the current view. Month fetches/stats cover the month
+  // only; `days` is the calendar grid (out-of-month cells render blank).
   const range = useMemo(() => {
     if (view === 'week') {
       const mon = mondayOf(cursor)
       return { start: mon, end: addDays(mon, 6), days: weekDates(mon) }
     }
-    const gridStart = mondayOf(firstOfMonth(cursor))
-    const days = Array.from({ length: 42 }, (_, i) => addDays(gridStart, i))
-    return { start: days[0], end: days[41], days }
+    const first = firstOfMonth(cursor)
+    const d = fromISODate(first)
+    const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()
+    const lastOfMonth = toISODate(new Date(d.getFullYear(), d.getMonth(), daysInMonth))
+    const gridStart = mondayOf(first)
+    const totalCells = Math.ceil((dayOfWeekIndex(first) + daysInMonth) / 7) * 7
+    const days = Array.from({ length: totalCells }, (_, i) => addDays(gridStart, i))
+    return { start: first, end: lastOfMonth, days }
   }, [view, cursor])
 
   const loadMeta = useCallback(async () => {
@@ -226,7 +233,7 @@ export function RotaBoard() {
               <span className="text-nw-100" style={{ fontSize: 15, fontWeight: 700, marginLeft: 8, minWidth: 120 }}>{periodLabel}</span>
             </div>
           </div>
-          {/* Legend */}
+          {/* Legend + gaps toggle */}
           <div className="flex items-center gap-3 flex-wrap">
             {classTypes.map(ct => (
               <span key={ct.id} className="inline-flex items-center gap-1.5" style={{ fontSize: 12, color: '#8296b4' }}>
@@ -236,13 +243,18 @@ export function RotaBoard() {
             <span className="inline-flex items-center gap-1.5" style={{ fontSize: 12, color: '#f59e0b' }}>
               <span style={{ width: 10, height: 10, borderRadius: 3, border: '1.5px dashed #f59e0b', display: 'inline-block' }} />needs coach
             </span>
+            <button onClick={() => setGapsOnly(g => !g)} style={{
+              marginLeft: 'auto', padding: '7px 14px', borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              border: `1px solid ${gapsOnly ? 'rgba(245,158,11,0.5)' : 'rgba(255,255,255,0.12)'}`,
+              background: gapsOnly ? 'rgba(245,158,11,0.18)' : 'rgba(255,255,255,0.03)', color: gapsOnly ? '#f5b74e' : '#8296b4',
+            }}>{gapsOnly ? '● Highlighting gaps' : 'Highlight gaps'}</button>
           </div>
         </div>
       </Panel>
 
       {view === 'month'
-        ? <MonthGrid days={range.days} byDay={byDay} curMonth={curMonth} todayISO={todayISO} classMap={classMap} coachMap={coachMap} notes={notes} onDay={setDaySheet} loading={loading} />
-        : <WeekGrid days={range.days} byDay={byDay} todayISO={todayISO} classMap={classMap} coachMap={coachMap} notes={notes} loading={loading} onEdit={openEdit} onAdd={openNew} onDayNote={setDaySheet} />
+        ? <MonthGrid days={range.days} byDay={byDay} curMonth={curMonth} todayISO={todayISO} classMap={classMap} coachMap={coachMap} notes={notes} gapsOnly={gapsOnly} onDay={setDaySheet} loading={loading} />
+        : <WeekGrid days={range.days} byDay={byDay} todayISO={todayISO} classMap={classMap} coachMap={coachMap} notes={notes} gapsOnly={gapsOnly} loading={loading} onEdit={openEdit} onAdd={openNew} onDayNote={setDaySheet} />
       }
 
       {/* Day detail sheet (month view tap) */}
@@ -327,55 +339,61 @@ const genChoiceStyle: React.CSSProperties = { display: 'flex', alignItems: 'cent
 // ── Month calendar — shows time + coach at a glance; open slots flagged amber ─
 function firstName(name?: string) { return name ? name.split(' ')[0] : 'Assigned' }
 
-function MonthGrid({ days, byDay, curMonth, todayISO, classMap, coachMap, notes, onDay, loading }: {
+function MonthGrid({ days, byDay, curMonth, todayISO, classMap, coachMap, notes, gapsOnly, onDay, loading }: {
   days: string[]; byDay: Record<string, RotaSession[]>; curMonth: number; todayISO: string
-  classMap: Map<string, RotaClassType>; coachMap: Map<string, RotaCoach>; notes: Record<string, string>; onDay: (d: string) => void; loading: boolean
+  classMap: Map<string, RotaClassType>; coachMap: Map<string, RotaCoach>; notes: Record<string, string>; gapsOnly: boolean
+  onDay: (d: string) => void; loading: boolean
 }) {
   return (
     <Panel>
-      <div style={{ padding: 8 }}>
+      <div style={{ padding: 10 }}>
         {/* weekday header */}
-        <div className="grid grid-cols-7" style={{ gap: 4, marginBottom: 4 }}>
-          {DAY_LABELS.map(d => <div key={d} style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: '#5e6e82', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '2px 0' }}>{d}</div>)}
+        <div className="grid grid-cols-7" style={{ gap: 5, marginBottom: 5 }}>
+          {DAY_LABELS.map(d => <div key={d} style={{ textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#5e6e82', textTransform: 'uppercase', letterSpacing: '0.5px', padding: '2px 0' }}>{d}</div>)}
         </div>
-        <div className="grid grid-cols-7" style={{ gap: 4 }}>
+        <div className="grid grid-cols-7" style={{ gap: 5 }}>
           {days.map(date => {
-            const list = (byDay[date] ?? []).filter(s => s.status === 'active')
             const inMonth = fromISODate(date).getMonth() === curMonth
+            if (!inMonth) return <div key={date} />   // show this month only
+            const list = (byDay[date] ?? []).filter(s => s.status === 'active')
             const isToday = date === todayISO
             const open = list.filter(s => !s.coach_id).length
+            const dimCell = gapsOnly && open === 0 && list.length > 0  // fully-filled days fade back
             return (
               <button key={date} onClick={() => onDay(date)} style={{
-                textAlign: 'left', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 3,
-                minHeight: 110, padding: 5, borderRadius: 10,
-                border: `1px solid ${isToday ? 'rgba(212,160,23,0.4)' : 'rgba(255,255,255,0.06)'}`,
-                background: inMonth ? 'rgba(255,255,255,0.02)' : 'transparent', opacity: inMonth ? 1 : 0.4,
+                textAlign: 'left', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4,
+                minHeight: 152, padding: 8, borderRadius: 12,
+                border: `1px solid ${isToday ? 'rgba(212,160,23,0.45)' : open > 0 && gapsOnly ? 'rgba(245,158,11,0.4)' : 'rgba(255,255,255,0.07)'}`,
+                background: 'rgba(255,255,255,0.025)', opacity: dimCell ? 0.4 : 1,
               }}>
-                <div className="flex items-center justify-between" style={{ marginBottom: 1 }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: isToday ? '#e8c75a' : '#b9c6da' }}>{fromISODate(date).getDate()}</span>
-                  {open > 0 && <span style={{ fontSize: 9, fontWeight: 800, color: '#f59e0b', background: 'rgba(245,158,11,0.16)', borderRadius: 5, padding: '0 4px' }}>{open} open</span>}
+                <div className="flex items-center justify-between" style={{ marginBottom: 2 }}>
+                  <span style={{ fontSize: 15, fontWeight: 800, color: isToday ? '#e8c75a' : '#dce5f0' }}>{fromISODate(date).getDate()}</span>
+                  {open > 0 && <span style={{ fontSize: 10, fontWeight: 800, color: '#f59e0b', background: 'rgba(245,158,11,0.18)', borderRadius: 6, padding: '1px 6px' }}>{open} open</span>}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, overflow: 'hidden' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 3, overflow: 'hidden' }}>
                   {notes[date] && (
-                    <span title={notes[date]} style={{ fontSize: 9, lineHeight: '13px', borderRadius: 3, padding: '1px 3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', background: 'rgba(245,158,11,0.18)', color: '#f5b74e', fontWeight: 700 }}>📌 {notes[date]}</span>
+                    <span title={notes[date]} style={{ fontSize: 10, lineHeight: '15px', borderRadius: 4, padding: '1px 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', background: 'rgba(245,158,11,0.18)', color: '#f5b74e', fontWeight: 700 }}>📌 {notes[date]}</span>
                   )}
-                  {list.slice(0, 6).map(s => {
+                  {list.slice(0, 7).map(s => {
                     const color = classMap.get(s.class_type_id ?? '')?.color ?? '#64748b'
                     const needs = !s.coach_id
                     const who = needs ? 'OPEN' : firstName(coachMap.get(s.coach_id ?? '')?.name)
+                    const faded = gapsOnly && !needs   // dim filled when highlighting gaps
                     return (
                       <span key={s.id} title={`${formatTime(s.start_time)} ${classMap.get(s.class_type_id ?? '')?.name ?? ''} — ${needs ? 'needs coach' : coachMap.get(s.coach_id ?? '')?.name ?? ''}`} style={{
-                        display: 'flex', gap: 3, alignItems: 'baseline', fontSize: 10, lineHeight: '15px', borderRadius: 3, padding: '0 3px',
+                        display: 'flex', gap: 4, alignItems: 'baseline', fontSize: 11.5, lineHeight: '18px', borderRadius: 4, padding: '1px 5px',
                         whiteSpace: 'nowrap', overflow: 'hidden',
-                        borderLeft: `2px solid ${needs ? '#f59e0b' : color}`,
-                        background: needs ? 'rgba(245,158,11,0.14)' : hexWithAlpha(color, 0.18),
+                        borderLeft: `3px solid ${needs ? '#f59e0b' : color}`,
+                        background: needs ? 'rgba(245,158,11,0.16)' : hexWithAlpha(color, 0.18),
+                        opacity: faded ? 0.3 : 1,
+                        boxShadow: needs && gapsOnly ? '0 0 0 1px rgba(245,158,11,0.5)' : 'none',
                       }}>
                         <span style={{ fontWeight: 700, color: needs ? '#f5b74e' : '#edf3fb', flexShrink: 0 }}>{formatTime(s.start_time)}</span>
                         <span style={{ color: needs ? '#f5b74e' : '#b9c6da', fontWeight: needs ? 800 : 500, overflow: 'hidden', textOverflow: 'ellipsis' }}>{who}</span>
                       </span>
                     )
                   })}
-                  {list.length > 6 && <span style={{ fontSize: 10, color: '#5e6e82', paddingLeft: 2 }}>+{list.length - 6} more</span>}
+                  {list.length > 7 && <span style={{ fontSize: 10.5, color: '#5e6e82', paddingLeft: 2 }}>+{list.length - 7} more</span>}
                 </div>
               </button>
             )
@@ -388,9 +406,9 @@ function MonthGrid({ days, byDay, curMonth, todayISO, classMap, coachMap, notes,
 }
 
 // ── Week grid (columns of days) ──────────────────────────────────────────────
-function WeekGrid({ days, byDay, todayISO, classMap, coachMap, notes, loading, onEdit, onAdd, onDayNote }: {
+function WeekGrid({ days, byDay, todayISO, classMap, coachMap, notes, gapsOnly, loading, onEdit, onAdd, onDayNote }: {
   days: string[]; byDay: Record<string, RotaSession[]>; todayISO: string
-  classMap: Map<string, RotaClassType>; coachMap: Map<string, RotaCoach>; notes: Record<string, string>; loading: boolean
+  classMap: Map<string, RotaClassType>; coachMap: Map<string, RotaCoach>; notes: Record<string, string>; gapsOnly: boolean; loading: boolean
   onEdit: (s: RotaSession) => void; onAdd: (date: string) => void; onDayNote: (date: string) => void
 }) {
   return (
@@ -408,7 +426,11 @@ function WeekGrid({ days, byDay, todayISO, classMap, coachMap, notes, loading, o
               <div style={{ margin: '6px 8px 0', padding: '5px 8px', borderRadius: 7, background: 'rgba(245,158,11,0.14)', border: '1px solid rgba(245,158,11,0.3)', color: '#f5b74e', fontSize: 11.5, fontWeight: 600 }}>📌 {notes[date]}</div>
             )}
             <div style={{ padding: 8, display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
-              {list.map(s => <SessionCell key={s.id} s={s} ct={classMap.get(s.class_type_id ?? '')} coach={coachMap.get(s.coach_id ?? '')} onClick={() => onEdit(s)} />)}
+              {list.map(s => (
+                <div key={s.id} style={{ opacity: gapsOnly && s.coach_id ? 0.35 : 1 }}>
+                  <SessionCell s={s} ct={classMap.get(s.class_type_id ?? '')} coach={coachMap.get(s.coach_id ?? '')} onClick={() => onEdit(s)} />
+                </div>
+              ))}
               {list.length === 0 && !loading && <span style={{ fontSize: 12, color: '#5e6e82', textAlign: 'center', padding: '8px 0' }}>—</span>}
               <button onClick={() => onAdd(date)} style={{ marginTop: 'auto', padding: 8, borderRadius: 8, border: '1px dashed rgba(255,255,255,0.14)', background: 'transparent', color: '#5e6e82', fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
                 <Plus size={13} /> Add
