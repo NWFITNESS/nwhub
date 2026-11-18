@@ -2,6 +2,7 @@
   "name": "NW Coach Rota",
   "short_name": "NW Coach",
   "description": "Northern Warrior — coach availability and rota",
+  "id": "/coach",
   "start_url": "/coach",
   "scope": "/coach",
   "display": "standalone",

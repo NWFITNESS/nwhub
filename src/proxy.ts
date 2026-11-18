@@ -40,8 +40,14 @@ export async function proxy(request: NextRequest) {
     (pathname.startsWith('/blog/') && !pathname.startsWith('/blog/manage'))
 
   // Coach app — self-authenticating (magic link); renders its own login when
-  // logged out, so it must NOT be bounced to the admin /login page.
-  const isCoachApp = pathname === '/coach' || pathname.startsWith('/coach/')
+  // logged out, so it must NOT be bounced to the admin /login page. The PWA
+  // manifest is fetched by the browser while logged out, so it must stay public
+  // too — otherwise it 307s to /login, the browser discards it, and falls back
+  // to the admin manifest (installs the wrong app).
+  const isCoachApp =
+    pathname === '/coach' ||
+    pathname.startsWith('/coach/') ||
+    pathname === '/coach.webmanifest'
 
   // Vercel cron / internal routes — protected by CRON_SECRET header, no session needed
   const cronSecret = process.env.CRON_SECRET

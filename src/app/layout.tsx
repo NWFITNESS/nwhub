@@ -14,6 +14,11 @@ const rajdhani = Rajdhani({ subsets: ['latin'], variable: '--font-rajdhani', wei
 export const metadata: Metadata = {
   title: 'NWHub',
   description: 'Northern Warrior Business Hub',
+  // Explicit admin manifest (was app/manifest.ts, a file-convention manifest
+  // that Next auto-injected site-wide and overrode the coach manifest on
+  // /coach). As a plain metadata field the coach layout's nested manifest now
+  // cleanly replaces it on /coach pages.
+  manifest: '/manifest.webmanifest',
   icons: {
     icon: [
       { url: '/icons/favicon-32.png', sizes: '32x32', type: 'image/png' },
