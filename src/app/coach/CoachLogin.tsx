@@ -35,7 +35,7 @@ export function CoachLogin() {
       <div style={{
         position: 'fixed', inset: 0, zIndex: 0,
         backgroundImage: 'linear-gradient(to bottom, rgba(9,12,18,0.62) 0%, rgba(9,12,18,0.82) 55%, rgba(9,12,18,0.95) 100%), url(/coach-bg.jpg)',
-        backgroundSize: 'cover', backgroundPosition: 'center 20%',
+        backgroundSize: 'cover', backgroundPosition: 'center 42%',
       }} />
 
       <div style={{
