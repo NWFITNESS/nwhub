@@ -30,12 +30,12 @@ export function CoachLogin() {
   }
 
   return (
-    <div style={{ position: 'relative', minHeight: '100dvh', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 20px', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', minHeight: '100dvh', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '48px 20px', overflow: 'hidden' }}>
       {/* Background photo + dark gradient for legibility */}
       <div style={{
         position: 'fixed', inset: 0, zIndex: 0,
         backgroundImage: 'linear-gradient(to bottom, rgba(9,12,18,0.62) 0%, rgba(9,12,18,0.82) 55%, rgba(9,12,18,0.95) 100%), url(/coach-bg.jpg)',
-        backgroundSize: 'cover', backgroundPosition: 'center 42%',
+        backgroundSize: 'cover', backgroundPosition: 'center 30%',
       }} />
 
       <div style={{
