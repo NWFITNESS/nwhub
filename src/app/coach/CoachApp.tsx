@@ -189,7 +189,7 @@ export function CoachApp({ coach }: Props) {
           </div>
 
           {view === 'month' ? (
-            <CoachMonth days={range.days} byDay={byDay} curMonth={curMonth} todayISO={todayISO} classMap={classMap} coachId={coach.id} notes={notes} gapsOnly={gapsOnly} onDay={setDaySheet} loading={loading} />
+            <CoachMonth days={range.days} byDay={byDay} curMonth={curMonth} todayISO={todayISO} classMap={classMap} coachId={coach.id} coachNames={coachNames} notes={notes} gapsOnly={gapsOnly} onDay={setDaySheet} loading={loading} />
           ) : (
             <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
               {loading && <p style={{ color: '#8296b4', fontSize: 14, textAlign: 'center', padding: 24 }}>Loading…</p>}
@@ -288,9 +288,9 @@ function CoachSessionCard({ s, ct, mine, coachName, busy, onClaim, onRelease }: 
 }
 
 // ── Month calendar for coaches ───────────────────────────────────────────────
-function CoachMonth({ days, byDay, curMonth, todayISO, classMap, coachId, notes, gapsOnly, onDay, loading }: {
+function CoachMonth({ days, byDay, curMonth, todayISO, classMap, coachId, coachNames, notes, gapsOnly, onDay, loading }: {
   days: string[]; byDay: Record<string, RotaSession[]>; curMonth: number; todayISO: string
-  classMap: Map<string, RotaClassType>; coachId: string; notes: Record<string, string>; gapsOnly: boolean; onDay: (d: string) => void; loading: boolean
+  classMap: Map<string, RotaClassType>; coachId: string; coachNames: Map<string, CoachLite>; notes: Record<string, string>; gapsOnly: boolean; onDay: (d: string) => void; loading: boolean
 }) {
   return (
     <div style={{ padding: '0 10px' }}>
@@ -307,7 +307,7 @@ function CoachMonth({ days, byDay, curMonth, todayISO, classMap, coachId, notes,
           const dimCell = gapsOnly && open === 0 && list.length > 0
           return (
             <button key={date} onClick={() => onDay(date)} style={{
-              textAlign: 'left', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 3, minHeight: 118, padding: 6, borderRadius: 11,
+              textAlign: 'left', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 3, minHeight: 118, minWidth: 0, padding: 6, borderRadius: 11,
               border: `1px solid ${isToday ? 'rgba(212,160,23,0.45)' : open > 0 && gapsOnly ? 'rgba(245,158,11,0.4)' : 'rgba(255,255,255,0.07)'}`,
               background: 'rgba(255,255,255,0.025)', opacity: dimCell ? 0.4 : 1,
             }}>
@@ -315,7 +315,7 @@ function CoachMonth({ days, byDay, curMonth, todayISO, classMap, coachId, notes,
                 <span style={{ fontSize: 14, fontWeight: 800, color: isToday ? '#e8c75a' : '#dce5f0' }}>{fromISODate(date).getDate()}</span>
                 {open > 0 && <span style={{ fontSize: 9.5, fontWeight: 800, color: '#f59e0b', background: 'rgba(245,158,11,0.18)', borderRadius: 5, padding: '0 4px' }}>{open}</span>}
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2.5, overflow: 'hidden' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2.5, minWidth: 0, overflow: 'hidden' }}>
                 {notes[date] && (
                   <span title={notes[date]} style={{ fontSize: 10, lineHeight: '15px', borderRadius: 4, padding: '1px 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', background: 'rgba(245,158,11,0.18)', color: '#f5b74e', fontWeight: 700 }}>📌 {notes[date]}</span>
                 )}
@@ -326,8 +326,13 @@ function CoachMonth({ days, byDay, curMonth, todayISO, classMap, coachId, notes,
                   const bar = isOpen ? '#f59e0b' : isMine ? '#22c55e' : color
                   const bg = isOpen ? 'rgba(245,158,11,0.18)' : isMine ? 'rgba(34,197,94,0.16)' : hexWithAlpha(color, 0.16)
                   const faded = gapsOnly && !isOpen
+                  // Who's on — this is what coaches want to see at a glance.
+                  const who = isOpen ? 'Open' : isMine ? 'You' : (coachNames.get(s.coach_id ?? '')?.name?.split(' ')[0] ?? 'Assigned')
                   return (
-                    <span key={s.id} style={{ fontSize: 10.5, lineHeight: '16px', borderRadius: 4, padding: '1px 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', borderLeft: `3px solid ${bar}`, background: bg, color: isOpen ? '#f5b74e' : '#cdd8e8', fontWeight: isOpen || isMine ? 700 : 500, opacity: faded ? 0.3 : 1, boxShadow: isOpen && gapsOnly ? '0 0 0 1px rgba(245,158,11,0.5)' : 'none' }}>{formatTime(s.start_time)}</span>
+                    <span key={s.id} title={`${formatTime(s.start_time)} — ${who}`} style={{ display: 'block', minWidth: 0, borderRadius: 4, padding: '1px 4px', overflow: 'hidden', borderLeft: `3px solid ${bar}`, background: bg, opacity: faded ? 0.3 : 1, boxShadow: isOpen && gapsOnly ? '0 0 0 1px rgba(245,158,11,0.5)' : 'none' }}>
+                      <span style={{ display: 'block', fontSize: 10.5, lineHeight: '14px', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: isOpen ? '#f5b74e' : '#dce5f0' }}>{formatTime(s.start_time)}</span>
+                      <span style={{ display: 'block', fontSize: 9.5, lineHeight: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: isOpen ? '#f5b74e' : isMine ? '#6ee7a0' : '#9fb0c6', fontWeight: isOpen || isMine ? 700 : 500 }}>{who}</span>
+                    </span>
                   )
                 })}
                 {list.length > 5 && <span style={{ fontSize: 10, color: '#5e6e82', paddingLeft: 2 }}>+{list.length - 5}</span>}
