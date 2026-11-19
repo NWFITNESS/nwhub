@@ -111,10 +111,19 @@ export function timeToMinutes(t: string): number {
   return h * 60 + (m || 0)
 }
 
-/** Hours between two 'HH:MM[:SS]' times (end − start), floored at 0. */
+/** Hours between two 'HH:MM[:SS]' times (end − start), floored at 0. This is the
+ *  ACTUAL class length (used for display / hours-worked). */
 export function sessionHours(start: string, end: string): number {
   const mins = timeToMinutes(end) - timeToMinutes(start)
   return mins > 0 ? mins / 60 : 0
+}
+
+/** Hours a paid session is PAID for. Sub-hour classes are paid a full hour
+ *  (e.g. a 45-min class pays the same as a 1-hour class); hour-or-longer
+ *  classes are paid their actual length. */
+export function payableHours(start: string, end: string): number {
+  const h = sessionHours(start, end)
+  return h > 0 && h < 1 ? 1 : h
 }
 
 /** True for Saturday or Sunday. */
@@ -129,13 +138,13 @@ export function sessionRate(dateISO: string, classPaid: boolean, rates: RotaSett
   return isWeekendISO(dateISO) ? rates.weekend_rate : rates.weekday_rate
 }
 
-/** Pay for a single session = hours × its rate. */
+/** Pay for a single session = payable hours (min 1h) × its rate. */
 export function sessionPay(
   s: { date: string; start_time: string; end_time: string },
   classPaid: boolean,
   rates: RotaSettings,
 ): number {
-  return sessionHours(s.start_time, s.end_time) * sessionRate(s.date, classPaid, rates)
+  return payableHours(s.start_time, s.end_time) * sessionRate(s.date, classPaid, rates)
 }
 
 /** '06:00:00' → '6:00am'. */

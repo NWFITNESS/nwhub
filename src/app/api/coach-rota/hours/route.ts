@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireRotaAdmin } from '@/lib/rota-server'
-import { sessionHours, sessionPay, DEFAULT_RATES } from '@/lib/rota'
+import { sessionHours, payableHours, sessionPay, DEFAULT_RATES } from '@/lib/rota'
 import type { RotaSession, RotaCoach, RotaClassType, RotaSettings } from '@/lib/rota'
 
 // GET /api/coach-rota/hours?month=YYYY-MM
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
     const hrs = sessionHours(s.start_time, s.end_time)
     cur.sessions += 1
     cur.hours += hrs
-    if (paid) cur.paidHours += hrs
+    if (paid) cur.paidHours += payableHours(s.start_time, s.end_time)
     cur.pay += sessionPay(s, paid, rates)
     totals.set(s.coach_id!, cur)
   }
