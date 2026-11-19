@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/coach-rota/reminders/send",
+      "schedule": "*/15 * * * *"
+    },
+    {
       "path": "/api/digest/send",
       "schedule": "0 * * * *"
     },

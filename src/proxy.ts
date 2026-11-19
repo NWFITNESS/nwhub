@@ -52,7 +52,7 @@ export async function proxy(request: NextRequest) {
   // Vercel cron / internal routes — protected by CRON_SECRET header, no session needed
   const cronSecret = process.env.CRON_SECRET
   const isCronRequest =
-    (pathname === '/api/digest/send' || pathname === '/api/inbox/process') &&
+    (pathname === '/api/digest/send' || pathname === '/api/inbox/process' || pathname === '/api/coach-rota/reminders/send') &&
     cronSecret &&
     request.headers.get('authorization') === `Bearer ${cronSecret}`
 

@@ -44,6 +44,14 @@ const nextConfig: NextConfig = {
         source: "/(.*)",
         headers: securityHeaders,
       },
+      {
+        // Allow the coach service worker (served at root) to control /coach.
+        source: "/coach-sw.js",
+        headers: [
+          { key: "Service-Worker-Allowed", value: "/coach" },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+        ],
+      },
     ];
   },
 };

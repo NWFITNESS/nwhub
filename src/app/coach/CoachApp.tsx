@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Plus, Lock, Check, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { DarkSelect } from '@/components/ui/DarkSelect'
 import { CoachSignOut } from './CoachSignOut'
+import { CoachPush } from './CoachPush'
 import {
   DAY_LABELS, DAY_LABELS_LONG, mondayOf, weekDates, addDays, fromISODate, toISODate, dayOfWeekIndex,
   formatTime, hexWithAlpha, sessionHours, sessionPay, formatHours, formatMoney,
@@ -151,6 +152,7 @@ export function CoachApp({ coach }: Props) {
 
       {tab === 'rota' ? (
         <>
+          <CoachPush />
           {/* View toggle */}
           <div style={{ display: 'flex', padding: '0 16px 10px' }}>
             <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.05)', borderRadius: 11, padding: 4, width: '100%' }}>
