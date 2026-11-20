@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, Plus, Lock, Wand2, Trash2, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Lock, Wand2, Trash2, X, StickyNote } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Panel } from '@/components/ui/Card'
@@ -418,10 +418,19 @@ function WeekGrid({ days, byDay, todayISO, classMap, coachMap, notes, gapsOnly, 
         const list = byDay[date] ?? []
         return (
           <div key={date} className="rounded-2xl border" style={{ borderColor: isToday ? 'rgba(212,160,23,0.35)' : 'rgba(255,255,255,0.08)', background: 'var(--nw-750, #121820)', minHeight: 120, display: 'flex', flexDirection: 'column' }}>
-            <button onClick={() => onDayNote(date)} style={{ textAlign: 'left', cursor: 'pointer', background: 'none', border: 'none', padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', width: '100%' }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: isToday ? '#e8c75a' : '#edf3fb' }}>{DAY_LABELS[i]}</span>
-              <span style={{ fontSize: 12, color: '#5e6e82' }}>{fromISODate(date).getDate()}</span>
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, padding: '8px 10px 8px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <button onClick={() => onDayNote(date)} style={{ textAlign: 'left', cursor: 'pointer', background: 'none', border: 'none', padding: 0, display: 'flex', alignItems: 'baseline', gap: 6, flex: 1, minWidth: 0 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: isToday ? '#e8c75a' : '#edf3fb' }}>{DAY_LABELS[i]}</span>
+                <span style={{ fontSize: 12, color: '#5e6e82' }}>{fromISODate(date).getDate()}</span>
+              </button>
+              <button onClick={() => onDayNote(date)} aria-label="Add or edit day note"
+                title={notes[date] ? 'Edit day note' : 'Add a day note (e.g. Christmas Day)'}
+                style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4, padding: '4px 7px', borderRadius: 7, cursor: 'pointer',
+                  border: `1px solid ${notes[date] ? 'rgba(245,158,11,0.35)' : 'rgba(255,255,255,0.1)'}`,
+                  background: notes[date] ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.04)', color: notes[date] ? '#f5b74e' : '#8296b4' }}>
+                <StickyNote size={12} />{!notes[date] && <span style={{ fontSize: 10.5, fontWeight: 700 }}>Note</span>}
+              </button>
+            </div>
             {notes[date] && (
               <div style={{ margin: '6px 8px 0', padding: '5px 8px', borderRadius: 7, background: 'rgba(245,158,11,0.14)', border: '1px solid rgba(245,158,11,0.3)', color: '#f5b74e', fontSize: 11.5, fontWeight: 600 }}>📌 {notes[date]}</div>
             )}
@@ -462,8 +471,8 @@ function DaySheet({ date, sessions, classMap, coachMap, note, onSaveNote, onClos
 
         {/* Day note — coaches see this on the rota */}
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#8296b4', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>📌 Day note <span style={{ textTransform: 'none', fontWeight: 400 }}>— all coaches see this</span></div>
-          <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="e.g. Closed for maintenance 2–4pm" rows={2}
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#8296b4', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>📌 Day note <span style={{ textTransform: 'none', fontWeight: 400 }}>(all coaches see this)</span></div>
+          <textarea value={noteText} onChange={e => setNoteText(e.target.value)} placeholder="e.g. Christmas Day, gym closed" rows={2}
             style={{ ...fieldStyle, resize: 'vertical', fontFamily: 'inherit' }} />
           {noteText !== note && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
