@@ -1,14 +1,15 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, Plus, Lock, Check, X, ArrowLeftRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Lock, Check, X, ArrowLeftRight, Home, CalendarDays, Wallet } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { DarkSelect } from '@/components/ui/DarkSelect'
 import { CoachSignOut } from './CoachSignOut'
 import { CoachPush } from './CoachPush'
+import { HomeTab, PayTab, ShareModal } from './CoachDashboard'
 import {
   DAY_LABELS, DAY_LABELS_LONG, mondayOf, weekDates, addDays, fromISODate, toISODate, dayOfWeekIndex,
-  formatTime, hexWithAlpha, sessionHours, sessionPay, formatHours, formatMoney,
+  formatTime, hexWithAlpha,
   CLASS_COLOUR_PRESETS, DEFAULT_RATES,
 } from '@/lib/rota'
 import type { RotaSession, RotaClassType, RotaSettings } from '@/lib/rota'
@@ -37,7 +38,8 @@ const fieldStyle: React.CSSProperties = {
 
 export function CoachApp({ coach }: Props) {
   const supabase = useMemo(() => createClient(), [])
-  const [tab, setTab] = useState<'rota' | 'hours'>('rota')
+  const [tab, setTab] = useState<'home' | 'rota' | 'pay'>('home')
+  const [shareOpen, setShareOpen] = useState(false)
   const [view, setView] = useState<'month' | 'week'>('month')
   const [cursor, setCursor] = useState(() => toISODate(new Date()))
   const [sessions, setSessions] = useState<RotaSession[]>([])
@@ -160,7 +162,7 @@ export function CoachApp({ coach }: Props) {
   const firstName = coach.name.split(' ')[0]
 
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto', paddingBottom: 96 }}>
+    <div style={{ maxWidth: 560, margin: '0 auto', paddingBottom: 'calc(86px + env(safe-area-inset-bottom))' }}>
       {/* Header (sticky) */}
       <div style={{ position: 'sticky', top: 0, zIndex: 20, background: 'linear-gradient(180deg, #090c12 72%, rgba(9,12,18,0.82))', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', padding: '16px 16px 10px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -171,20 +173,18 @@ export function CoachApp({ coach }: Props) {
           </div>
           <CoachSignOut compact />
         </div>
-
-        {/* Tabs — sliding segmented control */}
-        <div style={{ position: 'relative', display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 4, marginTop: 14 }}>
-          <div style={{ position: 'absolute', top: 4, bottom: 4, width: 'calc(50% - 4px)', left: tab === 'rota' ? 4 : '50%', borderRadius: 9, background: 'rgba(212,160,23,0.18)', border: '1px solid rgba(212,160,23,0.4)', transition: 'left .28s cubic-bezier(.16,1,.3,1)' }} />
-          {(['rota', 'hours'] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{
-              position: 'relative', zIndex: 1, flex: 1, padding: '9px', borderRadius: 9, fontSize: 14, fontWeight: 700, cursor: 'pointer',
-              border: 'none', background: 'transparent', color: tab === t ? '#f5d775' : '#8296b4', transition: 'color .2s',
-            }}>{t === 'rota' ? 'Rota' : 'My hours'}</button>
-          ))}
-        </div>
       </div>
 
-      {tab === 'rota' ? (
+      {tab === 'home' && (
+        <HomeTab supabase={supabase} coach={coach} classMap={classMap} rates={rates} todayISO={todayISO}
+          goPay={() => setTab('pay')} onShare={() => setShareOpen(true)} />
+      )}
+
+      {tab === 'pay' && (
+        <PayTab supabase={supabase} coach={coach} classMap={classMap} rates={rates} onShare={() => setShareOpen(true)} />
+      )}
+
+      {tab === 'rota' && (
         <>
           <CoachPush />
           {/* View toggle */}
@@ -265,8 +265,6 @@ export function CoachApp({ coach }: Props) {
             </div>
           )}
         </>
-      ) : (
-        <MyHours supabase={supabase} coach={coach} classMap={classMap} rates={rates} />
       )}
 
       {/* Day detail sheet (month-view tap) */}
@@ -289,7 +287,7 @@ export function CoachApp({ coach }: Props) {
       {/* FAB: add own session */}
       {tab === 'rota' && (
         <button className="cs-press" onClick={() => setAddOpen(true)} aria-label="Add session" style={{
-          position: 'fixed', bottom: 24, right: 'max(24px, calc(50% - 280px + 24px))', width: 56, height: 56, borderRadius: '50%',
+          position: 'fixed', bottom: 'calc(76px + env(safe-area-inset-bottom))', right: 'max(18px, calc(50% - 280px + 18px))', width: 54, height: 54, borderRadius: '50%',
           background: 'linear-gradient(135deg, #d4a017, #C9A70A)', color: '#10151f', border: 'none', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.4)', zIndex: 40,
         }}><Plus size={26} /></button>
@@ -303,9 +301,35 @@ export function CoachApp({ coach }: Props) {
         />
       )}
 
-      {toast && (
-        <div className="cs-pop" style={{ position: 'fixed', bottom: 96, left: '50%', transform: 'translateX(-50%)', zIndex: 60, background: '#121820', border: '1px solid rgba(212,160,23,0.3)', color: '#edf3fb', padding: '10px 18px', borderRadius: 12, fontSize: 14, fontWeight: 600, boxShadow: '0 8px 30px rgba(0,0,0,0.4)', maxWidth: 'calc(100% - 32px)', textAlign: 'center' }}>{toast}</div>
+      {shareOpen && (
+        <ShareModal supabase={supabase} coach={coach} classMap={classMap} rates={rates} onClose={() => setShareOpen(false)} />
       )}
+
+      {toast && (
+        <div className="cs-pop" style={{ position: 'fixed', bottom: 'calc(84px + env(safe-area-inset-bottom))', left: '50%', transform: 'translateX(-50%)', zIndex: 60, background: '#121820', border: '1px solid rgba(212,160,23,0.3)', color: '#edf3fb', padding: '10px 18px', borderRadius: 12, fontSize: 14, fontWeight: 600, boxShadow: '0 8px 30px rgba(0,0,0,0.4)', maxWidth: 'calc(100% - 32px)', textAlign: 'center' }}>{toast}</div>
+      )}
+
+      {/* Bottom navigation */}
+      <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 45, display: 'flex', justifyContent: 'center', background: 'linear-gradient(0deg, #0b0e14 78%, rgba(11,14,20,0.9))', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderTop: '1px solid rgba(255,255,255,0.07)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div style={{ display: 'flex', width: '100%', maxWidth: 560 }}>
+          {([
+            { k: 'home', label: 'Home', icon: Home },
+            { k: 'rota', label: 'Rota', icon: CalendarDays },
+            { k: 'pay', label: 'Pay', icon: Wallet },
+          ] as const).map(({ k, label, icon: Icon }) => {
+            const active = tab === k
+            return (
+              <button key={k} onClick={() => setTab(k)} className="cs-press" style={{
+                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, padding: '9px 0 8px',
+                background: 'none', border: 'none', cursor: 'pointer', color: active ? '#f5d775' : '#6e7e94',
+              }}>
+                <Icon size={21} strokeWidth={active ? 2.4 : 2} />
+                <span style={{ fontSize: 10.5, fontWeight: active ? 800 : 600, letterSpacing: '0.2px' }}>{label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </nav>
     </div>
   )
 }
@@ -507,80 +531,6 @@ function PickerRow({ label, sub, isCurrent, busy, onClick, avatar }: {
       </div>
       {isCurrent && <Check size={18} style={{ color: '#f5d775', flexShrink: 0 }} />}
     </button>
-  )
-}
-
-// ── My hours tab ─────────────────────────────────────────────────────────────
-function MyHours({ supabase, coach, classMap, rates }: { supabase: ReturnType<typeof createClient>; coach: Props['coach']; classMap: Map<string, RotaClassType>; rates: RotaSettings }) {
-  const [month, setMonth] = useState(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` })
-  const [rows, setRows] = useState<RotaSession[]>([])
-  const [loading, setLoading] = useState(true)
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    const [y, m] = month.split('-').map(Number)
-    const first = `${month}-01`
-    const nextFirst = `${m === 12 ? y + 1 : y}-${String(m === 12 ? 1 : m + 1).padStart(2, '0')}-01`
-    const { data } = await supabase.from('rota_sessions').select('*')
-      .eq('coach_id', coach.id).eq('status', 'active')
-      .gte('date', first).lt('date', nextFirst)
-      .order('date').order('start_time')
-    setRows((data as RotaSession[]) ?? [])
-    setLoading(false)
-  }, [supabase, coach.id, month])
-  useEffect(() => { load() }, [load])
-
-  function shift(delta: number) {
-    const [y, m] = month.split('-').map(Number)
-    const d = new Date(y, m - 1 + delta, 1)
-    setMonth(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
-  }
-  const [y, m] = month.split('-').map(Number)
-  const label = new Date(y, m - 1, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
-  const totalHours = rows.reduce((n, s) => n + sessionHours(s.start_time, s.end_time), 0)
-  const pay = rows.reduce((n, s) => {
-    const paid = s.class_type_id ? (classMap.get(s.class_type_id)?.paid ?? true) : true
-    return n + sessionPay(s, paid, rates)
-  }, 0)
-
-  return (
-    <div style={{ padding: '0 16px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <button onClick={() => shift(-1)} style={navBtn} aria-label="Previous month"><ChevronLeft size={18} /></button>
-        <span style={{ fontSize: 15, fontWeight: 700 }}>{label}</span>
-        <button onClick={() => shift(1)} style={navBtn} aria-label="Next month"><ChevronRight size={18} /></button>
-      </div>
-
-      <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-        <div style={{ flex: 1, borderRadius: 14, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', padding: '14px 16px' }}>
-          <div style={{ fontSize: 11, color: '#8296b4', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Hours</div>
-          <div style={{ fontSize: 24, fontWeight: 800 }}>{formatHours(Math.round(totalHours * 100) / 100)}</div>
-        </div>
-        <div style={{ flex: 1, borderRadius: 14, border: '1px solid rgba(212,160,23,0.25)', background: 'rgba(212,160,23,0.08)', padding: '14px 16px' }}>
-          <div style={{ fontSize: 11, color: '#c9a70a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Est. pay</div>
-          <div style={{ fontSize: 24, fontWeight: 800, color: '#f5d775' }}>{formatMoney(Math.round(pay * 100) / 100)}</div>
-        </div>
-      </div>
-
-      {loading && <p style={{ color: '#8296b4', fontSize: 14, textAlign: 'center', padding: 16 }}>Loading…</p>}
-      {!loading && rows.length === 0 && <p style={{ color: '#8296b4', fontSize: 14, textAlign: 'center', padding: 16 }}>No sessions in {label}.</p>}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {rows.map(s => {
-          const ct = classMap.get(s.class_type_id ?? '')
-          const color = ct?.color ?? '#64748b'
-          return (
-            <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 12, borderRadius: 12, border: '1px solid rgba(255,255,255,0.08)', borderLeft: `4px solid ${color}`, padding: '10px 14px' }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 14, fontWeight: 600 }}>{fromISODate(s.date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
-                <div style={{ fontSize: 12, color: '#8296b4' }}>{formatTime(s.start_time)} – {formatTime(s.end_time)} · {ct?.name ?? 'Class'}</div>
-              </div>
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#b9c6da' }}>{formatHours(sessionHours(s.start_time, s.end_time))}h</span>
-            </div>
-          )
-        })}
-      </div>
-      <p style={{ fontSize: 11, color: '#5e6e82', textAlign: 'center', marginTop: 16 }}>Est. pay uses your current rate and is a guide only.</p>
-    </div>
   )
 }
 
