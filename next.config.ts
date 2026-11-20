@@ -33,6 +33,9 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  // web-push is CommonJS and must not be bundled, or its default import resolves
+  // to undefined in the server runtime (breaks coach push notifications).
+  serverExternalPackages: ['web-push'],
   experimental: {
     serverActions: {
       bodySizeLimit: '50mb',

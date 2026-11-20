@@ -1,4 +1,13 @@
-import webpush from 'web-push'
+import * as webpushImport from 'web-push'
+
+type WebPush = typeof import('web-push')
+// web-push is CommonJS; depending on how it's bundled the callable module may be
+// the namespace itself or hang off `.default`. Pick whichever exposes the API.
+const webpush: WebPush = (
+  (webpushImport as { setVapidDetails?: unknown }).setVapidDetails
+    ? webpushImport
+    : (webpushImport as unknown as { default: WebPush }).default
+) as WebPush
 
 let configured = false
 
@@ -28,8 +37,8 @@ export interface PushPayload {
 /** Send a push. Returns 'ok', or 'gone' if the subscription is dead (404/410)
  *  and should be deleted, or 'error' for a transient failure. */
 export async function sendPush(sub: PushSub, payload: PushPayload): Promise<'ok' | 'gone' | 'error'> {
-  ensureConfigured()
   try {
+    ensureConfigured()
     await webpush.sendNotification(
       { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
       JSON.stringify(payload),
@@ -38,6 +47,7 @@ export async function sendPush(sub: PushSub, payload: PushPayload): Promise<'ok'
   } catch (err) {
     const status = (err as { statusCode?: number }).statusCode
     if (status === 404 || status === 410) return 'gone'
+    console.error('[push] send failed:', (err as Error).message)
     return 'error'
   }
 }
