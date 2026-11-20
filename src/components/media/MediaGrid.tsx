@@ -185,6 +185,7 @@ export function MediaGrid({ initialMedia }: Props) {
   const [media, setMedia]         = useState(initialMedia)
   const [pending, setPending]     = useState<PendingFile[]>([])
   const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const [copied, setCopied]       = useState<string | null>(null)
   const [editing, setEditing]     = useState<Media | null>(null)
   const [selected, setSelected]   = useState<Set<string>>(new Set())
@@ -238,18 +239,26 @@ export function MediaGrid({ initialMedia }: Props) {
   async function uploadAll() {
     if (pending.length === 0) return
     setUploading(true)
+    setUploadError(null)
     const supabase = createClient()
     const uploaded: Media[] = []
+    const stillPending: PendingFile[] = []
+    const failures: string[] = []
 
     for (const p of pending) {
       try {
-        // Upload directly to Supabase Storage from the client (no size limit)
+        // Upload directly to Supabase Storage from the client.
         const path = `media/${Date.now()}-${p.file.name.replace(/[^a-z0-9.-]/gi, '_')}`
         const { error: storageError } = await supabase.storage
           .from('media')
           .upload(path, p.file, { contentType: p.file.type || 'application/octet-stream' })
 
-        if (storageError) continue
+        if (storageError) {
+          const big = /exceed|maximum|too large|payload/i.test(storageError.message)
+          failures.push(`${p.file.name}: ${big ? 'file is over the storage size limit' : storageError.message}`)
+          stillPending.push(p)
+          continue
+        }
 
         const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path)
 
@@ -268,14 +277,17 @@ export function MediaGrid({ initialMedia }: Props) {
             height: p.height,
           }),
         })
-        if (res.ok) uploaded.push(await res.json() as Media)
-      } catch {
-        // upload failed — skip
+        if (res.ok) { uploaded.push(await res.json() as Media) }
+        else { failures.push(`${p.file.name}: couldn't save (${res.status})`); stillPending.push(p) }
+      } catch (e) {
+        failures.push(`${p.file.name}: ${(e as Error).message || 'upload failed'}`)
+        stillPending.push(p)
       }
     }
 
-    setPending([])
+    setPending(stillPending)
     setMedia((prev) => [...uploaded.reverse(), ...prev])
+    setUploadError(failures.length ? failures.join(' · ') : null)
     setUploading(false)
   }
 
@@ -357,6 +369,12 @@ export function MediaGrid({ initialMedia }: Props) {
               </div>
             ))}
           </div>
+          {uploadError && (
+            <div className="border-t border-red-500/20 bg-red-500/[0.07]" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 12, paddingBottom: 12 }}>
+              <p className="text-xs font-semibold text-red-300 mb-0.5">Some files didn&rsquo;t upload</p>
+              <p className="text-xs text-red-300/70 leading-relaxed">{uploadError}</p>
+            </div>
+          )}
           <div className="flex gap-3 border-t border-white/[0.06]" style={{ paddingLeft: 18, paddingRight: 18, paddingTop: 16, paddingBottom: 16 }}>
             <button
               onClick={uploadAll}
