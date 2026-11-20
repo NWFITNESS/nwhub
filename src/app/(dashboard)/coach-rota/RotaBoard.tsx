@@ -477,9 +477,9 @@ function HistoryModal({ open, onClose }: { open: boolean; onClose: () => void })
 
   return (
     <Modal open={open} onClose={onClose} title="Rota change history" width="lg">
-      <p style={{ fontSize: 12.5, color: '#8296b4', marginBottom: 14 }}>Coach-made changes, newest first. Your own admin edits aren&rsquo;t listed here.</p>
+      <p style={{ fontSize: 12.5, color: '#8296b4', marginBottom: 14 }}>All rota changes, newest first. Coach changes and admin edits are both shown.</p>
       {loading && <p style={{ color: '#8296b4', fontSize: 14, padding: 16, textAlign: 'center' }}>Loading…</p>}
-      {!loading && entries.length === 0 && <p style={{ color: '#8296b4', fontSize: 14, padding: 16, textAlign: 'center' }}>No coach changes logged yet.</p>}
+      {!loading && entries.length === 0 && <p style={{ color: '#8296b4', fontSize: 14, padding: 16, textAlign: 'center' }}>No changes logged yet.</p>}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {entries.map(e => <HistoryRow key={e.id} e={e} />)}
       </div>
@@ -487,14 +487,28 @@ function HistoryModal({ open, onClose }: { open: boolean; onClose: () => void })
   )
 }
 
+const ACTION_COLOR: Record<string, string> = {
+  claim: '#22c55e', release: '#f59e0b', reassign: '#5a8bd6',
+  create: '#22c55e', edit: '#8296b4', cancel: '#ef4444', uncancel: '#22c55e', delete: '#ef4444',
+}
+
 function HistoryRow({ e }: { e: AuditEntry }) {
   const when = new Date(e.created_at)
   const sessionDate = e.date ? new Date(`${e.date}T00:00:00Z`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }) : ''
-  const color = e.action === 'release' ? '#f59e0b' : e.action === 'claim' ? '#22c55e' : '#5a8bd6'
+  const color = ACTION_COLOR[e.action] ?? '#5a8bd6'
+  const gold = (s: string) => <b style={{ color: '#f5d775' }}>{s}</b>
   let text: React.ReactNode
-  if (e.action === 'claim') text = <><b>{e.actor}</b> claimed {e.detail}</>
-  else if (e.action === 'release') text = <><b>{e.actor}</b> gave up {e.detail}{e.from_coach && e.from_coach !== e.actor ? ` (was ${e.from_coach})` : ''}</>
-  else text = <><b>{e.actor}</b> moved {e.detail} {e.from_coach ? `off ${e.from_coach} ` : ''}to <b style={{ color: '#f5d775' }}>{e.to_coach}</b></>
+  switch (e.action) {
+    case 'claim': text = <><b>{e.actor}</b> claimed {e.detail}</>; break
+    case 'release': text = <><b>{e.actor}</b> gave up {e.detail}{e.from_coach && e.from_coach !== e.actor ? ` (was ${e.from_coach})` : ''}</>; break
+    case 'reassign': text = <><b>{e.actor}</b> moved {e.detail} {e.from_coach ? `off ${e.from_coach} ` : ''}to {gold(e.to_coach ?? 'open')}</>; break
+    case 'create': text = <><b>{e.actor}</b> added {e.detail}{e.to_coach ? <> for {gold(e.to_coach)}</> : ' (open)'}</>; break
+    case 'edit': text = <><b>{e.actor}</b> edited {e.detail}</>; break
+    case 'cancel': text = <><b>{e.actor}</b> cancelled {e.detail}</>; break
+    case 'uncancel': text = <><b>{e.actor}</b> restored {e.detail}</>; break
+    case 'delete': text = <><b>{e.actor}</b> deleted {e.detail}{e.from_coach ? ` (was ${e.from_coach})` : ''}</>; break
+    default: text = <><b>{e.actor}</b> {e.action} {e.detail}</>
+  }
   return (
     <div style={{ display: 'flex', gap: 10, padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}>
       <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, marginTop: 6, flexShrink: 0 }} />
@@ -502,6 +516,7 @@ function HistoryRow({ e }: { e: AuditEntry }) {
         <div style={{ fontSize: 13.5, color: '#edf3fb', lineHeight: 1.4 }}>{text}</div>
         <div style={{ fontSize: 11.5, color: '#8296b4', marginTop: 2 }}>
           {sessionDate && `${sessionDate} · `}{when.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} {when.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+          {e.actor_kind === 'admin' && ' · admin'}
         </div>
       </div>
     </div>

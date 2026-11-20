@@ -1,6 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireRotaAdmin } from '@/lib/rota-server'
+import { requireRotaAdmin, type RotaCaller } from '@/lib/rota-server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { weekDates } from '@/lib/rota'
+import type { RotaSession } from '@/lib/rota'
+
+type Admin = ReturnType<typeof createAdminClient>
+
+async function coachName(admin: Admin, id: string | null): Promise<string | null> {
+  if (!id) return null
+  const { data } = await admin.from('rota_coaches').select('name').eq('id', id).maybeSingle()
+  return (data as { name: string } | null)?.name ?? null
+}
+
+async function sessionLabel(admin: Admin, s: Pick<RotaSession, 'class_type_id' | 'start_time'>): Promise<string> {
+  let cls = 'Session'
+  if (s.class_type_id) {
+    const { data } = await admin.from('rota_class_types').select('name').eq('id', s.class_type_id).maybeSingle()
+    cls = (data as { name: string } | null)?.name ?? cls
+  }
+  return `${cls} ${s.start_time.slice(0, 5)}`
+}
+
+async function logAudit(admin: Admin, caller: RotaCaller, row: {
+  session_id: string; date: string; action: string; from_coach?: string | null; to_coach?: string | null; detail: string
+}) {
+  await admin.from('rota_audit').insert({
+    ...row,
+    actor: caller.profile?.display_name ?? caller.coach?.name ?? 'Admin',
+    actor_kind: caller.coach && !caller.profile ? 'coach' : 'admin',
+  })
+}
 
 // GET /api/coach-rota/sessions?week=YYYY-MM-DD  (Monday) → that week's sessions
 //     /api/coach-rota/sessions?from=YYYY-MM-DD&to=YYYY-MM-DD
@@ -59,6 +88,13 @@ export async function POST(req: NextRequest) {
   }).select().single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  const created = data as RotaSession
+  await logAudit(admin, caller, {
+    session_id: created.id, date: created.date, action: 'create',
+    to_coach: await coachName(admin, created.coach_id), detail: await sessionLabel(admin, created),
+  })
+
   return NextResponse.json({ session: data })
 }
 
@@ -66,7 +102,7 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   const guard = await requireRotaAdmin()
   if (!guard.ok) return guard.res
-  const { admin } = guard
+  const { admin, caller } = guard
 
   const b = await req.json()
   const { id, ...rest } = b as Record<string, unknown> & { id?: string }
@@ -79,8 +115,29 @@ export async function PATCH(req: NextRequest) {
   // Stamp claimed_at when a coach is (re)assigned, clear when unassigned
   if ('coach_id' in updates) updates.claimed_at = updates.coach_id ? new Date().toISOString() : null
 
+  const { data: before } = await admin.from('rota_sessions').select('*').eq('id', id).maybeSingle()
+  const old = before as RotaSession | null
+
   const { data, error } = await admin.from('rota_sessions').update(updates).eq('id', id).select().single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Audit the change (coach reassignment, cancel/restore, or a general edit).
+  if (old) {
+    const now = data as RotaSession
+    const label = await sessionLabel(admin, now)
+    if (old.coach_id !== now.coach_id) {
+      await logAudit(admin, caller, {
+        session_id: id, date: now.date,
+        action: !now.coach_id ? 'release' : !old.coach_id ? 'claim' : 'reassign',
+        from_coach: await coachName(admin, old.coach_id), to_coach: await coachName(admin, now.coach_id), detail: label,
+      })
+    } else if (old.status !== now.status) {
+      await logAudit(admin, caller, { session_id: id, date: now.date, action: now.status === 'cancelled' ? 'cancel' : 'uncancel', detail: label })
+    } else if (old.start_time !== now.start_time || old.end_time !== now.end_time || old.date !== now.date || old.class_type_id !== now.class_type_id || old.locked !== now.locked) {
+      await logAudit(admin, caller, { session_id: id, date: now.date, action: 'edit', detail: label })
+    }
+  }
+
   return NextResponse.json({ session: data })
 }
 
@@ -88,12 +145,23 @@ export async function PATCH(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const guard = await requireRotaAdmin()
   if (!guard.ok) return guard.res
-  const { admin } = guard
+  const { admin, caller } = guard
 
   const id = req.nextUrl.searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
+  const { data: before } = await admin.from('rota_sessions').select('*').eq('id', id).maybeSingle()
+  const old = before as RotaSession | null
+
   const { error } = await admin.from('rota_sessions').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  if (old) {
+    await logAudit(admin, caller, {
+      session_id: id, date: old.date, action: 'delete',
+      from_coach: await coachName(admin, old.coach_id), detail: await sessionLabel(admin, old),
+    })
+  }
+
   return NextResponse.json({ success: true })
 }
