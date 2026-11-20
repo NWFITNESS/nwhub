@@ -26,6 +26,7 @@ export interface RotaCoach {
   email: string
   phone: string | null
   hourly_rate: number
+  unpaid: boolean          // true = pay £0 (owner/volunteer); hours still count
   color: string | null
   active: boolean
   created_at: string

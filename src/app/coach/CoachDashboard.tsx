@@ -11,7 +11,7 @@ import { buildICS, downloadText } from '@/lib/coach-export'
 import * as htmlToImage from 'html-to-image'
 
 type SB = ReturnType<typeof createClient>
-interface Coach { id: string; name: string; color: string | null; hourly_rate: number }
+interface Coach { id: string; name: string; color: string | null; hourly_rate: number; unpaid?: boolean }
 
 export function thisMonth(): string {
   const d = new Date()
@@ -49,10 +49,10 @@ function useCoachMonth(supabase: SB, coachId: string, month: string) {
   return { rows, loading }
 }
 
-function summarise(rows: RotaSession[], classMap: Map<string, RotaClassType>, rates: RotaSettings) {
+function summarise(rows: RotaSession[], classMap: Map<string, RotaClassType>, rates: RotaSettings, unpaidCoach = false) {
   let weekday = 0, weekend = 0, hours = 0, pay = 0, wdPay = 0, wePay = 0
   for (const s of rows) {
-    const paid = s.class_type_id ? (classMap.get(s.class_type_id)?.paid ?? true) : true
+    const paid = !unpaidCoach && (s.class_type_id ? (classMap.get(s.class_type_id)?.paid ?? true) : true)
     const h = sessionHours(s.start_time, s.end_time)
     const p = sessionPay(s, paid, rates)
     hours += h; pay += p
@@ -78,7 +78,7 @@ export function HomeTab({ supabase, coach, classMap, rates, todayISO, goPay, onS
   const { rows, loading } = useCoachMonth(supabase, coach.id, month)
   const today = useMemo(() => rows.filter(s => s.date === todayISO), [rows, todayISO])
   const upcoming = useMemo(() => rows.filter(s => s.date > todayISO).slice(0, 1)[0], [rows, todayISO])
-  const sum = useMemo(() => summarise(rows, classMap, rates), [rows, classMap, rates])
+  const sum = useMemo(() => summarise(rows, classMap, rates, !!coach.unpaid), [rows, classMap, rates, coach.unpaid])
   const [calBusy, setCalBusy] = useState(false)
 
   return (
@@ -145,7 +145,7 @@ export function PayTab({ supabase, coach, classMap, rates, onShare }: {
 }) {
   const [month, setMonth] = useState(thisMonth())
   const { rows, loading } = useCoachMonth(supabase, coach.id, month)
-  const sum = useMemo(() => summarise(rows, classMap, rates), [rows, classMap, rates])
+  const sum = useMemo(() => summarise(rows, classMap, rates, !!coach.unpaid), [rows, classMap, rates, coach.unpaid])
   const [calBusy, setCalBusy] = useState(false)
 
   return (
@@ -213,7 +213,7 @@ export function ShareModal({ supabase, coach, classMap, rates, onClose }: {
 }) {
   const month = thisMonth()
   const { rows, loading } = useCoachMonth(supabase, coach.id, month)
-  const sum = useMemo(() => summarise(rows, classMap, rates), [rows, classMap, rates])
+  const sum = useMemo(() => summarise(rows, classMap, rates, !!coach.unpaid), [rows, classMap, rates, coach.unpaid])
   const cardRef = useRef<HTMLDivElement>(null)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)

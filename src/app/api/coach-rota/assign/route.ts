@@ -34,10 +34,37 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  const fromCoachId = s.coach_id
   const { error } = await admin.from('rota_sessions')
     .update({ coach_id: toCoachId, claimed_at: toCoachId ? new Date().toISOString() : null })
     .eq('id', sessionId)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Look up names for the audit log + notification.
+  let className = 'a session'
+  if (s.class_type_id) {
+    const { data: ct } = await admin.from('rota_class_types').select('name').eq('id', s.class_type_id).maybeSingle()
+    className = (ct as { name: string } | null)?.name ?? className
+  }
+  const nameOf = async (id: string | null) => {
+    if (!id) return null
+    const { data } = await admin.from('rota_coaches').select('name').eq('id', id).maybeSingle()
+    return (data as { name: string } | null)?.name ?? null
+  }
+  const fromName = await nameOf(fromCoachId)
+  const toName = await nameOf(toCoachId)
+
+  // Record who changed what.
+  await admin.from('rota_audit').insert({
+    session_id: sessionId,
+    date: s.date,
+    action: !toCoachId ? 'release' : !fromCoachId ? 'claim' : 'reassign',
+    actor: caller.coach?.name ?? caller.profile?.display_name ?? 'Admin',
+    actor_kind: caller.coach ? 'coach' : 'admin',
+    from_coach: fromName,
+    to_coach: toName,
+    detail: `${className} ${s.start_time.slice(0, 5)}`,
+  })
 
   // Notify the newly-assigned coach (unless they assigned themselves).
   if (toCoachId && toCoachId !== caller.coach?.id) {
@@ -45,11 +72,6 @@ export async function POST(req: NextRequest) {
       .select('endpoint, p256dh, auth').eq('coach_id', toCoachId)
     const list = (subs as { endpoint: string; p256dh: string; auth: string }[] ?? [])
     if (list.length) {
-      let className = 'a session'
-      if (s.class_type_id) {
-        const { data: ct } = await admin.from('rota_class_types').select('name').eq('id', s.class_type_id).maybeSingle()
-        className = (ct as { name: string } | null)?.name ?? className
-      }
       const when = new Date(`${s.date}T00:00:00Z`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })
       const dead: string[] = []
       for (const sub of list) {

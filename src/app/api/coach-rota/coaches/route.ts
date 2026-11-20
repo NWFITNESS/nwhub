@@ -74,7 +74,7 @@ export async function PATCH(req: NextRequest) {
   const { id, ...rest } = b as Record<string, unknown> & { id?: string }
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
-  const allowed = ['name', 'phone', 'hourly_rate', 'color', 'active'] as const
+  const allowed = ['name', 'phone', 'hourly_rate', 'color', 'active', 'unpaid'] as const
   const updates: Record<string, unknown> = {}
   for (const k of allowed) if (k in rest) updates[k] = rest[k]
 

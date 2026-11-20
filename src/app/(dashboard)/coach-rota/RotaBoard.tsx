@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, Plus, Lock, Wand2, Trash2, X, StickyNote } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Lock, Wand2, Trash2, X, StickyNote, History } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Panel } from '@/components/ui/Card'
@@ -70,6 +70,7 @@ export function RotaBoard() {
   const [genBusy, setGenBusy] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const [daySheet, setDaySheet] = useState<string | null>(null)
+  const [historyOpen, setHistoryOpen] = useState(false)
   const [notes, setNotes] = useState<Record<string, string>>({})
   const [gapsOnly, setGapsOnly] = useState(false)
 
@@ -206,6 +207,7 @@ export function RotaBoard() {
         description={`${periodLabel} · ${filledCount} filled · ${openCount} open · ${formatHours(periodHours)}h`}
         actions={
           <>
+            <Button variant="secondary" size="sm" onClick={() => setHistoryOpen(true)}><History size={15} /> History</Button>
             <Button variant="secondary" size="sm" onClick={() => setGenOpen(true)}><Wand2 size={15} /> Generate</Button>
             <Button variant="gold" size="sm" onClick={() => openNew(view === 'week' ? range.days[0] : todayISO)}><Plus size={15} /> Add</Button>
           </>
@@ -270,6 +272,9 @@ export function RotaBoard() {
           onAdd={() => { const d = daySheet; setDaySheet(null); openNew(d) }}
         />
       )}
+
+      {/* Change history */}
+      <HistoryModal open={historyOpen} onClose={() => setHistoryOpen(false)} />
 
       {/* Session edit modal */}
       <Modal open={!!draft} onClose={() => setDraft(null)} title={draft?.id ? 'Edit session' : 'Add session'} width="md">
@@ -448,6 +453,57 @@ function WeekGrid({ days, byDay, todayISO, classMap, coachMap, notes, gapsOnly, 
           </div>
         )
       })}
+    </div>
+  )
+}
+
+// ── Change history ───────────────────────────────────────────────────────────
+interface AuditEntry {
+  id: string; date: string | null; action: string; actor: string; actor_kind: string
+  from_coach: string | null; to_coach: string | null; detail: string | null; created_at: string
+}
+
+function HistoryModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [entries, setEntries] = useState<AuditEntry[]>([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!open) return
+    setLoading(true)
+    fetch('/api/coach-rota/audit').then(r => r.json())
+      .then(d => setEntries(d.entries ?? []))
+      .finally(() => setLoading(false))
+  }, [open])
+
+  return (
+    <Modal open={open} onClose={onClose} title="Rota change history" width="lg">
+      <p style={{ fontSize: 12.5, color: '#8296b4', marginBottom: 14 }}>Coach-made changes, newest first. Your own admin edits aren&rsquo;t listed here.</p>
+      {loading && <p style={{ color: '#8296b4', fontSize: 14, padding: 16, textAlign: 'center' }}>Loading…</p>}
+      {!loading && entries.length === 0 && <p style={{ color: '#8296b4', fontSize: 14, padding: 16, textAlign: 'center' }}>No coach changes logged yet.</p>}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {entries.map(e => <HistoryRow key={e.id} e={e} />)}
+      </div>
+    </Modal>
+  )
+}
+
+function HistoryRow({ e }: { e: AuditEntry }) {
+  const when = new Date(e.created_at)
+  const sessionDate = e.date ? new Date(`${e.date}T00:00:00Z`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }) : ''
+  const color = e.action === 'release' ? '#f59e0b' : e.action === 'claim' ? '#22c55e' : '#5a8bd6'
+  let text: React.ReactNode
+  if (e.action === 'claim') text = <><b>{e.actor}</b> claimed {e.detail}</>
+  else if (e.action === 'release') text = <><b>{e.actor}</b> gave up {e.detail}{e.from_coach && e.from_coach !== e.actor ? ` (was ${e.from_coach})` : ''}</>
+  else text = <><b>{e.actor}</b> moved {e.detail} {e.from_coach ? `off ${e.from_coach} ` : ''}to <b style={{ color: '#f5d775' }}>{e.to_coach}</b></>
+  return (
+    <div style={{ display: 'flex', gap: 10, padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}>
+      <span style={{ width: 8, height: 8, borderRadius: '50%', background: color, marginTop: 6, flexShrink: 0 }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13.5, color: '#edf3fb', lineHeight: 1.4 }}>{text}</div>
+        <div style={{ fontSize: 11.5, color: '#8296b4', marginTop: 2 }}>
+          {sessionDate && `${sessionDate} · `}{when.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} {when.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+        </div>
+      </div>
     </div>
   )
 }

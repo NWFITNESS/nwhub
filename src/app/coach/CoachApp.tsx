@@ -28,7 +28,7 @@ function greeting(): string {
 }
 
 interface CoachLite { id: string; name: string; color: string | null }
-interface Props { coach: { id: string; name: string; hourly_rate: number; color: string | null }; userEmail: string }
+interface Props { coach: { id: string; name: string; hourly_rate: number; unpaid?: boolean; color: string | null }; userEmail: string }
 
 const fieldStyle: React.CSSProperties = {
   padding: '12px 14px', fontSize: 16, width: '100%', borderRadius: 12,

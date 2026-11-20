@@ -23,7 +23,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   )
 }
 
-interface Draft { id?: string; name: string; email: string; phone: string; color: string; active: boolean }
+interface Draft { id?: string; name: string; email: string; phone: string; color: string; active: boolean; unpaid: boolean }
 
 export function CoachesClient() {
   const [coaches, setCoaches] = useState<RotaCoach[]>([])
@@ -41,14 +41,14 @@ export function CoachesClient() {
   }, [])
   useEffect(() => { load() }, [load])
 
-  function openNew() { setErr(null); setDraft({ name: '', email: '', phone: '', color: CLASS_COLOUR_PRESETS[0], active: true }) }
-  function openEdit(c: RotaCoach) { setErr(null); setDraft({ id: c.id, name: c.name, email: c.email, phone: c.phone ?? '', color: c.color ?? CLASS_COLOUR_PRESETS[0], active: c.active }) }
+  function openNew() { setErr(null); setDraft({ name: '', email: '', phone: '', color: CLASS_COLOUR_PRESETS[0], active: true, unpaid: false }) }
+  function openEdit(c: RotaCoach) { setErr(null); setDraft({ id: c.id, name: c.name, email: c.email, phone: c.phone ?? '', color: c.color ?? CLASS_COLOUR_PRESETS[0], active: c.active, unpaid: c.unpaid ?? false }) }
 
   async function save() {
     if (!draft) return
     setSaving(true); setErr(null)
     const res = draft.id
-      ? await fetch('/api/coach-rota/coaches', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: draft.id, name: draft.name, phone: draft.phone, color: draft.color, active: draft.active }) })
+      ? await fetch('/api/coach-rota/coaches', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: draft.id, name: draft.name, phone: draft.phone, color: draft.color, active: draft.active, unpaid: draft.unpaid }) })
       : await fetch('/api/coach-rota/coaches', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(draft) })
     setSaving(false)
     if (!res.ok) { const e = await res.json().catch(() => ({})); setErr(e.error ?? 'Save failed'); return }
@@ -88,6 +88,7 @@ export function CoachesClient() {
                 <div className="flex items-center gap-2">
                   <span style={{ fontSize: 14, fontWeight: 600, color: '#edf3fb' }}>{c.name}</span>
                   {!c.active && <Badge variant="paused">Inactive</Badge>}
+                  {c.unpaid && <span style={{ fontSize: 10, fontWeight: 700, color: '#8296b4', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 5, padding: '1px 6px' }}>UNPAID</span>}
                   {c.user_id ? <Badge variant="green">Login on</Badge> : <Badge variant="amber">No login</Badge>}
                 </div>
                 <div className="flex items-center gap-3" style={{ fontSize: 12, color: '#8296b4', marginTop: 2 }}>
@@ -118,6 +119,9 @@ export function CoachesClient() {
                 ))}
               </div>
             </Field>
+            <label className="inline-flex items-center gap-2" style={{ fontSize: 13, color: '#8296b4', cursor: 'pointer' }}>
+              <input type="checkbox" checked={draft.unpaid} onChange={e => setDraft({ ...draft, unpaid: e.target.checked })} /> Unpaid volunteer (£0 pay, hours still tracked)
+            </label>
             {draft.id && (
               <label className="inline-flex items-center gap-2" style={{ fontSize: 13, color: '#8296b4', cursor: 'pointer' }}>
                 <input type="checkbox" checked={draft.active} onChange={e => setDraft({ ...draft, active: e.target.checked })} /> Active

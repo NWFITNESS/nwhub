@@ -39,7 +39,9 @@ export async function GET(req: NextRequest) {
   const totals = new Map<string, { sessions: number; hours: number; paidHours: number; pay: number }>()
   for (const s of (sessions as RotaSession[] ?? [])) {
     const cur = totals.get(s.coach_id!) ?? { sessions: 0, hours: 0, paidHours: 0, pay: 0 }
-    const paid = s.class_type_id ? (paidMap.get(s.class_type_id) ?? true) : true
+    // An unpaid coach (owner/volunteer) earns £0 even for paid classes; hours still count.
+    const coachUnpaid = coachMap.get(s.coach_id!)?.unpaid ?? false
+    const paid = !coachUnpaid && (s.class_type_id ? (paidMap.get(s.class_type_id) ?? true) : true)
     const hrs = sessionHours(s.start_time, s.end_time)
     cur.sessions += 1
     cur.hours += hrs
