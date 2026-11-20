@@ -93,7 +93,7 @@ export async function GET(req: NextRequest) {
     const className = (s.class_type_id && classMap.get(s.class_type_id)) || 'session'
     const payload = {
       title: 'Coaching in 1 hour',
-      body: `${className} at ${formatTime(s.start_time)} — you're on.`,
+      body: `You're on for ${className} at ${formatTime(s.start_time)}.`,
       url: '/coach',
       tag: `rota-${s.id}`,
     }

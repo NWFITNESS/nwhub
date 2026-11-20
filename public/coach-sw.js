@@ -11,7 +11,7 @@ self.addEventListener('push', (event) => {
   const options = {
     body: data.body || '',
     icon: '/icons/coach-icon-192.png',
-    badge: '/icons/coach-icon-192.png',
+    badge: '/icons/coach-badge.png',
     tag: data.tag || 'coach-reminder',
     renotify: true,
     vibrate: [120, 60, 120],

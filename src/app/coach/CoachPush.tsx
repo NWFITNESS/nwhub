@@ -63,12 +63,6 @@ export function CoachPush() {
     }
   }
 
-  async function sendTest() {
-    setBusy(true)
-    try { await fetch('/api/coach-rota/push/test', { method: 'POST' }) }
-    finally { setBusy(false) }
-  }
-
   async function disable() {
     setBusy(true)
     try {
@@ -112,8 +106,7 @@ export function CoachPush() {
       <div style={wrap}>
         <BellRing size={17} color="#6ee7a0" style={{ flexShrink: 0 }} />
         <div style={{ flex: 1, minWidth: 0, fontSize: 13, fontWeight: 600, color: '#cdd8e8' }}>Session reminders on</div>
-        <button onClick={sendTest} disabled={busy} style={linkBtn}>{busy ? '…' : 'Send test'}</button>
-        <button onClick={disable} disabled={busy} style={linkBtn}>Turn off</button>
+        <button onClick={disable} disabled={busy} style={linkBtn}>{busy ? '…' : 'Turn off'}</button>
       </div>
     )
   }
