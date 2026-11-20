@@ -414,7 +414,7 @@ function InviteModal({ open, callerRole, onClose, onSuccess }: {
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Invite Staff Member" width="lg">
+    <Modal open={open} onClose={onClose} title="Invite Staff Member" width="xl">
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col gap-4" style={{ padding: '0 0 20px' }}>
           <Field label="Full name">
@@ -571,7 +571,7 @@ function EditPermissionsModal({ open, callerRole, staff, onClose, onSuccess }: {
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={`Edit Access — ${staff?.display_name ?? ''}`} width="lg">
+    <Modal open={open} onClose={onClose} title={`Edit access: ${staff?.display_name ?? ''}`} width="xl">
       <div className="flex flex-col gap-4" style={{ padding: '0 0 20px' }}>
         {/* Role selector */}
         {callerRole === 'owner' && (
@@ -606,7 +606,7 @@ function EditPermissionsModal({ open, callerRole, staff, onClose, onSuccess }: {
                 <button onClick={selectNone} className="text-[10px] text-nw-500 hover:underline">Clear all</button>
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-1.5 max-h-[400px] overflow-y-auto">
+            <div className="grid grid-cols-1 gap-1.5">
               {(Object.keys(PERMISSION_LABELS) as (keyof StaffPermissions)[]).map(key => (
                 <label
                   key={key}

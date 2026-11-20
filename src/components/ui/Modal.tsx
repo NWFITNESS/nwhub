@@ -69,16 +69,16 @@ export function Modal({ open, onClose, title, children, width = 'md' }: ModalPro
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onKeyDown={handleKeyDown}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
-      <div ref={modalRef} role="dialog" aria-modal="true" aria-label={title || 'Dialog'} className={`relative w-full ${widthMap[width]} rounded-xl shadow-2xl`} style={{ background: 'var(--slate-800)', border: '1px solid var(--r-panel-border)' }}>
+      <div ref={modalRef} role="dialog" aria-modal="true" aria-label={title || 'Dialog'} className={`relative flex flex-col w-full ${widthMap[width]} max-h-[90dvh] rounded-xl shadow-2xl`} style={{ background: 'var(--slate-800)', border: '1px solid var(--r-panel-border)' }}>
         {title && (
-          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid var(--r-panel-border)' }}>
+          <div className="flex items-center justify-between px-5 py-4 shrink-0" style={{ borderBottom: '1px solid var(--r-panel-border)' }}>
             <h3 className="text-base font-semibold">{title}</h3>
             <button onClick={onClose} aria-label="Close" className="text-white/40 hover:text-white transition-colors">
               <X size={18} aria-hidden="true" />
             </button>
           </div>
         )}
-        <div className="p-5">{children}</div>
+        <div className="p-5 overflow-y-auto">{children}</div>
       </div>
     </div>
   )
